@@ -319,7 +319,7 @@ task-master add-task --title "修复Jest测试框架配置和模块加载问题"
 - [ ] T095 运行完整测试套件确保质量
 
 ### 版本管理和发布
-- [x] T096 创建发布版本标签 (v0.9.0)
+- [ ] T096 创建发布版本标签 (v1.0.0)
 - [ ] T097 更新 CHANGELOG.md 记录AI移除变更
 - [ ] T098 验证 npm publish 权限和配置
 - [ ] T099 执行 npm publish 发布新版本

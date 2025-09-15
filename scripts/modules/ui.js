@@ -496,31 +496,6 @@ function displayHelp() {
 					name: 'init',
 					args: '[--name=<name>] [--description=<desc>] [-y]',
 					desc: 'Initialize a new project with Task Master structure'
-				},
-				{
-					name: 'models',
-					args: '',
-					desc: 'View current AI model configuration and available models'
-				},
-				{
-					name: 'models --setup',
-					args: '',
-					desc: 'Run interactive setup to configure AI models'
-				},
-				{
-					name: 'models --set-main',
-					args: '<model_id>',
-					desc: 'Set the primary model for task generation'
-				},
-				{
-					name: 'models --set-research',
-					args: '<model_id>',
-					desc: 'Set the model for research operations'
-				},
-				{
-					name: 'models --set-fallback',
-					args: '<model_id>',
-					desc: 'Set the fallback model (optional)'
 				}
 			]
 		},
@@ -528,11 +503,6 @@ function displayHelp() {
 			title: 'Task Generation',
 			color: 'cyan',
 			commands: [
-				{
-					name: 'parse-prd',
-					args: '--input=<file.txt> [--num-tasks=10]',
-					desc: 'Generate tasks from a PRD document'
-				},
 				{
 					name: 'generate',
 					args: '',
@@ -577,7 +547,7 @@ function displayHelp() {
 				{
 					name: 'add-task',
 					args: '--prompt="<text>" [--dependencies=<ids>] [--priority=<priority>]',
-					desc: 'Add a new task using AI'
+					desc: 'Add a new task'
 				},
 				{
 					name: 'remove-task',
@@ -622,29 +592,19 @@ function displayHelp() {
 			color: 'magenta',
 			commands: [
 				{
-					name: 'analyze-complexity',
-					args: '[--research] [--threshold=5]',
-					desc: 'Analyze tasks and generate expansion recommendations'
-				},
-				{
 					name: 'complexity-report',
 					args: '[--file=<path>]',
 					desc: 'Display the complexity analysis report'
 				},
 				{
 					name: 'expand',
-					args: '--id=<id> [--num=5] [--research] [--prompt="<context>"]',
+					args: '--id=<id> [--num=5] [--prompt="<context>"]',
 					desc: 'Break down tasks into detailed subtasks'
 				},
 				{
 					name: 'expand --all',
-					args: '[--force] [--research]',
+					args: '[--force]',
 					desc: 'Expand all pending tasks with subtasks'
-				},
-				{
-					name: 'research',
-					args: '"<prompt>" [-i=<task_ids>] [-f=<file_paths>] [-c="<context>"] [--tree] [-s=<save_file>] [-d=<detail_level>]',
-					desc: 'Perform AI-powered research queries with project context'
 				}
 			]
 		},
@@ -823,17 +783,12 @@ function displayHelp() {
 	configTable.push(
 		[
 			`${chalk.yellow(TASKMASTER_CONFIG_FILE)}${chalk.reset('')}`,
-			`${chalk.white('AI model configuration file (project root)')}${chalk.reset('')}`,
-			`${chalk.dim('Managed by models cmd')}${chalk.reset('')}`
-		],
-		[
-			`${chalk.yellow('API Keys (.env)')}${chalk.reset('')}`,
-			`${chalk.white('API keys for AI providers (ANTHROPIC_API_KEY, etc.)')}${chalk.reset('')}`,
-			`${chalk.dim('Required in .env file')}${chalk.reset('')}`
+			`${chalk.white('Task Master configuration file')}${chalk.reset('')}`,
+			`${chalk.dim('Project configuration')}${chalk.reset('')}`
 		],
 		[
 			`${chalk.yellow('MCP Keys (mcp.json)')}${chalk.reset('')}`,
-			`${chalk.white('API keys for Cursor integration')}${chalk.reset('')}`,
+			`${chalk.white('Configuration for Cursor integration')}${chalk.reset('')}`,
 			`${chalk.dim('Required in .cursor/')}${chalk.reset('')}`
 		]
 	)
@@ -849,17 +804,14 @@ function displayHelp() {
 				chalk.cyan('1. Create Project: ') +
 				chalk.white('task-master init') +
 				'\n' +
-				chalk.cyan('2. Setup Models: ') +
-				chalk.white('task-master models --setup') +
-				'\n' +
-				chalk.cyan('3. Parse PRD: ') +
-				chalk.white('task-master parse-prd --input=<prd-file>') +
-				'\n' +
-				chalk.cyan('4. List Tasks: ') +
+				chalk.cyan('2. List Tasks: ') +
 				chalk.white('task-master list') +
 				'\n' +
-				chalk.cyan('5. Find Next Task: ') +
-				chalk.white('task-master next'),
+				chalk.cyan('3. Find Next Task: ') +
+				chalk.white('task-master next') +
+				'\n' +
+				chalk.cyan('4. Add New Task: ') +
+				chalk.white('task-master add-task --prompt="Your task description"'),
 			{
 				padding: 1,
 				borderColor: 'yellow',
@@ -1656,8 +1608,7 @@ async function displayComplexityReport(reportPath) {
 				return null
 			}
 
-			// Complexity analysis has been removed with AI functionality
-			console.log(chalk.yellow('Complexity analysis is no longer available as AI functionality has been removed.'))
+			// Complexity analysis is not available for this task
 			return null
 		} else {
 			console.log(chalk.yellow('Report generation cancelled.'))
@@ -1834,7 +1785,7 @@ async function displayComplexityReport(reportPath) {
 				'\n\n' +
 				`${chalk.cyan('1.')} Expand all complex tasks: ${chalk.yellow(`task-master expand --all`)}\n` +
 				`${chalk.cyan('2.')} Expand a specific task: ${chalk.yellow(`task-master expand --id=<id>`)}\n` +
-				`${chalk.cyan('3.')} Regenerate with research: ${chalk.yellow(`task-master analyze-complexity --research`)}`,
+				`${chalk.cyan('3.')} View complexity report: ${chalk.yellow(`task-master complexity-report`)}`,
 			{
 				padding: 1,
 				borderColor: 'cyan',
@@ -2740,3 +2691,4 @@ export function displayDependencyValidationHints(context = 'general') {
 		console.log(`  ${hint}`)
 	})
 }
+

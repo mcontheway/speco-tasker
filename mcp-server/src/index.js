@@ -30,6 +30,7 @@ class TaskMasterMCPServer {
 
 		this.server = new FastMCP(this.options)
 		this.initialized = false
+		this.asyncManager = null // Initialize asyncManager as null since it's not used
 
 		// Bind methods
 		this.init = this.init.bind(this)

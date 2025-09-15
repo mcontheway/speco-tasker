@@ -1,4 +1,60 @@
-# task-master-ai
+# taskmaster-no-ai
+
+## 1.0.8 (2025-09-15)
+
+### 发布优化
+
+- **📦 包文件更新**：更新package.json的files字段，确保中文文档README_ZH.md包含在发布的包中
+- **📚 文档完整性**：发布的npm包现在包含完整的中文和英文文档
+
+## 1.0.6 (2025-09-15)
+
+### 文档更新
+
+- **📚 完整的中文文档**：添加了完整的中文README文档和使用说明
+- **🎯 功能介绍优化**：重写了项目介绍，突出纯手动任务管理的优势
+- **📖 使用指南完善**：提供了详细的中文安装和使用指南
+- **🆚 对比说明**：清晰对比了TaskMaster-AI和No-AI版本的差异
+- **🔧 功能列表更新**：列出了27个核心功能的详细说明
+- **❓ 常见问题解答**：添加了中文FAQ解答用户常见疑问
+
+### 技术修复
+
+- **🔧 MCP服务器修复**：修复了asyncManager未定义导致的启动失败问题
+- **🧹 代码清理**：移除了所有AI相关的帮助文本和配置
+- **📦 包完整性**：确保发布包包含所有必要文件
+
+## 1.0.0 (2025-09-15)
+
+### Major Changes
+
+- **🔄 Complete AI Feature Removal**: Taskmaster has been completely refactored to remove all AI functionality and dependencies. This is a breaking change that transforms Taskmaster into a pure manual task management system.
+
+  **What was removed:**
+  - All AI service integrations (OpenAI, Anthropic, Google, etc.)
+  - AI-powered task generation and analysis
+  - AI configuration and provider management
+  - AI-related dependencies and scripts
+
+  **What remains:**
+  - Pure manual task management with 27 core features
+  - CLI and MCP server functionality
+  - Task creation, editing, and organization
+  - Dependency management and status tracking
+  - All manual workflow operations
+
+  **Migration notes:**
+  - Package renamed from `task-master-ai` to `taskmaster-no-ai`
+  - All AI-related configuration removed
+  - Manual task management features fully preserved
+  - No breaking changes to manual workflow functionality
+
+### Breaking Changes
+
+- Renamed npm package from `task-master-ai` to `taskmaster-no-ai`
+- Removed all AI provider configurations and API keys
+- Removed AI-related scripts and dependencies
+- Updated project repository and documentation URLs
 
 ## 0.26.0
 

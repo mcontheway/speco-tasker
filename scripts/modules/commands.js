@@ -316,7 +316,7 @@ function registerCommands(programInstance) {
 	// add-task command
 	programInstance
 		.command('add-task')
-		.description('Add a new task using AI, optionally providing manual details')
+		.description('Add a new task')
 		.option('-f, --file <file>', 'Path to the tasks file', TASKMASTER_TASKS_FILE)
 		.option(
 			'-p, --prompt <prompt>',
@@ -1323,39 +1323,6 @@ function registerCommands(programInstance) {
 		)
 	}
 
-	// Helper function to show research command help
-	function showResearchHelp() {
-		console.log(
-			boxen(
-				chalk.white.bold('Research Command Help') +
-					'\n\n' +
-					chalk.cyan('Usage:') +
-					'\n' +
-					`  task-master research "<query>" [options]\n\n` +
-					chalk.cyan('Required:') +
-					'\n' +
-					'  <query>             Research question or prompt (required)\n\n' +
-					chalk.cyan('Context Options:') +
-					'\n' +
-					'  -i, --id <ids>      Comma-separated task/subtask IDs for context (e.g., "15,23.2")\n' +
-					'  -f, --files <paths> Comma-separated file paths for context\n' +
-					'  -c, --context <text> Additional custom context text\n' +
-					'  --tree              Include project file tree structure\n\n' +
-					chalk.cyan('Output Options:') +
-					'\n' +
-					'  -d, --detail <level> Detail level: low, medium, high (default: medium)\n' +
-					'  --save-to <id>      Auto-save results to task/subtask ID (e.g., "15" or "15.2")\n' +
-					'  --tag <tag>         Specify tag context for task operations\n\n' +
-					chalk.cyan('Examples:') +
-					'\n' +
-					'  task-master research "How should I implement user authentication?"\n' +
-					'  task-master research "What\'s the best approach?" --id=15,23.2\n' +
-					'  task-master research "How does auth work?" --files=src/auth.js --tree\n' +
-					'  task-master research "Implementation steps?" --save-to=15.2 --detail=high',
-				{ padding: 1, borderColor: 'blue', borderStyle: 'round' }
-			)
-		)
-	}
 
 	// remove-task command
 	programInstance
@@ -2326,7 +2293,7 @@ function registerCommands(programInstance) {
 					console.error(chalk.red(`Error: Tasks file not found at path: ${tasksPath}`))
 					console.log(
 						chalk.yellow(
-							'Hint: Run task-master init or task-master parse-prd to create tasks.json first'
+							'Hint: Run task-master init to create tasks.json first'
 						)
 					)
 					process.exit(1)
@@ -2858,49 +2825,10 @@ async function runCLI(argv = process.argv) {
 			// Silently ignore errors checking for migration notice
 		}
 	} catch (error) {
-		// ** Specific catch block for missing configuration file **
-		if (error instanceof ConfigurationError) {
-			console.error(
-				boxen(
-					chalk.red.bold('Configuration Update Required!') +
-						'\n\n' +
-						chalk.white('Taskmaster now uses a ') +
-						chalk.yellow.bold('configuration file') +
-						chalk.white(
-							' in your project for AI model choices and settings.\n\n' + 'This file appears to be '
-						) +
-						chalk.red.bold('missing') +
-						chalk.white('. No worries though.\n\n') +
-						chalk.cyan.bold('To create this file, run the interactive setup:') +
-						'\n' +
-						chalk.green('   task-master models --setup') +
-						'\n\n' +
-						chalk.white.bold('Key Points:') +
-						'\n' +
-						chalk.white('*   ') +
-						chalk.yellow.bold('Configuration file') +
-						chalk.white(': Stores your AI model settings (do not manually edit)\n') +
-						chalk.white('*   ') +
-						chalk.yellow.bold('.env & .mcp.json') +
-						chalk.white(': Still used ') +
-						chalk.red.bold('only') +
-						chalk.white(' for your AI provider API keys.\n\n') +
-						chalk.cyan('`task-master models` to check your config & available models\n') +
-						chalk.cyan('`task-master models --setup` to adjust the AI models used by Taskmaster'),
-					{
-						padding: 1,
-						margin: { top: 1 },
-						borderColor: 'red',
-						borderStyle: 'round'
-					}
-				)
-			)
-		} else {
-			// Generic error handling for other errors
-			console.error(chalk.red(`Error: ${error.message}`))
-			if (getDebugFlag()) {
-				console.error(error)
-			}
+		// Generic error handling
+		console.error(chalk.red(`Error: ${error.message}`))
+		if (getDebugFlag()) {
+			console.error(error)
 		}
 
 		process.exit(1)
