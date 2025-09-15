@@ -54,15 +54,37 @@ NEXT=$((HIGHEST + 1))
 FEATURE_NUM=$(printf "%03d" "$NEXT")
 
 # Create branch name from description
-BRANCH_NAME=$(echo "$FEATURE_DESCRIPTION" | \
-    tr '[:upper:]' '[:lower:]' | \
-    sed 's/[^a-z0-9]/-/g' | \
-    sed 's/-\+/-/g' | \
-    sed 's/^-//' | \
-    sed 's/-$//')
+if $JSON_MODE && echo "$FEATURE_DESCRIPTION" | jq -e . >/dev/null 2>&1; then
+    # Parse JSON and extract name field
+    FEATURE_NAME=$(echo "$FEATURE_DESCRIPTION" | jq -r '.name // empty')
+    if [ -n "$FEATURE_NAME" ]; then
+        BRANCH_NAME=$(echo "$FEATURE_NAME" | \
+            tr '[:upper:]' '[:lower:]' | \
+            sed 's/[^a-z0-9]/-/g' | \
+            sed 's/-\+/-/g' | \
+            sed 's/^-//' | \
+            sed 's/-$//')
+    else
+        # Fallback to full description if name not found
+        BRANCH_NAME=$(echo "$FEATURE_DESCRIPTION" | \
+            tr '[:upper:]' '[:lower:]' | \
+            sed 's/[^a-z0-9]/-/g' | \
+            sed 's/-\+/-/g' | \
+            sed 's/^-//' | \
+            sed 's/-$//')
+    fi
+else
+    # Non-JSON mode or invalid JSON
+    BRANCH_NAME=$(echo "$FEATURE_DESCRIPTION" | \
+        tr '[:upper:]' '[:lower:]' | \
+        sed 's/[^a-z0-9]/-/g' | \
+        sed 's/-\+/-/g' | \
+        sed 's/^-//' | \
+        sed 's/-$//')
+fi
 
-# Extract 2-3 meaningful words
-WORDS=$(echo "$BRANCH_NAME" | tr '-' '\n' | grep -v '^$' | head -3 | tr '\n' '-' | sed 's/-$//')
+# Extract meaningful words (up to 5 for longer feature names)
+WORDS=$(echo "$BRANCH_NAME" | tr '-' '\n' | grep -v '^$' | head -5 | tr '\n' '-' | sed 's/-$//')
 
 # Final branch name
 BRANCH_NAME="${FEATURE_NUM}-${WORDS}"
