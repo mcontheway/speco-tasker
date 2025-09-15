@@ -6,12 +6,9 @@
 import {
 	createTag,
 	createTagFromBranch
-} from '../../../../scripts/modules/task-manager/tag-management.js';
-import {
-	enableSilentMode,
-	disableSilentMode
-} from '../../../../scripts/modules/utils.js';
-import { createLogWrapper } from '../../tools/utils.js';
+} from '../../../../scripts/modules/task-manager/tag-management.js'
+import { disableSilentMode, enableSilentMode } from '../../../../scripts/modules/utils.js'
+import { createLogWrapper } from '../../tools/utils.js'
 
 /**
  * Direct function wrapper for creating a new tag with error handling.
@@ -38,72 +35,69 @@ export async function addTagDirect(args, log, context = {}) {
 		fromBranch = false,
 		description,
 		projectRoot
-	} = args;
-	const { session } = context;
+	} = args
+	const { session } = context
 
 	// Enable silent mode to prevent console logs from interfering with JSON response
-	enableSilentMode();
+	enableSilentMode()
 
 	// Create logger wrapper using the utility
-	const mcpLog = createLogWrapper(log);
+	const mcpLog = createLogWrapper(log)
 
 	try {
 		// Check if tasksJsonPath was provided
 		if (!tasksJsonPath) {
-			log.error('addTagDirect called without tasksJsonPath');
-			disableSilentMode();
+			log.error('addTagDirect called without tasksJsonPath')
+			disableSilentMode()
 			return {
 				success: false,
 				error: {
 					code: 'MISSING_ARGUMENT',
 					message: 'tasksJsonPath is required'
 				}
-			};
+			}
 		}
 
 		// Handle --from-branch option
 		if (fromBranch) {
-			log.info('Creating tag from current git branch');
+			log.info('Creating tag from current git branch')
 
 			// Import git utilities
-			const gitUtils = await import(
-				'../../../../scripts/modules/utils/git-utils.js'
-			);
+			const gitUtils = await import('../../../../scripts/modules/utils/git-utils.js')
 
 			// Check if we're in a git repository
 			if (!(await gitUtils.isGitRepository(projectRoot))) {
-				log.error('Not in a git repository');
-				disableSilentMode();
+				log.error('Not in a git repository')
+				disableSilentMode()
 				return {
 					success: false,
 					error: {
 						code: 'NOT_GIT_REPO',
 						message: 'Not in a git repository. Cannot use fromBranch option.'
 					}
-				};
+				}
 			}
 
 			// Get current git branch
-			const currentBranch = await gitUtils.getCurrentBranch(projectRoot);
+			const currentBranch = await gitUtils.getCurrentBranch(projectRoot)
 			if (!currentBranch) {
-				log.error('Could not determine current git branch');
-				disableSilentMode();
+				log.error('Could not determine current git branch')
+				disableSilentMode()
 				return {
 					success: false,
 					error: {
 						code: 'NO_CURRENT_BRANCH',
 						message: 'Could not determine current git branch.'
 					}
-				};
+				}
 			}
 
 			// Prepare options for branch-based tag creation
 			const branchOptions = {
 				copyFromCurrent,
 				copyFromTag,
-				description:
-					description || `Tag created from git branch "${currentBranch}"`
-			};
+				description: description || `Tag created from git branch "${currentBranch}"`
+			}
 
 			// Call the createTagFromBranch function
 			const result = await createTagFromBranch(
@@ -116,10 +110,10 @@ export async function addTagDirect(args, log, context = {}) {
 					projectRoot
 				},
 				'json' // outputFormat - use 'json' to suppress CLI UI
-			);
+			)
 
 			// Restore normal logging
-			disableSilentMode();
+			disableSilentMode()
 
 			return {
 				success: true,
@@ -130,29 +124,29 @@ export async function addTagDirect(args, log, context = {}) {
 					mappingUpdated: result.mappingUpdated,
 					message: `Successfully created tag "${result.tagName}" from git branch "${result.branchName}"`
 				}
-			};
+			}
 		} else {
 			// Check required parameters for regular tag creation
 			if (!name || typeof name !== 'string') {
-				log.error('Missing required parameter: name');
-				disableSilentMode();
+				log.error('Missing required parameter: name')
+				disableSilentMode()
 				return {
 					success: false,
 					error: {
 						code: 'MISSING_PARAMETER',
 						message: 'Tag name is required and must be a string'
 					}
-				};
+				}
 			}
 
-			log.info(`Creating new tag: ${name}`);
+			log.info(`Creating new tag: ${name}`)
 
 			// Prepare options
 			const options = {
 				copyFromCurrent,
 				copyFromTag,
 				description
-			};
+			}
 
 			// Call the createTag function
 			const result = await createTag(
@@ -165,10 +159,10 @@ export async function addTagDirect(args, log, context = {}) {
 					projectRoot
 				},
 				'json' // outputFormat - use 'json' to suppress CLI UI
-			);
+			)
 
 			// Restore normal logging
-			disableSilentMode();
+			disableSilentMode()
 
 			return {
 				success: true,
@@ -180,19 +174,19 @@ export async function addTagDirect(args, log, context = {}) {
 					description: result.description,
 					message: `Successfully created tag "${result.tagName}"`
 				}
-			};
+			}
 		}
 	} catch (error) {
 		// Make sure to restore normal logging even if there's an error
-		disableSilentMode();
+		disableSilentMode()
 
-		log.error(`Error in addTagDirect: ${error.message}`);
+		log.error(`Error in addTagDirect: ${error.message}`)
 		return {
 			success: false,
 			error: {
 				code: error.code || 'ADD_TAG_ERROR',
 				message: error.message
 			}
-		};
+		}
 	}
 }

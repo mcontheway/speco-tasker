@@ -3,22 +3,12 @@
  * Tool to set the status of a task
  */
 
-import { z } from 'zod';
-import {
-	handleApiResult,
-	createErrorResponse,
-	withNormalizedProjectRoot
-} from './utils.js';
-import {
-	setTaskStatusDirect,
-	nextTaskDirect
-} from '../core/task-master-core.js';
-import {
-	findTasksPath,
-	findComplexityReportPath
-} from '../core/utils/path-utils.js';
-import { TASK_STATUS_OPTIONS } from '../../../src/constants/task-status.js';
-import { resolveTag } from '../../../scripts/modules/utils.js';
+import { z } from 'zod'
+import { resolveTag } from '../../../scripts/modules/utils.js'
+import { TASK_STATUS_OPTIONS } from '../../../src/constants/task-status.js'
+import { nextTaskDirect, setTaskStatusDirect } from '../core/task-master-core.js'
+import { findComplexityReportPath, findTasksPath } from '../core/utils/path-utils.js'
+import { createErrorResponse, handleApiResult, withNormalizedProjectRoot } from './utils.js'
 
 /**
  * Register the setTaskStatus tool with the MCP server
@@ -43,12 +33,8 @@ export function registerSetTaskStatusTool(server) {
 			complexityReport: z
 				.string()
 				.optional()
-				.describe(
-					'Path to the complexity report file (relative to project root or absolute)'
-				),
-			projectRoot: z
-				.string()
-				.describe('The directory of the project. Must be an absolute path.'),
+				.describe('Path to the complexity report file (relative to project root or absolute)'),
+			projectRoot: z.string().describe('The directory of the project. Must be an absolute path.'),
 			tag: z.string().optional().describe('Optional tag context to operate on')
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
@@ -57,26 +43,21 @@ export function registerSetTaskStatusTool(server) {
 					`Setting status of task(s) ${args.id} to: ${args.status} ${
 						args.tag ? `in tag: ${args.tag}` : 'in current tag'
 					}`
-				);
+				)
 				const resolvedTag = resolveTag({
 					projectRoot: args.projectRoot,
 					tag: args.tag
-				});
+				})
 				// Use args.projectRoot directly (guaranteed by withNormalizedProjectRoot)
-				let tasksJsonPath;
+				let tasksJsonPath
 				try {
-					tasksJsonPath = findTasksPath(
-						{ projectRoot: args.projectRoot, file: args.file },
-						log
-					);
+					tasksJsonPath = findTasksPath({ projectRoot: args.projectRoot, file: args.file }, log)
 				} catch (error) {
-					log.error(`Error finding tasks.json: ${error.message}`);
-					return createErrorResponse(
-						`Failed to find tasks.json: ${error.message}`
-					);
+					log.error(`Error finding tasks.json: ${error.message}`)
+					return createErrorResponse(`Failed to find tasks.json: ${error.message}`)
 				}
 
-				let complexityReportPath;
+				let complexityReportPath
 				try {
 					complexityReportPath = findComplexityReportPath(
 						{
@@ -85,9 +66,9 @@ export function registerSetTaskStatusTool(server) {
 							tag: resolvedTag
 						},
 						log
-					);
+					)
 				} catch (error) {
-					log.error(`Error finding complexity report: ${error.message}`);
+					log.error(`Error finding complexity report: ${error.message}`)
 				}
 
 				const result = await setTaskStatusDirect(
@@ -101,16 +82,14 @@ export function registerSetTaskStatusTool(server) {
 					},
 					log,
 					{ session }
-				);
+				)
 
 				if (result.success) {
 					log.info(
 						`Successfully updated status for task(s) ${args.id} to "${args.status}": ${result.data.message}`
-					);
+					)
 				} else {
-					log.error(
-						`Failed to update task status: ${result.error?.message || 'Unknown error'}`
-					);
+					log.error(`Failed to update task status: ${result.error?.message || 'Unknown error'}`)
 				}
 
 				return handleApiResult(
@@ -119,13 +98,11 @@ export function registerSetTaskStatusTool(server) {
 					'Error setting task status',
 					undefined,
 					args.projectRoot
-				);
+				)
 			} catch (error) {
-				log.error(`Error in setTaskStatus tool: ${error.message}`);
-				return createErrorResponse(
-					`Error setting task status: ${error.message}`
-				);
+				log.error(`Error in setTaskStatus tool: ${error.message}`)
+				return createErrorResponse(`Error setting task status: ${error.message}`)
 			}
 		})
-	});
+	})
 }

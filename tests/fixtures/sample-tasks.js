@@ -17,8 +17,7 @@ export const sampleTasks = {
 			status: 'done',
 			dependencies: [],
 			priority: 'high',
-			details:
-				'Create directory structure, initialize package.json, and install dependencies',
+			details: 'Create directory structure, initialize package.json, and install dependencies',
 			testStrategy: 'Verify all directories and files are created correctly'
 		},
 		{
@@ -28,8 +27,7 @@ export const sampleTasks = {
 			status: 'in-progress',
 			dependencies: [1],
 			priority: 'high',
-			details:
-				'Implement user authentication, data processing, and API endpoints',
+			details: 'Implement user authentication, data processing, and API endpoints',
 			testStrategy: 'Write unit tests for all core functions',
 			subtasks: [
 				{
@@ -77,7 +75,7 @@ export const sampleTasks = {
 			]
 		}
 	]
-};
+}
 
 export const emptySampleTasks = {
 	meta: {
@@ -87,4 +85,4 @@ export const emptySampleTasks = {
 		updatedAt: '2023-01-01T00:00:00.000Z'
 	},
 	tasks: []
-};
+}

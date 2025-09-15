@@ -3,14 +3,10 @@
  * Tool to perform AI-powered research queries with project context
  */
 
-import { z } from 'zod';
-import {
-	createErrorResponse,
-	handleApiResult,
-	withNormalizedProjectRoot
-} from './utils.js';
-import { researchDirect } from '../core/task-master-core.js';
-import { resolveTag } from '../../../scripts/modules/utils.js';
+import { z } from 'zod'
+import { resolveTag } from '../../../scripts/modules/utils.js'
+import { researchDirect } from '../core/task-master-core.js'
+import { createErrorResponse, handleApiResult, withNormalizedProjectRoot } from './utils.js'
 
 /**
  * Register the research tool with the MCP server
@@ -26,9 +22,7 @@ export function registerResearchTool(server) {
 			taskIds: z
 				.string()
 				.optional()
-				.describe(
-					'Comma-separated list of task/subtask IDs for context (e.g., "15,16.2,17")'
-				),
+				.describe('Comma-separated list of task/subtask IDs for context (e.g., "15,16.2,17")'),
 			filePaths: z
 				.string()
 				.optional()
@@ -42,9 +36,7 @@ export function registerResearchTool(server) {
 			includeProjectTree: z
 				.boolean()
 				.optional()
-				.describe(
-					'Include project file tree structure in context (default: false)'
-				),
+				.describe('Include project file tree structure in context (default: false)'),
 			detailLevel: z
 				.enum(['low', 'medium', 'high'])
 				.optional()
@@ -58,12 +50,8 @@ export function registerResearchTool(server) {
 			saveToFile: z
 				.boolean()
 				.optional()
-				.describe(
-					'Save research results to .taskmaster/docs/research/ directory (default: false)'
-				),
-			projectRoot: z
-				.string()
-				.describe('The directory of the project. Must be an absolute path.'),
+				.describe('Save research results to .taskmaster/docs/research/ directory (default: false)'),
+			projectRoot: z.string().describe('The directory of the project. Must be an absolute path.'),
 			tag: z.string().optional().describe('Tag context to operate on')
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
@@ -71,10 +59,10 @@ export function registerResearchTool(server) {
 				const resolvedTag = resolveTag({
 					projectRoot: args.projectRoot,
 					tag: args.tag
-				});
+				})
 				log.info(
 					`Starting research with query: "${args.query.substring(0, 100)}${args.query.length > 100 ? '...' : ''}"`
-				);
+				)
 
 				// Call the direct function
 				const result = await researchDirect(
@@ -92,7 +80,7 @@ export function registerResearchTool(server) {
 					},
 					log,
 					{ session }
-				);
+				)
 
 				return handleApiResult(
 					result,
@@ -100,11 +88,11 @@ export function registerResearchTool(server) {
 					'Error performing research',
 					undefined,
 					args.projectRoot
-				);
+				)
 			} catch (error) {
-				log.error(`Error in research tool: ${error.message}`);
-				return createErrorResponse(error.message);
+				log.error(`Error in research tool: ${error.message}`)
+				return createErrorResponse(error.message)
 			}
 		})
-	});
+	})
 }

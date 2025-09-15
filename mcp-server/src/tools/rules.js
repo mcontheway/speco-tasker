@@ -3,14 +3,10 @@
  * Tool to add or remove rules from a project (MCP server)
  */
 
-import { z } from 'zod';
-import {
-	createErrorResponse,
-	handleApiResult,
-	withNormalizedProjectRoot
-} from './utils.js';
-import { rulesDirect } from '../core/direct-functions/rules.js';
-import { RULE_PROFILES } from '../../../src/constants/profiles.js';
+import { z } from 'zod'
+import { RULE_PROFILES } from '../../../src/constants/profiles.js'
+import { rulesDirect } from '../core/direct-functions/rules.js'
+import { createErrorResponse, handleApiResult, withNormalizedProjectRoot } from './utils.js'
 
 /**
  * Register the rules tool with the MCP server
@@ -21,9 +17,7 @@ export function registerRulesTool(server) {
 		name: 'rules',
 		description: 'Add or remove rule profiles from the project.',
 		parameters: z.object({
-			action: z
-				.enum(['add', 'remove'])
-				.describe('Whether to add or remove rule profiles.'),
+			action: z.enum(['add', 'remove']).describe('Whether to add or remove rule profiles.'),
 			profiles: z
 				.array(z.enum(RULE_PROFILES))
 				.min(1)
@@ -32,9 +26,7 @@ export function registerRulesTool(server) {
 				),
 			projectRoot: z
 				.string()
-				.describe(
-					'The root directory of the project. Must be an absolute path.'
-				),
+				.describe('The root directory of the project. Must be an absolute path.'),
 			force: z
 				.boolean()
 				.optional()
@@ -47,13 +39,13 @@ export function registerRulesTool(server) {
 			try {
 				log.info(
 					`[rules tool] Executing action: ${args.action} for profiles: ${args.profiles.join(', ')} in ${args.projectRoot}`
-				);
-				const result = await rulesDirect(args, log, { session });
-				return handleApiResult(result, log);
+				)
+				const result = await rulesDirect(args, log, { session })
+				return handleApiResult(result, log)
 			} catch (error) {
-				log.error(`[rules tool] Error: ${error.message}`);
-				return createErrorResponse(error.message, { details: error.stack });
+				log.error(`[rules tool] Error: ${error.message}`)
+				return createErrorResponse(error.message, { details: error.stack })
 			}
 		})
-	});
+	})
 }

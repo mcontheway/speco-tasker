@@ -1,11 +1,8 @@
 /**
  * Tests for the analyze-task-complexity.js module
  */
-import { jest } from '@jest/globals';
-import {
-	createGetTagAwareFilePathMock,
-	createSlugifyTagForFilePathMock
-} from './setup.js';
+import { jest } from '@jest/globals'
+import { createGetTagAwareFilePathMock, createSlugifyTagForFilePathMock } from './setup.js'
 
 // Mock the dependencies before importing the module under test
 jest.unstable_mockModule('../../../../../scripts/modules/utils.js', () => ({
@@ -43,157 +40,151 @@ jest.unstable_mockModule('../../../../../scripts/modules/utils.js', () => ({
 	setTasksForTag: jest.fn(),
 	getTasksForTag: jest.fn((data, tag) => data[tag]?.tasks || []),
 	traverseDependencies: jest.fn((tasks, taskId, visited) => [])
-}));
+}))
 
-jest.unstable_mockModule(
-	'../../../../../scripts/modules/ai-services-unified.js',
-	() => ({
-		generateObjectService: jest.fn().mockResolvedValue({
-			mainResult: {
-				tasks: []
-			},
-			telemetryData: {
-				timestamp: new Date().toISOString(),
-				userId: '1234567890',
-				commandName: 'analyze-complexity',
-				modelUsed: 'claude-3-5-sonnet',
-				providerName: 'anthropic',
-				inputTokens: 1000,
-				outputTokens: 500,
-				totalTokens: 1500,
-				totalCost: 0.012414,
-				currency: 'USD'
-			}
-		}),
-		generateTextService: jest.fn().mockResolvedValue({
-			mainResult: '[]',
-			telemetryData: {
-				timestamp: new Date().toISOString(),
-				userId: '1234567890',
-				commandName: 'analyze-complexity',
-				modelUsed: 'claude-3-5-sonnet',
-				providerName: 'anthropic',
-				inputTokens: 1000,
-				outputTokens: 500,
-				totalTokens: 1500,
-				totalCost: 0.012414,
-				currency: 'USD'
-			}
-		}),
-		streamTextService: jest.fn().mockResolvedValue({
-			mainResult: async function* () {
-				yield '{"tasks":[';
-				yield '{"id":1,"title":"Test Task","priority":"high"}';
-				yield ']}';
-			},
-			telemetryData: {
-				timestamp: new Date().toISOString(),
-				userId: '1234567890',
-				commandName: 'analyze-complexity',
-				modelUsed: 'claude-3-5-sonnet',
-				providerName: 'anthropic',
-				inputTokens: 1000,
-				outputTokens: 500,
-				totalTokens: 1500,
-				totalCost: 0.012414,
-				currency: 'USD'
-			}
-		}),
-		streamObjectService: jest.fn().mockImplementation(async () => {
-			return {
-				get partialObjectStream() {
-					return (async function* () {
-						yield { tasks: [] };
-						yield { tasks: [{ id: 1, title: 'Test Task', priority: 'high' }] };
-					})();
-				},
-				object: Promise.resolve({
-					tasks: [{ id: 1, title: 'Test Task', priority: 'high' }]
-				})
-			};
-		})
-	})
-);
-
-jest.unstable_mockModule(
-	'../../../../../scripts/modules/config-manager.js',
-	() => ({
-		// Core config access
-		getConfig: jest.fn(() => ({
-			models: { main: { provider: 'anthropic', modelId: 'claude-3-5-sonnet' } },
-			global: { projectName: 'Test Project' }
-		})),
-		writeConfig: jest.fn(() => true),
-		ConfigurationError: class extends Error {},
-		isConfigFilePresent: jest.fn(() => true),
-
-		// Validation
-		validateProvider: jest.fn(() => true),
-		validateProviderModelCombination: jest.fn(() => true),
-		VALID_PROVIDERS: ['anthropic', 'openai', 'perplexity'],
-		MODEL_MAP: {
-			anthropic: [
-				{
-					id: 'claude-3-5-sonnet',
-					cost_per_1m_tokens: { input: 3, output: 15 }
-				}
-			],
-			openai: [{ id: 'gpt-4', cost_per_1m_tokens: { input: 30, output: 60 } }]
+jest.unstable_mockModule('../../../../../scripts/modules/ai-services-unified.js', () => ({
+	generateObjectService: jest.fn().mockResolvedValue({
+		mainResult: {
+			tasks: []
 		},
-		getAvailableModels: jest.fn(() => [
+		telemetryData: {
+			timestamp: new Date().toISOString(),
+			userId: '1234567890',
+			commandName: 'analyze-complexity',
+			modelUsed: 'claude-3-5-sonnet',
+			providerName: 'anthropic',
+			inputTokens: 1000,
+			outputTokens: 500,
+			totalTokens: 1500,
+			totalCost: 0.012414,
+			currency: 'USD'
+		}
+	}),
+	generateTextService: jest.fn().mockResolvedValue({
+		mainResult: '[]',
+		telemetryData: {
+			timestamp: new Date().toISOString(),
+			userId: '1234567890',
+			commandName: 'analyze-complexity',
+			modelUsed: 'claude-3-5-sonnet',
+			providerName: 'anthropic',
+			inputTokens: 1000,
+			outputTokens: 500,
+			totalTokens: 1500,
+			totalCost: 0.012414,
+			currency: 'USD'
+		}
+	}),
+	streamTextService: jest.fn().mockResolvedValue({
+		mainResult: async function* () {
+			yield '{"tasks":['
+			yield '{"id":1,"title":"Test Task","priority":"high"}'
+			yield ']}'
+		},
+		telemetryData: {
+			timestamp: new Date().toISOString(),
+			userId: '1234567890',
+			commandName: 'analyze-complexity',
+			modelUsed: 'claude-3-5-sonnet',
+			providerName: 'anthropic',
+			inputTokens: 1000,
+			outputTokens: 500,
+			totalTokens: 1500,
+			totalCost: 0.012414,
+			currency: 'USD'
+		}
+	}),
+	streamObjectService: jest.fn().mockImplementation(async () => {
+		return {
+			get partialObjectStream() {
+				return (async function* () {
+					yield { tasks: [] }
+					yield { tasks: [{ id: 1, title: 'Test Task', priority: 'high' }] }
+				})()
+			},
+			object: Promise.resolve({
+				tasks: [{ id: 1, title: 'Test Task', priority: 'high' }]
+			})
+		}
+	})
+}))
+
+jest.unstable_mockModule('../../../../../scripts/modules/config-manager.js', () => ({
+	// Core config access
+	getConfig: jest.fn(() => ({
+		models: { main: { provider: 'anthropic', modelId: 'claude-3-5-sonnet' } },
+		global: { projectName: 'Test Project' }
+	})),
+	writeConfig: jest.fn(() => true),
+	ConfigurationError: class extends Error {},
+	isConfigFilePresent: jest.fn(() => true),
+
+	// Validation
+	validateProvider: jest.fn(() => true),
+	validateProviderModelCombination: jest.fn(() => true),
+	VALID_PROVIDERS: ['anthropic', 'openai', 'perplexity'],
+	MODEL_MAP: {
+		anthropic: [
 			{
 				id: 'claude-3-5-sonnet',
-				name: 'Claude 3.5 Sonnet',
-				provider: 'anthropic'
-			},
-			{ id: 'gpt-4', name: 'GPT-4', provider: 'openai' }
-		]),
+				cost_per_1m_tokens: { input: 3, output: 15 }
+			}
+		],
+		openai: [{ id: 'gpt-4', cost_per_1m_tokens: { input: 30, output: 60 } }]
+	},
+	getAvailableModels: jest.fn(() => [
+		{
+			id: 'claude-3-5-sonnet',
+			name: 'Claude 3.5 Sonnet',
+			provider: 'anthropic'
+		},
+		{ id: 'gpt-4', name: 'GPT-4', provider: 'openai' }
+	]),
 
-		// Role-specific getters
-		getMainProvider: jest.fn(() => 'anthropic'),
-		getMainModelId: jest.fn(() => 'claude-3-5-sonnet'),
-		getMainMaxTokens: jest.fn(() => 4000),
-		getMainTemperature: jest.fn(() => 0.7),
-		getResearchProvider: jest.fn(() => 'perplexity'),
-		getResearchModelId: jest.fn(() => 'sonar-pro'),
-		getResearchMaxTokens: jest.fn(() => 8700),
-		getResearchTemperature: jest.fn(() => 0.1),
-		getFallbackProvider: jest.fn(() => 'anthropic'),
-		getFallbackModelId: jest.fn(() => 'claude-3-5-sonnet'),
-		getFallbackMaxTokens: jest.fn(() => 4000),
-		getFallbackTemperature: jest.fn(() => 0.7),
-		getBaseUrlForRole: jest.fn(() => undefined),
+	// Role-specific getters
+	getMainProvider: jest.fn(() => 'anthropic'),
+	getMainModelId: jest.fn(() => 'claude-3-5-sonnet'),
+	getMainMaxTokens: jest.fn(() => 4000),
+	getMainTemperature: jest.fn(() => 0.7),
+	getResearchProvider: jest.fn(() => 'perplexity'),
+	getResearchModelId: jest.fn(() => 'sonar-pro'),
+	getResearchMaxTokens: jest.fn(() => 8700),
+	getResearchTemperature: jest.fn(() => 0.1),
+	getFallbackProvider: jest.fn(() => 'anthropic'),
+	getFallbackModelId: jest.fn(() => 'claude-3-5-sonnet'),
+	getFallbackMaxTokens: jest.fn(() => 4000),
+	getFallbackTemperature: jest.fn(() => 0.7),
+	getBaseUrlForRole: jest.fn(() => undefined),
 
-		// Global setting getters
-		getLogLevel: jest.fn(() => 'info'),
-		getDebugFlag: jest.fn(() => false),
-		getDefaultNumTasks: jest.fn(() => 10),
-		getDefaultSubtasks: jest.fn(() => 5),
-		getDefaultPriority: jest.fn(() => 'medium'),
-		getProjectName: jest.fn(() => 'Test Project'),
-		getOllamaBaseURL: jest.fn(() => 'http://localhost:11434/api'),
-		getAzureBaseURL: jest.fn(() => undefined),
-		getBedrockBaseURL: jest.fn(() => undefined),
-		getParametersForRole: jest.fn(() => ({
-			maxTokens: 4000,
-			temperature: 0.7
-		})),
-		getUserId: jest.fn(() => '1234567890'),
+	// Global setting getters
+	getLogLevel: jest.fn(() => 'info'),
+	getDebugFlag: jest.fn(() => false),
+	getDefaultNumTasks: jest.fn(() => 10),
+	getDefaultSubtasks: jest.fn(() => 5),
+	getDefaultPriority: jest.fn(() => 'medium'),
+	getProjectName: jest.fn(() => 'Test Project'),
+	getOllamaBaseURL: jest.fn(() => 'http://localhost:11434/api'),
+	getAzureBaseURL: jest.fn(() => undefined),
+	getBedrockBaseURL: jest.fn(() => undefined),
+	getParametersForRole: jest.fn(() => ({
+		maxTokens: 4000,
+		temperature: 0.7
+	})),
+	getUserId: jest.fn(() => '1234567890'),
 
-		// API Key Checkers
-		isApiKeySet: jest.fn(() => true),
-		getMcpApiKeyStatus: jest.fn(() => true),
+	// API Key Checkers
+	isApiKeySet: jest.fn(() => true),
+	getMcpApiKeyStatus: jest.fn(() => true),
 
-		// Additional functions
-		getAllProviders: jest.fn(() => ['anthropic', 'openai', 'perplexity']),
-		getVertexProjectId: jest.fn(() => undefined),
-		getVertexLocation: jest.fn(() => undefined),
-		hasCodebaseAnalysis: jest.fn(() => false)
-	})
-);
+	// Additional functions
+	getAllProviders: jest.fn(() => ['anthropic', 'openai', 'perplexity']),
+	getVertexProjectId: jest.fn(() => undefined),
+	getVertexLocation: jest.fn(() => undefined),
+	hasCodebaseAnalysis: jest.fn(() => false)
+}))
 
 // Mock fs module
-const mockWriteFileSync = jest.fn();
+const mockWriteFileSync = jest.fn()
 jest.unstable_mockModule('fs', () => ({
 	default: {
 		existsSync: jest.fn(() => false),
@@ -203,34 +194,32 @@ jest.unstable_mockModule('fs', () => ({
 	existsSync: jest.fn(() => false),
 	readFileSync: jest.fn(),
 	writeFileSync: mockWriteFileSync
-}));
+}))
 
-jest.unstable_mockModule(
-	'../../../../../scripts/modules/prompt-manager.js',
-	() => ({
-		getPromptManager: jest.fn().mockReturnValue({
-			loadPrompt: jest.fn().mockResolvedValue({
-				systemPrompt: 'Mocked system prompt',
-				userPrompt: 'Mocked user prompt'
-			})
+jest.unstable_mockModule('../../../../../scripts/modules/prompt-manager.js', () => ({
+	getPromptManager: jest.fn().mockReturnValue({
+		loadPrompt: jest.fn().mockResolvedValue({
+			systemPrompt: 'Mocked system prompt',
+			userPrompt: 'Mocked user prompt'
 		})
 	})
-);
+}))
 
 // Import the mocked modules
 const { readJSON, writeJSON, log, CONFIG, findTaskById } = await import(
 	'../../../../../scripts/modules/utils.js'
-);
+)
 
-const { generateObjectService, generateTextService, streamTextService } =
-	await import('../../../../../scripts/modules/ai-services-unified.js');
+const { generateObjectService, generateTextService, streamTextService } = await import(
+	'../../../../../scripts/modules/ai-services-unified.js'
+)
 
-const fs = await import('fs');
+const fs = await import('fs')
 
 // Import the module under test
 const { default: analyzeTaskComplexity } = await import(
 	'../../../../../scripts/modules/task-manager/analyze-task-complexity.js'
-);
+)
 
 describe('analyzeTaskComplexity', () => {
 	// Sample response structure (simplified for these tests)
@@ -254,7 +243,7 @@ describe('analyzeTaskComplexity', () => {
 			totalCost: 0.012414,
 			currency: 'USD'
 		}
-	};
+	}
 
 	const sampleTasks = {
 		master: {
@@ -285,10 +274,10 @@ describe('analyzeTaskComplexity', () => {
 				}
 			]
 		}
-	};
+	}
 
 	beforeEach(() => {
-		jest.clearAllMocks();
+		jest.clearAllMocks()
 
 		// Default mock implementations - readJSON should return the resolved view with tasks at top level
 		readJSON.mockImplementation((tasksPath, projectRoot, tag) => {
@@ -296,17 +285,17 @@ describe('analyzeTaskComplexity', () => {
 				...sampleTasks.master,
 				tag: tag || 'master',
 				_rawTaggedData: sampleTasks
-			};
-		});
+			}
+		})
 
 		// Mock findTaskById to return the expected structure
 		findTaskById.mockImplementation((tasks, taskId) => {
-			const task = tasks?.find((t) => t.id === parseInt(taskId));
-			return { task: task || null, originalSubtaskCount: null };
-		});
+			const task = tasks?.find((t) => t.id === parseInt(taskId))
+			return { task: task || null, originalSubtaskCount: null }
+		})
 
-		generateTextService.mockResolvedValue(sampleApiResponse);
-	});
+		generateTextService.mockResolvedValue(sampleApiResponse)
+	})
 
 	test('should call generateTextService with the correct parameters', async () => {
 		// Arrange
@@ -316,7 +305,7 @@ describe('analyzeTaskComplexity', () => {
 			threshold: '5',
 			research: false,
 			projectRoot: '/mock/project/root'
-		};
+		}
 
 		// Act
 		await analyzeTaskComplexity(options, {
@@ -328,21 +317,17 @@ describe('analyzeTaskComplexity', () => {
 				debug: jest.fn(),
 				success: jest.fn()
 			}
-		});
+		})
 
 		// Assert
-		expect(readJSON).toHaveBeenCalledWith(
-			'tasks/tasks.json',
-			'/mock/project/root',
-			undefined
-		);
-		expect(generateTextService).toHaveBeenCalledWith(expect.any(Object));
+		expect(readJSON).toHaveBeenCalledWith('tasks/tasks.json', '/mock/project/root', undefined)
+		expect(generateTextService).toHaveBeenCalledWith(expect.any(Object))
 		expect(mockWriteFileSync).toHaveBeenCalledWith(
 			expect.stringContaining('task-complexity-report.json'),
 			expect.stringContaining('"thresholdScore": 5'),
 			'utf8'
-		);
-	});
+		)
+	})
 
 	test('should use research flag to determine which AI service to use', async () => {
 		// Arrange
@@ -352,7 +337,7 @@ describe('analyzeTaskComplexity', () => {
 			threshold: '5',
 			research: true,
 			projectRoot: '/mock/project/root'
-		};
+		}
 
 		// Act
 		await analyzeTaskComplexity(researchOptions, {
@@ -364,15 +349,15 @@ describe('analyzeTaskComplexity', () => {
 				debug: jest.fn(),
 				success: jest.fn()
 			}
-		});
+		})
 
 		// Assert
 		expect(generateTextService).toHaveBeenCalledWith(
 			expect.objectContaining({
 				role: 'research' // This should be present when research is true
 			})
-		);
-	});
+		)
+	})
 
 	test('should handle different threshold parameter types correctly', async () => {
 		// Test with string threshold
@@ -381,7 +366,7 @@ describe('analyzeTaskComplexity', () => {
 			output: 'scripts/task-complexity-report.json',
 			threshold: '7',
 			projectRoot: '/mock/project/root'
-		};
+		}
 
 		await analyzeTaskComplexity(options, {
 			projectRoot: '/mock/project/root',
@@ -392,16 +377,16 @@ describe('analyzeTaskComplexity', () => {
 				debug: jest.fn(),
 				success: jest.fn()
 			}
-		});
+		})
 
 		expect(mockWriteFileSync).toHaveBeenCalledWith(
 			expect.stringContaining('task-complexity-report.json'),
 			expect.stringContaining('"thresholdScore": 7'),
 			'utf8'
-		);
+		)
 
 		// Reset mocks
-		jest.clearAllMocks();
+		jest.clearAllMocks()
 
 		// Test with number threshold
 		options = {
@@ -409,7 +394,7 @@ describe('analyzeTaskComplexity', () => {
 			output: 'scripts/task-complexity-report.json',
 			threshold: 8,
 			projectRoot: '/mock/project/root'
-		};
+		}
 
 		await analyzeTaskComplexity(options, {
 			projectRoot: '/mock/project/root',
@@ -420,14 +405,14 @@ describe('analyzeTaskComplexity', () => {
 				debug: jest.fn(),
 				success: jest.fn()
 			}
-		});
+		})
 
 		expect(mockWriteFileSync).toHaveBeenCalledWith(
 			expect.stringContaining('task-complexity-report.json'),
 			expect.stringContaining('"thresholdScore": 8'),
 			'utf8'
-		);
-	});
+		)
+	})
 
 	test('should filter out completed tasks from analysis', async () => {
 		// Arrange
@@ -436,7 +421,7 @@ describe('analyzeTaskComplexity', () => {
 			output: 'scripts/task-complexity-report.json',
 			threshold: '5',
 			projectRoot: '/mock/project/root'
-		};
+		}
 
 		// Act
 		await analyzeTaskComplexity(options, {
@@ -448,7 +433,7 @@ describe('analyzeTaskComplexity', () => {
 				debug: jest.fn(),
 				success: jest.fn()
 			}
-		});
+		})
 
 		// Assert
 		// Check if the prompt sent to AI doesn't include the completed task (id: 3)
@@ -456,8 +441,8 @@ describe('analyzeTaskComplexity', () => {
 			expect.objectContaining({
 				prompt: expect.not.stringContaining('"id": 3')
 			})
-		);
-	});
+		)
+	})
 
 	test('should handle API errors gracefully', async () => {
 		// Arrange
@@ -466,10 +451,10 @@ describe('analyzeTaskComplexity', () => {
 			output: 'scripts/task-complexity-report.json',
 			threshold: '5',
 			projectRoot: '/mock/project/root'
-		};
+		}
 
 		// Force API error
-		generateTextService.mockRejectedValueOnce(new Error('API Error'));
+		generateTextService.mockRejectedValueOnce(new Error('API Error'))
 
 		const mockMcpLog = {
 			info: jest.fn(),
@@ -477,7 +462,7 @@ describe('analyzeTaskComplexity', () => {
 			error: jest.fn(),
 			debug: jest.fn(),
 			success: jest.fn()
-		};
+		}
 
 		// Act & Assert
 		await expect(
@@ -485,11 +470,9 @@ describe('analyzeTaskComplexity', () => {
 				projectRoot: '/mock/project/root',
 				mcpLog: mockMcpLog
 			})
-		).rejects.toThrow('API Error');
+		).rejects.toThrow('API Error')
 
 		// Check that the error was logged via mcpLog
-		expect(mockMcpLog.error).toHaveBeenCalledWith(
-			expect.stringContaining('API Error')
-		);
-	});
-});
+		expect(mockMcpLog.error).toHaveBeenCalledWith(expect.stringContaining('API Error'))
+	})
+})

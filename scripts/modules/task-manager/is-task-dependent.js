@@ -9,20 +9,20 @@
 function isTaskDependentOn(allTasks, task, targetTaskId) {
 	// If the task is a subtask, check if its parent is the target
 	if (task.parentTaskId === targetTaskId) {
-		return true;
+		return true
 	}
 
 	// Check direct dependencies
 	if (task.dependencies && task.dependencies.includes(targetTaskId)) {
-		return true;
+		return true
 	}
 
 	// Check dependencies of dependencies (recursive)
 	if (task.dependencies) {
 		for (const depId of task.dependencies) {
-			const depTask = allTasks.find((t) => t.id === depId);
+			const depTask = allTasks.find((t) => t.id === depId)
 			if (depTask && isTaskDependentOn(allTasks, depTask, targetTaskId)) {
-				return true;
+				return true
 			}
 		}
 	}
@@ -31,12 +31,12 @@ function isTaskDependentOn(allTasks, task, targetTaskId) {
 	if (task.subtasks) {
 		for (const subtask of task.subtasks) {
 			if (isTaskDependentOn(allTasks, subtask, targetTaskId)) {
-				return true;
+				return true
 			}
 		}
 	}
 
-	return false;
+	return false
 }
 
-export default isTaskDependentOn;
+export default isTaskDependentOn

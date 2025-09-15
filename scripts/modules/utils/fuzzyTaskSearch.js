@@ -3,7 +3,7 @@
  * Reusable fuzzy search utility for finding relevant tasks based on semantic similarity
  */
 
-import Fuse from 'fuse.js';
+import Fuse from 'fuse.js'
 
 /**
  * Configuration for different search contexts
@@ -39,7 +39,7 @@ const SEARCH_CONFIGS = {
 			{ name: 'dependencyTitles', weight: 0.5 }
 		]
 	}
-};
+}
 
 /**
  * Purpose categories for pattern-based task matching
@@ -59,7 +59,7 @@ const PURPOSE_CATEGORIES = [
 	{ pattern: /(deploy|build|release)/i, label: 'Deployment' },
 	{ pattern: /(security|auth|login|user)/i, label: 'Security' },
 	{ pattern: /.*/, label: 'Other' }
-];
+]
 
 /**
  * Relevance score thresholds
@@ -68,16 +68,16 @@ const RELEVANCE_THRESHOLDS = {
 	high: 0.25,
 	medium: 0.4,
 	low: 0.6
-};
+}
 
 /**
  * Fuzzy search utility class for finding relevant tasks
  */
 export class FuzzyTaskSearch {
 	constructor(tasks, searchType = 'default') {
-		this.tasks = tasks;
-		this.config = SEARCH_CONFIGS[searchType] || SEARCH_CONFIGS.default;
-		this.searchableTasks = this._prepareSearchableTasks(tasks);
+		this.tasks = tasks
+		this.config = SEARCH_CONFIGS[searchType] || SEARCH_CONFIGS.default
+		this.searchableTasks = this._prepareSearchableTasks(tasks)
 		this.fuse = new Fuse(this.searchableTasks, {
 			includeScore: true,
 			threshold: this.config.threshold,
@@ -85,7 +85,7 @@ export class FuzzyTaskSearch {
 			shouldSort: true,
 			useExtendedSearch: true,
 			limit: this.config.limit
-		});
+		})
 	}
 
 	/**
@@ -100,18 +100,18 @@ export class FuzzyTaskSearch {
 				task.dependencies?.length > 0
 					? task.dependencies
 							.map((depId) => {
-								const depTask = tasks.find((t) => t.id === depId);
-								return depTask ? depTask.title : '';
+								const depTask = tasks.find((t) => t.id === depId)
+								return depTask ? depTask.title : ''
 							})
 							.filter((title) => title)
 							.join(' ')
-					: '';
+					: ''
 
 			return {
 				...task,
 				dependencyTitles
-			};
-		});
+			}
+		})
 	}
 
 	/**
@@ -124,7 +124,7 @@ export class FuzzyTaskSearch {
 			.toLowerCase()
 			.replace(/[^\w\s-]/g, ' ') // Replace non-alphanumeric chars with spaces
 			.split(/\s+/)
-			.filter((word) => word.length > 3); // Words at least 4 chars
+			.filter((word) => word.length > 3) // Words at least 4 chars
 	}
 
 	/**
@@ -137,73 +137,63 @@ export class FuzzyTaskSearch {
 	 * @returns {Object} Search results with relevance breakdown
 	 */
 	findRelevantTasks(prompt, options = {}) {
-		const {
-			maxResults = 8,
-			includeRecent = true,
-			includeCategoryMatches = true
-		} = options;
+		const { maxResults = 8, includeRecent = true, includeCategoryMatches = true } = options
 
 		// Extract significant words from prompt
-		const promptWords = this._extractPromptWords(prompt);
+		const promptWords = this._extractPromptWords(prompt)
 
 		// Perform fuzzy search with full prompt
-		const fuzzyResults = this.fuse.search(prompt);
+		const fuzzyResults = this.fuse.search(prompt)
 
 		// Also search for each significant word to catch different aspects
-		let wordResults = [];
+		const wordResults = []
 		for (const word of promptWords) {
 			if (word.length > 5) {
 				// Only use significant words
-				const results = this.fuse.search(word);
+				const results = this.fuse.search(word)
 				if (results.length > 0) {
-					wordResults.push(...results);
+					wordResults.push(...results)
 				}
 			}
 		}
 
 		// Merge and deduplicate results
-		const mergedResults = [...fuzzyResults];
+		const mergedResults = [...fuzzyResults]
 
 		// Add word results that aren't already in fuzzyResults
 		for (const wordResult of wordResults) {
 			if (!mergedResults.some((r) => r.item.id === wordResult.item.id)) {
-				mergedResults.push(wordResult);
+				mergedResults.push(wordResult)
 			}
 		}
 
 		// Group search results by relevance
 		const highRelevance = mergedResults
 			.filter((result) => result.score < RELEVANCE_THRESHOLDS.high)
-			.map((result) => ({ ...result.item, score: result.score }));
+			.map((result) => ({ ...result.item, score: result.score }))
 
 		const mediumRelevance = mergedResults
 			.filter(
 				(result) =>
-					result.score >= RELEVANCE_THRESHOLDS.high &&
-					result.score < RELEVANCE_THRESHOLDS.medium
+					result.score >= RELEVANCE_THRESHOLDS.high && result.score < RELEVANCE_THRESHOLDS.medium
 			)
-			.map((result) => ({ ...result.item, score: result.score }));
+			.map((result) => ({ ...result.item, score: result.score }))
 
 		const lowRelevance = mergedResults
 			.filter(
 				(result) =>
-					result.score >= RELEVANCE_THRESHOLDS.medium &&
-					result.score < RELEVANCE_THRESHOLDS.low
+					result.score >= RELEVANCE_THRESHOLDS.medium && result.score < RELEVANCE_THRESHOLDS.low
 			)
-			.map((result) => ({ ...result.item, score: result.score }));
+			.map((result) => ({ ...result.item, score: result.score }))
 
 		// Get recent tasks (newest first) if requested
-		const recentTasks = includeRecent
-			? [...this.tasks].sort((a, b) => b.id - a.id).slice(0, 5)
-			: [];
+		const recentTasks = includeRecent ? [...this.tasks].sort((a, b) => b.id - a.id).slice(0, 5) : []
 
 		// Find category-based matches if requested
-		let categoryTasks = [];
-		let promptCategory = null;
+		let categoryTasks = []
+		let promptCategory = null
 		if (includeCategoryMatches) {
-			promptCategory = PURPOSE_CATEGORIES.find((cat) =>
-				cat.pattern.test(prompt)
-			);
+			promptCategory = PURPOSE_CATEGORIES.find((cat) => cat.pattern.test(prompt))
 			categoryTasks = promptCategory
 				? this.tasks
 						.filter(
@@ -213,42 +203,42 @@ export class FuzzyTaskSearch {
 								(t.details && promptCategory.pattern.test(t.details))
 						)
 						.slice(0, 3)
-				: [];
+				: []
 		}
 
 		// Combine all relevant tasks, prioritizing by relevance
-		const allRelevantTasks = [...highRelevance];
+		const allRelevantTasks = [...highRelevance]
 
 		// Add medium relevance if not already included
 		for (const task of mediumRelevance) {
 			if (!allRelevantTasks.some((t) => t.id === task.id)) {
-				allRelevantTasks.push(task);
+				allRelevantTasks.push(task)
 			}
 		}
 
 		// Add low relevance if not already included
 		for (const task of lowRelevance) {
 			if (!allRelevantTasks.some((t) => t.id === task.id)) {
-				allRelevantTasks.push(task);
+				allRelevantTasks.push(task)
 			}
 		}
 
 		// Add category tasks if not already included
 		for (const task of categoryTasks) {
 			if (!allRelevantTasks.some((t) => t.id === task.id)) {
-				allRelevantTasks.push(task);
+				allRelevantTasks.push(task)
 			}
 		}
 
 		// Add recent tasks if not already included
 		for (const task of recentTasks) {
 			if (!allRelevantTasks.some((t) => t.id === task.id)) {
-				allRelevantTasks.push(task);
+				allRelevantTasks.push(task)
 			}
 		}
 
 		// Get top N results for final output
-		const finalResults = allRelevantTasks.slice(0, maxResults);
+		const finalResults = allRelevantTasks.slice(0, maxResults)
 
 		return {
 			results: finalResults,
@@ -267,7 +257,7 @@ export class FuzzyTaskSearch {
 				wordMatches: wordResults.length,
 				finalCount: finalResults.length
 			}
-		};
+		}
 	}
 
 	/**
@@ -276,7 +266,7 @@ export class FuzzyTaskSearch {
 	 * @returns {Array<string>} Array of task ID strings
 	 */
 	getTaskIds(searchResults) {
-		return searchResults.results.map((task) => task.id.toString());
+		return searchResults.results.map((task) => task.id.toString())
 	}
 
 	/**
@@ -286,19 +276,19 @@ export class FuzzyTaskSearch {
 	 * @returns {Array<string>} Array of task and subtask ID strings
 	 */
 	getTaskIdsWithSubtasks(searchResults, includeSubtasks = false) {
-		const taskIds = [];
+		const taskIds = []
 
 		for (const task of searchResults.results) {
-			taskIds.push(task.id.toString());
+			taskIds.push(task.id.toString())
 
 			if (includeSubtasks && task.subtasks && task.subtasks.length > 0) {
 				for (const subtask of task.subtasks) {
-					taskIds.push(`${task.id}.${subtask.id}`);
+					taskIds.push(`${task.id}.${subtask.id}`)
 				}
 			}
 		}
 
-		return taskIds;
+		return taskIds
 	}
 
 	/**
@@ -308,32 +298,32 @@ export class FuzzyTaskSearch {
 	 * @returns {string} Formatted search results summary
 	 */
 	formatSearchSummary(searchResults, options = {}) {
-		const { includeScores = false, includeBreakdown = false } = options;
-		const { results, breakdown, metadata } = searchResults;
+		const { includeScores = false, includeBreakdown = false } = options
+		const { results, breakdown, metadata } = searchResults
 
-		let summary = `Found ${results.length} relevant tasks from ${metadata.totalSearched} total tasks`;
+		let summary = `Found ${results.length} relevant tasks from ${metadata.totalSearched} total tasks`
 
 		if (includeBreakdown && breakdown) {
-			const parts = [];
+			const parts = []
 			if (breakdown.highRelevance.length > 0)
-				parts.push(`${breakdown.highRelevance.length} high relevance`);
+				parts.push(`${breakdown.highRelevance.length} high relevance`)
 			if (breakdown.mediumRelevance.length > 0)
-				parts.push(`${breakdown.mediumRelevance.length} medium relevance`);
+				parts.push(`${breakdown.mediumRelevance.length} medium relevance`)
 			if (breakdown.lowRelevance.length > 0)
-				parts.push(`${breakdown.lowRelevance.length} low relevance`);
+				parts.push(`${breakdown.lowRelevance.length} low relevance`)
 			if (breakdown.categoryTasks.length > 0)
-				parts.push(`${breakdown.categoryTasks.length} category matches`);
+				parts.push(`${breakdown.categoryTasks.length} category matches`)
 
 			if (parts.length > 0) {
-				summary += ` (${parts.join(', ')})`;
+				summary += ` (${parts.join(', ')})`
 			}
 
 			if (breakdown.promptCategory) {
-				summary += `\nCategory detected: ${breakdown.promptCategory.label}`;
+				summary += `\nCategory detected: ${breakdown.promptCategory.label}`
 			}
 		}
 
-		return summary;
+		return summary
 	}
 }
 
@@ -344,7 +334,7 @@ export class FuzzyTaskSearch {
  * @returns {FuzzyTaskSearch} Fuzzy search instance
  */
 export function createFuzzyTaskSearch(tasks, searchType = 'default') {
-	return new FuzzyTaskSearch(tasks, searchType);
+	return new FuzzyTaskSearch(tasks, searchType)
 }
 
 /**
@@ -355,18 +345,14 @@ export function createFuzzyTaskSearch(tasks, searchType = 'default') {
  * @returns {Array<string>} Array of relevant task ID strings
  */
 export function findRelevantTaskIds(tasks, prompt, options = {}) {
-	const {
-		searchType = 'default',
-		maxResults = 8,
-		includeSubtasks = false
-	} = options;
+	const { searchType = 'default', maxResults = 8, includeSubtasks = false } = options
 
-	const fuzzySearch = new FuzzyTaskSearch(tasks, searchType);
-	const results = fuzzySearch.findRelevantTasks(prompt, { maxResults });
+	const fuzzySearch = new FuzzyTaskSearch(tasks, searchType)
+	const results = fuzzySearch.findRelevantTasks(prompt, { maxResults })
 
 	return includeSubtasks
 		? fuzzySearch.getTaskIdsWithSubtasks(results, true)
-		: fuzzySearch.getTaskIds(results);
+		: fuzzySearch.getTaskIds(results)
 }
 
-export default FuzzyTaskSearch;
+export default FuzzyTaskSearch

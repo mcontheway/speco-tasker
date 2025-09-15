@@ -1,4 +1,4 @@
-import { StreamingError, STREAMING_ERROR_CODES } from './stream-parser.js';
+import { STREAMING_ERROR_CODES, StreamingError } from './stream-parser.js'
 
 /**
  * Utility class for managing timeouts in async operations
@@ -21,7 +21,7 @@ export class TimeoutManager {
 	 * );
 	 */
 	static async withTimeout(promise, timeoutMs, operationName = 'Operation') {
-		let timeoutHandle;
+		let timeoutHandle
 
 		const timeoutPromise = new Promise((_, reject) => {
 			timeoutHandle = setTimeout(() => {
@@ -30,20 +30,20 @@ export class TimeoutManager {
 						`${operationName} timed out after ${timeoutMs / 1000} seconds`,
 						STREAMING_ERROR_CODES.STREAM_PROCESSING_FAILED
 					)
-				);
-			}, timeoutMs);
-		});
+				)
+			}, timeoutMs)
+		})
 
 		try {
 			// Race between the actual promise and the timeout
-			const result = await Promise.race([promise, timeoutPromise]);
+			const result = await Promise.race([promise, timeoutPromise])
 			// Clear timeout if promise resolved first
-			clearTimeout(timeoutHandle);
-			return result;
+			clearTimeout(timeoutHandle)
+			return result
 		} catch (error) {
 			// Always clear timeout on error
-			clearTimeout(timeoutHandle);
-			throw error;
+			clearTimeout(timeoutHandle)
+			throw error
 		}
 	}
 
@@ -64,22 +64,22 @@ export class TimeoutManager {
 	 * );
 	 */
 	static async withSoftTimeout(promise, timeoutMs, defaultValue = undefined) {
-		let timeoutHandle;
+		let timeoutHandle
 
 		const timeoutPromise = new Promise((resolve) => {
 			timeoutHandle = setTimeout(() => {
-				resolve(defaultValue);
-			}, timeoutMs);
-		});
+				resolve(defaultValue)
+			}, timeoutMs)
+		})
 
 		try {
-			const result = await Promise.race([promise, timeoutPromise]);
-			clearTimeout(timeoutHandle);
-			return result;
+			const result = await Promise.race([promise, timeoutPromise])
+			clearTimeout(timeoutHandle)
+			return result
 		} catch (error) {
 			// On error, clear timeout and return default value
-			clearTimeout(timeoutHandle);
-			return defaultValue;
+			clearTimeout(timeoutHandle)
+			return defaultValue
 		}
 	}
 
@@ -102,16 +102,14 @@ export class TimeoutManager {
 			operationName,
 
 			async wrap(promise, specificName = null) {
-				const fullName = specificName
-					? `${operationName} - ${specificName}`
-					: operationName;
-				return TimeoutManager.withTimeout(promise, timeoutMs, fullName);
+				const fullName = specificName ? `${operationName} - ${specificName}` : operationName
+				return TimeoutManager.withTimeout(promise, timeoutMs, fullName)
 			},
 
 			async wrapSoft(promise, defaultValue = undefined) {
-				return TimeoutManager.withSoftTimeout(promise, timeoutMs, defaultValue);
+				return TimeoutManager.withSoftTimeout(promise, timeoutMs, defaultValue)
 			}
-		};
+		}
 	}
 
 	/**
@@ -125,7 +123,7 @@ export class TimeoutManager {
 			error instanceof StreamingError &&
 			error.code === STREAMING_ERROR_CODES.STREAM_PROCESSING_FAILED &&
 			error.message.includes('timed out')
-		);
+		)
 	}
 }
 
@@ -134,46 +132,46 @@ export class TimeoutManager {
  */
 export class Duration {
 	constructor(value, unit = 'ms') {
-		this.milliseconds = this._toMilliseconds(value, unit);
+		this.milliseconds = this._toMilliseconds(value, unit)
 	}
 
 	static milliseconds(value) {
-		return new Duration(value, 'ms');
+		return new Duration(value, 'ms')
 	}
 
 	static seconds(value) {
-		return new Duration(value, 's');
+		return new Duration(value, 's')
 	}
 
 	static minutes(value) {
-		return new Duration(value, 'm');
+		return new Duration(value, 'm')
 	}
 
 	static hours(value) {
-		return new Duration(value, 'h');
+		return new Duration(value, 'h')
 	}
 
 	get seconds() {
-		return this.milliseconds / 1000;
+		return this.milliseconds / 1000
 	}
 
 	get minutes() {
-		return this.milliseconds / 60000;
+		return this.milliseconds / 60000
 	}
 
 	get hours() {
-		return this.milliseconds / 3600000;
+		return this.milliseconds / 3600000
 	}
 
 	toString() {
 		if (this.milliseconds < 1000) {
-			return `${this.milliseconds}ms`;
+			return `${this.milliseconds}ms`
 		} else if (this.milliseconds < 60000) {
-			return `${this.seconds}s`;
+			return `${this.seconds}s`
 		} else if (this.milliseconds < 3600000) {
-			return `${Math.floor(this.minutes)}m ${Math.floor(this.seconds % 60)}s`;
+			return `${Math.floor(this.minutes)}m ${Math.floor(this.seconds % 60)}s`
 		} else {
-			return `${Math.floor(this.hours)}h ${Math.floor(this.minutes % 60)}m`;
+			return `${Math.floor(this.hours)}h ${Math.floor(this.minutes % 60)}m`
 		}
 	}
 
@@ -183,7 +181,7 @@ export class Duration {
 			s: 1000,
 			m: 60000,
 			h: 3600000
-		};
-		return value * (conversions[unit] || 1);
+		}
+		return value * (conversions[unit] || 1)
 	}
 }

@@ -23,54 +23,51 @@
 // This file serves as the main entry point for the package
 // The primary functionality is provided through the CLI commands
 
-import { fileURLToPath } from 'url';
-import { dirname, resolve } from 'path';
-import { createRequire } from 'module';
-import { spawn } from 'child_process';
-import { Command } from 'commander';
+import { spawn } from 'child_process'
+import { createRequire } from 'module'
+import { dirname, resolve } from 'path'
+import { fileURLToPath } from 'url'
+import { Command } from 'commander'
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const require = createRequire(import.meta.url);
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+const require = createRequire(import.meta.url)
 
 // Get package information
-const packageJson = require('./package.json');
+const packageJson = require('./package.json')
 
 // Export the path to the dev.js script for programmatic usage
-export const devScriptPath = resolve(__dirname, './scripts/dev.js');
+export const devScriptPath = resolve(__dirname, './scripts/dev.js')
 
 // Export a function to initialize a new project programmatically
 export const initProject = async (options = {}) => {
-	const init = await import('./scripts/init.js');
-	return init.initializeProject(options);
-};
+	const init = await import('./scripts/init.js')
+	return init.initializeProject(options)
+}
 
 // Export a function to run init as a CLI command
 export const runInitCLI = async (options = {}) => {
 	try {
-		const init = await import('./scripts/init.js');
-		const result = await init.initializeProject(options);
-		return result;
+		const init = await import('./scripts/init.js')
+		const result = await init.initializeProject(options)
+		return result
 	} catch (error) {
-		console.error('Initialization failed:', error.message);
+		console.error('Initialization failed:', error.message)
 		if (process.env.DEBUG === 'true') {
-			console.error('Debug stack trace:', error.stack);
+			console.error('Debug stack trace:', error.stack)
 		}
-		throw error; // Re-throw to be handled by the command handler
+		throw error // Re-throw to be handled by the command handler
 	}
-};
+}
 
 // Export version information
-export const version = packageJson.version;
+export const version = packageJson.version
 
 // CLI implementation
 if (import.meta.url === `file://${process.argv[1]}`) {
-	const program = new Command();
+	const program = new Command()
 
-	program
-		.name('task-master')
-		.description('Claude Task Master CLI')
-		.version(version);
+	program.name('task-master').description('Claude Task Master CLI').version(version)
 
 	program
 		.command('init')
@@ -90,28 +87,28 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 		.option('--no-git-tasks', 'No Git storage of tasks')
 		.action(async (cmdOptions) => {
 			try {
-				await runInitCLI(cmdOptions);
+				await runInitCLI(cmdOptions)
 			} catch (err) {
-				console.error('Init failed:', err.message);
-				process.exit(1);
+				console.error('Init failed:', err.message)
+				process.exit(1)
 			}
-		});
+		})
 
 	program
 		.command('dev')
 		.description('Run the dev.js script')
 		.allowUnknownOption(true)
 		.action(() => {
-			const args = process.argv.slice(process.argv.indexOf('dev') + 1);
+			const args = process.argv.slice(process.argv.indexOf('dev') + 1)
 			const child = spawn('node', [devScriptPath, ...args], {
 				stdio: 'inherit',
 				cwd: process.cwd()
-			});
+			})
 
 			child.on('close', (code) => {
-				process.exit(code);
-			});
-		});
+				process.exit(code)
+			})
+		})
 
 	// Add shortcuts for common dev.js commands
 	program
@@ -121,12 +118,12 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 			const child = spawn('node', [devScriptPath, 'list'], {
 				stdio: 'inherit',
 				cwd: process.cwd()
-			});
+			})
 
 			child.on('close', (code) => {
-				process.exit(code);
-			});
-		});
+				process.exit(code)
+			})
+		})
 
 	program
 		.command('next')
@@ -135,12 +132,12 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 			const child = spawn('node', [devScriptPath, 'next'], {
 				stdio: 'inherit',
 				cwd: process.cwd()
-			});
+			})
 
 			child.on('close', (code) => {
-				process.exit(code);
-			});
-		});
+				process.exit(code)
+			})
+		})
 
 	program
 		.command('generate')
@@ -149,12 +146,12 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 			const child = spawn('node', [devScriptPath, 'generate'], {
 				stdio: 'inherit',
 				cwd: process.cwd()
-			});
+			})
 
 			child.on('close', (code) => {
-				process.exit(code);
-			});
-		});
+				process.exit(code)
+			})
+		})
 
-	program.parse(process.argv);
+	program.parse(process.argv)
 }

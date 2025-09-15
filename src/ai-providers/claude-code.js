@@ -5,22 +5,22 @@
  * using a custom AI SDK implementation.
  */
 
-import { createClaudeCode } from './custom-sdk/claude-code/index.js';
-import { BaseAIProvider } from './base-provider.js';
-import { getClaudeCodeSettingsForCommand } from '../../scripts/modules/config-manager.js';
+import { getClaudeCodeSettingsForCommand } from '../../scripts/modules/config-manager.js'
+import { BaseAIProvider } from './base-provider.js'
+import { createClaudeCode } from './custom-sdk/claude-code/index.js'
 
 export class ClaudeCodeProvider extends BaseAIProvider {
 	constructor() {
-		super();
-		this.name = 'Claude Code';
+		super()
+		this.name = 'Claude Code'
 	}
 
 	getRequiredApiKeyName() {
-		return 'CLAUDE_CODE_API_KEY';
+		return 'CLAUDE_CODE_API_KEY'
 	}
 
 	isRequiredApiKey() {
-		return false;
+		return false
 	}
 
 	/**
@@ -46,9 +46,9 @@ export class ClaudeCodeProvider extends BaseAIProvider {
 			// Just return the provider factory
 			return createClaudeCode({
 				defaultSettings: getClaudeCodeSettingsForCommand(params?.commandName)
-			});
+			})
 		} catch (error) {
-			this.handleError('client initialization', error);
+			this.handleError('client initialization', error)
 		}
 	}
 }

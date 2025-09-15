@@ -1,36 +1,33 @@
 // In tests/unit/parse-prd.test.js
 // Testing parse-prd.js file extension compatibility with real files
 
-import { jest } from '@jest/globals';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import os from 'os';
+import fs from 'fs'
+import os from 'os'
+import path from 'path'
+import { fileURLToPath } from 'url'
+import { jest } from '@jest/globals'
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 // Mock the AI services to avoid real API calls
-jest.unstable_mockModule(
-	'../../scripts/modules/ai-services-unified.js',
-	() => ({
-		streamTextService: jest.fn(),
-		generateObjectService: jest.fn(),
-		streamObjectService: jest.fn().mockImplementation(async () => {
-			return {
-				get partialObjectStream() {
-					return (async function* () {
-						yield { tasks: [] };
-						yield { tasks: [{ id: 1, title: 'Test Task', priority: 'high' }] };
-					})();
-				},
-				object: Promise.resolve({
-					tasks: [{ id: 1, title: 'Test Task', priority: 'high' }]
-				})
-			};
-		})
+jest.unstable_mockModule('../../scripts/modules/ai-services-unified.js', () => ({
+	streamTextService: jest.fn(),
+	generateObjectService: jest.fn(),
+	streamObjectService: jest.fn().mockImplementation(async () => {
+		return {
+			get partialObjectStream() {
+				return (async function* () {
+					yield { tasks: [] }
+					yield { tasks: [{ id: 1, title: 'Test Task', priority: 'high' }] }
+				})()
+			},
+			object: Promise.resolve({
+				tasks: [{ id: 1, title: 'Test Task', priority: 'high' }]
+			})
+		}
 	})
-);
+}))
 
 // Mock all config-manager exports comprehensively
 jest.unstable_mockModule('../../scripts/modules/config-manager.js', () => ({
@@ -54,7 +51,7 @@ jest.unstable_mockModule('../../scripts/modules/config-manager.js', () => ({
 	validateProviderModelCombination: jest.fn(() => true),
 	isApiKeySet: jest.fn(() => true),
 	hasCodebaseAnalysis: jest.fn(() => false)
-}));
+}))
 
 // Mock utils comprehensively to prevent CLI behavior
 jest.unstable_mockModule('../../scripts/modules/utils.js', () => ({
@@ -83,7 +80,7 @@ jest.unstable_mockModule('../../scripts/modules/utils.js', () => ({
 	resolveCurrentTag: jest.fn(() => 'master'),
 	getDefaultTag: jest.fn(() => 'master'),
 	performMigrationIfNeeded: jest.fn()
-}));
+}))
 
 // Mock prompt manager
 jest.unstable_mockModule('../../scripts/modules/prompt-manager.js', () => ({
@@ -93,7 +90,7 @@ jest.unstable_mockModule('../../scripts/modules/prompt-manager.js', () => ({
 			userPrompt: 'Test user prompt'
 		}))
 	}))
-}));
+}))
 
 // Mock progress/UI components to prevent real CLI UI
 jest.unstable_mockModule('../../src/progress/parse-prd-tracker.js', () => ({
@@ -110,33 +107,30 @@ jest.unstable_mockModule('../../src/progress/parse-prd-tracker.js', () => ({
 			actionVerb: 'generated'
 		})
 	}))
-}));
+}))
 
 jest.unstable_mockModule('../../src/ui/parse-prd.js', () => ({
 	displayParsePrdStart: jest.fn(),
 	displayParsePrdSummary: jest.fn()
-}));
+}))
 
 jest.unstable_mockModule('../../scripts/modules/ui.js', () => ({
 	displayAiUsageSummary: jest.fn()
-}));
+}))
 
 // Mock task generation to prevent file operations
-jest.unstable_mockModule(
-	'../../scripts/modules/task-manager/generate-task-files.js',
-	() => ({
-		default: jest.fn()
-	})
-);
+jest.unstable_mockModule('../../scripts/modules/task-manager/generate-task-files.js', () => ({
+	default: jest.fn()
+}))
 
 // Mock stream parser
 jest.unstable_mockModule('../../src/utils/stream-parser.js', () => {
 	// Define mock StreamingError class
 	class StreamingError extends Error {
 		constructor(message, code) {
-			super(message);
-			this.name = 'StreamingError';
-			this.code = code;
+			super(message)
+			this.name = 'StreamingError'
+			this.code = code
 		}
 	}
 
@@ -145,14 +139,14 @@ jest.unstable_mockModule('../../src/utils/stream-parser.js', () => {
 		NOT_ASYNC_ITERABLE: 'STREAMING_NOT_SUPPORTED',
 		STREAM_PROCESSING_FAILED: 'STREAM_PROCESSING_FAILED',
 		STREAM_NOT_ITERABLE: 'STREAM_NOT_ITERABLE'
-	};
+	}
 
 	return {
 		parseStream: jest.fn(),
 		StreamingError,
 		STREAMING_ERROR_CODES
-	};
-});
+	}
+})
 
 // Mock other potential UI elements
 jest.unstable_mockModule('ora', () => ({
@@ -162,7 +156,7 @@ jest.unstable_mockModule('ora', () => ({
 		succeed: jest.fn(),
 		fail: jest.fn()
 	}))
-}));
+}))
 
 jest.unstable_mockModule('chalk', () => ({
 	default: {
@@ -183,18 +177,18 @@ jest.unstable_mockModule('chalk', () => ({
 	white: {
 		bold: jest.fn((text) => text)
 	}
-}));
+}))
 
 // Mock boxen
 jest.unstable_mockModule('boxen', () => ({
 	default: jest.fn((content) => content)
-}));
+}))
 
 // Mock constants
 jest.unstable_mockModule('../../src/constants/task-priority.js', () => ({
 	DEFAULT_TASK_PRIORITY: 'medium',
 	TASK_PRIORITY_OPTIONS: ['low', 'medium', 'high']
-}));
+}))
 
 // Mock UI indicators
 jest.unstable_mockModule('../../src/ui/indicators.js', () => ({
@@ -203,19 +197,15 @@ jest.unstable_mockModule('../../src/ui/indicators.js', () => ({
 		medium: '🟡',
 		low: '🟢'
 	}))
-}));
+}))
 
 // Import modules after mocking
-const { generateObjectService } = await import(
-	'../../scripts/modules/ai-services-unified.js'
-);
-const parsePRD = (
-	await import('../../scripts/modules/task-manager/parse-prd/parse-prd.js')
-).default;
+const { generateObjectService } = await import('../../scripts/modules/ai-services-unified.js')
+const parsePRD = (await import('../../scripts/modules/task-manager/parse-prd/parse-prd.js')).default
 
 describe('parse-prd file extension compatibility', () => {
-	let tempDir;
-	let testFiles;
+	let tempDir
+	let testFiles
 
 	const mockTasksResponse = {
 		tasks: [
@@ -246,7 +236,7 @@ describe('parse-prd file extension compatibility', () => {
 			sourceFile: 'test-prd',
 			generatedAt: new Date().toISOString()
 		}
-	};
+	}
 
 	const samplePRDContent = `# Test Project PRD
 
@@ -265,11 +255,11 @@ Build a simple task management application.
 
 ## Success Criteria
 - Users can create tasks successfully
-- Task dependencies work correctly`;
+- Task dependencies work correctly`
 
 	beforeAll(() => {
 		// Create temporary directory for test files
-		tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'parse-prd-test-'));
+		tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'parse-prd-test-'))
 
 		// Create test files with different extensions
 		testFiles = {
@@ -277,31 +267,31 @@ Build a simple task management application.
 			md: path.join(tempDir, 'test-prd.md'),
 			rst: path.join(tempDir, 'test-prd.rst'),
 			noExt: path.join(tempDir, 'test-prd')
-		};
+		}
 
 		// Write the same content to all test files
 		Object.values(testFiles).forEach((filePath) => {
-			fs.writeFileSync(filePath, samplePRDContent);
-		});
+			fs.writeFileSync(filePath, samplePRDContent)
+		})
 
 		// Mock process.exit to prevent actual exit
-		jest.spyOn(process, 'exit').mockImplementation(() => undefined);
+		jest.spyOn(process, 'exit').mockImplementation(() => undefined)
 
 		// Mock console methods to prevent output
-		jest.spyOn(console, 'log').mockImplementation(() => {});
-		jest.spyOn(console, 'error').mockImplementation(() => {});
-	});
+		jest.spyOn(console, 'log').mockImplementation(() => {})
+		jest.spyOn(console, 'error').mockImplementation(() => {})
+	})
 
 	afterAll(() => {
 		// Clean up temporary directory
-		fs.rmSync(tempDir, { recursive: true, force: true });
+		fs.rmSync(tempDir, { recursive: true, force: true })
 
 		// Restore mocks
-		jest.restoreAllMocks();
-	});
+		jest.restoreAllMocks()
+	})
 
 	beforeEach(() => {
-		jest.clearAllMocks();
+		jest.clearAllMocks()
 
 		// Mock successful AI response
 		generateObjectService.mockResolvedValue({
@@ -318,11 +308,11 @@ Build a simple task management application.
 				totalCost: 0.01,
 				currency: 'USD'
 			}
-		});
-	});
+		})
+	})
 
 	test('should accept and parse .txt files', async () => {
-		const outputPath = path.join(tempDir, 'tasks-txt.json');
+		const outputPath = path.join(tempDir, 'tasks-txt.json')
 
 		const result = await parsePRD(testFiles.txt, outputPath, 2, {
 			force: true,
@@ -334,20 +324,20 @@ Build a simple task management application.
 				success: jest.fn()
 			},
 			projectRoot: tempDir
-		});
+		})
 
-		expect(result.success).toBe(true);
-		expect(result.tasksPath).toBe(outputPath);
-		expect(fs.existsSync(outputPath)).toBe(true);
+		expect(result.success).toBe(true)
+		expect(result.tasksPath).toBe(outputPath)
+		expect(fs.existsSync(outputPath)).toBe(true)
 
 		// Verify the content was parsed correctly
-		const tasksData = JSON.parse(fs.readFileSync(outputPath, 'utf8'));
-		expect(tasksData.master.tasks).toHaveLength(2);
-		expect(tasksData.master.tasks[0].title).toBe('Test Task 1');
-	});
+		const tasksData = JSON.parse(fs.readFileSync(outputPath, 'utf8'))
+		expect(tasksData.master.tasks).toHaveLength(2)
+		expect(tasksData.master.tasks[0].title).toBe('Test Task 1')
+	})
 
 	test('should accept and parse .md files', async () => {
-		const outputPath = path.join(tempDir, 'tasks-md.json');
+		const outputPath = path.join(tempDir, 'tasks-md.json')
 
 		const result = await parsePRD(testFiles.md, outputPath, 2, {
 			force: true,
@@ -359,19 +349,19 @@ Build a simple task management application.
 				success: jest.fn()
 			},
 			projectRoot: tempDir
-		});
+		})
 
-		expect(result.success).toBe(true);
-		expect(result.tasksPath).toBe(outputPath);
-		expect(fs.existsSync(outputPath)).toBe(true);
+		expect(result.success).toBe(true)
+		expect(result.tasksPath).toBe(outputPath)
+		expect(fs.existsSync(outputPath)).toBe(true)
 
 		// Verify the content was parsed correctly
-		const tasksData = JSON.parse(fs.readFileSync(outputPath, 'utf8'));
-		expect(tasksData.master.tasks).toHaveLength(2);
-	});
+		const tasksData = JSON.parse(fs.readFileSync(outputPath, 'utf8'))
+		expect(tasksData.master.tasks).toHaveLength(2)
+	})
 
 	test('should accept and parse files with other text extensions', async () => {
-		const outputPath = path.join(tempDir, 'tasks-rst.json');
+		const outputPath = path.join(tempDir, 'tasks-rst.json')
 
 		const result = await parsePRD(testFiles.rst, outputPath, 2, {
 			force: true,
@@ -383,15 +373,15 @@ Build a simple task management application.
 				success: jest.fn()
 			},
 			projectRoot: tempDir
-		});
+		})
 
-		expect(result.success).toBe(true);
-		expect(result.tasksPath).toBe(outputPath);
-		expect(fs.existsSync(outputPath)).toBe(true);
-	});
+		expect(result.success).toBe(true)
+		expect(result.tasksPath).toBe(outputPath)
+		expect(fs.existsSync(outputPath)).toBe(true)
+	})
 
 	test('should accept and parse files with no extension', async () => {
-		const outputPath = path.join(tempDir, 'tasks-noext.json');
+		const outputPath = path.join(tempDir, 'tasks-noext.json')
 
 		const result = await parsePRD(testFiles.noExt, outputPath, 2, {
 			force: true,
@@ -403,23 +393,23 @@ Build a simple task management application.
 				success: jest.fn()
 			},
 			projectRoot: tempDir
-		});
+		})
 
-		expect(result.success).toBe(true);
-		expect(result.tasksPath).toBe(outputPath);
-		expect(fs.existsSync(outputPath)).toBe(true);
-	});
+		expect(result.success).toBe(true)
+		expect(result.tasksPath).toBe(outputPath)
+		expect(fs.existsSync(outputPath)).toBe(true)
+	})
 
 	test('should produce identical results regardless of file extension', async () => {
-		const outputs = {};
+		const outputs = {}
 
 		// Parse each file type with a unique project root to avoid ID conflicts
 		for (const [ext, filePath] of Object.entries(testFiles)) {
 			// Create a unique subdirectory for each test to isolate them
-			const testSubDir = path.join(tempDir, `test-${ext}`);
-			fs.mkdirSync(testSubDir, { recursive: true });
+			const testSubDir = path.join(tempDir, `test-${ext}`)
+			fs.mkdirSync(testSubDir, { recursive: true })
 
-			const outputPath = path.join(testSubDir, `tasks.json`);
+			const outputPath = path.join(testSubDir, `tasks.json`)
 
 			await parsePRD(filePath, outputPath, 2, {
 				force: true,
@@ -431,28 +421,24 @@ Build a simple task management application.
 					success: jest.fn()
 				},
 				projectRoot: testSubDir
-			});
+			})
 
-			const tasksData = JSON.parse(fs.readFileSync(outputPath, 'utf8'));
-			outputs[ext] = tasksData;
+			const tasksData = JSON.parse(fs.readFileSync(outputPath, 'utf8'))
+			outputs[ext] = tasksData
 		}
 
 		// Compare all outputs - they should be identical (except metadata timestamps)
-		const baseOutput = outputs.txt;
+		const baseOutput = outputs.txt
 		Object.values(outputs).forEach((output) => {
-			expect(output.master.tasks).toEqual(baseOutput.master.tasks);
-			expect(output.master.metadata.projectName).toEqual(
-				baseOutput.master.metadata.projectName
-			);
-			expect(output.master.metadata.totalTasks).toEqual(
-				baseOutput.master.metadata.totalTasks
-			);
-		});
-	});
+			expect(output.master.tasks).toEqual(baseOutput.master.tasks)
+			expect(output.master.metadata.projectName).toEqual(baseOutput.master.metadata.projectName)
+			expect(output.master.metadata.totalTasks).toEqual(baseOutput.master.metadata.totalTasks)
+		})
+	})
 
 	test('should handle non-existent files gracefully', async () => {
-		const nonExistentFile = path.join(tempDir, 'does-not-exist.txt');
-		const outputPath = path.join(tempDir, 'tasks-error.json');
+		const nonExistentFile = path.join(tempDir, 'does-not-exist.txt')
+		const outputPath = path.join(tempDir, 'tasks-error.json')
 
 		await expect(
 			parsePRD(nonExistentFile, outputPath, 2, {
@@ -466,6 +452,6 @@ Build a simple task management application.
 				},
 				projectRoot: tempDir
 			})
-		).rejects.toThrow();
-	});
-});
+		).rejects.toThrow()
+	})
+})

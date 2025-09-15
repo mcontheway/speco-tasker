@@ -49,4 +49,4 @@ export default {
 
 	// Setup file
 	setupFilesAfterEnv: ['<rootDir>/tests/setup.js']
-};
+}

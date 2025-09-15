@@ -3,8 +3,8 @@
  * Handles transformation and validation of MCP responses to internal format
  */
 
-import type { ExtensionLogger } from '../../logger';
-import { MCPTaskResponse, type TaskMasterTask } from '../types';
+import type { ExtensionLogger } from '../../logger'
+import { MCPTaskResponse, type TaskMasterTask } from '../types'
 
 export class TaskTransformer {
 	constructor(private logger: ExtensionLogger) {}
@@ -13,34 +13,28 @@ export class TaskTransformer {
 	 * Transform MCP tasks response to internal format
 	 */
 	transformMCPTasksResponse(mcpResponse: any): TaskMasterTask[] {
-		const transformStartTime = Date.now();
+		const transformStartTime = Date.now()
 
 		try {
 			// Validate response structure
-			const validationResult = this.validateMCPResponse(mcpResponse);
+			const validationResult = this.validateMCPResponse(mcpResponse)
 			if (!validationResult.isValid) {
-				this.logger.warn(
-					'MCP response validation failed:',
-					validationResult.errors
-				);
-				return [];
+				this.logger.warn('MCP response validation failed:', validationResult.errors)
+				return []
 			}
 
 			// Handle different response structures
-			let tasks = [];
+			let tasks = []
 			if (Array.isArray(mcpResponse)) {
-				tasks = mcpResponse;
+				tasks = mcpResponse
 			} else if (mcpResponse.data) {
 				if (Array.isArray(mcpResponse.data)) {
-					tasks = mcpResponse.data;
-				} else if (
-					mcpResponse.data.tasks &&
-					Array.isArray(mcpResponse.data.tasks)
-				) {
-					tasks = mcpResponse.data.tasks;
+					tasks = mcpResponse.data
+				} else if (mcpResponse.data.tasks && Array.isArray(mcpResponse.data.tasks)) {
+					tasks = mcpResponse.data.tasks
 				}
 			} else if (mcpResponse.tasks && Array.isArray(mcpResponse.tasks)) {
-				tasks = mcpResponse.tasks;
+				tasks = mcpResponse.tasks
 			}
 
 			this.logger.log(`Transforming ${tasks.length} tasks from MCP response`, {
@@ -51,42 +45,35 @@ export class TaskTransformer {
 					hasDataTasks: !!mcpResponse.data?.tasks,
 					hasTasks: !!mcpResponse.tasks
 				}
-			});
+			})
 
-			const transformedTasks: TaskMasterTask[] = [];
+			const transformedTasks: TaskMasterTask[] = []
 			const transformationErrors: Array<{
-				taskId: any;
-				error: string;
-				task: any;
-			}> = [];
+				taskId: any
+				error: string
+				task: any
+			}> = []
 
 			for (let i = 0; i < tasks.length; i++) {
 				try {
-					const task = tasks[i];
-					const transformedTask = this.transformSingleTask(task, i);
+					const task = tasks[i]
+					const transformedTask = this.transformSingleTask(task, i)
 					if (transformedTask) {
-						transformedTasks.push(transformedTask);
+						transformedTasks.push(transformedTask)
 					}
 				} catch (error) {
-					const errorMsg =
-						error instanceof Error
-							? error.message
-							: 'Unknown transformation error';
+					const errorMsg = error instanceof Error ? error.message : 'Unknown transformation error'
 					transformationErrors.push({
 						taskId: tasks[i]?.id || `unknown_${i}`,
 						error: errorMsg,
 						task: tasks[i]
-					});
-					this.logger.error(
-						`Failed to transform task at index ${i}:`,
-						errorMsg,
-						tasks[i]
-					);
+					})
+					this.logger.error(`Failed to transform task at index ${i}:`, errorMsg, tasks[i])
 				}
 			}
 
 			// Log transformation summary
-			const transformDuration = Date.now() - transformStartTime;
+			const transformDuration = Date.now() - transformStartTime
 			this.logger.log(`Transformation completed in ${transformDuration}ms`, {
 				totalTasks: tasks.length,
 				successfulTransformations: transformedTasks.length,
@@ -95,15 +82,12 @@ export class TaskTransformer {
 					id: e.taskId,
 					error: e.error
 				}))
-			});
+			})
 
-			return transformedTasks;
+			return transformedTasks
 		} catch (error) {
-			this.logger.error(
-				'Critical error during response transformation:',
-				error
-			);
-			return [];
+			this.logger.error('Critical error during response transformation:', error)
+			return []
 		}
 	}
 
@@ -111,41 +95,41 @@ export class TaskTransformer {
 	 * Validate MCP response structure
 	 */
 	private validateMCPResponse(mcpResponse: any): {
-		isValid: boolean;
-		errors: string[];
+		isValid: boolean
+		errors: string[]
 	} {
-		const errors: string[] = [];
+		const errors: string[] = []
 
 		if (!mcpResponse) {
-			errors.push('Response is null or undefined');
-			return { isValid: false, errors };
+			errors.push('Response is null or undefined')
+			return { isValid: false, errors }
 		}
 
 		// Arrays are valid responses
 		if (Array.isArray(mcpResponse)) {
-			return { isValid: true, errors };
+			return { isValid: true, errors }
 		}
 
 		if (typeof mcpResponse !== 'object') {
-			errors.push('Response is not an object or array');
-			return { isValid: false, errors };
+			errors.push('Response is not an object or array')
+			return { isValid: false, errors }
 		}
 
 		if (mcpResponse.error) {
-			errors.push(`MCP error: ${mcpResponse.error}`);
+			errors.push(`MCP error: ${mcpResponse.error}`)
 		}
 
 		// Check for valid task structure
 		const hasValidTasksStructure =
 			(mcpResponse.data && Array.isArray(mcpResponse.data)) ||
 			(mcpResponse.data?.tasks && Array.isArray(mcpResponse.data.tasks)) ||
-			(mcpResponse.tasks && Array.isArray(mcpResponse.tasks));
+			(mcpResponse.tasks && Array.isArray(mcpResponse.tasks))
 
 		if (!hasValidTasksStructure && !mcpResponse.error) {
-			errors.push('Response does not contain a valid tasks array structure');
+			errors.push('Response does not contain a valid tasks array structure')
 		}
 
-		return { isValid: errors.length === 0, errors };
+		return { isValid: errors.length === 0, errors }
 	}
 
 	/**
@@ -153,56 +137,45 @@ export class TaskTransformer {
 	 */
 	private transformSingleTask(task: any, index: number): TaskMasterTask | null {
 		if (!task || typeof task !== 'object') {
-			this.logger.warn(`Task at index ${index} is not a valid object:`, task);
-			return null;
+			this.logger.warn(`Task at index ${index} is not a valid object:`, task)
+			return null
 		}
 
 		try {
 			// Validate required fields
-			const taskId = this.validateAndNormalizeId(task.id, index);
+			const taskId = this.validateAndNormalizeId(task.id, index)
 			const title =
-				this.validateAndNormalizeString(
-					task.title,
-					'Untitled Task',
-					`title for task ${taskId}`
-				) || 'Untitled Task';
+				this.validateAndNormalizeString(task.title, 'Untitled Task', `title for task ${taskId}`) ||
+				'Untitled Task'
 			const description =
-				this.validateAndNormalizeString(
-					task.description,
-					'',
-					`description for task ${taskId}`
-				) || '';
+				this.validateAndNormalizeString(task.description, '', `description for task ${taskId}`) ||
+				''
 
 			// Normalize and validate status/priority
-			const status = this.normalizeStatus(task.status);
-			const priority = this.normalizePriority(task.priority);
+			const status = this.normalizeStatus(task.status)
+			const priority = this.normalizePriority(task.priority)
 
 			// Handle optional fields
 			const details = this.validateAndNormalizeString(
 				task.details,
 				undefined,
 				`details for task ${taskId}`
-			);
+			)
 			const testStrategy = this.validateAndNormalizeString(
 				task.testStrategy,
 				undefined,
 				`testStrategy for task ${taskId}`
-			);
+			)
 
 			// Handle complexity score
 			const complexityScore =
-				typeof task.complexityScore === 'number'
-					? task.complexityScore
-					: undefined;
+				typeof task.complexityScore === 'number' ? task.complexityScore : undefined
 
 			// Transform dependencies
-			const dependencies = this.transformDependencies(
-				task.dependencies,
-				taskId
-			);
+			const dependencies = this.transformDependencies(task.dependencies, taskId)
 
 			// Transform subtasks
-			const subtasks = this.transformSubtasks(task.subtasks, taskId);
+			const subtasks = this.transformSubtasks(task.subtasks, taskId)
 
 			const transformedTask: TaskMasterTask = {
 				id: taskId,
@@ -215,7 +188,7 @@ export class TaskTransformer {
 				complexityScore,
 				dependencies,
 				subtasks
-			};
+			}
 
 			// Log successful transformation for complex tasks
 			if (
@@ -229,35 +202,31 @@ export class TaskTransformer {
 					status,
 					priority,
 					complexityScore
-				});
+				})
 			}
 
-			return transformedTask;
+			return transformedTask
 		} catch (error) {
-			this.logger.error(
-				`Error transforming task at index ${index}:`,
-				error,
-				task
-			);
-			return null;
+			this.logger.error(`Error transforming task at index ${index}:`, error, task)
+			return null
 		}
 	}
 
 	private validateAndNormalizeId(id: any, fallbackIndex: number): string {
 		if (id === null || id === undefined) {
-			const generatedId = `generated_${fallbackIndex}_${Date.now()}`;
-			this.logger.warn(`Task missing ID, generated: ${generatedId}`);
-			return generatedId;
+			const generatedId = `generated_${fallbackIndex}_${Date.now()}`
+			this.logger.warn(`Task missing ID, generated: ${generatedId}`)
+			return generatedId
 		}
 
-		const stringId = String(id).trim();
+		const stringId = String(id).trim()
 		if (stringId === '') {
-			const generatedId = `empty_${fallbackIndex}_${Date.now()}`;
-			this.logger.warn(`Task has empty ID, generated: ${generatedId}`);
-			return generatedId;
+			const generatedId = `empty_${fallbackIndex}_${Date.now()}`
+			this.logger.warn(`Task has empty ID, generated: ${generatedId}`)
+			return generatedId
 		}
 
-		return stringId;
+		return stringId
 	}
 
 	private validateAndNormalizeString(
@@ -266,89 +235,75 @@ export class TaskTransformer {
 		fieldName: string
 	): string | undefined {
 		if (value === null || value === undefined) {
-			return defaultValue;
+			return defaultValue
 		}
 
 		if (typeof value !== 'string') {
-			this.logger.warn(`${fieldName} is not a string, converting:`, value);
-			return String(value).trim() || defaultValue;
+			this.logger.warn(`${fieldName} is not a string, converting:`, value)
+			return String(value).trim() || defaultValue
 		}
 
-		const trimmed = value.trim();
+		const trimmed = value.trim()
 		if (trimmed === '' && defaultValue !== undefined) {
-			return defaultValue;
+			return defaultValue
 		}
 
-		return trimmed || defaultValue;
+		return trimmed || defaultValue
 	}
 
 	private transformDependencies(dependencies: any, taskId: string): string[] {
 		if (!dependencies) {
-			return [];
+			return []
 		}
 
 		if (!Array.isArray(dependencies)) {
-			this.logger.warn(
-				`Dependencies for task ${taskId} is not an array:`,
-				dependencies
-			);
-			return [];
+			this.logger.warn(`Dependencies for task ${taskId} is not an array:`, dependencies)
+			return []
 		}
 
-		const validDependencies: string[] = [];
+		const validDependencies: string[] = []
 		for (let i = 0; i < dependencies.length; i++) {
-			const dep = dependencies[i];
+			const dep = dependencies[i]
 			if (dep === null || dep === undefined) {
-				this.logger.warn(`Null dependency at index ${i} for task ${taskId}`);
-				continue;
+				this.logger.warn(`Null dependency at index ${i} for task ${taskId}`)
+				continue
 			}
 
-			const stringDep = String(dep).trim();
+			const stringDep = String(dep).trim()
 			if (stringDep === '') {
-				this.logger.warn(`Empty dependency at index ${i} for task ${taskId}`);
-				continue;
+				this.logger.warn(`Empty dependency at index ${i} for task ${taskId}`)
+				continue
 			}
 
 			// Check for self-dependency
 			if (stringDep === taskId) {
-				this.logger.warn(
-					`Self-dependency detected for task ${taskId}, skipping`
-				);
-				continue;
+				this.logger.warn(`Self-dependency detected for task ${taskId}, skipping`)
+				continue
 			}
 
-			validDependencies.push(stringDep);
+			validDependencies.push(stringDep)
 		}
 
-		return validDependencies;
+		return validDependencies
 	}
 
-	private transformSubtasks(
-		subtasks: any,
-		parentTaskId: string
-	): TaskMasterTask['subtasks'] {
+	private transformSubtasks(subtasks: any, parentTaskId: string): TaskMasterTask['subtasks'] {
 		if (!subtasks) {
-			return [];
+			return []
 		}
 
 		if (!Array.isArray(subtasks)) {
-			this.logger.warn(
-				`Subtasks for task ${parentTaskId} is not an array:`,
-				subtasks
-			);
-			return [];
+			this.logger.warn(`Subtasks for task ${parentTaskId} is not an array:`, subtasks)
+			return []
 		}
 
-		const validSubtasks = [];
+		const validSubtasks = []
 		for (let i = 0; i < subtasks.length; i++) {
 			try {
-				const subtask = subtasks[i];
+				const subtask = subtasks[i]
 				if (!subtask || typeof subtask !== 'object') {
-					this.logger.warn(
-						`Invalid subtask at index ${i} for task ${parentTaskId}:`,
-						subtask
-					);
-					continue;
+					this.logger.warn(`Invalid subtask at index ${i} for task ${parentTaskId}:`, subtask)
+					continue
 				}
 
 				const transformedSubtask = {
@@ -381,23 +336,23 @@ export class TaskTransformer {
 						`subtask testStrategy for parent ${parentTaskId}`
 					),
 					dependencies: subtask.dependencies || []
-				};
+				}
 
-				validSubtasks.push(transformedSubtask);
+				validSubtasks.push(transformedSubtask)
 			} catch (error) {
 				this.logger.error(
 					`Error transforming subtask at index ${i} for task ${parentTaskId}:`,
 					error
-				);
+				)
 			}
 		}
 
-		return validSubtasks;
+		return validSubtasks
 	}
 
 	private normalizeStatus(status: string): TaskMasterTask['status'] {
-		const original = status;
-		const normalized = status?.toLowerCase()?.trim() || 'pending';
+		const original = status
+		const normalized = status?.toLowerCase()?.trim() || 'pending'
 
 		const statusMap: Record<string, TaskMasterTask['status']> = {
 			pending: 'pending',
@@ -429,22 +384,22 @@ export class TaskTransformer {
 			defer: 'deferred',
 			postponed: 'deferred',
 			later: 'deferred'
-		};
-
-		const result = statusMap[normalized] || 'pending';
-
-		if (original && original !== result) {
-			this.logger.debug(`Normalized status '${original}' -> '${result}'`);
 		}
 
-		return result;
+		const result = statusMap[normalized] || 'pending'
+
+		if (original && original !== result) {
+			this.logger.debug(`Normalized status '${original}' -> '${result}'`)
+		}
+
+		return result
 	}
 
 	private normalizePriority(priority: string): TaskMasterTask['priority'] {
-		const original = priority;
-		const normalized = priority?.toLowerCase()?.trim() || 'medium';
+		const original = priority
+		const normalized = priority?.toLowerCase()?.trim() || 'medium'
 
-		let result: TaskMasterTask['priority'] = 'medium';
+		let result: TaskMasterTask['priority'] = 'medium'
 
 		if (
 			normalized.includes('high') ||
@@ -454,7 +409,7 @@ export class TaskTransformer {
 			normalized === 'h' ||
 			normalized === '3'
 		) {
-			result = 'high';
+			result = 'high'
 		} else if (
 			normalized.includes('low') ||
 			normalized.includes('minor') ||
@@ -462,7 +417,7 @@ export class TaskTransformer {
 			normalized === 'l' ||
 			normalized === '1'
 		) {
-			result = 'low';
+			result = 'low'
 		} else if (
 			normalized.includes('medium') ||
 			normalized.includes('normal') ||
@@ -470,13 +425,13 @@ export class TaskTransformer {
 			normalized === 'm' ||
 			normalized === '2'
 		) {
-			result = 'medium';
+			result = 'medium'
 		}
 
 		if (original && original !== result) {
-			this.logger.debug(`Normalized priority '${original}' -> '${result}'`);
+			this.logger.debug(`Normalized priority '${original}' -> '${result}'`)
 		}
 
-		return result;
+		return result
 	}
 }

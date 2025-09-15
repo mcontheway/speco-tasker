@@ -1,9 +1,9 @@
-import React from 'react';
-import { ExternalLink, Terminal, MessageSquare, Plus } from 'lucide-react';
-import { TaskMasterLogo } from '../../components/TaskMasterLogo';
+import { ExternalLink, MessageSquare, Plus, Terminal } from 'lucide-react'
+import type React from 'react'
+import { TaskMasterLogo } from '../../components/TaskMasterLogo'
 
 interface EmptyStateProps {
-	currentTag: string;
+	currentTag: string
 }
 
 export const EmptyState: React.FC<EmptyStateProps> = ({ currentTag }) => {
@@ -31,39 +31,25 @@ export const EmptyState: React.FC<EmptyStateProps> = ({ currentTag }) => {
 						</div>
 						<div className="space-y-2">
 							<div className="bg-vscode-editor-background rounded p-2 font-mono text-sm">
-								<span className="text-vscode-terminal-ansiYellow">
-									task-master
-								</span>{' '}
+								<span className="text-vscode-terminal-ansiYellow">task-master</span>{' '}
 								<span className="text-vscode-terminal-ansiCyan">parse-prd</span>{' '}
-								<span className="text-vscode-foreground/70">
-									&lt;path-to-prd&gt;
-								</span>{' '}
-								<span className="text-vscode-terminal-ansiMagenta">
-									--append
-								</span>
+								<span className="text-vscode-foreground/70">&lt;path-to-prd&gt;</span>{' '}
+								<span className="text-vscode-terminal-ansiMagenta">--append</span>
 								<div className="text-xs text-vscode-foreground/50 mt-1">
 									Parse a PRD and append tasks to current tag
 								</div>
 							</div>
 							<div className="bg-vscode-editor-background rounded p-2 font-mono text-sm">
-								<span className="text-vscode-terminal-ansiYellow">
-									task-master
-								</span>{' '}
+								<span className="text-vscode-terminal-ansiYellow">task-master</span>{' '}
 								<span className="text-vscode-terminal-ansiCyan">add-task</span>{' '}
-								<span className="text-vscode-terminal-ansiMagenta">
-									--prompt
-								</span>{' '}
-								<span className="text-vscode-foreground/70">
-									"Your task description"
-								</span>
+								<span className="text-vscode-terminal-ansiMagenta">--prompt</span>{' '}
+								<span className="text-vscode-foreground/70">"Your task description"</span>
 								<div className="text-xs text-vscode-foreground/50 mt-1">
 									Add a single task with AI assistance
 								</div>
 							</div>
 							<div className="bg-vscode-editor-background rounded p-2 font-mono text-sm">
-								<span className="text-vscode-terminal-ansiYellow">
-									task-master
-								</span>{' '}
+								<span className="text-vscode-terminal-ansiYellow">task-master</span>{' '}
 								<span className="text-vscode-terminal-ansiCyan">add-task</span>{' '}
 								<span className="text-vscode-terminal-ansiMagenta">--help</span>
 								<div className="text-xs text-vscode-foreground/50 mt-1">
@@ -83,8 +69,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({ currentTag }) => {
 								<Plus className="w-4 h-4 mt-0.5 text-vscode-foreground/50" />
 								<div>
 									<div className="text-vscode-foreground">
-										"Add a task to tag {currentTag}: Implement user
-										authentication"
+										"Add a task to tag {currentTag}: Implement user authentication"
 									</div>
 								</div>
 							</div>
@@ -92,8 +77,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({ currentTag }) => {
 								<Plus className="w-4 h-4 mt-0.5 text-vscode-foreground/50" />
 								<div>
 									<div className="text-vscode-foreground">
-										"Parse this PRD and add tasks to {currentTag}: [paste PRD
-										content]"
+										"Parse this PRD and add tasks to {currentTag}: [paste PRD content]"
 									</div>
 								</div>
 							</div>
@@ -114,25 +98,23 @@ export const EmptyState: React.FC<EmptyStateProps> = ({ currentTag }) => {
 							href="https://docs.task-master.dev"
 							className="inline-flex items-center gap-2 text-vscode-textLink-foreground hover:text-vscode-textLink-activeForeground transition-colors"
 							onClick={(e) => {
-								e.preventDefault();
+								e.preventDefault()
 								// Use VS Code API to open external link
 								if (window.acquireVsCodeApi) {
-									const vscode = window.acquireVsCodeApi();
+									const vscode = window.acquireVsCodeApi()
 									vscode.postMessage({
 										type: 'openExternal',
 										url: 'https://docs.task-master.dev'
-									});
+									})
 								}
 							}}
 						>
 							<ExternalLink className="w-4 h-4" />
-							<span className="text-sm font-medium">
-								View TaskMaster Documentation
-							</span>
+							<span className="text-sm font-medium">View TaskMaster Documentation</span>
 						</a>
 					</div>
 				</div>
 			</div>
 		</div>
-	);
-};
+	)
+}

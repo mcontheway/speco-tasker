@@ -1,65 +1,64 @@
-import * as vscode from 'vscode';
-import { ErrorCategory, ErrorSeverity, NotificationType } from './errorHandler';
-import { logger } from './logger';
+import * as vscode from 'vscode'
+import { ErrorCategory, ErrorSeverity, NotificationType } from './errorHandler'
+import { logger } from './logger'
 
 export interface NotificationPreferences {
 	// Global notification toggles
-	enableToastNotifications: boolean;
-	enableVSCodeNotifications: boolean;
-	enableConsoleLogging: boolean;
+	enableToastNotifications: boolean
+	enableVSCodeNotifications: boolean
+	enableConsoleLogging: boolean
 
 	// Toast notification settings
 	toastDuration: {
-		info: number;
-		warning: number;
-		error: number;
-	};
+		info: number
+		warning: number
+		error: number
+	}
 
 	// Category-based preferences
 	categoryPreferences: Record<
 		ErrorCategory,
 		{
-			showToUser: boolean;
-			notificationType: NotificationType;
-			logToConsole: boolean;
+			showToUser: boolean
+			notificationType: NotificationType
+			logToConsole: boolean
 		}
-	>;
+	>
 
 	// Severity-based preferences
 	severityPreferences: Record<
 		ErrorSeverity,
 		{
-			showToUser: boolean;
-			notificationType: NotificationType;
-			minToastDuration: number;
+			showToUser: boolean
+			notificationType: NotificationType
+			minToastDuration: number
 		}
-	>;
+	>
 
 	// Advanced settings
-	maxToastCount: number;
-	enableErrorTracking: boolean;
-	enableDetailedErrorInfo: boolean;
+	maxToastCount: number
+	enableErrorTracking: boolean
+	enableDetailedErrorInfo: boolean
 }
 
 export class NotificationPreferencesManager {
-	private static instance: NotificationPreferencesManager | null = null;
-	private readonly configSection = 'taskMasterKanban';
+	private static instance: NotificationPreferencesManager | null = null
+	private readonly configSection = 'taskMasterKanban'
 
 	private constructor() {}
 
 	static getInstance(): NotificationPreferencesManager {
 		if (!NotificationPreferencesManager.instance) {
-			NotificationPreferencesManager.instance =
-				new NotificationPreferencesManager();
+			NotificationPreferencesManager.instance = new NotificationPreferencesManager()
 		}
-		return NotificationPreferencesManager.instance;
+		return NotificationPreferencesManager.instance
 	}
 
 	/**
 	 * Get current notification preferences from VS Code settings
 	 */
 	getPreferences(): NotificationPreferences {
-		const config = vscode.workspace.getConfiguration(this.configSection);
+		const config = vscode.workspace.getConfiguration(this.configSection)
 
 		return {
 			enableToastNotifications: config.get('notifications.enableToast', true),
@@ -76,31 +75,23 @@ export class NotificationPreferencesManager {
 			severityPreferences: this.getSeverityPreferences(config),
 
 			maxToastCount: config.get('notifications.maxToastCount', 5),
-			enableErrorTracking: config.get(
-				'notifications.enableErrorTracking',
-				true
-			),
-			enableDetailedErrorInfo: config.get(
-				'notifications.enableDetailedErrorInfo',
-				false
-			)
-		};
+			enableErrorTracking: config.get('notifications.enableErrorTracking', true),
+			enableDetailedErrorInfo: config.get('notifications.enableDetailedErrorInfo', false)
+		}
 	}
 
 	/**
 	 * Update notification preferences in VS Code settings
 	 */
-	async updatePreferences(
-		preferences: Partial<NotificationPreferences>
-	): Promise<void> {
-		const config = vscode.workspace.getConfiguration(this.configSection);
+	async updatePreferences(preferences: Partial<NotificationPreferences>): Promise<void> {
+		const config = vscode.workspace.getConfiguration(this.configSection)
 
 		if (preferences.enableToastNotifications !== undefined) {
 			await config.update(
 				'notifications.enableToast',
 				preferences.enableToastNotifications,
 				vscode.ConfigurationTarget.Global
-			);
+			)
 		}
 
 		if (preferences.enableVSCodeNotifications !== undefined) {
@@ -108,7 +99,7 @@ export class NotificationPreferencesManager {
 				'notifications.enableVSCode',
 				preferences.enableVSCodeNotifications,
 				vscode.ConfigurationTarget.Global
-			);
+			)
 		}
 
 		if (preferences.enableConsoleLogging !== undefined) {
@@ -116,7 +107,7 @@ export class NotificationPreferencesManager {
 				'notifications.enableConsole',
 				preferences.enableConsoleLogging,
 				vscode.ConfigurationTarget.Global
-			);
+			)
 		}
 
 		if (preferences.toastDuration) {
@@ -124,7 +115,7 @@ export class NotificationPreferencesManager {
 				'notifications.toastDuration',
 				preferences.toastDuration,
 				vscode.ConfigurationTarget.Global
-			);
+			)
 		}
 
 		if (preferences.maxToastCount !== undefined) {
@@ -132,7 +123,7 @@ export class NotificationPreferencesManager {
 				'notifications.maxToastCount',
 				preferences.maxToastCount,
 				vscode.ConfigurationTarget.Global
-			);
+			)
 		}
 
 		if (preferences.enableErrorTracking !== undefined) {
@@ -140,7 +131,7 @@ export class NotificationPreferencesManager {
 				'notifications.enableErrorTracking',
 				preferences.enableErrorTracking,
 				vscode.ConfigurationTarget.Global
-			);
+			)
 		}
 
 		if (preferences.enableDetailedErrorInfo !== undefined) {
@@ -148,83 +139,74 @@ export class NotificationPreferencesManager {
 				'notifications.enableDetailedErrorInfo',
 				preferences.enableDetailedErrorInfo,
 				vscode.ConfigurationTarget.Global
-			);
+			)
 		}
 	}
 
 	/**
 	 * Check if notifications should be shown for a specific error category and severity
 	 */
-	shouldShowNotification(
-		category: ErrorCategory,
-		severity: ErrorSeverity
-	): boolean {
-		const preferences = this.getPreferences();
+	shouldShowNotification(category: ErrorCategory, severity: ErrorSeverity): boolean {
+		const preferences = this.getPreferences()
 
 		// Check global toggles first
-		if (
-			!preferences.enableToastNotifications &&
-			!preferences.enableVSCodeNotifications
-		) {
-			return false;
+		if (!preferences.enableToastNotifications && !preferences.enableVSCodeNotifications) {
+			return false
 		}
 
 		// Check category preferences
-		const categoryPref = preferences.categoryPreferences[category];
+		const categoryPref = preferences.categoryPreferences[category]
 		if (categoryPref && !categoryPref.showToUser) {
-			return false;
+			return false
 		}
 
 		// Check severity preferences
-		const severityPref = preferences.severityPreferences[severity];
+		const severityPref = preferences.severityPreferences[severity]
 		if (severityPref && !severityPref.showToUser) {
-			return false;
+			return false
 		}
 
-		return true;
+		return true
 	}
 
 	/**
 	 * Get the appropriate notification type for an error
 	 */
-	getNotificationType(
-		category: ErrorCategory,
-		severity: ErrorSeverity
-	): NotificationType {
-		const preferences = this.getPreferences();
+	getNotificationType(category: ErrorCategory, severity: ErrorSeverity): NotificationType {
+		const preferences = this.getPreferences()
 
 		// Check category preference first
-		const categoryPref = preferences.categoryPreferences[category];
+		const categoryPref = preferences.categoryPreferences[category]
 		if (categoryPref) {
-			return categoryPref.notificationType;
+			return categoryPref.notificationType
 		}
 
 		// Fall back to severity preference
-		const severityPref = preferences.severityPreferences[severity];
+		const severityPref = preferences.severityPreferences[severity]
 		if (severityPref) {
-			return severityPref.notificationType;
+			return severityPref.notificationType
 		}
 
 		// Default fallback
-		return this.getDefaultNotificationType(severity);
+		return this.getDefaultNotificationType(severity)
 	}
 
 	/**
 	 * Get toast duration for a specific severity
 	 */
 	getToastDuration(severity: ErrorSeverity): number {
-		const preferences = this.getPreferences();
+		const preferences = this.getPreferences()
 
 		switch (severity) {
 			case ErrorSeverity.LOW:
-				return preferences.toastDuration.info;
+				return preferences.toastDuration.info
 			case ErrorSeverity.MEDIUM:
-				return preferences.toastDuration.warning;
+				return preferences.toastDuration.warning
 			case ErrorSeverity.HIGH:
 			case ErrorSeverity.CRITICAL:
-				return preferences.toastDuration.error;
+				return preferences.toastDuration.error
 			default:
-				return preferences.toastDuration.warning;
+				return preferences.toastDuration.warning
 		}
 	}
 
@@ -232,16 +214,12 @@ export class NotificationPreferencesManager {
 	 * Reset preferences to defaults
 	 */
 	async resetToDefaults(): Promise<void> {
-		const config = vscode.workspace.getConfiguration(this.configSection);
+		const config = vscode.workspace.getConfiguration(this.configSection)
 
 		// Reset all notification settings
-		await config.update(
-			'notifications',
-			undefined,
-			vscode.ConfigurationTarget.Global
-		);
+		await config.update('notifications', undefined, vscode.ConfigurationTarget.Global)
 
-		logger.log('Task Master Kanban notification preferences reset to defaults');
+		logger.log('Task Master Kanban notification preferences reset to defaults')
 	}
 
 	/**
@@ -250,9 +228,9 @@ export class NotificationPreferencesManager {
 	private getCategoryPreferences(config: vscode.WorkspaceConfiguration): Record<
 		ErrorCategory,
 		{
-			showToUser: boolean;
-			notificationType: NotificationType;
-			logToConsole: boolean;
+			showToUser: boolean
+			notificationType: NotificationType
+			logToConsole: boolean
 		}
 	> {
 		const defaults = {
@@ -356,11 +334,11 @@ export class NotificationPreferencesManager {
 				notificationType: NotificationType.VSCODE_WARNING,
 				logToConsole: true
 			}
-		};
+		}
 
 		// Allow user overrides from settings
-		const userPreferences = config.get('notifications.categoryPreferences', {});
-		return { ...defaults, ...userPreferences };
+		const userPreferences = config.get('notifications.categoryPreferences', {})
+		return { ...defaults, ...userPreferences }
 	}
 
 	/**
@@ -369,9 +347,9 @@ export class NotificationPreferencesManager {
 	private getSeverityPreferences(config: vscode.WorkspaceConfiguration): Record<
 		ErrorSeverity,
 		{
-			showToUser: boolean;
-			notificationType: NotificationType;
-			minToastDuration: number;
+			showToUser: boolean
+			notificationType: NotificationType
+			minToastDuration: number
 		}
 	> {
 		const defaults = {
@@ -395,69 +373,54 @@ export class NotificationPreferencesManager {
 				notificationType: NotificationType.VSCODE_ERROR,
 				minToastDuration: 10000
 			}
-		};
+		}
 
 		// Allow user overrides from settings
-		const userPreferences = config.get('notifications.severityPreferences', {});
-		return { ...defaults, ...userPreferences };
+		const userPreferences = config.get('notifications.severityPreferences', {})
+		return { ...defaults, ...userPreferences }
 	}
 
 	/**
 	 * Get default notification type for severity
 	 */
-	private getDefaultNotificationType(
-		severity: ErrorSeverity
-	): NotificationType {
+	private getDefaultNotificationType(severity: ErrorSeverity): NotificationType {
 		switch (severity) {
 			case ErrorSeverity.LOW:
-				return NotificationType.TOAST_INFO;
+				return NotificationType.TOAST_INFO
 			case ErrorSeverity.MEDIUM:
-				return NotificationType.TOAST_WARNING;
+				return NotificationType.TOAST_WARNING
 			case ErrorSeverity.HIGH:
-				return NotificationType.VSCODE_WARNING;
+				return NotificationType.VSCODE_WARNING
 			case ErrorSeverity.CRITICAL:
-				return NotificationType.VSCODE_ERROR;
+				return NotificationType.VSCODE_ERROR
 			default:
-				return NotificationType.CONSOLE_ONLY;
+				return NotificationType.CONSOLE_ONLY
 		}
 	}
 }
 
 // Export convenience functions
 export function getNotificationPreferences(): NotificationPreferences {
-	return NotificationPreferencesManager.getInstance().getPreferences();
+	return NotificationPreferencesManager.getInstance().getPreferences()
 }
 
 export function updateNotificationPreferences(
 	preferences: Partial<NotificationPreferences>
 ): Promise<void> {
-	return NotificationPreferencesManager.getInstance().updatePreferences(
-		preferences
-	);
+	return NotificationPreferencesManager.getInstance().updatePreferences(preferences)
 }
 
-export function shouldShowNotification(
-	category: ErrorCategory,
-	severity: ErrorSeverity
-): boolean {
-	return NotificationPreferencesManager.getInstance().shouldShowNotification(
-		category,
-		severity
-	);
+export function shouldShowNotification(category: ErrorCategory, severity: ErrorSeverity): boolean {
+	return NotificationPreferencesManager.getInstance().shouldShowNotification(category, severity)
 }
 
 export function getNotificationType(
 	category: ErrorCategory,
 	severity: ErrorSeverity
 ): NotificationType {
-	return NotificationPreferencesManager.getInstance().getNotificationType(
-		category,
-		severity
-	);
+	return NotificationPreferencesManager.getInstance().getNotificationType(category, severity)
 }
 
 export function getToastDuration(severity: ErrorSeverity): number {
-	return NotificationPreferencesManager.getInstance().getToastDuration(
-		severity
-	);
+	return NotificationPreferencesManager.getInstance().getToastDuration(severity)
 }

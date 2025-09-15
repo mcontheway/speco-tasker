@@ -3,19 +3,12 @@
  * Tool to get all tasks from Task Master
  */
 
-import { z } from 'zod';
-import {
-	createErrorResponse,
-	handleApiResult,
-	withNormalizedProjectRoot
-} from './utils.js';
-import { listTasksDirect } from '../core/task-master-core.js';
-import {
-	resolveTasksPath,
-	resolveComplexityReportPath
-} from '../core/utils/path-utils.js';
+import { z } from 'zod'
+import { listTasksDirect } from '../core/task-master-core.js'
+import { resolveComplexityReportPath, resolveTasksPath } from '../core/utils/path-utils.js'
+import { createErrorResponse, handleApiResult, withNormalizedProjectRoot } from './utils.js'
 
-import { resolveTag } from '../../../scripts/modules/utils.js';
+import { resolveTag } from '../../../scripts/modules/utils.js'
 
 /**
  * Register the getTasks tool with the MCP server
@@ -36,56 +29,43 @@ export function registerListTasksTool(server) {
 			withSubtasks: z
 				.boolean()
 				.optional()
-				.describe(
-					'Include subtasks nested within their parent tasks in the response'
-				),
+				.describe('Include subtasks nested within their parent tasks in the response'),
 			file: z
 				.string()
 				.optional()
-				.describe(
-					'Path to the tasks file (relative to project root or absolute)'
-				),
+				.describe('Path to the tasks file (relative to project root or absolute)'),
 			complexityReport: z
 				.string()
 				.optional()
-				.describe(
-					'Path to the complexity report file (relative to project root or absolute)'
-				),
-			projectRoot: z
-				.string()
-				.describe('The directory of the project. Must be an absolute path.'),
+				.describe('Path to the complexity report file (relative to project root or absolute)'),
+			projectRoot: z.string().describe('The directory of the project. Must be an absolute path.'),
 			tag: z.string().optional().describe('Tag context to operate on')
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
 			try {
-				log.info(`Getting tasks with filters: ${JSON.stringify(args)}`);
+				log.info(`Getting tasks with filters: ${JSON.stringify(args)}`)
 
 				const resolvedTag = resolveTag({
 					projectRoot: args.projectRoot,
 					tag: args.tag
-				});
+				})
 				// Resolve the path to tasks.json using new path utilities
-				let tasksJsonPath;
+				let tasksJsonPath
 				try {
-					tasksJsonPath = resolveTasksPath(args, log);
+					tasksJsonPath = resolveTasksPath(args, log)
 				} catch (error) {
-					log.error(`Error finding tasks.json: ${error.message}`);
-					return createErrorResponse(
-						`Failed to find tasks.json: ${error.message}`
-					);
+					log.error(`Error finding tasks.json: ${error.message}`)
+					return createErrorResponse(`Failed to find tasks.json: ${error.message}`)
 				}
 
 				// Resolve the path to complexity report
-				let complexityReportPath;
+				let complexityReportPath
 				try {
-					complexityReportPath = resolveComplexityReportPath(
-						{ ...args, tag: resolvedTag },
-						session
-					);
+					complexityReportPath = resolveComplexityReportPath({ ...args, tag: resolvedTag }, session)
 				} catch (error) {
-					log.error(`Error finding complexity report: ${error.message}`);
+					log.error(`Error finding complexity report: ${error.message}`)
 					// This is optional, so we don't fail the operation
-					complexityReportPath = null;
+					complexityReportPath = null
 				}
 
 				const result = await listTasksDirect(
@@ -99,24 +79,16 @@ export function registerListTasksTool(server) {
 					},
 					log,
 					{ session }
-				);
+				)
 
-				log.info(
-					`Retrieved ${result.success ? result.data?.tasks?.length || 0 : 0} tasks`
-				);
-				return handleApiResult(
-					result,
-					log,
-					'Error getting tasks',
-					undefined,
-					args.projectRoot
-				);
+				log.info(`Retrieved ${result.success ? result.data?.tasks?.length || 0 : 0} tasks`)
+				return handleApiResult(result, log, 'Error getting tasks', undefined, args.projectRoot)
 			} catch (error) {
-				log.error(`Error getting tasks: ${error.message}`);
-				return createErrorResponse(error.message);
+				log.error(`Error getting tasks: ${error.message}`)
+				return createErrorResponse(error.message)
 			}
 		})
-	});
+	})
 }
 
 // We no longer need the formatTasksResponse function as we're returning raw JSON data

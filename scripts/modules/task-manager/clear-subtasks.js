@@ -1,10 +1,10 @@
-import path from 'path';
-import chalk from 'chalk';
-import boxen from 'boxen';
-import Table from 'cli-table3';
+import path from 'path'
+import boxen from 'boxen'
+import chalk from 'chalk'
+import Table from 'cli-table3'
 
-import { log, readJSON, writeJSON, truncate, isSilentMode } from '../utils.js';
-import { displayBanner } from '../ui.js';
+import { displayBanner } from '../ui.js'
+import { isSilentMode, log, readJSON, truncate, writeJSON } from '../utils.js'
 
 /**
  * Clear subtasks from specified tasks
@@ -15,12 +15,12 @@ import { displayBanner } from '../ui.js';
  * @param {string} [context.tag] - Tag for the task
  */
 function clearSubtasks(tasksPath, taskIds, context = {}) {
-	const { projectRoot, tag } = context;
-	log('info', `Reading tasks from ${tasksPath}...`);
-	const data = readJSON(tasksPath, projectRoot, tag);
+	const { projectRoot, tag } = context
+	log('info', `Reading tasks from ${tasksPath}...`)
+	const data = readJSON(tasksPath, projectRoot, tag)
 	if (!data || !data.tasks) {
-		log('error', 'No valid tasks found.');
-		process.exit(1);
+		log('error', 'No valid tasks found.')
+		process.exit(1)
 	}
 
 	if (!isSilentMode()) {
@@ -31,12 +31,12 @@ function clearSubtasks(tasksPath, taskIds, context = {}) {
 				borderStyle: 'round',
 				margin: { top: 1, bottom: 1 }
 			})
-		);
+		)
 	}
 
 	// Handle multiple task IDs (comma-separated)
-	const taskIdArray = taskIds.split(',').map((id) => id.trim());
-	let clearedCount = 0;
+	const taskIdArray = taskIds.split(',').map((id) => id.trim())
+	let clearedCount = 0
 
 	// Create a summary table for the cleared subtasks
 	const summaryTable = new Table({
@@ -47,45 +47,41 @@ function clearSubtasks(tasksPath, taskIds, context = {}) {
 		],
 		colWidths: [10, 50, 20],
 		style: { head: [], border: [] }
-	});
+	})
 
 	taskIdArray.forEach((taskId) => {
-		const id = parseInt(taskId, 10);
+		const id = parseInt(taskId, 10)
 		if (Number.isNaN(id)) {
-			log('error', `Invalid task ID: ${taskId}`);
-			return;
+			log('error', `Invalid task ID: ${taskId}`)
+			return
 		}
 
-		const task = data.tasks.find((t) => t.id === id);
+		const task = data.tasks.find((t) => t.id === id)
 		if (!task) {
-			log('error', `Task ${id} not found`);
-			return;
+			log('error', `Task ${id} not found`)
+			return
 		}
 
 		if (!task.subtasks || task.subtasks.length === 0) {
-			log('info', `Task ${id} has no subtasks to clear`);
-			summaryTable.push([
-				id.toString(),
-				truncate(task.title, 47),
-				chalk.yellow('No subtasks')
-			]);
-			return;
+			log('info', `Task ${id} has no subtasks to clear`)
+			summaryTable.push([id.toString(), truncate(task.title, 47), chalk.yellow('No subtasks')])
+			return
 		}
 
-		const subtaskCount = task.subtasks.length;
-		task.subtasks = [];
-		clearedCount++;
-		log('info', `Cleared ${subtaskCount} subtasks from task ${id}`);
+		const subtaskCount = task.subtasks.length
+		task.subtasks = []
+		clearedCount++
+		log('info', `Cleared ${subtaskCount} subtasks from task ${id}`)
 
 		summaryTable.push([
 			id.toString(),
 			truncate(task.title, 47),
 			chalk.green(`${subtaskCount} subtasks cleared`)
-		]);
-	});
+		])
+	})
 
 	if (clearedCount > 0) {
-		writeJSON(tasksPath, data, projectRoot, tag);
+		writeJSON(tasksPath, data, projectRoot, tag)
 
 		// Show summary table
 		if (!isSilentMode()) {
@@ -96,17 +92,15 @@ function clearSubtasks(tasksPath, taskIds, context = {}) {
 					borderColor: 'blue',
 					borderStyle: 'round'
 				})
-			);
-			console.log(summaryTable.toString());
+			)
+			console.log(summaryTable.toString())
 		}
 
 		// Success message
 		if (!isSilentMode()) {
 			console.log(
 				boxen(
-					chalk.green(
-						`Successfully cleared subtasks from ${chalk.bold(clearedCount)} task(s)`
-					),
+					chalk.green(`Successfully cleared subtasks from ${chalk.bold(clearedCount)} task(s)`),
 					{
 						padding: 1,
 						borderColor: 'green',
@@ -114,7 +108,7 @@ function clearSubtasks(tasksPath, taskIds, context = {}) {
 						margin: { top: 1 }
 					}
 				)
-			);
+			)
 
 			// Next steps suggestion
 			console.log(
@@ -130,7 +124,7 @@ function clearSubtasks(tasksPath, taskIds, context = {}) {
 						margin: { top: 1 }
 					}
 				)
-			);
+			)
 		}
 	} else {
 		if (!isSilentMode()) {
@@ -141,9 +135,9 @@ function clearSubtasks(tasksPath, taskIds, context = {}) {
 					borderStyle: 'round',
 					margin: { top: 1 }
 				})
-			);
+			)
 		}
 	}
 }
 
-export default clearSubtasks;
+export default clearSubtasks

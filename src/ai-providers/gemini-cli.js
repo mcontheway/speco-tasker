@@ -5,30 +5,30 @@
  * using the ai-sdk-provider-gemini-cli package.
  */
 
-import { generateObject, generateText, streamText } from 'ai';
-import { parse } from 'jsonc-parser';
-import { BaseAIProvider } from './base-provider.js';
-import { log } from '../../scripts/modules/utils.js';
+import { generateObject, generateText, streamText } from 'ai'
+import { parse } from 'jsonc-parser'
+import { log } from '../../scripts/modules/utils.js'
+import { BaseAIProvider } from './base-provider.js'
 
-let createGeminiProvider;
+let createGeminiProvider
 
 async function loadGeminiCliModule() {
 	if (!createGeminiProvider) {
 		try {
-			const mod = await import('ai-sdk-provider-gemini-cli');
-			createGeminiProvider = mod.createGeminiProvider;
+			const mod = await import('ai-sdk-provider-gemini-cli')
+			createGeminiProvider = mod.createGeminiProvider
 		} catch (err) {
 			throw new Error(
 				"Gemini CLI SDK is not installed. Please install 'ai-sdk-provider-gemini-cli' to use the gemini-cli provider."
-			);
+			)
 		}
 	}
 }
 
 export class GeminiCliProvider extends BaseAIProvider {
 	constructor() {
-		super();
-		this.name = 'Gemini CLI';
+		super()
+		this.name = 'Gemini CLI'
 	}
 
 	/**
@@ -55,33 +55,33 @@ export class GeminiCliProvider extends BaseAIProvider {
 	async getClient(params) {
 		try {
 			// Load the Gemini CLI module dynamically
-			await loadGeminiCliModule();
+			await loadGeminiCliModule()
 			// Primary use case: Use existing gemini CLI authentication
 			// Secondary use case: Direct API key (for compatibility)
-			let authOptions = {};
+			let authOptions = {}
 
 			if (params.apiKey && params.apiKey !== 'gemini-cli-no-key-required') {
 				// API key provided - use it for compatibility
 				authOptions = {
 					authType: 'api-key',
 					apiKey: params.apiKey
-				};
+				}
 			} else {
 				// Expected case: Use gemini CLI authentication via OAuth
 				authOptions = {
 					authType: 'oauth-personal'
-				};
+				}
 			}
 
 			// Add baseURL if provided (for custom endpoints)
 			if (params.baseURL) {
-				authOptions.baseURL = params.baseURL;
+				authOptions.baseURL = params.baseURL
 			}
 
 			// Create and return the provider
-			return createGeminiProvider(authOptions);
+			return createGeminiProvider(authOptions)
 		} catch (error) {
-			this.handleError('client initialization', error);
+			this.handleError('client initialization', error)
 		}
 	}
 
@@ -95,27 +95,23 @@ export class GeminiCliProvider extends BaseAIProvider {
 	 */
 	_extractSystemMessage(messages, options = {}) {
 		if (!messages || !Array.isArray(messages)) {
-			return { systemPrompt: undefined, messages: messages || [] };
+			return { systemPrompt: undefined, messages: messages || [] }
 		}
 
-		const systemMessages = messages.filter((msg) => msg.role === 'system');
-		const nonSystemMessages = messages.filter((msg) => msg.role !== 'system');
+		const systemMessages = messages.filter((msg) => msg.role === 'system')
+		const nonSystemMessages = messages.filter((msg) => msg.role !== 'system')
 
 		// Combine multiple system messages if present
 		let systemPrompt =
-			systemMessages.length > 0
-				? systemMessages.map((msg) => msg.content).join('\n\n')
-				: undefined;
+			systemMessages.length > 0 ? systemMessages.map((msg) => msg.content).join('\n\n') : undefined
 
 		// Add Gemini CLI specific JSON enforcement if requested
 		if (options.enforceJsonOutput) {
-			const jsonEnforcement = this._getJsonEnforcementPrompt();
-			systemPrompt = systemPrompt
-				? `${systemPrompt}\n\n${jsonEnforcement}`
-				: jsonEnforcement;
+			const jsonEnforcement = this._getJsonEnforcementPrompt()
+			systemPrompt = systemPrompt ? `${systemPrompt}\n\n${jsonEnforcement}` : jsonEnforcement
 		}
 
-		return { systemPrompt, messages: nonSystemMessages };
+		return { systemPrompt, messages: nonSystemMessages }
 	}
 
 	/**
@@ -123,7 +119,7 @@ export class GeminiCliProvider extends BaseAIProvider {
 	 * @returns {string} JSON enforcement system prompt
 	 */
 	_getJsonEnforcementPrompt() {
-		return `CRITICAL: You MUST respond with ONLY valid JSON. Do not include any explanatory text, markdown formatting, code block markers, or conversational phrases like "Here is" or "Of course". Your entire response must be parseable JSON that starts with { or [ and ends with } or ]. No exceptions.`;
+		return `CRITICAL: You MUST respond with ONLY valid JSON. Do not include any explanatory text, markdown formatting, code block markers, or conversational phrases like "Here is" or "Of course". Your entire response must be parseable JSON that starts with { or [ and ends with } or ]. No exceptions.`
 	}
 
 	/**
@@ -133,14 +129,14 @@ export class GeminiCliProvider extends BaseAIProvider {
 	 */
 	_isValidJson(text) {
 		if (!text || typeof text !== 'string') {
-			return false;
+			return false
 		}
 
 		try {
-			JSON.parse(text.trim());
-			return true;
+			JSON.parse(text.trim())
+			return true
 		} catch {
-			return false;
+			return false
 		}
 	}
 
@@ -150,11 +146,11 @@ export class GeminiCliProvider extends BaseAIProvider {
 	 * @returns {boolean} True if JSON output is likely expected
 	 */
 	_detectJsonRequest(messages) {
-		const userMessages = messages.filter((msg) => msg.role === 'user');
+		const userMessages = messages.filter((msg) => msg.role === 'user')
 		const combinedText = userMessages
 			.map((msg) => msg.content)
 			.join(' ')
-			.toLowerCase();
+			.toLowerCase()
 
 		// Look for indicators that JSON output is expected
 		const jsonIndicators = [
@@ -170,9 +166,9 @@ export class GeminiCliProvider extends BaseAIProvider {
 			'subtasks',
 			'array',
 			'object'
-		];
+		]
 
-		return jsonIndicators.some((indicator) => combinedText.includes(indicator));
+		return jsonIndicators.some((indicator) => combinedText.includes(indicator))
 	}
 
 	/**
@@ -182,31 +178,29 @@ export class GeminiCliProvider extends BaseAIProvider {
 	 */
 	_simplifyJsonPrompts(messages) {
 		// First, check if this is an expand-task operation by looking at the system message
-		const systemMsg = messages.find((m) => m.role === 'system');
+		const systemMsg = messages.find((m) => m.role === 'system')
 		const isExpandTask =
 			systemMsg &&
 			systemMsg.content.includes(
 				'You are an AI assistant helping with task breakdown. Generate exactly'
-			);
+			)
 
 		if (!isExpandTask) {
-			return messages; // Not an expand task, return unchanged
+			return messages // Not an expand task, return unchanged
 		}
 
 		// Extract subtask count from system message
-		const subtaskCountMatch = systemMsg.content.match(
-			/Generate exactly (\d+) subtasks/
-		);
-		const subtaskCount = subtaskCountMatch ? subtaskCountMatch[1] : '10';
+		const subtaskCountMatch = systemMsg.content.match(/Generate exactly (\d+) subtasks/)
+		const subtaskCount = subtaskCountMatch ? subtaskCountMatch[1] : '10'
 
 		log(
 			'debug',
 			`${this.name} detected expand-task operation, simplifying for ${subtaskCount} subtasks`
-		);
+		)
 
 		return messages.map((msg) => {
 			if (msg.role !== 'user') {
-				return msg;
+				return msg
 			}
 
 			// For expand-task user messages, create a much simpler, more direct prompt
@@ -229,14 +223,11 @@ Required JSON structure:
   ]
 }
 
-Generate ${subtaskCount} subtasks based on the original task context. Return ONLY the JSON object.`;
+Generate ${subtaskCount} subtasks based on the original task context. Return ONLY the JSON object.`
 
-			log(
-				'debug',
-				`${this.name} simplified user prompt for better JSON compliance`
-			);
-			return { ...msg, content: simplifiedPrompt };
-		});
+			log('debug', `${this.name} simplified user prompt for better JSON compliance`)
+			return { ...msg, content: simplifiedPrompt }
+		})
 	}
 
 	/**
@@ -252,14 +243,14 @@ Generate ${subtaskCount} subtasks based on the original task context. Return ONL
 	 */
 	extractJson(text) {
 		if (!text || typeof text !== 'string') {
-			return text;
+			return text
 		}
 
-		let content = text.trim();
+		let content = text.trim()
 
 		// Early exit for very short content
 		if (content.length < 2) {
-			return text;
+			return text
 		}
 
 		// Strip common wrappers in a single pass
@@ -270,91 +261,87 @@ Generate ${subtaskCount} subtasks based on the original task context. Return ONL
 			.replace(/^\s*(?:const|let|var)\s+\w+\s*=\s*([\s\S]*?)(?:;|\s*)$/i, '$1')
 			// Remove common prefixes
 			.replace(/^(?:Here's|The)\s+(?:the\s+)?JSON.*?[:]\s*/i, '')
-			.trim();
+			.trim()
 
 		// Find the first JSON-like structure
-		const firstObj = content.indexOf('{');
-		const firstArr = content.indexOf('[');
+		const firstObj = content.indexOf('{')
+		const firstArr = content.indexOf('[')
 
 		if (firstObj === -1 && firstArr === -1) {
-			return text;
+			return text
 		}
 
 		const start =
-			firstArr === -1
-				? firstObj
-				: firstObj === -1
-					? firstArr
-					: Math.min(firstObj, firstArr);
-		content = content.slice(start);
+			firstArr === -1 ? firstObj : firstObj === -1 ? firstArr : Math.min(firstObj, firstArr)
+		content = content.slice(start)
 
 		// Optimized parsing function with error collection
 		const tryParse = (value) => {
-			if (!value || value.length < 2) return undefined;
+			if (!value || value.length < 2) return undefined
 
-			const errors = [];
+			const errors = []
 			try {
 				const result = parse(value, errors, {
 					allowTrailingComma: true,
 					allowEmptyContent: false
-				});
+				})
 				if (errors.length === 0 && result !== undefined) {
-					return JSON.stringify(result, null, 2);
+					return JSON.stringify(result, null, 2)
 				}
 			} catch {
 				// Parsing failed completely
 			}
-			return undefined;
-		};
+			return undefined
+		}
 
 		// Try parsing the full content first
-		const fullParse = tryParse(content);
+		const fullParse = tryParse(content)
 		if (fullParse !== undefined) {
-			return fullParse;
+			return fullParse
 		}
 
 		// Smart boundary detection - single pass with optimizations
-		const openChar = content[0];
-		const closeChar = openChar === '{' ? '}' : ']';
+		const openChar = content[0]
+		const closeChar = openChar === '{' ? '}' : ']'
 
-		let depth = 0;
-		let inString = false;
-		let escapeNext = false;
-		let lastValidEnd = -1;
+		let depth = 0
+		let inString = false
+		let escapeNext = false
+		let lastValidEnd = -1
 
 		// Single-pass boundary detection with early termination
 		for (let i = 0; i < content.length && i < 10000; i++) {
 			// Limit scan for performance
-			const char = content[i];
+			const char = content[i]
 
 			if (escapeNext) {
-				escapeNext = false;
-				continue;
+				escapeNext = false
+				continue
 			}
 
 			if (char === '\\') {
-				escapeNext = true;
-				continue;
+				escapeNext = true
+				continue
 			}
 
 			if (char === '"') {
-				inString = !inString;
-				continue;
+				inString = !inString
+				continue
 			}
 
-			if (inString) continue;
+			if (inString) continue
 
 			if (char === openChar) {
-				depth++;
+				depth++
 			} else if (char === closeChar) {
-				depth--;
+				depth--
 				if (depth === 0) {
-					lastValidEnd = i + 1;
+					lastValidEnd = i + 1
 					// Try parsing immediately on first valid boundary
-					const candidate = content.slice(0, lastValidEnd);
-					const parsed = tryParse(candidate);
+					const candidate = content.slice(0, lastValidEnd)
+					const parsed = tryParse(candidate)
 					if (parsed !== undefined) {
-						return parsed;
+						return parsed
 					}
 				}
 			}
@@ -362,21 +349,18 @@ Generate ${subtaskCount} subtasks based on the original task context. Return ONL
 
 		// If we found valid boundaries but parsing failed, try limited fallback
 		if (lastValidEnd > 0) {
-			const maxAttempts = Math.min(5, Math.floor(lastValidEnd / 100)); // Limit attempts
+			const maxAttempts = Math.min(5, Math.floor(lastValidEnd / 100)) // Limit attempts
 			for (let i = 0; i < maxAttempts; i++) {
-				const testEnd = Math.max(
-					lastValidEnd - i * 50,
-					Math.floor(lastValidEnd * 0.8)
-				);
-				const candidate = content.slice(0, testEnd);
-				const parsed = tryParse(candidate);
+				const testEnd = Math.max(lastValidEnd - i * 50, Math.floor(lastValidEnd * 0.8))
+				const candidate = content.slice(0, testEnd)
+				const parsed = tryParse(candidate)
 				if (parsed !== undefined) {
-					return parsed;
+					return parsed
 				}
 			}
 		}
 
-		return text;
+		return text
 	}
 
 	/**
@@ -385,16 +369,13 @@ Generate ${subtaskCount} subtasks based on the original task context. Return ONL
 	 */
 	async generateText(params) {
 		try {
-			this.validateParams(params);
-			this.validateMessages(params.messages);
+			this.validateParams(params)
+			this.validateMessages(params.messages)
 
-			log(
-				'debug',
-				`Generating ${this.name} text with model: ${params.modelId}`
-			);
+			log('debug', `Generating ${this.name} text with model: ${params.modelId}`)
 
 			// Detect if JSON output is expected and enforce it for better gemini-cli compatibility
-			const enforceJsonOutput = this._detectJsonRequest(params.messages);
+			const enforceJsonOutput = this._detectJsonRequest(params.messages)
 
 			// Debug logging to understand what's happening
 			log('debug', `${this.name} JSON detection analysis:`, {
@@ -402,91 +383,72 @@ Generate ${subtaskCount} subtasks based on the original task context. Return ONL
 				messageCount: params.messages.length,
 				messages: params.messages.map((msg) => ({
 					role: msg.role,
-					contentPreview: msg.content
-						? msg.content.substring(0, 200) + '...'
-						: 'empty'
+					contentPreview: msg.content ? msg.content.substring(0, 200) + '...' : 'empty'
 				}))
-			});
+			})
 
 			if (enforceJsonOutput) {
 				log(
 					'debug',
 					`${this.name} detected JSON request - applying strict JSON enforcement system prompt`
-				);
+				)
 			}
 
 			// For gemini-cli, simplify complex prompts before processing
-			let processedMessages = params.messages;
+			let processedMessages = params.messages
 			if (enforceJsonOutput) {
-				processedMessages = this._simplifyJsonPrompts(params.messages);
+				processedMessages = this._simplifyJsonPrompts(params.messages)
 			}
 
 			// Extract system messages for separate handling with optional JSON enforcement
-			const { systemPrompt, messages } = this._extractSystemMessage(
-				processedMessages,
-				{ enforceJsonOutput }
-			);
+			const { systemPrompt, messages } = this._extractSystemMessage(processedMessages, {
+				enforceJsonOutput
+			})
 
 			// Debug the final system prompt being sent
 			log('debug', `${this.name} final system prompt:`, {
 				systemPromptLength: systemPrompt ? systemPrompt.length : 0,
-				systemPromptPreview: systemPrompt
-					? systemPrompt.substring(0, 300) + '...'
-					: 'none',
+				systemPromptPreview: systemPrompt ? systemPrompt.substring(0, 300) + '...' : 'none',
 				finalMessageCount: messages.length
-			});
+			})
 
-			const client = await this.getClient(params);
+			const client = await this.getClient(params)
 			const result = await generateText({
 				model: client(params.modelId),
 				system: systemPrompt,
 				messages: messages,
 				maxTokens: params.maxTokens,
 				temperature: params.temperature
-			});
+			})
 
 			// If we detected a JSON request and gemini-cli returned conversational text,
 			// attempt to extract JSON from the response
-			let finalText = result.text;
+			let finalText = result.text
 			if (enforceJsonOutput && result.text && !this._isValidJson(result.text)) {
-				log(
-					'debug',
-					`${this.name} response appears conversational, attempting JSON extraction`
-				);
+				log('debug', `${this.name} response appears conversational, attempting JSON extraction`)
 
 				// Log first 1000 chars of the response to see what Gemini actually returned
 				log('debug', `${this.name} raw response preview:`, {
 					responseLength: result.text.length,
 					responseStart: result.text.substring(0, 1000)
-				});
+				})
 
-				const extractedJson = this.extractJson(result.text);
+				const extractedJson = this.extractJson(result.text)
 				if (this._isValidJson(extractedJson)) {
-					log(
-						'debug',
-						`${this.name} successfully extracted JSON from conversational response`
-					);
-					finalText = extractedJson;
+					log('debug', `${this.name} successfully extracted JSON from conversational response`)
+					finalText = extractedJson
 				} else {
-					log(
-						'debug',
-						`${this.name} JSON extraction failed, returning original response`
-					);
+					log('debug', `${this.name} JSON extraction failed, returning original response`)
 
 					// Log what extraction returned to debug why it failed
 					log('debug', `${this.name} extraction result preview:`, {
 						extractedLength: extractedJson ? extractedJson.length : 0,
-						extractedStart: extractedJson
-							? extractedJson.substring(0, 500)
-							: 'null'
-					});
+						extractedStart: extractedJson ? extractedJson.substring(0, 500) : 'null'
+					})
 				}
 			}
 
-			log(
-				'debug',
-				`${this.name} generateText completed successfully for model: ${params.modelId}`
-			);
+			log('debug', `${this.name} generateText completed successfully for model: ${params.modelId}`)
 
 			return {
 				text: finalText,
@@ -495,9 +457,9 @@ Generate ${subtaskCount} subtasks based on the original task context. Return ONL
 					outputTokens: result.usage?.completionTokens,
 					totalTokens: result.usage?.totalTokens
 				}
-			};
+			}
 		} catch (error) {
-			this.handleError('text generation', error);
+			this.handleError('text generation', error)
 		}
 	}
 
@@ -507,13 +469,13 @@ Generate ${subtaskCount} subtasks based on the original task context. Return ONL
 	 */
 	async streamText(params) {
 		try {
-			this.validateParams(params);
-			this.validateMessages(params.messages);
+			this.validateParams(params)
+			this.validateMessages(params.messages)
 
-			log('debug', `Streaming ${this.name} text with model: ${params.modelId}`);
+			log('debug', `Streaming ${this.name} text with model: ${params.modelId}`)
 
 			// Detect if JSON output is expected and enforce it for better gemini-cli compatibility
-			const enforceJsonOutput = this._detectJsonRequest(params.messages);
+			const enforceJsonOutput = this._detectJsonRequest(params.messages)
 
 			// Debug logging to understand what's happening
 			log('debug', `${this.name} JSON detection analysis:`, {
@@ -521,44 +483,38 @@ Generate ${subtaskCount} subtasks based on the original task context. Return ONL
 				messageCount: params.messages.length,
 				messages: params.messages.map((msg) => ({
 					role: msg.role,
-					contentPreview: msg.content
-						? msg.content.substring(0, 200) + '...'
-						: 'empty'
+					contentPreview: msg.content ? msg.content.substring(0, 200) + '...' : 'empty'
 				}))
-			});
+			})
 
 			if (enforceJsonOutput) {
 				log(
 					'debug',
 					`${this.name} detected JSON request - applying strict JSON enforcement system prompt`
-				);
+				)
 			}
 
 			// Extract system messages for separate handling with optional JSON enforcement
-			const { systemPrompt, messages } = this._extractSystemMessage(
-				params.messages,
-				{ enforceJsonOutput }
-			);
+			const { systemPrompt, messages } = this._extractSystemMessage(params.messages, {
+				enforceJsonOutput
+			})
 
-			const client = await this.getClient(params);
+			const client = await this.getClient(params)
 			const stream = await streamText({
 				model: client(params.modelId),
 				system: systemPrompt,
 				messages: messages,
 				maxTokens: params.maxTokens,
 				temperature: params.temperature
-			});
+			})
 
-			log(
-				'debug',
-				`${this.name} streamText initiated successfully for model: ${params.modelId}`
-			);
+			log('debug', `${this.name} streamText initiated successfully for model: ${params.modelId}`)
 
 			// Note: For streaming, we can't intercept and modify the response in real-time
 			// The JSON extraction would need to happen on the consuming side
-			return stream;
+			return stream
 		} catch (error) {
-			this.handleError('text streaming', error);
+			this.handleError('text streaming', error)
 		}
 	}
 
@@ -569,35 +525,34 @@ Generate ${subtaskCount} subtasks based on the original task context. Return ONL
 	async generateObject(params) {
 		try {
 			// First try the standard generateObject from base class
-			return await super.generateObject(params);
+			return await super.generateObject(params)
 		} catch (error) {
 			// If it's a JSON parsing error, try to extract and parse JSON manually
 			if (error.message?.includes('JSON') || error.message?.includes('parse')) {
 				log(
 					'debug',
 					`Gemini CLI generateObject failed with parsing error, attempting manual extraction`
-				);
+				)
 
 				try {
 					// Validate params first
-					this.validateParams(params);
-					this.validateMessages(params.messages);
+					this.validateParams(params)
+					this.validateMessages(params.messages)
 
 					if (!params.schema) {
-						throw new Error('Schema is required for object generation');
+						throw new Error('Schema is required for object generation')
 					}
 					if (!params.objectName) {
-						throw new Error('Object name is required for object generation');
+						throw new Error('Object name is required for object generation')
 					}
 
 					// Extract system messages for separate handling with JSON enforcement
-					const { systemPrompt, messages } = this._extractSystemMessage(
-						params.messages,
-						{ enforceJsonOutput: true }
-					);
+					const { systemPrompt, messages } = this._extractSystemMessage(params.messages, {
+						enforceJsonOutput: true
+					})
 
 					// Call generateObject directly with our client
-					const client = await this.getClient(params);
+					const client = await this.getClient(params)
 					const result = await generateObject({
 						model: client(params.modelId),
 						system: systemPrompt,
@@ -606,25 +561,19 @@ Generate ${subtaskCount} subtasks based on the original task context. Return ONL
 						mode: 'json', // Use json mode instead of auto for Gemini
 						maxTokens: params.maxTokens,
 						temperature: params.temperature
-					});
+					})
 
 					// If we get rawResponse text, try to extract JSON from it
 					if (result.rawResponse?.text && !result.object) {
-						const extractedJson = this.extractJson(result.rawResponse.text);
+						const extractedJson = this.extractJson(result.rawResponse.text)
 						try {
-							result.object = JSON.parse(extractedJson);
+							result.object = JSON.parse(extractedJson)
 						} catch (parseError) {
-							log(
-								'error',
-								`Failed to parse extracted JSON: ${parseError.message}`
-							);
-							log(
-								'debug',
-								`Extracted JSON: ${extractedJson.substring(0, 500)}...`
-							);
+							log('error', `Failed to parse extracted JSON: ${parseError.message}`)
+							log('debug', `Extracted JSON: ${extractedJson.substring(0, 500)}...`)
 							throw new Error(
 								`Gemini CLI returned invalid JSON that could not be parsed: ${parseError.message}`
-							);
+							)
 						}
 					}
 
@@ -635,29 +584,24 @@ Generate ${subtaskCount} subtasks based on the original task context. Return ONL
 							outputTokens: result.usage?.completionTokens,
 							totalTokens: result.usage?.totalTokens
 						}
-					};
+					}
 				} catch (retryError) {
-					log(
-						'error',
-						`Gemini CLI manual JSON extraction failed: ${retryError.message}`
-					);
+					log('error', `Gemini CLI manual JSON extraction failed: ${retryError.message}`)
 					// Re-throw the original error with more context
-					throw new Error(
-						`${this.name} failed to generate valid JSON object: ${error.message}`
-					);
+					throw new Error(`${this.name} failed to generate valid JSON object: ${error.message}`)
 				}
 			}
 
 			// For non-parsing errors, just re-throw
-			throw error;
+			throw error
 		}
 	}
 
 	getRequiredApiKeyName() {
-		return 'GEMINI_API_KEY';
+		return 'GEMINI_API_KEY'
 	}
 
 	isRequiredApiKey() {
-		return false;
+		return false
 	}
 }

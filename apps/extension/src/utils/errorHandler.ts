@@ -1,10 +1,10 @@
-import * as vscode from 'vscode';
-import { logger } from './logger';
+import * as vscode from 'vscode'
+import { logger } from './logger'
 import {
 	getNotificationType,
 	getToastDuration,
 	shouldShowNotification
-} from './notificationPreferences';
+} from './notificationPreferences'
 
 export enum ErrorSeverity {
 	LOW = 'low',
@@ -50,74 +50,74 @@ export enum NotificationType {
 
 export interface ErrorContext {
 	// Core error information
-	category: ErrorCategory;
-	severity: ErrorSeverity;
-	message: string;
-	originalError?: Error | unknown;
+	category: ErrorCategory
+	severity: ErrorSeverity
+	message: string
+	originalError?: Error | unknown
 
 	// Contextual information
-	operation?: string; // What operation was being performed
-	taskId?: string; // Related task ID if applicable
-	userId?: string; // User context if applicable
-	sessionId?: string; // Session context
+	operation?: string // What operation was being performed
+	taskId?: string // Related task ID if applicable
+	userId?: string // User context if applicable
+	sessionId?: string // Session context
 
 	// Technical details
-	stackTrace?: string;
-	userAgent?: string;
-	timestamp?: number;
+	stackTrace?: string
+	userAgent?: string
+	timestamp?: number
 
 	// Recovery information
-	isRecoverable?: boolean;
-	suggestedActions?: string[];
-	documentationLink?: string;
+	isRecoverable?: boolean
+	suggestedActions?: string[]
+	documentationLink?: string
 
 	// Notification preferences
-	notificationType?: NotificationType;
-	showToUser?: boolean;
-	logToConsole?: boolean;
-	logToFile?: boolean;
+	notificationType?: NotificationType
+	showToUser?: boolean
+	logToConsole?: boolean
+	logToFile?: boolean
 }
 
 export interface ErrorDetails {
-	code: string;
-	message: string;
-	category: ErrorCategory;
-	severity: ErrorSeverity;
-	timestamp: Date;
-	context?: Record<string, any>;
-	stack?: string;
-	userAction?: string;
+	code: string
+	message: string
+	category: ErrorCategory
+	severity: ErrorSeverity
+	timestamp: Date
+	context?: Record<string, any>
+	stack?: string
+	userAction?: string
 	recovery?: {
-		automatic: boolean;
-		action?: () => Promise<void>;
-		description?: string;
-	};
+		automatic: boolean
+		action?: () => Promise<void>
+		description?: string
+	}
 }
 
 export interface ErrorLogEntry {
-	id: string;
-	error: ErrorDetails;
-	resolved: boolean;
-	resolvedAt?: Date;
-	attempts: number;
-	lastAttempt?: Date;
+	id: string
+	error: ErrorDetails
+	resolved: boolean
+	resolvedAt?: Date
+	attempts: number
+	lastAttempt?: Date
 }
 
 /**
  * Base class for all Task Master errors
  */
 export abstract class TaskMasterError extends Error {
-	public readonly code: string;
-	public readonly category: ErrorCategory;
-	public readonly severity: ErrorSeverity;
-	public readonly timestamp: Date;
-	public readonly context?: Record<string, any>;
-	public readonly userAction?: string;
+	public readonly code: string
+	public readonly category: ErrorCategory
+	public readonly severity: ErrorSeverity
+	public readonly timestamp: Date
+	public readonly context?: Record<string, any>
+	public readonly userAction?: string
 	public readonly recovery?: {
-		automatic: boolean;
-		action?: () => Promise<void>;
-		description?: string;
-	};
+		automatic: boolean
+		action?: () => Promise<void>
+		description?: string
+	}
 
 	constructor(
 		message: string,
@@ -127,24 +127,24 @@ export abstract class TaskMasterError extends Error {
 		context?: Record<string, any>,
 		userAction?: string,
 		recovery?: {
-			automatic: boolean;
-			action?: () => Promise<void>;
-			description?: string;
+			automatic: boolean
+			action?: () => Promise<void>
+			description?: string
 		}
 	) {
-		super(message);
-		this.name = this.constructor.name;
-		this.code = code;
-		this.category = category;
-		this.severity = severity;
-		this.timestamp = new Date();
-		this.context = context;
-		this.userAction = userAction;
-		this.recovery = recovery;
+		super(message)
+		this.name = this.constructor.name
+		this.code = code
+		this.category = category
+		this.severity = severity
+		this.timestamp = new Date()
+		this.context = context
+		this.userAction = userAction
+		this.recovery = recovery
 
 		// Capture stack trace
 		if (Error.captureStackTrace) {
-			Error.captureStackTrace(this, this.constructor);
+			Error.captureStackTrace(this, this.constructor)
 		}
 	}
 
@@ -159,7 +159,7 @@ export abstract class TaskMasterError extends Error {
 			stack: this.stack,
 			userAction: this.userAction,
 			recovery: this.recovery
-		};
+		}
 	}
 }
 
@@ -172,9 +172,9 @@ export class MCPConnectionError extends TaskMasterError {
 		code = 'MCP_CONNECTION_FAILED',
 		context?: Record<string, any>,
 		recovery?: {
-			automatic: boolean;
-			action?: () => Promise<void>;
-			description?: string;
+			automatic: boolean
+			action?: () => Promise<void>
+			description?: string
 		}
 	) {
 		super(
@@ -185,7 +185,7 @@ export class MCPConnectionError extends TaskMasterError {
 			context,
 			'Check your Task Master configuration and ensure the MCP server is accessible.',
 			recovery
-		);
+		)
 	}
 }
 
@@ -193,11 +193,7 @@ export class MCPConnectionError extends TaskMasterError {
  * Configuration related errors
  */
 export class ConfigurationError extends TaskMasterError {
-	constructor(
-		message: string,
-		code = 'CONFIGURATION_INVALID',
-		context?: Record<string, any>
-	) {
+	constructor(message: string, code = 'CONFIGURATION_INVALID', context?: Record<string, any>) {
 		super(
 			message,
 			code,
@@ -205,7 +201,7 @@ export class ConfigurationError extends TaskMasterError {
 			ErrorSeverity.MEDIUM,
 			context,
 			'Check your Task Master configuration in VS Code settings.'
-		);
+		)
 	}
 }
 
@@ -218,9 +214,9 @@ export class TaskLoadingError extends TaskMasterError {
 		code = 'TASK_LOADING_FAILED',
 		context?: Record<string, any>,
 		recovery?: {
-			automatic: boolean;
-			action?: () => Promise<void>;
-			description?: string;
+			automatic: boolean
+			action?: () => Promise<void>
+			description?: string
 		}
 	) {
 		super(
@@ -231,7 +227,7 @@ export class TaskLoadingError extends TaskMasterError {
 			context,
 			'Try refreshing the task list or check your project configuration.',
 			recovery
-		);
+		)
 	}
 }
 
@@ -239,11 +235,7 @@ export class TaskLoadingError extends TaskMasterError {
  * UI rendering related errors
  */
 export class UIRenderingError extends TaskMasterError {
-	constructor(
-		message: string,
-		code = 'UI_RENDERING_FAILED',
-		context?: Record<string, any>
-	) {
+	constructor(message: string, code = 'UI_RENDERING_FAILED', context?: Record<string, any>) {
 		super(
 			message,
 			code,
@@ -251,7 +243,7 @@ export class UIRenderingError extends TaskMasterError {
 			ErrorSeverity.LOW,
 			context,
 			'Try closing and reopening the Kanban board.'
-		);
+		)
 	}
 }
 
@@ -264,9 +256,9 @@ export class NetworkError extends TaskMasterError {
 		code = 'NETWORK_ERROR',
 		context?: Record<string, any>,
 		recovery?: {
-			automatic: boolean;
-			action?: () => Promise<void>;
-			description?: string;
+			automatic: boolean
+			action?: () => Promise<void>
+			description?: string
 		}
 	) {
 		super(
@@ -277,7 +269,7 @@ export class NetworkError extends TaskMasterError {
 			context,
 			'Check your network connection and firewall settings.',
 			recovery
-		);
+		)
 	}
 }
 
@@ -285,52 +277,49 @@ export class NetworkError extends TaskMasterError {
  * Centralized error handler
  */
 export class ErrorHandler {
-	private static instance: ErrorHandler | null = null;
-	private errorLog: ErrorLogEntry[] = [];
-	private maxLogSize = 1000;
-	private errorListeners: ((error: ErrorDetails) => void)[] = [];
+	private static instance: ErrorHandler | null = null
+	private errorLog: ErrorLogEntry[] = []
+	private maxLogSize = 1000
+	private errorListeners: ((error: ErrorDetails) => void)[] = []
 
 	private constructor() {
-		this.setupGlobalErrorHandlers();
+		this.setupGlobalErrorHandlers()
 	}
 
 	static getInstance(): ErrorHandler {
 		if (!ErrorHandler.instance) {
-			ErrorHandler.instance = new ErrorHandler();
+			ErrorHandler.instance = new ErrorHandler()
 		}
-		return ErrorHandler.instance;
+		return ErrorHandler.instance
 	}
 
 	/**
 	 * Handle an error with comprehensive logging and recovery
 	 */
-	async handleError(
-		error: Error | TaskMasterError,
-		context?: Record<string, any>
-	): Promise<void> {
-		const errorDetails = this.createErrorDetails(error, context);
-		const logEntry = this.logError(errorDetails);
+	async handleError(error: Error | TaskMasterError, context?: Record<string, any>): Promise<void> {
+		const errorDetails = this.createErrorDetails(error, context)
+		const logEntry = this.logError(errorDetails)
 
 		// Notify listeners
-		this.notifyErrorListeners(errorDetails);
+		this.notifyErrorListeners(errorDetails)
 
 		// Show user notification based on severity
-		await this.showUserNotification(errorDetails);
+		await this.showUserNotification(errorDetails)
 
 		// Attempt recovery if available
 		if (errorDetails.recovery?.automatic && errorDetails.recovery.action) {
 			try {
-				await errorDetails.recovery.action();
-				this.markErrorResolved(logEntry.id);
+				await errorDetails.recovery.action()
+				this.markErrorResolved(logEntry.id)
 			} catch (recoveryError) {
-				logger.error('Error recovery failed:', recoveryError);
-				logEntry.attempts++;
-				logEntry.lastAttempt = new Date();
+				logger.error('Error recovery failed:', recoveryError)
+				logEntry.attempts++
+				logEntry.lastAttempt = new Date()
 			}
 		}
 
 		// Log to console with appropriate level
-		this.logToConsole(errorDetails);
+		this.logToConsole(errorDetails)
 	}
 
 	/**
@@ -340,10 +329,10 @@ export class ErrorHandler {
 		error: Error | TaskMasterError,
 		context?: Record<string, any>
 	): Promise<void> {
-		const errorDetails = this.createErrorDetails(error, context);
-		errorDetails.severity = ErrorSeverity.CRITICAL;
+		const errorDetails = this.createErrorDetails(error, context)
+		errorDetails.severity = ErrorSeverity.CRITICAL
 
-		await this.handleError(error, context);
+		await this.handleError(error, context)
 
 		// Show critical error dialog
 		const action = await vscode.window.showErrorMessage(
@@ -351,18 +340,18 @@ export class ErrorHandler {
 			'View Details',
 			'Report Issue',
 			'Restart Extension'
-		);
+		)
 
 		switch (action) {
 			case 'View Details':
-				await this.showErrorDetails(errorDetails);
-				break;
+				await this.showErrorDetails(errorDetails)
+				break
 			case 'Report Issue':
-				await this.openIssueReport(errorDetails);
-				break;
+				await this.openIssueReport(errorDetails)
+				break
 			case 'Restart Extension':
-				await vscode.commands.executeCommand('workbench.action.reloadWindow');
-				break;
+				await vscode.commands.executeCommand('workbench.action.reloadWindow')
+				break
 		}
 	}
 
@@ -370,55 +359,48 @@ export class ErrorHandler {
 	 * Add error event listener
 	 */
 	onError(listener: (error: ErrorDetails) => void): void {
-		this.errorListeners.push(listener);
+		this.errorListeners.push(listener)
 	}
 
 	/**
 	 * Remove error event listener
 	 */
 	removeErrorListener(listener: (error: ErrorDetails) => void): void {
-		const index = this.errorListeners.indexOf(listener);
+		const index = this.errorListeners.indexOf(listener)
 		if (index !== -1) {
-			this.errorListeners.splice(index, 1);
+			this.errorListeners.splice(index, 1)
 		}
 	}
 
 	/**
 	 * Get error log
 	 */
-	getErrorLog(
-		category?: ErrorCategory,
-		severity?: ErrorSeverity
-	): ErrorLogEntry[] {
-		let filteredLog = this.errorLog;
+	getErrorLog(category?: ErrorCategory, severity?: ErrorSeverity): ErrorLogEntry[] {
+		let filteredLog = this.errorLog
 
 		if (category) {
-			filteredLog = filteredLog.filter(
-				(entry) => entry.error.category === category
-			);
+			filteredLog = filteredLog.filter((entry) => entry.error.category === category)
 		}
 
 		if (severity) {
-			filteredLog = filteredLog.filter(
-				(entry) => entry.error.severity === severity
-			);
+			filteredLog = filteredLog.filter((entry) => entry.error.severity === severity)
 		}
 
-		return filteredLog.slice().reverse(); // Most recent first
+		return filteredLog.slice().reverse() // Most recent first
 	}
 
 	/**
 	 * Clear error log
 	 */
 	clearErrorLog(): void {
-		this.errorLog = [];
+		this.errorLog = []
 	}
 
 	/**
 	 * Export error log for debugging
 	 */
 	exportErrorLog(): string {
-		return JSON.stringify(this.errorLog, null, 2);
+		return JSON.stringify(this.errorLog, null, 2)
 	}
 
 	/**
@@ -429,11 +411,11 @@ export class ErrorHandler {
 		context?: Record<string, any>
 	): ErrorDetails {
 		if (error instanceof TaskMasterError) {
-			const details = error.toErrorDetails();
+			const details = error.toErrorDetails()
 			if (context) {
-				details.context = { ...details.context, ...context };
+				details.context = { ...details.context, ...context }
 			}
-			return details;
+			return details
 		}
 
 		// Handle standard Error objects
@@ -445,7 +427,7 @@ export class ErrorHandler {
 			timestamp: new Date(),
 			context: { ...context, errorName: error.name },
 			stack: error.stack
-		};
+		}
 	}
 
 	/**
@@ -457,85 +439,80 @@ export class ErrorHandler {
 			error: errorDetails,
 			resolved: false,
 			attempts: 0
-		};
+		}
 
-		this.errorLog.push(logEntry);
+		this.errorLog.push(logEntry)
 
 		// Maintain log size limit
 		if (this.errorLog.length > this.maxLogSize) {
-			this.errorLog = this.errorLog.slice(-this.maxLogSize);
+			this.errorLog = this.errorLog.slice(-this.maxLogSize)
 		}
 
-		return logEntry;
+		return logEntry
 	}
 
 	/**
 	 * Mark error as resolved
 	 */
 	private markErrorResolved(errorId: string): void {
-		const entry = this.errorLog.find((e) => e.id === errorId);
+		const entry = this.errorLog.find((e) => e.id === errorId)
 		if (entry) {
-			entry.resolved = true;
-			entry.resolvedAt = new Date();
+			entry.resolved = true
+			entry.resolvedAt = new Date()
 		}
 	}
 
 	/**
 	 * Show user notification based on error severity and user preferences
 	 */
-	private async showUserNotification(
-		errorDetails: ErrorDetails
-	): Promise<void> {
+	private async showUserNotification(errorDetails: ErrorDetails): Promise<void> {
 		// Check if user wants to see this notification
 		if (!shouldShowNotification(errorDetails.category, errorDetails.severity)) {
-			return;
+			return
 		}
 
-		const notificationType = getNotificationType(
-			errorDetails.category,
-			errorDetails.severity
-		);
+		const notificationType = getNotificationType(errorDetails.category, errorDetails.severity)
 		const message = errorDetails.userAction
 			? `${errorDetails.message} ${errorDetails.userAction}`
-			: errorDetails.message;
+			: errorDetails.message
 
 		// Handle different notification types based on user preferences
 		switch (notificationType) {
 			case 'VSCODE_ERROR':
-				await vscode.window.showErrorMessage(message);
-				break;
+				await vscode.window.showErrorMessage(message)
+				break
 			case 'VSCODE_WARNING':
-				await vscode.window.showWarningMessage(message);
-				break;
+				await vscode.window.showWarningMessage(message)
+				break
 			case 'VSCODE_INFO':
-				await vscode.window.showInformationMessage(message);
-				break;
+				await vscode.window.showInformationMessage(message)
+				break
 			case 'TOAST_SUCCESS':
 			case 'TOAST_INFO':
 			case 'TOAST_WARNING':
 			case 'TOAST_ERROR':
 				// These will be handled by the webview toast system
 				// The error listener in extension.ts will send these to webview
-				break;
+				break
 			case 'CONSOLE_ONLY':
 			case 'SILENT':
 				// No user notification, just console logging
-				break;
+				break
 			default:
 				// Fallback to severity-based notifications
 				switch (errorDetails.severity) {
 					case ErrorSeverity.CRITICAL:
-						await vscode.window.showErrorMessage(message);
-						break;
+						await vscode.window.showErrorMessage(message)
+						break
 					case ErrorSeverity.HIGH:
-						await vscode.window.showErrorMessage(message);
-						break;
+						await vscode.window.showErrorMessage(message)
+						break
 					case ErrorSeverity.MEDIUM:
-						await vscode.window.showWarningMessage(message);
-						break;
+						await vscode.window.showWarningMessage(message)
+						break
 					case ErrorSeverity.LOW:
-						await vscode.window.showInformationMessage(message);
-						break;
+						await vscode.window.showInformationMessage(message)
+						break
 				}
 		}
 	}
@@ -544,19 +521,19 @@ export class ErrorHandler {
 	 * Log to console with appropriate level
 	 */
 	private logToConsole(errorDetails: ErrorDetails): void {
-		const logMessage = `[${errorDetails.category}] ${errorDetails.code}: ${errorDetails.message}`;
+		const logMessage = `[${errorDetails.category}] ${errorDetails.code}: ${errorDetails.message}`
 
 		switch (errorDetails.severity) {
 			case ErrorSeverity.CRITICAL:
 			case ErrorSeverity.HIGH:
-				logger.error(logMessage, errorDetails);
-				break;
+				logger.error(logMessage, errorDetails)
+				break
 			case ErrorSeverity.MEDIUM:
-				logger.warn(logMessage, errorDetails);
-				break;
+				logger.warn(logMessage, errorDetails)
+				break
 			case ErrorSeverity.LOW:
-				console.info(logMessage, errorDetails);
-				break;
+				console.info(logMessage, errorDetails)
+				break
 		}
 	}
 
@@ -570,34 +547,32 @@ export class ErrorHandler {
 			`Severity: ${errorDetails.severity}`,
 			`Time: ${errorDetails.timestamp.toISOString()}`,
 			`Message: ${errorDetails.message}`
-		];
+		]
 
 		if (errorDetails.context) {
-			details.push(`Context: ${JSON.stringify(errorDetails.context, null, 2)}`);
+			details.push(`Context: ${JSON.stringify(errorDetails.context, null, 2)}`)
 		}
 
 		if (errorDetails.stack) {
-			details.push(`Stack Trace: ${errorDetails.stack}`);
+			details.push(`Stack Trace: ${errorDetails.stack}`)
 		}
 
-		const content = details.join('\n\n');
+		const content = details.join('\n\n')
 
 		// Create temporary document to show error details
 		const doc = await vscode.workspace.openTextDocument({
 			content,
 			language: 'plaintext'
-		});
+		})
 
-		await vscode.window.showTextDocument(doc);
+		await vscode.window.showTextDocument(doc)
 	}
 
 	/**
 	 * Open GitHub issue report
 	 */
 	private async openIssueReport(errorDetails: ErrorDetails): Promise<void> {
-		const issueTitle = encodeURIComponent(
-			`Error: ${errorDetails.code} - ${errorDetails.message}`
-		);
+		const issueTitle = encodeURIComponent(`Error: ${errorDetails.code} - ${errorDetails.message}`)
 		const issueBody = encodeURIComponent(`
 **Error Details:**
 - Code: ${errorDetails.code}
@@ -621,10 +596,10 @@ ${errorDetails.context ? JSON.stringify(errorDetails.context, null, 2) : 'None'}
 
 **Additional Notes:**
 
-    `);
+    `)
 
-		const issueUrl = `https://github.com/mcontheway/taskmaster-no-ai/issues/new?title=${issueTitle}&body=${issueBody}`;
-		await vscode.env.openExternal(vscode.Uri.parse(issueUrl));
+		const issueUrl = `https://github.com/mcontheway/taskmaster-no-ai/issues/new?title=${issueTitle}&body=${issueBody}`
+		await vscode.env.openExternal(vscode.Uri.parse(issueUrl))
 	}
 
 	/**
@@ -633,11 +608,11 @@ ${errorDetails.context ? JSON.stringify(errorDetails.context, null, 2) : 'None'}
 	private notifyErrorListeners(errorDetails: ErrorDetails): void {
 		this.errorListeners.forEach((listener) => {
 			try {
-				listener(errorDetails);
+				listener(errorDetails)
 			} catch (error) {
-				logger.error('Error in error listener:', error);
+				logger.error('Error in error listener:', error)
 			}
-		});
+		})
 	}
 
 	/**
@@ -654,7 +629,7 @@ ${errorDetails.context ? JSON.stringify(errorDetails.context, null, 2) : 'None'}
 					severity: ErrorSeverity,
 					context?: Record<string, any>
 				) {
-					super(message, code, ErrorCategory.INTERNAL, severity, context);
+					super(message, code, ErrorCategory.INTERNAL, severity, context)
 				}
 			}
 
@@ -663,9 +638,9 @@ ${errorDetails.context ? JSON.stringify(errorDetails.context, null, 2) : 'None'}
 				'UNHANDLED_REJECTION',
 				ErrorSeverity.HIGH,
 				{ reason: String(reason), promise: String(promise) }
-			);
-			this.handleError(error);
-		});
+			)
+			this.handleError(error)
+		})
 
 		// Handle uncaught exceptions
 		process.on('uncaughtException', (error) => {
@@ -677,7 +652,7 @@ ${errorDetails.context ? JSON.stringify(errorDetails.context, null, 2) : 'None'}
 					severity: ErrorSeverity,
 					context?: Record<string, any>
 				) {
-					super(message, code, ErrorCategory.INTERNAL, severity, context);
+					super(message, code, ErrorCategory.INTERNAL, severity, context)
 				}
 			}
 
@@ -686,9 +661,9 @@ ${errorDetails.context ? JSON.stringify(errorDetails.context, null, 2) : 'None'}
 				'UNCAUGHT_EXCEPTION',
 				ErrorSeverity.CRITICAL,
 				{ originalError: error.message, stack: error.stack }
-			);
-			this.handleCriticalError(taskMasterError);
-		});
+			)
+			this.handleCriticalError(taskMasterError)
+		})
 	}
 }
 
@@ -696,29 +671,23 @@ ${errorDetails.context ? JSON.stringify(errorDetails.context, null, 2) : 'None'}
  * Utility functions for error handling
  */
 export function getErrorHandler(): ErrorHandler {
-	return ErrorHandler.getInstance();
+	return ErrorHandler.getInstance()
 }
 
-export function createRecoveryAction(
-	action: () => Promise<void>,
-	description: string
-) {
+export function createRecoveryAction(action: () => Promise<void>, description: string) {
 	return {
 		automatic: false,
 		action,
 		description
-	};
+	}
 }
 
-export function createAutoRecoveryAction(
-	action: () => Promise<void>,
-	description: string
-) {
+export function createAutoRecoveryAction(action: () => Promise<void>, description: string) {
 	return {
 		automatic: true,
 		action,
 		description
-	};
+	}
 }
 
 // Default error categorization rules
@@ -755,7 +724,7 @@ export const ERROR_CATEGORIZATION_RULES: Record<string, ErrorCategory> = {
 	ENOENT: ErrorCategory.FILE_SYSTEM,
 	EISDIR: ErrorCategory.FILE_SYSTEM,
 	file: ErrorCategory.FILE_SYSTEM
-};
+}
 
 // Severity mapping based on error categories
 export const CATEGORY_SEVERITY_MAPPING: Record<ErrorCategory, ErrorSeverity> = {
@@ -780,52 +749,39 @@ export const CATEGORY_SEVERITY_MAPPING: Record<ErrorCategory, ErrorSeverity> = {
 	[ErrorCategory.UI_RENDERING]: ErrorSeverity.MEDIUM,
 	[ErrorCategory.VALIDATION]: ErrorSeverity.MEDIUM,
 	[ErrorCategory.INTERNAL]: ErrorSeverity.HIGH
-};
+}
 
 // Notification type mapping based on severity
-export const SEVERITY_NOTIFICATION_MAPPING: Record<
-	ErrorSeverity,
-	NotificationType
-> = {
+export const SEVERITY_NOTIFICATION_MAPPING: Record<ErrorSeverity, NotificationType> = {
 	[ErrorSeverity.LOW]: NotificationType.TOAST_INFO,
 	[ErrorSeverity.MEDIUM]: NotificationType.TOAST_WARNING,
 	[ErrorSeverity.HIGH]: NotificationType.VSCODE_WARNING,
 	[ErrorSeverity.CRITICAL]: NotificationType.VSCODE_ERROR
-};
+}
 
 /**
  * Automatically categorize an error based on its message and type
  */
-export function categorizeError(
-	error: Error | unknown,
-	operation?: string
-): ErrorCategory {
-	const errorMessage = error instanceof Error ? error.message : String(error);
-	const errorStack = error instanceof Error ? error.stack : undefined;
-	const searchText =
-		`${errorMessage} ${errorStack || ''} ${operation || ''}`.toLowerCase();
+export function categorizeError(error: Error | unknown, operation?: string): ErrorCategory {
+	const errorMessage = error instanceof Error ? error.message : String(error)
+	const errorStack = error instanceof Error ? error.stack : undefined
+	const searchText = `${errorMessage} ${errorStack || ''} ${operation || ''}`.toLowerCase()
 
-	for (const [pattern, category] of Object.entries(
-		ERROR_CATEGORIZATION_RULES
-	)) {
+	for (const [pattern, category] of Object.entries(ERROR_CATEGORIZATION_RULES)) {
 		if (searchText.includes(pattern.toLowerCase())) {
-			return category;
+			return category
 		}
 	}
 
-	return ErrorCategory.UNKNOWN;
+	return ErrorCategory.UNKNOWN
 }
 
 export function getSuggestedSeverity(category: ErrorCategory): ErrorSeverity {
-	return CATEGORY_SEVERITY_MAPPING[category] || ErrorSeverity.HIGH;
+	return CATEGORY_SEVERITY_MAPPING[category] || ErrorSeverity.HIGH
 }
 
-export function getSuggestedNotificationType(
-	severity: ErrorSeverity
-): NotificationType {
-	return (
-		SEVERITY_NOTIFICATION_MAPPING[severity] || NotificationType.CONSOLE_ONLY
-	);
+export function getSuggestedNotificationType(severity: ErrorSeverity): NotificationType {
+	return SEVERITY_NOTIFICATION_MAPPING[severity] || NotificationType.CONSOLE_ONLY
 }
 
 export function createErrorContext(
@@ -833,9 +789,9 @@ export function createErrorContext(
 	operation?: string,
 	overrides?: Partial<ErrorContext>
 ): ErrorContext {
-	const category = categorizeError(error, operation);
-	const severity = getSuggestedSeverity(category);
-	const notificationType = getSuggestedNotificationType(severity);
+	const category = categorizeError(error, operation)
+	const severity = getSuggestedSeverity(category)
+	const notificationType = getSuggestedNotificationType(severity)
 
 	const baseContext: ErrorContext = {
 		category,
@@ -847,12 +803,10 @@ export function createErrorContext(
 		stackTrace: error instanceof Error ? error.stack : undefined,
 		isRecoverable: severity !== ErrorSeverity.CRITICAL,
 		notificationType,
-		showToUser:
-			severity === ErrorSeverity.HIGH || severity === ErrorSeverity.CRITICAL,
+		showToUser: severity === ErrorSeverity.HIGH || severity === ErrorSeverity.CRITICAL,
 		logToConsole: true,
-		logToFile:
-			severity === ErrorSeverity.HIGH || severity === ErrorSeverity.CRITICAL
-	};
+		logToFile: severity === ErrorSeverity.HIGH || severity === ErrorSeverity.CRITICAL
+	}
 
-	return { ...baseContext, ...overrides };
+	return { ...baseContext, ...overrides }
 }

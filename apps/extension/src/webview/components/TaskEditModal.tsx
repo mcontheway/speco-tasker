@@ -2,29 +2,26 @@
  * Task Edit Modal Component
  */
 
-import React, { useState, useEffect, useRef } from 'react';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button'
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu';
-import type { TaskMasterTask, TaskUpdates } from '../types';
+} from '@/components/ui/dropdown-menu'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import type React from 'react'
+import { useEffect, useRef, useState } from 'react'
+import type { TaskMasterTask, TaskUpdates } from '../types'
 
 interface TaskEditModalProps {
-	task: TaskMasterTask;
-	onSave: (taskId: string, updates: TaskUpdates) => Promise<void>;
-	onCancel: () => void;
+	task: TaskMasterTask
+	onSave: (taskId: string, updates: TaskUpdates) => Promise<void>
+	onCancel: () => void
 }
 
-export const TaskEditModal: React.FC<TaskEditModalProps> = ({
-	task,
-	onSave,
-	onCancel
-}) => {
+export const TaskEditModal: React.FC<TaskEditModalProps> = ({ task, onSave, onCancel }) => {
 	const [updates, setUpdates] = useState<TaskUpdates>({
 		title: task.title,
 		description: task.description || '',
@@ -32,29 +29,29 @@ export const TaskEditModal: React.FC<TaskEditModalProps> = ({
 		testStrategy: task.testStrategy || '',
 		priority: task.priority,
 		dependencies: task.dependencies || []
-	});
-	const [isSaving, setIsSaving] = useState(false);
-	const formRef = useRef<HTMLFormElement>(null);
-	const titleInputRef = useRef<HTMLInputElement>(null);
+	})
+	const [isSaving, setIsSaving] = useState(false)
+	const formRef = useRef<HTMLFormElement>(null)
+	const titleInputRef = useRef<HTMLInputElement>(null)
 
 	// Focus title input on mount
 	useEffect(() => {
-		titleInputRef.current?.focus();
-		titleInputRef.current?.select();
-	}, []);
+		titleInputRef.current?.focus()
+		titleInputRef.current?.select()
+	}, [])
 
 	const handleSubmit = async (e?: React.FormEvent) => {
-		e?.preventDefault();
-		setIsSaving(true);
+		e?.preventDefault()
+		setIsSaving(true)
 
 		try {
-			await onSave(task.id, updates);
+			await onSave(task.id, updates)
 		} catch (error) {
-			console.error('Failed to save task:', error);
+			console.error('Failed to save task:', error)
 		} finally {
-			setIsSaving(false);
+			setIsSaving(false)
 		}
-	};
+	}
 
 	const hasChanges = () => {
 		return (
@@ -63,10 +60,9 @@ export const TaskEditModal: React.FC<TaskEditModalProps> = ({
 			updates.details !== (task.details || '') ||
 			updates.testStrategy !== (task.testStrategy || '') ||
 			updates.priority !== task.priority ||
-			JSON.stringify(updates.dependencies) !==
-				JSON.stringify(task.dependencies || [])
-		);
-	};
+			JSON.stringify(updates.dependencies) !== JSON.stringify(task.dependencies || [])
+		)
+	}
 
 	return (
 		<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -78,12 +74,7 @@ export const TaskEditModal: React.FC<TaskEditModalProps> = ({
 						onClick={onCancel}
 						className="text-vscode-foreground/50 hover:text-vscode-foreground transition-colors"
 					>
-						<svg
-							className="w-5 h-5"
-							fill="none"
-							stroke="currentColor"
-							viewBox="0 0 24 24"
-						>
+						<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path
 								strokeLinecap="round"
 								strokeLinejoin="round"
@@ -108,9 +99,7 @@ export const TaskEditModal: React.FC<TaskEditModalProps> = ({
 							id="title"
 							type="text"
 							value={updates.title || ''}
-							onChange={(e) =>
-								setUpdates({ ...updates, title: e.target.value })
-							}
+							onChange={(e) => setUpdates({ ...updates, title: e.target.value })}
 							className="w-full px-3 py-2 bg-vscode-input border border-vscode-border rounded-md text-vscode-foreground focus:outline-none focus:ring-2 focus:ring-vscode-focusBorder"
 							placeholder="Task title"
 						/>
@@ -123,12 +112,7 @@ export const TaskEditModal: React.FC<TaskEditModalProps> = ({
 							<DropdownMenuTrigger asChild>
 								<Button variant="outline" className="w-full justify-between">
 									<span className="capitalize">{updates.priority}</span>
-									<svg
-										className="w-4 h-4"
-										fill="none"
-										stroke="currentColor"
-										viewBox="0 0 24 24"
-									>
+									<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 										<path
 											strokeLinecap="round"
 											strokeLinejoin="round"
@@ -139,19 +123,13 @@ export const TaskEditModal: React.FC<TaskEditModalProps> = ({
 								</Button>
 							</DropdownMenuTrigger>
 							<DropdownMenuContent className="w-full">
-								<DropdownMenuItem
-									onClick={() => setUpdates({ ...updates, priority: 'high' })}
-								>
+								<DropdownMenuItem onClick={() => setUpdates({ ...updates, priority: 'high' })}>
 									High
 								</DropdownMenuItem>
-								<DropdownMenuItem
-									onClick={() => setUpdates({ ...updates, priority: 'medium' })}
-								>
+								<DropdownMenuItem onClick={() => setUpdates({ ...updates, priority: 'medium' })}>
 									Medium
 								</DropdownMenuItem>
-								<DropdownMenuItem
-									onClick={() => setUpdates({ ...updates, priority: 'low' })}
-								>
+								<DropdownMenuItem onClick={() => setUpdates({ ...updates, priority: 'low' })}>
 									Low
 								</DropdownMenuItem>
 							</DropdownMenuContent>
@@ -164,9 +142,7 @@ export const TaskEditModal: React.FC<TaskEditModalProps> = ({
 						<Textarea
 							id="description"
 							value={updates.description || ''}
-							onChange={(e) =>
-								setUpdates({ ...updates, description: e.target.value })
-							}
+							onChange={(e) => setUpdates({ ...updates, description: e.target.value })}
 							className="min-h-[80px]"
 							placeholder="Brief description of the task"
 						/>
@@ -178,9 +154,7 @@ export const TaskEditModal: React.FC<TaskEditModalProps> = ({
 						<Textarea
 							id="details"
 							value={updates.details || ''}
-							onChange={(e) =>
-								setUpdates({ ...updates, details: e.target.value })
-							}
+							onChange={(e) => setUpdates({ ...updates, details: e.target.value })}
 							className="min-h-[120px]"
 							placeholder="Technical details and implementation notes"
 						/>
@@ -192,9 +166,7 @@ export const TaskEditModal: React.FC<TaskEditModalProps> = ({
 						<Textarea
 							id="testStrategy"
 							value={updates.testStrategy || ''}
-							onChange={(e) =>
-								setUpdates({ ...updates, testStrategy: e.target.value })
-							}
+							onChange={(e) => setUpdates({ ...updates, testStrategy: e.target.value })}
 							className="min-h-[80px]"
 							placeholder="How to test this task"
 						/>
@@ -202,9 +174,7 @@ export const TaskEditModal: React.FC<TaskEditModalProps> = ({
 
 					{/* Dependencies */}
 					<div className="space-y-2">
-						<Label htmlFor="dependencies">
-							Dependencies (comma-separated task IDs)
-						</Label>
+						<Label htmlFor="dependencies">Dependencies (comma-separated task IDs)</Label>
 						<input
 							id="dependencies"
 							type="text"
@@ -229,14 +199,11 @@ export const TaskEditModal: React.FC<TaskEditModalProps> = ({
 					<Button variant="outline" onClick={onCancel} disabled={isSaving}>
 						Cancel
 					</Button>
-					<Button
-						onClick={() => handleSubmit()}
-						disabled={isSaving || !hasChanges()}
-					>
+					<Button onClick={() => handleSubmit()} disabled={isSaving || !hasChanges()}>
 						{isSaving ? 'Saving...' : 'Save Changes'}
 					</Button>
 				</div>
 			</div>
 		</div>
-	);
-};
+	)
+}

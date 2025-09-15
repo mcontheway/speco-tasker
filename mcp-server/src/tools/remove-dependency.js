@@ -3,15 +3,11 @@
  * Tool for removing a dependency from a task
  */
 
-import { z } from 'zod';
-import {
-	handleApiResult,
-	createErrorResponse,
-	withNormalizedProjectRoot
-} from './utils.js';
-import { removeDependencyDirect } from '../core/task-master-core.js';
-import { findTasksPath } from '../core/utils/path-utils.js';
-import { resolveTag } from '../../../scripts/modules/utils.js';
+import { z } from 'zod'
+import { resolveTag } from '../../../scripts/modules/utils.js'
+import { removeDependencyDirect } from '../core/task-master-core.js'
+import { findTasksPath } from '../core/utils/path-utils.js'
+import { createErrorResponse, handleApiResult, withNormalizedProjectRoot } from './utils.js'
 
 /**
  * Register the removeDependency tool with the MCP server
@@ -27,12 +23,8 @@ export function registerRemoveDependencyTool(server) {
 			file: z
 				.string()
 				.optional()
-				.describe(
-					'Absolute path to the tasks file (default: tasks/tasks.json)'
-				),
-			projectRoot: z
-				.string()
-				.describe('The directory of the project. Must be an absolute path.'),
+				.describe('Absolute path to the tasks file (default: tasks/tasks.json)'),
+			projectRoot: z.string().describe('The directory of the project. Must be an absolute path.'),
 			tag: z.string().optional().describe('Tag context to operate on')
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
@@ -40,23 +32,18 @@ export function registerRemoveDependencyTool(server) {
 				const resolvedTag = resolveTag({
 					projectRoot: args.projectRoot,
 					tag: args.tag
-				});
+				})
 				log.info(
 					`Removing dependency for task ${args.id} from ${args.dependsOn} with args: ${JSON.stringify(args)}`
-				);
+				)
 
 				// Use args.projectRoot directly (guaranteed by withNormalizedProjectRoot)
-				let tasksJsonPath;
+				let tasksJsonPath
 				try {
-					tasksJsonPath = findTasksPath(
-						{ projectRoot: args.projectRoot, file: args.file },
-						log
-					);
+					tasksJsonPath = findTasksPath({ projectRoot: args.projectRoot, file: args.file }, log)
 				} catch (error) {
-					log.error(`Error finding tasks.json: ${error.message}`);
-					return createErrorResponse(
-						`Failed to find tasks.json: ${error.message}`
-					);
+					log.error(`Error finding tasks.json: ${error.message}`)
+					return createErrorResponse(`Failed to find tasks.json: ${error.message}`)
 				}
 
 				const result = await removeDependencyDirect(
@@ -68,12 +55,12 @@ export function registerRemoveDependencyTool(server) {
 						tag: resolvedTag
 					},
 					log
-				);
+				)
 
 				if (result.success) {
-					log.info(`Successfully removed dependency: ${result.data.message}`);
+					log.info(`Successfully removed dependency: ${result.data.message}`)
 				} else {
-					log.error(`Failed to remove dependency: ${result.error.message}`);
+					log.error(`Failed to remove dependency: ${result.error.message}`)
 				}
 
 				return handleApiResult(
@@ -82,11 +69,11 @@ export function registerRemoveDependencyTool(server) {
 					'Error removing dependency',
 					undefined,
 					args.projectRoot
-				);
+				)
 			} catch (error) {
-				log.error(`Error in removeDependency tool: ${error.message}`);
-				return createErrorResponse(error.message);
+				log.error(`Error in removeDependency tool: ${error.message}`)
+				return createErrorResponse(error.message)
 			}
 		})
-	});
+	})
 }

@@ -3,13 +3,13 @@
  * AI provider implementation for Azure OpenAI models using Vercel AI SDK.
  */
 
-import { createAzure } from '@ai-sdk/azure';
-import { BaseAIProvider } from './base-provider.js';
+import { createAzure } from '@ai-sdk/azure'
+import { BaseAIProvider } from './base-provider.js'
 
 export class AzureProvider extends BaseAIProvider {
 	constructor() {
-		super();
-		this.name = 'Azure OpenAI';
+		super()
+		this.name = 'Azure OpenAI'
 	}
 
 	/**
@@ -17,7 +17,7 @@ export class AzureProvider extends BaseAIProvider {
 	 * @returns {string} The environment variable name for the Azure OpenAI API key
 	 */
 	getRequiredApiKeyName() {
-		return 'AZURE_OPENAI_API_KEY';
+		return 'AZURE_OPENAI_API_KEY'
 	}
 
 	/**
@@ -27,13 +27,13 @@ export class AzureProvider extends BaseAIProvider {
 	 */
 	validateAuth(params) {
 		if (!params.apiKey) {
-			throw new Error('Azure API key is required');
+			throw new Error('Azure API key is required')
 		}
 
 		if (!params.baseURL) {
 			throw new Error(
 				'Azure endpoint URL is required. Set it in .taskmasterconfig global.azureBaseURL or models.[role].baseURL'
-			);
+			)
 		}
 	}
 
@@ -47,14 +47,14 @@ export class AzureProvider extends BaseAIProvider {
 	 */
 	getClient(params) {
 		try {
-			const { apiKey, baseURL } = params;
+			const { apiKey, baseURL } = params
 
 			return createAzure({
 				apiKey,
 				baseURL
-			});
+			})
 		} catch (error) {
-			this.handleError('client initialization', error);
+			this.handleError('client initialization', error)
 		}
 	}
 }

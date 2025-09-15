@@ -12,7 +12,7 @@ export const VALIDATED_PROVIDERS = [
 	'xai',
 	'groq',
 	'mistral'
-];
+]
 
 // Custom providers object for easy named access
 export const CUSTOM_PROVIDERS = {
@@ -24,13 +24,10 @@ export const CUSTOM_PROVIDERS = {
 	CLAUDE_CODE: 'claude-code',
 	MCP: 'mcp',
 	GEMINI_CLI: 'gemini-cli'
-};
+}
 
 // Custom providers array (for backward compatibility and iteration)
-export const CUSTOM_PROVIDERS_ARRAY = Object.values(CUSTOM_PROVIDERS);
+export const CUSTOM_PROVIDERS_ARRAY = Object.values(CUSTOM_PROVIDERS)
 
 // All known providers (for reference)
-export const ALL_PROVIDERS = [
-	...VALIDATED_PROVIDERS,
-	...CUSTOM_PROVIDERS_ARRAY
-];
+export const ALL_PROVIDERS = [...VALIDATED_PROVIDERS, ...CUSTOM_PROVIDERS_ARRAY]

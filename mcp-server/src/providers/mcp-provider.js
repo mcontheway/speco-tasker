@@ -6,22 +6,22 @@
  * Follows the Claude Code provider pattern for session-based providers.
  */
 
-import { createMCP } from '../custom-sdk/index.js';
-import { BaseAIProvider } from '../../../src/ai-providers/base-provider.js';
+import { BaseAIProvider } from '../../../src/ai-providers/base-provider.js'
+import { createMCP } from '../custom-sdk/index.js'
 
 export class MCPProvider extends BaseAIProvider {
 	constructor() {
-		super();
-		this.name = 'mcp';
-		this.session = null; // MCP server session object
+		super()
+		this.name = 'mcp'
+		this.session = null // MCP server session object
 	}
 
 	getRequiredApiKeyName() {
-		return 'MCP_API_KEY';
+		return 'MCP_API_KEY'
 	}
 
 	isRequiredApiKey() {
-		return false;
+		return false
 	}
 
 	/**
@@ -31,11 +31,11 @@ export class MCPProvider extends BaseAIProvider {
 	validateAuth(params) {
 		// Validate MCP session instead of API key
 		if (!this.session) {
-			throw new Error('MCP Provider requires active MCP session');
+			throw new Error('MCP Provider requires active MCP session')
 		}
 
 		if (!this.session.clientCapabilities?.sampling) {
-			throw new Error('MCP session must have client sampling capabilities');
+			throw new Error('MCP session must have client sampling capabilities')
 		}
 	}
 
@@ -54,9 +54,9 @@ export class MCPProvider extends BaseAIProvider {
 					temperature: params.temperature,
 					maxTokens: params.maxTokens
 				}
-			});
+			})
 		} catch (error) {
-			this.handleError('client initialization', error);
+			this.handleError('client initialization', error)
 		}
 	}
 
@@ -65,12 +65,12 @@ export class MCPProvider extends BaseAIProvider {
 	 * @param {object} session - MCP session object
 	 */
 	setSession(session) {
-		this.session = session;
+		this.session = session
 
 		if (!session) {
-			this.logger?.warn('Set null session on MCP Provider');
+			this.logger?.warn('Set null session on MCP Provider')
 		} else {
-			this.logger?.debug('Updated MCP Provider session');
+			this.logger?.debug('Updated MCP Provider session')
 		}
 	}
 
@@ -79,6 +79,6 @@ export class MCPProvider extends BaseAIProvider {
 	 * @returns {boolean} True if session is available and valid
 	 */
 	hasValidSession() {
-		return !!(this.session && this.session.clientCapabilities?.sampling);
+		return !!(this.session && this.session.clientCapabilities?.sampling)
 	}
 }

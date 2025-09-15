@@ -1,35 +1,28 @@
-import { jest } from '@jest/globals';
-import { execSync } from 'child_process';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { execSync } from 'child_process'
+import fs from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url'
+import { jest } from '@jest/globals'
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 describe('Complex Cross-Tag Scenarios', () => {
-	let testDir;
-	let tasksPath;
+	let testDir
+	let tasksPath
 
 	// Define binPath once for the entire test suite
-	const binPath = path.join(
-		__dirname,
-		'..',
-		'..',
-		'..',
-		'bin',
-		'task-master.js'
-	);
+	const binPath = path.join(__dirname, '..', '..', '..', 'bin', 'task-master.js')
 
 	beforeEach(() => {
 		// Create test directory
-		testDir = fs.mkdtempSync(path.join(__dirname, 'test-'));
-		process.chdir(testDir);
+		testDir = fs.mkdtempSync(path.join(__dirname, 'test-'))
+		process.chdir(testDir)
 
 		// Initialize task-master
 		execSync(`node ${binPath} init --yes`, {
 			stdio: 'pipe'
-		});
+		})
 
 		// Create test tasks with complex dependencies in the correct tagged format
 		const complexTasks = {
@@ -117,27 +110,27 @@ describe('Complex Cross-Tag Scenarios', () => {
 					description: 'Test tasks for complex cross-tag scenarios'
 				}
 			}
-		};
+		}
 
 		// Write tasks to file
-		tasksPath = path.join(testDir, '.taskmaster', 'tasks', 'tasks.json');
-		fs.writeFileSync(tasksPath, JSON.stringify(complexTasks, null, 2));
-	});
+		tasksPath = path.join(testDir, '.taskmaster', 'tasks', 'tasks.json')
+		fs.writeFileSync(tasksPath, JSON.stringify(complexTasks, null, 2))
+	})
 
 	afterEach(() => {
 		// Change back to project root before cleanup
 		try {
-			process.chdir(global.projectRoot || path.resolve(__dirname, '../../..'));
+			process.chdir(global.projectRoot || path.resolve(__dirname, '../../..'))
 		} catch (error) {
 			// If we can't change directory, try a known safe directory
-			process.chdir(require('os').homedir());
+			process.chdir(require('os').homedir())
 		}
 
 		// Cleanup test directory
 		if (testDir && fs.existsSync(testDir)) {
-			fs.rmSync(testDir, { recursive: true, force: true });
+			fs.rmSync(testDir, { recursive: true, force: true })
 		}
-	});
+	})
 
 	describe('Circular Dependency Detection', () => {
 		it('should detect and prevent circular dependencies', () => {
@@ -179,26 +172,23 @@ describe('Complex Cross-Tag Scenarios', () => {
 						description: 'In-progress tasks'
 					}
 				}
-			};
+			}
 
-			fs.writeFileSync(tasksPath, JSON.stringify(circularTasks, null, 2));
+			fs.writeFileSync(tasksPath, JSON.stringify(circularTasks, null, 2))
 
 			// Try to move task 1 - should fail due to circular dependency
 			expect(() => {
-				execSync(
-					`node ${binPath} move --from=1 --from-tag=backlog --to-tag=in-progress`,
-					{ stdio: 'pipe' }
-				);
-			}).toThrow();
+				execSync(`node ${binPath} move --from=1 --from-tag=backlog --to-tag=in-progress`, {
+					stdio: 'pipe'
+				})
+			}).toThrow()
 
 			// Check that the move was not performed
-			const tasksAfter = JSON.parse(fs.readFileSync(tasksPath, 'utf8'));
-			expect(tasksAfter.backlog.tasks.find((t) => t.id === 1)).toBeDefined();
-			expect(
-				tasksAfter['in-progress'].tasks.find((t) => t.id === 1)
-			).toBeUndefined();
-		});
-	});
+			const tasksAfter = JSON.parse(fs.readFileSync(tasksPath, 'utf8'))
+			expect(tasksAfter.backlog.tasks.find((t) => t.id === 1)).toBeDefined()
+			expect(tasksAfter['in-progress'].tasks.find((t) => t.id === 1)).toBeUndefined()
+		})
+	})
 
 	describe('Complex Dependency Chains', () => {
 		it('should handle deep dependency chains correctly', () => {
@@ -254,76 +244,63 @@ describe('Complex Cross-Tag Scenarios', () => {
 						description: 'In-progress tasks'
 					}
 				}
-			};
+			}
 
-			fs.writeFileSync(tasksPath, JSON.stringify(deepChainTasks, null, 2));
+			fs.writeFileSync(tasksPath, JSON.stringify(deepChainTasks, null, 2))
 
 			// Move task 1 with dependencies - should move entire chain
 			execSync(
 				`node ${binPath} move --from=1 --from-tag=master --to-tag=in-progress --with-dependencies`,
 				{ stdio: 'pipe' }
-			);
+			)
 
 			// Verify all tasks in the chain were moved
-			const tasksAfter = JSON.parse(fs.readFileSync(tasksPath, 'utf8'));
-			expect(tasksAfter.master.tasks.find((t) => t.id === 1)).toBeUndefined();
-			expect(tasksAfter.master.tasks.find((t) => t.id === 2)).toBeUndefined();
-			expect(tasksAfter.master.tasks.find((t) => t.id === 3)).toBeUndefined();
-			expect(tasksAfter.master.tasks.find((t) => t.id === 4)).toBeUndefined();
-			expect(tasksAfter.master.tasks.find((t) => t.id === 5)).toBeUndefined();
+			const tasksAfter = JSON.parse(fs.readFileSync(tasksPath, 'utf8'))
+			expect(tasksAfter.master.tasks.find((t) => t.id === 1)).toBeUndefined()
+			expect(tasksAfter.master.tasks.find((t) => t.id === 2)).toBeUndefined()
+			expect(tasksAfter.master.tasks.find((t) => t.id === 3)).toBeUndefined()
+			expect(tasksAfter.master.tasks.find((t) => t.id === 4)).toBeUndefined()
+			expect(tasksAfter.master.tasks.find((t) => t.id === 5)).toBeUndefined()
 
-			expect(
-				tasksAfter['in-progress'].tasks.find((t) => t.id === 1)
-			).toBeDefined();
-			expect(
-				tasksAfter['in-progress'].tasks.find((t) => t.id === 2)
-			).toBeDefined();
-			expect(
-				tasksAfter['in-progress'].tasks.find((t) => t.id === 3)
-			).toBeDefined();
-			expect(
-				tasksAfter['in-progress'].tasks.find((t) => t.id === 4)
-			).toBeDefined();
-			expect(
-				tasksAfter['in-progress'].tasks.find((t) => t.id === 5)
-			).toBeDefined();
-		});
-	});
+			expect(tasksAfter['in-progress'].tasks.find((t) => t.id === 1)).toBeDefined()
+			expect(tasksAfter['in-progress'].tasks.find((t) => t.id === 2)).toBeDefined()
+			expect(tasksAfter['in-progress'].tasks.find((t) => t.id === 3)).toBeDefined()
+			expect(tasksAfter['in-progress'].tasks.find((t) => t.id === 4)).toBeDefined()
+			expect(tasksAfter['in-progress'].tasks.find((t) => t.id === 5)).toBeDefined()
+		})
+	})
 
 	describe('Subtask Movement Restrictions', () => {
 		it('should prevent direct subtask movement between tags', () => {
 			// Try to move a subtask directly
 			expect(() => {
-				execSync(
-					`node ${binPath} move --from=2.1 --from-tag=master --to-tag=in-progress`,
-					{ stdio: 'pipe' }
-				);
-			}).toThrow();
+				execSync(`node ${binPath} move --from=2.1 --from-tag=master --to-tag=in-progress`, {
+					stdio: 'pipe'
+				})
+			}).toThrow()
 
 			// Verify subtask was not moved
-			const tasksAfter = JSON.parse(fs.readFileSync(tasksPath, 'utf8'));
-			const task2 = tasksAfter.master.tasks.find((t) => t.id === 2);
-			expect(task2).toBeDefined();
-			expect(task2.subtasks.find((s) => s.id === '2.1')).toBeDefined();
-		});
+			const tasksAfter = JSON.parse(fs.readFileSync(tasksPath, 'utf8'))
+			const task2 = tasksAfter.master.tasks.find((t) => t.id === 2)
+			expect(task2).toBeDefined()
+			expect(task2.subtasks.find((s) => s.id === '2.1')).toBeDefined()
+		})
 
 		it('should allow moving parent task with all subtasks', () => {
 			// Move parent task with dependencies (includes subtasks)
 			execSync(
 				`node ${binPath} move --from=2 --from-tag=master --to-tag=in-progress --with-dependencies`,
 				{ stdio: 'pipe' }
-			);
+			)
 
 			// Verify parent and subtasks were moved
-			const tasksAfter = JSON.parse(fs.readFileSync(tasksPath, 'utf8'));
-			expect(tasksAfter.master.tasks.find((t) => t.id === 2)).toBeUndefined();
-			const movedTask2 = tasksAfter['in-progress'].tasks.find(
-				(t) => t.id === 2
-			);
-			expect(movedTask2).toBeDefined();
-			expect(movedTask2.subtasks).toHaveLength(2);
-		});
-	});
+			const tasksAfter = JSON.parse(fs.readFileSync(tasksPath, 'utf8'))
+			expect(tasksAfter.master.tasks.find((t) => t.id === 2)).toBeUndefined()
+			const movedTask2 = tasksAfter['in-progress'].tasks.find((t) => t.id === 2)
+			expect(movedTask2).toBeDefined()
+			expect(movedTask2.subtasks).toHaveLength(2)
+		})
+	})
 
 	describe('Large Task Set Performance', () => {
 		it('should handle large task sets efficiently', () => {
@@ -343,7 +320,7 @@ describe('Complex Cross-Tag Scenarios', () => {
 						description: 'In-progress tasks'
 					}
 				}
-			};
+			}
 
 			// Add 50 tasks to master with dependencies
 			for (let i = 1; i <= 50; i++) {
@@ -353,7 +330,7 @@ describe('Complex Cross-Tag Scenarios', () => {
 					status: 'pending',
 					dependencies: i > 1 ? [i - 1] : [],
 					subtasks: []
-				});
+				})
 			}
 
 			// Add 50 tasks to in-progress
@@ -364,67 +341,61 @@ describe('Complex Cross-Tag Scenarios', () => {
 					status: 'in-progress',
 					dependencies: [],
 					subtasks: []
-				});
+				})
 			}
 
-			fs.writeFileSync(tasksPath, JSON.stringify(largeTaskSet, null, 2));
+			fs.writeFileSync(tasksPath, JSON.stringify(largeTaskSet, null, 2))
 			// Should complete within reasonable time
-			const timeout = process.env.CI ? 10000 : 5000;
-			const startTime = Date.now();
+			const timeout = process.env.CI ? 10000 : 5000
+			const startTime = Date.now()
 			execSync(
 				`node ${binPath} move --from=50 --from-tag=master --to-tag=in-progress --with-dependencies`,
 				{ stdio: 'pipe' }
-			);
-			const endTime = Date.now();
-			expect(endTime - startTime).toBeLessThan(timeout);
+			)
+			const endTime = Date.now()
+			expect(endTime - startTime).toBeLessThan(timeout)
 
 			// Verify the move was successful
-			const tasksAfter = JSON.parse(fs.readFileSync(tasksPath, 'utf8'));
-			expect(
-				tasksAfter['in-progress'].tasks.find((t) => t.id === 50)
-			).toBeDefined();
-		});
-	});
+			const tasksAfter = JSON.parse(fs.readFileSync(tasksPath, 'utf8'))
+			expect(tasksAfter['in-progress'].tasks.find((t) => t.id === 50)).toBeDefined()
+		})
+	})
 
 	describe('Error Recovery and Edge Cases', () => {
 		it('should handle invalid task IDs gracefully', () => {
 			expect(() => {
-				execSync(
-					`node ${binPath} move --from=999 --from-tag=master --to-tag=in-progress`,
-					{ stdio: 'pipe' }
-				);
-			}).toThrow();
-		});
+				execSync(`node ${binPath} move --from=999 --from-tag=master --to-tag=in-progress`, {
+					stdio: 'pipe'
+				})
+			}).toThrow()
+		})
 
 		it('should handle invalid tag names gracefully', () => {
 			expect(() => {
-				execSync(
-					`node ${binPath} move --from=1 --from-tag=invalid-tag --to-tag=in-progress`,
-					{ stdio: 'pipe' }
-				);
-			}).toThrow();
-		});
+				execSync(`node ${binPath} move --from=1 --from-tag=invalid-tag --to-tag=in-progress`, {
+					stdio: 'pipe'
+				})
+			}).toThrow()
+		})
 
 		it('should handle same source and target tags', () => {
 			expect(() => {
-				execSync(
-					`node ${binPath} move --from=1 --from-tag=master --to-tag=master`,
-					{ stdio: 'pipe' }
-				);
-			}).toThrow();
-		});
+				execSync(`node ${binPath} move --from=1 --from-tag=master --to-tag=master`, {
+					stdio: 'pipe'
+				})
+			}).toThrow()
+		})
 
 		it('should create target tag if it does not exist', () => {
-			execSync(
-				`node ${binPath} move --from=1 --from-tag=master --to-tag=new-tag`,
-				{ stdio: 'pipe' }
-			);
+			execSync(`node ${binPath} move --from=1 --from-tag=master --to-tag=new-tag`, {
+				stdio: 'pipe'
+			})
 
-			const tasksAfter = JSON.parse(fs.readFileSync(tasksPath, 'utf8'));
-			expect(tasksAfter['new-tag']).toBeDefined();
-			expect(tasksAfter['new-tag'].tasks.find((t) => t.id === 1)).toBeDefined();
-		});
-	});
+			const tasksAfter = JSON.parse(fs.readFileSync(tasksPath, 'utf8'))
+			expect(tasksAfter['new-tag']).toBeDefined()
+			expect(tasksAfter['new-tag'].tasks.find((t) => t.id === 1)).toBeDefined()
+		})
+	})
 
 	describe('Multiple Task Movement', () => {
 		it('should move multiple tasks simultaneously', () => {
@@ -466,31 +437,24 @@ describe('Complex Cross-Tag Scenarios', () => {
 						description: 'In-progress tasks'
 					}
 				}
-			};
+			}
 
-			fs.writeFileSync(tasksPath, JSON.stringify(multiTaskSet, null, 2));
+			fs.writeFileSync(tasksPath, JSON.stringify(multiTaskSet, null, 2))
 
 			// Move multiple tasks
-			execSync(
-				`node ${binPath} move --from=1,2,3 --from-tag=master --to-tag=in-progress`,
-				{ stdio: 'pipe' }
-			);
+			execSync(`node ${binPath} move --from=1,2,3 --from-tag=master --to-tag=in-progress`, {
+				stdio: 'pipe'
+			})
 
 			// Verify all tasks were moved
-			const tasksAfter = JSON.parse(fs.readFileSync(tasksPath, 'utf8'));
-			expect(tasksAfter.master.tasks.find((t) => t.id === 1)).toBeUndefined();
-			expect(tasksAfter.master.tasks.find((t) => t.id === 2)).toBeUndefined();
-			expect(tasksAfter.master.tasks.find((t) => t.id === 3)).toBeUndefined();
+			const tasksAfter = JSON.parse(fs.readFileSync(tasksPath, 'utf8'))
+			expect(tasksAfter.master.tasks.find((t) => t.id === 1)).toBeUndefined()
+			expect(tasksAfter.master.tasks.find((t) => t.id === 2)).toBeUndefined()
+			expect(tasksAfter.master.tasks.find((t) => t.id === 3)).toBeUndefined()
 
-			expect(
-				tasksAfter['in-progress'].tasks.find((t) => t.id === 1)
-			).toBeDefined();
-			expect(
-				tasksAfter['in-progress'].tasks.find((t) => t.id === 2)
-			).toBeDefined();
-			expect(
-				tasksAfter['in-progress'].tasks.find((t) => t.id === 3)
-			).toBeDefined();
-		});
-	});
-});
+			expect(tasksAfter['in-progress'].tasks.find((t) => t.id === 1)).toBeDefined()
+			expect(tasksAfter['in-progress'].tasks.find((t) => t.id === 2)).toBeDefined()
+			expect(tasksAfter['in-progress'].tasks.find((t) => t.id === 3)).toBeDefined()
+		})
+	})
+})

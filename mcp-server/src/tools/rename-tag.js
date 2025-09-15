@@ -3,14 +3,10 @@
  * Tool to rename an existing tag
  */
 
-import { z } from 'zod';
-import {
-	createErrorResponse,
-	handleApiResult,
-	withNormalizedProjectRoot
-} from './utils.js';
-import { renameTagDirect } from '../core/task-master-core.js';
-import { findTasksPath } from '../core/utils/path-utils.js';
+import { z } from 'zod'
+import { renameTagDirect } from '../core/task-master-core.js'
+import { findTasksPath } from '../core/utils/path-utils.js'
+import { createErrorResponse, handleApiResult, withNormalizedProjectRoot } from './utils.js'
 
 /**
  * Register the renameTag tool with the MCP server
@@ -23,30 +19,20 @@ export function registerRenameTagTool(server) {
 		parameters: z.object({
 			oldName: z.string().describe('Current name of the tag to rename'),
 			newName: z.string().describe('New name for the tag'),
-			file: z
-				.string()
-				.optional()
-				.describe('Path to the tasks file (default: tasks/tasks.json)'),
-			projectRoot: z
-				.string()
-				.describe('The directory of the project. Must be an absolute path.')
+			file: z.string().optional().describe('Path to the tasks file (default: tasks/tasks.json)'),
+			projectRoot: z.string().describe('The directory of the project. Must be an absolute path.')
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
 			try {
-				log.info(`Starting rename-tag with args: ${JSON.stringify(args)}`);
+				log.info(`Starting rename-tag with args: ${JSON.stringify(args)}`)
 
 				// Use args.projectRoot directly (guaranteed by withNormalizedProjectRoot)
-				let tasksJsonPath;
+				let tasksJsonPath
 				try {
-					tasksJsonPath = findTasksPath(
-						{ projectRoot: args.projectRoot, file: args.file },
-						log
-					);
+					tasksJsonPath = findTasksPath({ projectRoot: args.projectRoot, file: args.file }, log)
 				} catch (error) {
-					log.error(`Error finding tasks.json: ${error.message}`);
-					return createErrorResponse(
-						`Failed to find tasks.json: ${error.message}`
-					);
+					log.error(`Error finding tasks.json: ${error.message}`)
+					return createErrorResponse(`Failed to find tasks.json: ${error.message}`)
 				}
 
 				// Call the direct function
@@ -59,19 +45,13 @@ export function registerRenameTagTool(server) {
 					},
 					log,
 					{ session }
-				);
+				)
 
-				return handleApiResult(
-					result,
-					log,
-					'Error renaming tag',
-					undefined,
-					args.projectRoot
-				);
+				return handleApiResult(result, log, 'Error renaming tag', undefined, args.projectRoot)
 			} catch (error) {
-				log.error(`Error in rename-tag tool: ${error.message}`);
-				return createErrorResponse(error.message);
+				log.error(`Error in rename-tag tool: ${error.message}`)
+				return createErrorResponse(error.message)
 			}
 		})
-	});
+	})
 }

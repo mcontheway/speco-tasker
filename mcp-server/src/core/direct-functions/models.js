@@ -4,19 +4,16 @@
  */
 
 import {
-	getModelConfiguration,
 	getAvailableModelsList,
+	getModelConfiguration,
 	setModel
-} from '../../../../scripts/modules/task-manager/models.js';
-import {
-	enableSilentMode,
-	disableSilentMode
-} from '../../../../scripts/modules/utils.js';
-import { createLogWrapper } from '../../tools/utils.js';
-import { CUSTOM_PROVIDERS_ARRAY } from '../../../../src/constants/providers.js';
+} from '../../../../scripts/modules/task-manager/models.js'
+import { disableSilentMode, enableSilentMode } from '../../../../scripts/modules/utils.js'
+import { CUSTOM_PROVIDERS_ARRAY } from '../../../../src/constants/providers.js'
+import { createLogWrapper } from '../../tools/utils.js'
 
 // Define supported roles for model setting
-const MODEL_ROLES = ['main', 'research', 'fallback'];
+const MODEL_ROLES = ['main', 'research', 'fallback']
 
 /**
  * Determine provider hint from custom provider flags
@@ -24,7 +21,7 @@ const MODEL_ROLES = ['main', 'research', 'fallback'];
  * @returns {string|undefined} Provider hint or undefined if no custom provider flag is set
  */
 function getProviderHint(args) {
-	return CUSTOM_PROVIDERS_ARRAY.find((provider) => args[provider]);
+	return CUSTOM_PROVIDERS_ARRAY.find((provider) => args[provider])
 }
 
 /**
@@ -35,18 +32,18 @@ function getProviderHint(args) {
  */
 async function handleModelSetting(args, context) {
 	for (const role of MODEL_ROLES) {
-		const roleKey = `set${role.charAt(0).toUpperCase() + role.slice(1)}`; // setMain, setResearch, setFallback
+		const roleKey = `set${role.charAt(0).toUpperCase() + role.slice(1)}` // setMain, setResearch, setFallback
 
 		if (args[roleKey]) {
-			const providerHint = getProviderHint(args);
+			const providerHint = getProviderHint(args)
 
 			return await setModel(role, args[roleKey], {
 				...context,
 				providerHint
-			});
+			})
 		}
 	}
-	return null; // No model setting was requested
+	return null // No model setting was requested
 }
 
 /**
@@ -57,24 +54,20 @@ async function handleModelSetting(args, context) {
  * @returns {Object} Result object with success, data/error fields
  */
 export async function modelsDirect(args, log, context = {}) {
-	const { session } = context;
-	const { projectRoot } = args; // Extract projectRoot from args
+	const { session } = context
+	const { projectRoot } = args // Extract projectRoot from args
 
 	// Create a logger wrapper that the core functions can use
-	const mcpLog = createLogWrapper(log);
+	const mcpLog = createLogWrapper(log)
 
-	log.info(`Executing models_direct with args: ${JSON.stringify(args)}`);
-	log.info(`Using project root: ${projectRoot}`);
+	log.info(`Executing models_direct with args: ${JSON.stringify(args)}`)
+	log.info(`Using project root: ${projectRoot}`)
 
 	// Validate flags: only one custom provider flag can be used simultaneously
-	const customProviderFlags = CUSTOM_PROVIDERS_ARRAY.filter(
-		(provider) => args[provider]
-	);
+	const customProviderFlags = CUSTOM_PROVIDERS_ARRAY.filter((provider) => args[provider])
 
 	if (customProviderFlags.length > 1) {
-		log.error(
-			'Error: Cannot use multiple custom provider flags simultaneously.'
-		);
+		log.error('Error: Cannot use multiple custom provider flags simultaneously.')
 		return {
 			success: false,
 			error: {
@@ -82,11 +75,11 @@ export async function modelsDirect(args, log, context = {}) {
 				message:
 					'Cannot use multiple custom provider flags simultaneously. Choose only one: openrouter, ollama, bedrock, azure, or vertex.'
 			}
-		};
+		}
 	}
 
 	try {
-		enableSilentMode();
+		enableSilentMode()
 
 		try {
 			// Check for the listAvailableModels flag
@@ -95,14 +88,14 @@ export async function modelsDirect(args, log, context = {}) {
 					session,
 					mcpLog,
 					projectRoot
-				});
+				})
 			}
 
 			// Handle setting any model role using unified function
-			const modelContext = { session, mcpLog, projectRoot };
-			const modelSetResult = await handleModelSetting(args, modelContext);
+			const modelContext = { session, mcpLog, projectRoot }
+			const modelSetResult = await handleModelSetting(args, modelContext)
 			if (modelSetResult) {
-				return modelSetResult;
+				return modelSetResult
 			}
 
 			// Default action: get current configuration
@@ -110,12 +103,12 @@ export async function modelsDirect(args, log, context = {}) {
 				session,
 				mcpLog,
 				projectRoot
-			});
+			})
 		} finally {
-			disableSilentMode();
+			disableSilentMode()
 		}
 	} catch (error) {
-		log.error(`Error in models_direct: ${error.message}`);
+		log.error(`Error in models_direct: ${error.message}`)
 		return {
 			success: false,
 			error: {
@@ -123,6 +116,6 @@ export async function modelsDirect(args, log, context = {}) {
 				message: error.message,
 				details: error.stack
 			}
-		};
+		}
 	}
 }

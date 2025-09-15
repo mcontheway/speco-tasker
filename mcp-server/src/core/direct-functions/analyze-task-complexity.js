@@ -2,14 +2,14 @@
  * Direct function wrapper for analyzeTaskComplexity
  */
 
-import analyzeTaskComplexity from '../../../../scripts/modules/task-manager/analyze-task-complexity.js';
+import fs from 'fs'
+import analyzeTaskComplexity from '../../../../scripts/modules/task-manager/analyze-task-complexity.js'
 import {
-	enableSilentMode,
 	disableSilentMode,
+	enableSilentMode,
 	isSilentMode
-} from '../../../../scripts/modules/utils.js';
-import fs from 'fs';
-import { createLogWrapper } from '../../tools/utils.js'; // Import the new utility
+} from '../../../../scripts/modules/utils.js'
+import { createLogWrapper } from '../../tools/utils.js' // Import the new utility
 
 /**
  * Analyze task complexity and generate recommendations
@@ -29,59 +29,49 @@ import { createLogWrapper } from '../../tools/utils.js'; // Import the new utili
  * @returns {Promise<{success: boolean, data?: Object, error?: {code: string, message: string}}>}
  */
 export async function analyzeTaskComplexityDirect(args, log, context = {}) {
-	const { session } = context;
-	const {
-		tasksJsonPath,
-		outputPath,
-		threshold,
-		research,
-		projectRoot,
-		ids,
-		from,
-		to,
-		tag
-	} = args;
+	const { session } = context
+	const { tasksJsonPath, outputPath, threshold, research, projectRoot, ids, from, to, tag } = args
 
-	const logWrapper = createLogWrapper(log);
+	const logWrapper = createLogWrapper(log)
 
 	// --- Initial Checks (remain the same) ---
 	try {
-		log.info(`Analyzing task complexity with args: ${JSON.stringify(args)}`);
+		log.info(`Analyzing task complexity with args: ${JSON.stringify(args)}`)
 
 		if (!tasksJsonPath) {
-			log.error('analyzeTaskComplexityDirect called without tasksJsonPath');
+			log.error('analyzeTaskComplexityDirect called without tasksJsonPath')
 			return {
 				success: false,
 				error: {
 					code: 'MISSING_ARGUMENT',
 					message: 'tasksJsonPath is required'
 				}
-			};
+			}
 		}
 		if (!outputPath) {
-			log.error('analyzeTaskComplexityDirect called without outputPath');
+			log.error('analyzeTaskComplexityDirect called without outputPath')
 			return {
 				success: false,
 				error: { code: 'MISSING_ARGUMENT', message: 'outputPath is required' }
-			};
+			}
 		}
 
-		const tasksPath = tasksJsonPath;
-		const resolvedOutputPath = outputPath;
+		const tasksPath = tasksJsonPath
+		const resolvedOutputPath = outputPath
 
-		log.info(`Analyzing task complexity from: ${tasksPath}`);
-		log.info(`Output report will be saved to: ${resolvedOutputPath}`);
+		log.info(`Analyzing task complexity from: ${tasksPath}`)
+		log.info(`Output report will be saved to: ${resolvedOutputPath}`)
 
 		if (ids) {
-			log.info(`Analyzing specific task IDs: ${ids}`);
+			log.info(`Analyzing specific task IDs: ${ids}`)
 		} else if (from || to) {
-			const fromStr = from !== undefined ? from : 'first';
-			const toStr = to !== undefined ? to : 'last';
-			log.info(`Analyzing tasks in range: ${fromStr} to ${toStr}`);
+			const fromStr = from !== undefined ? from : 'first'
+			const toStr = to !== undefined ? to : 'last'
+			log.info(`Analyzing tasks in range: ${fromStr} to ${toStr}`)
 		}
 
 		if (research) {
-			log.info('Using research role for complexity analysis');
+			log.info('Using research role for complexity analysis')
 		}
 
 		// Prepare options for the core function - REMOVED mcpLog and session here
@@ -95,17 +85,17 @@ export async function analyzeTaskComplexityDirect(args, log, context = {}) {
 			from: from, // Pass from parameter
 			to: to, // Pass to parameter
 			tag // forward tag
-		};
+		}
 		// --- End Initial Checks ---
 
 		// --- Silent Mode and Logger Wrapper ---
-		const wasSilent = isSilentMode();
+		const wasSilent = isSilentMode()
 		if (!wasSilent) {
-			enableSilentMode(); // Still enable silent mode as a backup
+			enableSilentMode() // Still enable silent mode as a backup
 		}
 
-		let report;
-		let coreResult;
+		let report
+		let coreResult
 
 		try {
 			// --- Call Core Function (Pass context separately) ---
@@ -118,15 +108,13 @@ export async function analyzeTaskComplexityDirect(args, log, context = {}) {
 				outputType: 'mcp',
 				projectRoot,
 				tag
-			});
-			report = coreResult.report;
+			})
+			report = coreResult.report
 		} catch (error) {
-			log.error(
-				`Error in analyzeTaskComplexity core function: ${error.message}`
-			);
+			log.error(`Error in analyzeTaskComplexity core function: ${error.message}`)
 			// Restore logging if we changed it
 			if (!wasSilent && isSilentMode()) {
-				disableSilentMode();
+				disableSilentMode()
 			}
 			return {
 				success: false,
@@ -134,11 +122,11 @@ export async function analyzeTaskComplexityDirect(args, log, context = {}) {
 					code: 'ANALYZE_CORE_ERROR',
 					message: `Error running core complexity analysis: ${error.message}`
 				}
-			};
+			}
 		} finally {
 			// Always restore normal logging in finally block if we enabled silent mode
 			if (!wasSilent && isSilentMode()) {
-				disableSilentMode();
+				disableSilentMode()
 			}
 		}
 
@@ -149,45 +137,34 @@ export async function analyzeTaskComplexityDirect(args, log, context = {}) {
 				success: false,
 				error: {
 					code: 'ANALYZE_REPORT_MISSING', // Specific code
-					message:
-						'Analysis completed but no report file was created at the expected path.'
+					message: 'Analysis completed but no report file was created at the expected path.'
 				}
-			};
+			}
 		}
 
-		if (
-			!coreResult ||
-			!coreResult.report ||
-			typeof coreResult.report !== 'object'
-		) {
-			log.error(
-				'Core analysis function returned an invalid or undefined response.'
-			);
+		if (!coreResult || !coreResult.report || typeof coreResult.report !== 'object') {
+			log.error('Core analysis function returned an invalid or undefined response.')
 			return {
 				success: false,
 				error: {
 					code: 'INVALID_CORE_RESPONSE',
 					message: 'Core analysis function returned an invalid response.'
 				}
-			};
+			}
 		}
 
 		try {
 			// Ensure complexityAnalysis exists and is an array
 			const analysisArray = Array.isArray(coreResult.report.complexityAnalysis)
 				? coreResult.report.complexityAnalysis
-				: [];
+				: []
 
 			// Count tasks by complexity (remains the same)
-			const highComplexityTasks = analysisArray.filter(
-				(t) => t.complexityScore >= 8
-			).length;
+			const highComplexityTasks = analysisArray.filter((t) => t.complexityScore >= 8).length
 			const mediumComplexityTasks = analysisArray.filter(
 				(t) => t.complexityScore >= 5 && t.complexityScore < 8
-			).length;
-			const lowComplexityTasks = analysisArray.filter(
-				(t) => t.complexityScore < 5
-			).length;
+			).length
+			const lowComplexityTasks = analysisArray.filter((t) => t.complexityScore < 5).length
 
 			return {
 				success: true,
@@ -204,32 +181,32 @@ export async function analyzeTaskComplexityDirect(args, log, context = {}) {
 					telemetryData: coreResult.telemetryData,
 					tagInfo: coreResult.tagInfo
 				}
-			};
+			}
 		} catch (parseError) {
 			// Should not happen if core function returns object, but good safety check
-			log.error(`Internal error processing report data: ${parseError.message}`);
+			log.error(`Internal error processing report data: ${parseError.message}`)
 			return {
 				success: false,
 				error: {
 					code: 'REPORT_PROCESS_ERROR',
 					message: `Internal error processing complexity report: ${parseError.message}`
 				}
-			};
+			}
 		}
 		// --- End Result Handling ---
 	} catch (error) {
 		// Catch errors from initial checks or path resolution
 		// Make sure to restore normal logging if silent mode was enabled
 		if (isSilentMode()) {
-			disableSilentMode();
+			disableSilentMode()
 		}
-		log.error(`Error in analyzeTaskComplexityDirect setup: ${error.message}`);
+		log.error(`Error in analyzeTaskComplexityDirect setup: ${error.message}`)
 		return {
 			success: false,
 			error: {
 				code: 'DIRECT_FUNCTION_SETUP_ERROR',
 				message: error.message
 			}
-		};
+		}
 	}
 }

@@ -1,19 +1,19 @@
-import type React from 'react';
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { CollapsibleSection } from '@/components/ui/CollapsibleSection';
-import { Plus, Loader2 } from 'lucide-react';
-import type { TaskMasterTask } from '../../webview/types';
-import { getStatusDotColor } from '../constants';
+import { CollapsibleSection } from '@/components/ui/CollapsibleSection'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { Loader2, Plus } from 'lucide-react'
+import type React from 'react'
+import { useState } from 'react'
+import type { TaskMasterTask } from '../../webview/types'
+import { getStatusDotColor } from '../constants'
 
 interface SubtasksSectionProps {
-	currentTask: TaskMasterTask;
-	isSubtask: boolean;
-	sendMessage: (message: any) => Promise<any>;
-	onNavigateToTask: (taskId: string) => void;
+	currentTask: TaskMasterTask
+	isSubtask: boolean
+	sendMessage: (message: any) => Promise<any>
+	onNavigateToTask: (taskId: string) => void
 }
 
 export const SubtasksSection: React.FC<SubtasksSectionProps> = ({
@@ -22,17 +22,17 @@ export const SubtasksSection: React.FC<SubtasksSectionProps> = ({
 	sendMessage,
 	onNavigateToTask
 }) => {
-	const [isAddingSubtask, setIsAddingSubtask] = useState(false);
-	const [newSubtaskTitle, setNewSubtaskTitle] = useState('');
-	const [newSubtaskDescription, setNewSubtaskDescription] = useState('');
-	const [isSubmittingSubtask, setIsSubmittingSubtask] = useState(false);
+	const [isAddingSubtask, setIsAddingSubtask] = useState(false)
+	const [newSubtaskTitle, setNewSubtaskTitle] = useState('')
+	const [newSubtaskDescription, setNewSubtaskDescription] = useState('')
+	const [isSubmittingSubtask, setIsSubmittingSubtask] = useState(false)
 
 	const handleAddSubtask = async () => {
 		if (!currentTask || !newSubtaskTitle.trim() || isSubtask) {
-			return;
+			return
 		}
 
-		setIsSubmittingSubtask(true);
+		setIsSubmittingSubtask(true)
 		try {
 			await sendMessage({
 				type: 'addSubtask',
@@ -44,29 +44,27 @@ export const SubtasksSection: React.FC<SubtasksSectionProps> = ({
 						status: 'pending'
 					}
 				}
-			});
+			})
 
 			// Reset form and close
-			setNewSubtaskTitle('');
-			setNewSubtaskDescription('');
-			setIsAddingSubtask(false);
+			setNewSubtaskTitle('')
+			setNewSubtaskDescription('')
+			setIsAddingSubtask(false)
 		} catch (error) {
-			console.error('❌ TaskDetailsView: Failed to add subtask:', error);
+			console.error('❌ TaskDetailsView: Failed to add subtask:', error)
 		} finally {
-			setIsSubmittingSubtask(false);
+			setIsSubmittingSubtask(false)
 		}
-	};
+	}
 
 	const handleCancelAddSubtask = () => {
-		setIsAddingSubtask(false);
-		setNewSubtaskTitle('');
-		setNewSubtaskDescription('');
-	};
+		setIsAddingSubtask(false)
+		setNewSubtaskTitle('')
+		setNewSubtaskDescription('')
+	}
 
-	if (
-		!((currentTask.subtasks && currentTask.subtasks.length > 0) || !isSubtask)
-	) {
-		return null;
+	if (!((currentTask.subtasks && currentTask.subtasks.length > 0) || !isSubtask)) {
+		return null
 	}
 
 	const rightElement = (
@@ -89,21 +87,15 @@ export const SubtasksSection: React.FC<SubtasksSectionProps> = ({
 				</Button>
 			)}
 		</>
-	);
+	)
 
 	return (
-		<CollapsibleSection
-			title="Sub-issues"
-			defaultExpanded={true}
-			rightElement={rightElement}
-		>
+		<CollapsibleSection title="Sub-issues" defaultExpanded={true} rightElement={rightElement}>
 			<div className="space-y-3">
 				{/* Add Subtask Form */}
 				{isAddingSubtask && (
 					<div className="bg-widget-background rounded-lg p-4 border border-widget-border">
-						<h4 className="text-sm font-medium text-vscode-foreground mb-3">
-							Add New Subtask
-						</h4>
+						<h4 className="text-sm font-medium text-vscode-foreground mb-3">Add New Subtask</h4>
 						<div className="space-y-3">
 							<div>
 								<Label
@@ -175,7 +167,7 @@ export const SubtasksSection: React.FC<SubtasksSectionProps> = ({
 				{currentTask.subtasks && currentTask.subtasks.length > 0 && (
 					<div className="space-y-2">
 						{currentTask.subtasks.map((subtask, index) => {
-							const subtaskId = `${currentTask.id}.${index + 1}`;
+							const subtaskId = `${currentTask.id}.${index + 1}`
 
 							return (
 								<div
@@ -190,9 +182,7 @@ export const SubtasksSection: React.FC<SubtasksSectionProps> = ({
 										}}
 									/>
 									<div className="flex-1 min-w-0">
-										<p className="text-sm text-vscode-foreground truncate">
-											{subtask.title}
-										</p>
+										<p className="text-sm text-vscode-foreground truncate">{subtask.title}</p>
 										{subtask.description && (
 											<p className="text-xs text-vscode-foreground/60 truncate mt-0.5">
 												{subtask.description}
@@ -208,11 +198,11 @@ export const SubtasksSection: React.FC<SubtasksSectionProps> = ({
 										</Badge>
 									</div>
 								</div>
-							);
+							)
 						})}
 					</div>
 				)}
 			</div>
 		</CollapsibleSection>
-	);
-};
+	)
+}

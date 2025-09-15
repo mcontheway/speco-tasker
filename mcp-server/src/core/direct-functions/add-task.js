@@ -3,12 +3,9 @@
  * Direct function implementation for adding a new task
  */
 
-import { addTask } from '../../../../scripts/modules/task-manager.js';
-import {
-	enableSilentMode,
-	disableSilentMode
-} from '../../../../scripts/modules/utils.js';
-import { createLogWrapper } from '../../tools/utils.js';
+import { addTask } from '../../../../scripts/modules/task-manager.js'
+import { disableSilentMode, enableSilentMode } from '../../../../scripts/modules/utils.js'
+import { createLogWrapper } from '../../tools/utils.js'
 
 /**
  * Direct function wrapper for adding a new task with error handling.
@@ -31,49 +28,39 @@ import { createLogWrapper } from '../../tools/utils.js';
  */
 export async function addTaskDirect(args, log, context = {}) {
 	// Destructure expected args (including research and projectRoot)
-	const {
-		tasksJsonPath,
-		prompt,
-		dependencies,
-		priority,
-		research,
-		projectRoot,
-		tag
-	} = args;
-	const { session } = context; // Destructure session from context
+	const { tasksJsonPath, prompt, dependencies, priority, research, projectRoot, tag } = args
+	const { session } = context // Destructure session from context
 
 	// Enable silent mode to prevent console logs from interfering with JSON response
-	enableSilentMode();
+	enableSilentMode()
 
 	// Create logger wrapper using the utility
-	const mcpLog = createLogWrapper(log);
+	const mcpLog = createLogWrapper(log)
 
 	try {
 		// Check if tasksJsonPath was provided
 		if (!tasksJsonPath) {
-			log.error('addTaskDirect called without tasksJsonPath');
-			disableSilentMode(); // Disable before returning
+			log.error('addTaskDirect called without tasksJsonPath')
+			disableSilentMode() // Disable before returning
 			return {
 				success: false,
 				error: {
 					code: 'MISSING_ARGUMENT',
 					message: 'tasksJsonPath is required'
 				}
-			};
+			}
 		}
 
 		// Use provided path
-		const tasksPath = tasksJsonPath;
+		const tasksPath = tasksJsonPath
 
 		// Check if this is manual task creation or AI-driven task creation
-		const isManualCreation = args.title && args.description;
+		const isManualCreation = args.title && args.description
 
 		// Check required parameters
 		if (!args.prompt && !isManualCreation) {
-			log.error(
-				'Missing required parameters: either prompt or title+description must be provided'
-			);
-			disableSilentMode();
+			log.error('Missing required parameters: either prompt or title+description must be provided')
+			disableSilentMode()
 			return {
 				success: false,
 				error: {
@@ -81,7 +68,7 @@ export async function addTaskDirect(args, log, context = {}) {
 					message:
 						'Either the prompt parameter or both title and description parameters are required for adding a task'
 				}
-			};
+			}
 		}
 
 		// Extract and prepare parameters
@@ -91,13 +78,13 @@ export async function addTaskDirect(args, log, context = {}) {
 				? String(dependencies)
 						.split(',')
 						.map((id) => parseInt(id.trim(), 10)) // Split, trim, and parse
-				: []; // Default to empty array if null/undefined
-		const taskPriority = priority || 'medium'; // Default priority
+				: [] // Default to empty array if null/undefined
+		const taskPriority = priority || 'medium' // Default priority
 
-		let manualTaskData = null;
-		let newTaskId;
-		let telemetryData;
-		let tagInfo;
+		let manualTaskData = null
+		let newTaskId
+		let telemetryData
+		let tagInfo
 
 		if (isManualCreation) {
 			// Create manual task data object
@@ -106,11 +93,11 @@ export async function addTaskDirect(args, log, context = {}) {
 				description: args.description,
 				details: args.details || '',
 				testStrategy: args.testStrategy || ''
-			};
+			}
 
 			log.info(
 				`Adding new task manually with title: "${args.title}", dependencies: [${taskDependencies.join(', ')}], priority: ${priority}`
-			);
+			)
 
 			// Call the addTask function with manual task data
 			const result = await addTask(
@@ -129,15 +116,15 @@ export async function addTaskDirect(args, log, context = {}) {
 				'json', // outputFormat
 				manualTaskData, // Pass the manual task data
 				false // research flag is false for manual creation
-			);
-			newTaskId = result.newTaskId;
-			telemetryData = result.telemetryData;
-			tagInfo = result.tagInfo;
+			)
+			newTaskId = result.newTaskId
+			telemetryData = result.telemetryData
+			tagInfo = result.tagInfo
 		} else {
 			// AI-driven task creation
 			log.info(
 				`Adding new task with prompt: "${prompt}", dependencies: [${taskDependencies.join(', ')}], priority: ${taskPriority}, research: ${research}`
-			);
+			)
 
 			// Call the addTask function, passing the research flag
 			const result = await addTask(
@@ -156,14 +143,14 @@ export async function addTaskDirect(args, log, context = {}) {
 				'json', // outputFormat
 				null, // manualTaskData is null for AI creation
 				research // Pass the research flag
-			);
-			newTaskId = result.newTaskId;
-			telemetryData = result.telemetryData;
-			tagInfo = result.tagInfo;
+			)
+			newTaskId = result.newTaskId
+			telemetryData = result.telemetryData
+			tagInfo = result.tagInfo
 		}
 
 		// Restore normal logging
-		disableSilentMode();
+		disableSilentMode()
 
 		return {
 			success: true,
@@ -173,12 +160,12 @@ export async function addTaskDirect(args, log, context = {}) {
 				telemetryData: telemetryData,
 				tagInfo: tagInfo
 			}
-		};
+		}
 	} catch (error) {
 		// Make sure to restore normal logging even if there's an error
-		disableSilentMode();
+		disableSilentMode()
 
-		log.error(`Error in addTaskDirect: ${error.message}`);
+		log.error(`Error in addTaskDirect: ${error.message}`)
 		// Add specific error code checks if needed
 		return {
 			success: false,
@@ -186,6 +173,6 @@ export async function addTaskDirect(args, log, context = {}) {
 				code: error.code || 'ADD_TASK_ERROR', // Use error code if available
 				message: error.message
 			}
-		};
+		}
 	}
 }

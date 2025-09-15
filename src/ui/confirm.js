@@ -1,5 +1,5 @@
-import chalk from 'chalk';
-import boxen from 'boxen';
+import boxen from 'boxen'
+import chalk from 'chalk'
 
 /**
  * Confirm removing profile rules (destructive operation)
@@ -7,9 +7,7 @@ import boxen from 'boxen';
  * @returns {Promise<boolean>} - Promise resolving to true if user confirms, false otherwise
  */
 async function confirmProfilesRemove(profiles) {
-	const profileList = profiles
-		.map((b) => b.charAt(0).toUpperCase() + b.slice(1))
-		.join(', ');
+	const profileList = profiles.map((b) => b.charAt(0).toUpperCase() + b.slice(1)).join(', ')
 	console.log(
 		boxen(
 			chalk.yellow(
@@ -33,8 +31,8 @@ Are you sure you want to proceed?`
 			),
 			{ padding: 1, borderColor: 'yellow', borderStyle: 'round' }
 		)
-	);
-	const inquirer = await import('inquirer');
+	)
+	const inquirer = await import('inquirer')
 	const { confirm } = await inquirer.default.prompt([
 		{
 			type: 'confirm',
@@ -42,8 +40,8 @@ Are you sure you want to proceed?`
 			message: 'Type y to confirm selective removal, or n to abort:',
 			default: false
 		}
-	]);
-	return confirm;
+	])
+	return confirm
 }
 
 /**
@@ -53,9 +51,7 @@ Are you sure you want to proceed?`
  * @returns {Promise<boolean>} - Promise resolving to true if user confirms, false otherwise
  */
 async function confirmRemoveAllRemainingProfiles(profiles, remainingProfiles) {
-	const profileList = profiles
-		.map((p) => p.charAt(0).toUpperCase() + p.slice(1))
-		.join(', ');
+	const profileList = profiles.map((p) => p.charAt(0).toUpperCase() + p.slice(1)).join(', ')
 
 	console.log(
 		boxen(
@@ -82,19 +78,18 @@ async function confirmRemoveAllRemainingProfiles(profiles, remainingProfiles) {
 				titleAlignment: 'center'
 			}
 		)
-	);
+	)
 
-	const inquirer = await import('inquirer');
+	const inquirer = await import('inquirer')
 	const { confirm } = await inquirer.default.prompt([
 		{
 			type: 'confirm',
 			name: 'confirm',
-			message:
-				'Type y to confirm removing ALL Task Master rule profiles, or n to abort:',
+			message: 'Type y to confirm removing ALL Task Master rule profiles, or n to abort:',
 			default: false
 		}
-	]);
-	return confirm;
+	])
+	return confirm
 }
 
-export { confirmProfilesRemove, confirmRemoveAllRemainingProfiles };
+export { confirmProfilesRemove, confirmRemoveAllRemainingProfiles }

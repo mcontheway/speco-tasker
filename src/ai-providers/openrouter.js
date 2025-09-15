@@ -3,13 +3,13 @@
  * AI provider implementation for OpenRouter models using Vercel AI SDK.
  */
 
-import { createOpenRouter } from '@openrouter/ai-sdk-provider';
-import { BaseAIProvider } from './base-provider.js';
+import { createOpenRouter } from '@openrouter/ai-sdk-provider'
+import { BaseAIProvider } from './base-provider.js'
 
 export class OpenRouterAIProvider extends BaseAIProvider {
 	constructor() {
-		super();
-		this.name = 'OpenRouter';
+		super()
+		this.name = 'OpenRouter'
 	}
 
 	/**
@@ -17,7 +17,7 @@ export class OpenRouterAIProvider extends BaseAIProvider {
 	 * @returns {string} The environment variable name for the OpenRouter API key
 	 */
 	getRequiredApiKeyName() {
-		return 'OPENROUTER_API_KEY';
+		return 'OPENROUTER_API_KEY'
 	}
 
 	/**
@@ -30,18 +30,18 @@ export class OpenRouterAIProvider extends BaseAIProvider {
 	 */
 	getClient(params) {
 		try {
-			const { apiKey, baseURL } = params;
+			const { apiKey, baseURL } = params
 
 			if (!apiKey) {
-				throw new Error('OpenRouter API key is required.');
+				throw new Error('OpenRouter API key is required.')
 			}
 
 			return createOpenRouter({
 				apiKey,
 				...(baseURL && { baseURL })
-			});
+			})
 		} catch (error) {
-			this.handleError('client initialization', error);
+			this.handleError('client initialization', error)
 		}
 	}
 }

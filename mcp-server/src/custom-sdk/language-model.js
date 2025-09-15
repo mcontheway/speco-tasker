@@ -5,35 +5,29 @@
  * Uses MCP session.requestSampling() for AI operations.
  */
 
-import {
-	convertToMCPFormat,
-	convertFromMCPFormat
-} from './message-converter.js';
-import { MCPError, mapMCPError } from './errors.js';
-import { extractJson } from './json-extractor.js';
-import {
-	convertSchemaToInstructions,
-	enhancePromptForJSON
-} from './schema-converter.js';
+import { MCPError, mapMCPError } from './errors.js'
+import { extractJson } from './json-extractor.js'
+import { convertFromMCPFormat, convertToMCPFormat } from './message-converter.js'
+import { convertSchemaToInstructions, enhancePromptForJSON } from './schema-converter.js'
 
 /**
  * MCP Language Model implementing AI SDK LanguageModelV1 interface
  */
 export class MCPLanguageModel {
-	specificationVersion = 'v1';
-	defaultObjectGenerationMode = 'json';
-	supportsImageUrls = false;
-	supportsStructuredOutputs = true;
+	specificationVersion = 'v1'
+	defaultObjectGenerationMode = 'json'
+	supportsImageUrls = false
+	supportsStructuredOutputs = true
 
 	constructor(options) {
-		this.session = options.session; // MCP session object
-		this.modelId = options.modelId;
-		this.settings = options.settings || {};
-		this.provider = 'mcp-ai-sdk';
-		this.maxTokens = this.settings.maxTokens;
-		this.temperature = this.settings.temperature;
+		this.session = options.session // MCP session object
+		this.modelId = options.modelId
+		this.settings = options.settings || {}
+		this.provider = 'mcp-ai-sdk'
+		this.maxTokens = this.settings.maxTokens
+		this.temperature = this.settings.temperature
 
-		this.validateSession();
+		this.validateSession()
 	}
 
 	/**
@@ -41,7 +35,7 @@ export class MCPLanguageModel {
 	 */
 	validateSession() {
 		if (!this.session?.clientCapabilities?.sampling) {
-			throw new MCPError('MCP session must have client sampling capabilities');
+			throw new MCPError('MCP session must have client sampling capabilities')
 		}
 	}
 
@@ -55,7 +49,7 @@ export class MCPLanguageModel {
 	async doGenerate(options) {
 		try {
 			// Convert AI SDK prompt to MCP format
-			const { messages, systemPrompt } = convertToMCPFormat(options.prompt);
+			const { messages, systemPrompt } = convertToMCPFormat(options.prompt)
 
 			// Use MCP session.requestSampling (same as MCPRemoteProvider)
 			const response = await this.session.requestSampling(
@@ -70,10 +64,10 @@ export class MCPLanguageModel {
 					// signal: options.abortSignal,
 					timeout: 240000 // 4 minutes timeout
 				}
-			);
+			)
 
 			// Convert MCP response back to AI SDK format
-			const result = convertFromMCPFormat(response);
+			const result = convertFromMCPFormat(response)
 
 			return {
 				text: result.text,
@@ -81,14 +75,13 @@ export class MCPLanguageModel {
 				usage: {
 					promptTokens: result.usage?.inputTokens || 0,
 					completionTokens: result.usage?.outputTokens || 0,
-					totalTokens:
-						(result.usage?.inputTokens || 0) + (result.usage?.outputTokens || 0)
+					totalTokens: (result.usage?.inputTokens || 0) + (result.usage?.outputTokens || 0)
 				},
 				rawResponse: response,
 				warnings: result.warnings
-			};
+			}
 		} catch (error) {
-			throw mapMCPError(error);
+			throw mapMCPError(error)
 		}
 	}
 
@@ -103,24 +96,21 @@ export class MCPLanguageModel {
 	 */
 	async doGenerateObject(options) {
 		try {
-			const { schema, mode = 'json', ...restOptions } = options;
+			const { schema, mode = 'json', ...restOptions } = options
 
 			if (!schema) {
-				throw new MCPError('Schema is required for object generation');
+				throw new MCPError('Schema is required for object generation')
 			}
 
 			// Convert schema to JSON instructions
-			const objectName = restOptions.objectName || 'generated_object';
-			const jsonInstructions = convertSchemaToInstructions(schema, objectName);
+			const objectName = restOptions.objectName || 'generated_object'
+			const jsonInstructions = convertSchemaToInstructions(schema, objectName)
 
 			// Enhance prompt with JSON generation instructions
-			const enhancedPrompt = enhancePromptForJSON(
-				options.prompt,
-				jsonInstructions
-			);
+			const enhancedPrompt = enhancePromptForJSON(options.prompt, jsonInstructions)
 
 			// Convert enhanced prompt to MCP format
-			const { messages, systemPrompt } = convertToMCPFormat(enhancedPrompt);
+			const { messages, systemPrompt } = convertToMCPFormat(enhancedPrompt)
 
 			// Use MCP session.requestSampling with enhanced prompt
 			const response = await this.session.requestSampling(
@@ -134,27 +124,27 @@ export class MCPLanguageModel {
 				{
 					timeout: 240000 // 4 minutes timeout
 				}
-			);
+			)
 
 			// Convert MCP response back to AI SDK format
-			const result = convertFromMCPFormat(response);
+			const result = convertFromMCPFormat(response)
 
 			// Extract JSON from the response text
-			const jsonText = extractJson(result.text);
+			const jsonText = extractJson(result.text)
 
 			// Parse and validate JSON
-			let parsedObject;
+			let parsedObject
 			try {
-				parsedObject = JSON.parse(jsonText);
+				parsedObject = JSON.parse(jsonText)
 			} catch (parseError) {
 				throw new MCPError(
 					`Failed to parse JSON response: ${parseError.message}. Response: ${result.text.substring(0, 200)}...`
-				);
+				)
 			}
 
 			// Validate against schema
 			try {
-				const validatedObject = schema.parse(parsedObject);
+				const validatedObject = schema.parse(parsedObject)
 
 				return {
 					object: validatedObject,
@@ -162,20 +152,18 @@ export class MCPLanguageModel {
 					usage: {
 						promptTokens: result.usage?.inputTokens || 0,
 						completionTokens: result.usage?.outputTokens || 0,
-						totalTokens:
-							(result.usage?.inputTokens || 0) +
-							(result.usage?.outputTokens || 0)
+						totalTokens: (result.usage?.inputTokens || 0) + (result.usage?.outputTokens || 0)
 					},
 					rawResponse: response,
 					warnings: result.warnings
-				};
+				}
 			} catch (validationError) {
 				throw new MCPError(
 					`Generated object does not match schema: ${validationError.message}. Generated: ${JSON.stringify(parsedObject, null, 2)}`
-				);
+				)
 			}
 		} catch (error) {
-			throw mapMCPError(error);
+			throw mapMCPError(error)
 		}
 	}
 
@@ -189,12 +177,12 @@ export class MCPLanguageModel {
 		try {
 			// For now, simulate streaming by chunking the complete response
 			// TODO: Implement native streaming if MCP supports it
-			const result = await this.doGenerate(options);
+			const result = await this.doGenerate(options)
 
 			// Create async generator that yields chunks
-			return this.simulateStreaming(result);
+			return this.simulateStreaming(result)
 		} catch (error) {
-			throw mapMCPError(error);
+			throw mapMCPError(error)
 		}
 	}
 
@@ -204,20 +192,20 @@ export class MCPLanguageModel {
 	 * @returns {AsyncIterable} Simulated stream chunks
 	 */
 	async *simulateStreaming(result) {
-		const text = result.text;
-		const chunkSize = Math.max(1, Math.floor(text.length / 10)); // 10 chunks
+		const text = result.text
+		const chunkSize = Math.max(1, Math.floor(text.length / 10)) // 10 chunks
 
 		for (let i = 0; i < text.length; i += chunkSize) {
-			const chunk = text.slice(i, i + chunkSize);
-			const isLast = i + chunkSize >= text.length;
+			const chunk = text.slice(i, i + chunkSize)
+			const isLast = i + chunkSize >= text.length
 
 			yield {
 				type: 'text-delta',
 				textDelta: chunk
-			};
+			}
 
 			// Small delay to simulate streaming
-			await new Promise((resolve) => setTimeout(resolve, 50));
+			await new Promise((resolve) => setTimeout(resolve, 50))
 		}
 
 		// Final chunk with finish reason and usage
@@ -225,6 +213,6 @@ export class MCPLanguageModel {
 			type: 'finish',
 			finishReason: result.finishReason,
 			usage: result.usage
-		};
+		}
 	}
 }

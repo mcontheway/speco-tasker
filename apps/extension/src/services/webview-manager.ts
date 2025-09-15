@@ -3,17 +3,17 @@
  * Manages webview panels and message handling
  */
 
-import * as vscode from 'vscode';
-import type { EventEmitter } from '../utils/event-emitter';
-import type { ExtensionLogger } from '../utils/logger';
-import type { ConfigService } from './config-service';
-import type { TaskRepository } from './task-repository';
+import * as vscode from 'vscode'
+import type { EventEmitter } from '../utils/event-emitter'
+import type { ExtensionLogger } from '../utils/logger'
+import type { ConfigService } from './config-service'
+import type { TaskRepository } from './task-repository'
 
 export class WebviewManager {
-	private panels = new Set<vscode.WebviewPanel>();
-	private configService?: ConfigService;
-	private mcpClient?: any;
-	private api?: any;
+	private panels = new Set<vscode.WebviewPanel>()
+	private configService?: ConfigService
+	private mcpClient?: any
+	private api?: any
 
 	constructor(
 		private context: vscode.ExtensionContext,
@@ -23,25 +23,23 @@ export class WebviewManager {
 	) {}
 
 	setConfigService(configService: ConfigService): void {
-		this.configService = configService;
+		this.configService = configService
 	}
 
 	setMCPClient(mcpClient: any): void {
-		this.mcpClient = mcpClient;
+		this.mcpClient = mcpClient
 	}
 
 	setApi(api: any): void {
-		this.api = api;
+		this.api = api
 	}
 
 	async createOrShowPanel(): Promise<void> {
 		// Find existing panel
-		const existing = Array.from(this.panels).find(
-			(p) => p.title === 'TaskMaster Kanban'
-		);
+		const existing = Array.from(this.panels).find((p) => p.title === 'TaskMaster Kanban')
 		if (existing) {
-			existing.reveal();
-			return;
+			existing.reveal()
+			return
 		}
 
 		// Create new panel
@@ -52,132 +50,119 @@ export class WebviewManager {
 			{
 				enableScripts: true,
 				retainContextWhenHidden: true,
-				localResourceRoots: [
-					vscode.Uri.joinPath(this.context.extensionUri, 'dist')
-				]
+				localResourceRoots: [vscode.Uri.joinPath(this.context.extensionUri, 'dist')]
 			}
-		);
+		)
 
 		// Set the icon for the webview tab
 		panel.iconPath = {
-			light: vscode.Uri.joinPath(
-				this.context.extensionUri,
-				'assets',
-				'icon-light.svg'
-			),
-			dark: vscode.Uri.joinPath(
-				this.context.extensionUri,
-				'assets',
-				'icon-dark.svg'
-			)
-		};
+			light: vscode.Uri.joinPath(this.context.extensionUri, 'assets', 'icon-light.svg'),
+			dark: vscode.Uri.joinPath(this.context.extensionUri, 'assets', 'icon-dark.svg')
+		}
 
-		this.panels.add(panel);
-		panel.webview.html = this.getWebviewContent(panel.webview);
+		this.panels.add(panel)
+		panel.webview.html = this.getWebviewContent(panel.webview)
 
 		// Handle messages
 		panel.webview.onDidReceiveMessage(async (message) => {
-			await this.handleMessage(panel, message);
-		});
+			await this.handleMessage(panel, message)
+		})
 
 		// Handle disposal
 		panel.onDidDispose(() => {
-			this.panels.delete(panel);
-			this.events.emit('webview:closed');
-		});
+			this.panels.delete(panel)
+			this.events.emit('webview:closed')
+		})
 
-		this.events.emit('webview:opened');
-		vscode.window.showInformationMessage('TaskMaster Kanban opened!');
+		this.events.emit('webview:opened')
+		vscode.window.showInformationMessage('TaskMaster Kanban opened!')
 	}
 
 	broadcast(type: string, data: any): void {
 		this.panels.forEach((panel) => {
-			panel.webview.postMessage({ type, data });
-		});
+			panel.webview.postMessage({ type, data })
+		})
 	}
 
 	getPanelCount(): number {
-		return this.panels.size;
+		return this.panels.size
 	}
 
 	dispose(): void {
-		this.panels.forEach((panel) => panel.dispose());
-		this.panels.clear();
+		this.panels.forEach((panel) => panel.dispose())
+		this.panels.clear()
 	}
 
-	private async handleMessage(
-		panel: vscode.WebviewPanel,
-		message: any
-	): Promise<void> {
+	private async handleMessage(panel: vscode.WebviewPanel, message: any): Promise<void> {
 		// Validate message structure
 		if (!message || typeof message !== 'object') {
-			this.logger.error('Invalid message received:', message);
-			return;
+			this.logger.error('Invalid message received:', message)
+			return
 		}
 
-		const { type, data, requestId } = message;
-		this.logger.debug(`Webview message: ${type}`, message);
+		const { type, data, requestId } = message
+		this.logger.debug(`Webview message: ${type}`, message)
 
 		try {
-			let response: any;
+			let response: any
 
 			switch (type) {
 				case 'ready':
 					// Webview is ready, send current connection status
-					const isConnected = this.mcpClient?.getStatus()?.isRunning || false;
+					const isConnected = this.mcpClient?.getStatus()?.isRunning || false
 					panel.webview.postMessage({
 						type: 'connectionStatus',
 						data: {
 							isConnected: isConnected,
 							status: isConnected ? 'Connected' : 'Disconnected'
 						}
-					});
+					})
 					// No response needed for ready message
-					return;
+					return
 
 				case 'getTasks':
 					// Pass options to getAll including tag if specified
 					response = await this.repository.getAll({
 						tag: data?.tag,
 						withSubtasks: data?.withSubtasks ?? true
-					});
-					break;
+					})
+					break
 
 				case 'updateTaskStatus':
-					await this.repository.updateStatus(data.taskId, data.newStatus);
-					response = { success: true };
-					break;
+					await this.repository.updateStatus(data.taskId, data.newStatus)
+					response = { success: true }
+					break
 
 				case 'getConfig':
 					if (this.configService) {
-						response = await this.configService.getSafeConfig();
+						response = await this.configService.getSafeConfig()
 					} else {
-						response = null;
+						response = null
 					}
-					break;
+					break
 
 				case 'readTaskFileData':
 					// For now, return the task data from repository
 					// In the future, this could read from actual task files
-					const task = await this.repository.getById(data.taskId);
+					const task = await this.repository.getById(data.taskId)
 					if (task) {
 						response = {
 							details: task.details || '',
 							testStrategy: task.testStrategy || ''
-						};
+						}
 					} else {
 						response = {
 							details: '',
 							testStrategy: ''
-						};
+						}
 					}
-					break;
+					break
 
 				case 'updateTask':
 					// Handle task content updates with MCP
 					if (this.mcpClient) {
 						try {
-							const { taskId, updates, options = {} } = data;
+							const { taskId, updates, options = {} } = data
 
 							// Use the update_task MCP tool
 							await this.mcpClient.callTool('update_task', {
@@ -186,23 +171,23 @@ export class WebviewManager {
 								append: options.append || false,
 								research: options.research || false,
 								projectRoot: vscode.workspace.workspaceFolders?.[0]?.uri.fsPath
-							});
+							})
 
-							response = { success: true };
+							response = { success: true }
 						} catch (error) {
-							this.logger.error('Failed to update task via MCP:', error);
-							throw error;
+							this.logger.error('Failed to update task via MCP:', error)
+							throw error
 						}
 					} else {
-						throw new Error('MCP client not initialized');
+						throw new Error('MCP client not initialized')
 					}
-					break;
+					break
 
 				case 'updateSubtask':
 					// Handle subtask content updates with MCP
 					if (this.mcpClient) {
 						try {
-							const { taskId, prompt, options = {} } = data;
+							const { taskId, prompt, options = {} } = data
 
 							// Use the update_subtask MCP tool
 							await this.mcpClient.callTool('update_subtask', {
@@ -210,85 +195,77 @@ export class WebviewManager {
 								prompt: prompt,
 								research: options.research || false,
 								projectRoot: vscode.workspace.workspaceFolders?.[0]?.uri.fsPath
-							});
+							})
 
-							response = { success: true };
+							response = { success: true }
 						} catch (error) {
-							this.logger.error('Failed to update subtask via MCP:', error);
-							throw error;
+							this.logger.error('Failed to update subtask via MCP:', error)
+							throw error
 						}
 					} else {
-						throw new Error('MCP client not initialized');
+						throw new Error('MCP client not initialized')
 					}
-					break;
+					break
 
 				case 'getComplexity':
 					// For backward compatibility - redirect to mcpRequest
 					this.logger.debug(
 						`getComplexity request for task ${data.taskId}, mcpClient available: ${!!this.mcpClient}`
-					);
+					)
 					if (this.mcpClient && data.taskId) {
 						try {
-							const complexityResult = await this.mcpClient.callTool(
-								'complexity_report',
-								{
-									projectRoot:
-										vscode.workspace.workspaceFolders?.[0]?.uri.fsPath
-								}
-							);
+							const complexityResult = await this.mcpClient.callTool('complexity_report', {
+								projectRoot: vscode.workspace.workspaceFolders?.[0]?.uri.fsPath
+							})
 
 							if (complexityResult?.report?.complexityAnalysis?.tasks) {
-								const task =
-									complexityResult.report.complexityAnalysis.tasks.find(
-										(t: any) => t.id === data.taskId
-									);
-								response = task ? { score: task.complexityScore } : {};
+								const task = complexityResult.report.complexityAnalysis.tasks.find(
+									(t: any) => t.id === data.taskId
+								)
+								response = task ? { score: task.complexityScore } : {}
 							} else {
-								response = {};
+								response = {}
 							}
 						} catch (error) {
-							this.logger.error('Failed to get complexity', error);
-							response = {};
+							this.logger.error('Failed to get complexity', error)
+							response = {}
 						}
 					} else {
 						this.logger.warn(
 							`Cannot get complexity: mcpClient=${!!this.mcpClient}, taskId=${data.taskId}`
-						);
-						response = {};
+						)
+						response = {}
 					}
-					break;
+					break
 
 				case 'mcpRequest':
 					// Handle MCP tool calls
 					try {
 						// The tool and params come directly in the message
-						const tool = message.tool;
-						const params = message.params || {};
+						const tool = message.tool
+						const params = message.params || {}
 
 						if (!this.mcpClient) {
-							throw new Error('MCP client not initialized');
+							throw new Error('MCP client not initialized')
 						}
 
 						if (!tool) {
-							throw new Error('Tool name not specified in mcpRequest');
+							throw new Error('Tool name not specified in mcpRequest')
 						}
 
 						// Add projectRoot if not provided
 						if (!params.projectRoot) {
-							params.projectRoot =
-								vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+							params.projectRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath
 						}
 
-						const result = await this.mcpClient.callTool(tool, params);
-						response = { data: result };
+						const result = await this.mcpClient.callTool(tool, params)
+						response = { data: result }
 					} catch (error) {
-						this.logger.error('MCP request failed:', error);
+						this.logger.error('MCP request failed:', error)
 						// Re-throw with cleaner error message
-						throw new Error(
-							error instanceof Error ? error.message : 'Unknown error'
-						);
+						throw new Error(error instanceof Error ? error.message : 'Unknown error')
 					}
-					break;
+					break
 
 				case 'getTags':
 					// Get available tags
@@ -297,40 +274,36 @@ export class WebviewManager {
 							const result = await this.mcpClient.callTool('list_tags', {
 								projectRoot: vscode.workspace.workspaceFolders?.[0]?.uri.fsPath,
 								showMetadata: false
-							});
+							})
 							// The MCP response has a specific structure
 							// Based on the MCP SDK, the response is in result.content[0].text
-							let parsedData;
-							if (
-								result?.content &&
-								Array.isArray(result.content) &&
-								result.content[0]?.text
-							) {
+							let parsedData
+							if (result?.content && Array.isArray(result.content) && result.content[0]?.text) {
 								try {
-									parsedData = JSON.parse(result.content[0].text);
+									parsedData = JSON.parse(result.content[0].text)
 								} catch (e) {
-									this.logger.error('Failed to parse MCP response text:', e);
+									this.logger.error('Failed to parse MCP response text:', e)
 								}
 							}
 
 							// Extract tags data from the parsed response
 							if (parsedData?.data) {
-								response = parsedData.data;
+								response = parsedData.data
 							} else if (parsedData) {
-								response = parsedData;
+								response = parsedData
 							} else if (result?.data) {
-								response = result.data;
+								response = result.data
 							} else {
-								response = { tags: [], currentTag: 'master' };
+								response = { tags: [], currentTag: 'master' }
 							}
 						} catch (error) {
-							this.logger.error('Failed to get tags:', error);
-							response = { tags: [], currentTag: 'master' };
+							this.logger.error('Failed to get tags:', error)
+							response = { tags: [], currentTag: 'master' }
 						}
 					} else {
-						response = { tags: [], currentTag: 'master' };
+						response = { tags: [], currentTag: 'master' }
 					}
-					break;
+					break
 
 				case 'switchTag':
 					// Switch to a different tag
@@ -339,30 +312,30 @@ export class WebviewManager {
 							await this.mcpClient.callTool('use_tag', {
 								name: data.tagName,
 								projectRoot: vscode.workspace.workspaceFolders?.[0]?.uri.fsPath
-							});
+							})
 							// Clear cache and fetch tasks for the new tag
-							await this.repository.refresh();
-							const tasks = await this.repository.getAll({ tag: data.tagName });
-							this.broadcast('tasksUpdated', { tasks, source: 'tag-switch' });
-							response = { success: true };
+							await this.repository.refresh()
+							const tasks = await this.repository.getAll({ tag: data.tagName })
+							this.broadcast('tasksUpdated', { tasks, source: 'tag-switch' })
+							response = { success: true }
 						} catch (error) {
-							this.logger.error('Failed to switch tag:', error);
-							throw error;
+							this.logger.error('Failed to switch tag:', error)
+							throw error
 						}
 					} else {
-						throw new Error('Tag name not provided');
+						throw new Error('Tag name not provided')
 					}
-					break;
+					break
 
 				case 'openExternal':
 					// Open external URL
 					if (message.url) {
-						vscode.env.openExternal(vscode.Uri.parse(message.url));
+						vscode.env.openExternal(vscode.Uri.parse(message.url))
 					}
-					return;
+					return
 
 				default:
-					throw new Error(`Unknown message type: ${type}`);
+					throw new Error(`Unknown message type: ${type}`)
 			}
 
 			// Send response
@@ -372,17 +345,17 @@ export class WebviewManager {
 					requestId,
 					success: true,
 					data: response
-				});
+				})
 			}
 		} catch (error) {
-			this.logger.error(`Error handling message ${type}`, error);
+			this.logger.error(`Error handling message ${type}`, error)
 
 			if (requestId) {
 				panel.webview.postMessage({
 					type: 'error',
 					requestId,
 					error: error instanceof Error ? error.message : 'Unknown error'
-				});
+				})
 			}
 		}
 	}
@@ -390,11 +363,11 @@ export class WebviewManager {
 	private getWebviewContent(webview: vscode.Webview): string {
 		const scriptUri = webview.asWebviewUri(
 			vscode.Uri.joinPath(this.context.extensionUri, 'dist', 'index.js')
-		);
+		)
 		const styleUri = webview.asWebviewUri(
 			vscode.Uri.joinPath(this.context.extensionUri, 'dist', 'index.css')
-		);
-		const nonce = this.getNonce();
+		)
+		const nonce = this.getNonce()
 
 		return `<!DOCTYPE html>
 <html lang="en">
@@ -409,16 +382,15 @@ export class WebviewManager {
 	<div id="root"></div>
 	<script nonce="${nonce}" src="${scriptUri}"></script>
 </body>
-</html>`;
+</html>`
 	}
 
 	private getNonce(): string {
-		let text = '';
-		const possible =
-			'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+		let text = ''
+		const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
 		for (let i = 0; i < 32; i++) {
-			text += possible.charAt(Math.floor(Math.random() * possible.length));
+			text += possible.charAt(Math.floor(Math.random() * possible.length))
 		}
-		return text;
+		return text
 	}
 }

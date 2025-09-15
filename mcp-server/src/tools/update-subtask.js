@@ -3,15 +3,11 @@
  * Tool to append additional information to a specific subtask
  */
 
-import { z } from 'zod';
-import {
-	handleApiResult,
-	createErrorResponse,
-	withNormalizedProjectRoot
-} from './utils.js';
-import { updateSubtaskByIdDirect } from '../core/task-master-core.js';
-import { findTasksPath } from '../core/utils/path-utils.js';
-import { resolveTag } from '../../../scripts/modules/utils.js';
+import { z } from 'zod'
+import { resolveTag } from '../../../scripts/modules/utils.js'
+import { updateSubtaskByIdDirect } from '../core/task-master-core.js'
+import { findTasksPath } from '../core/utils/path-utils.js'
+import { createErrorResponse, handleApiResult, withNormalizedProjectRoot } from './utils.js'
 
 /**
  * Register the update-subtask tool with the MCP server
@@ -29,37 +25,27 @@ export function registerUpdateSubtaskTool(server) {
 					'ID of the subtask to update in format "parentId.subtaskId" (e.g., "5.2"). Parent ID is the ID of the task that contains the subtask.'
 				),
 			prompt: z.string().describe('Information to add to the subtask'),
-			research: z
-				.boolean()
-				.optional()
-				.describe('Use Perplexity AI for research-backed updates'),
+			research: z.boolean().optional().describe('Use Perplexity AI for research-backed updates'),
 			file: z.string().optional().describe('Absolute path to the tasks file'),
-			projectRoot: z
-				.string()
-				.describe('The directory of the project. Must be an absolute path.'),
+			projectRoot: z.string().describe('The directory of the project. Must be an absolute path.'),
 			tag: z.string().optional().describe('Tag context to operate on')
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
-			const toolName = 'update_subtask';
+			const toolName = 'update_subtask'
 
 			try {
 				const resolvedTag = resolveTag({
 					projectRoot: args.projectRoot,
 					tag: args.tag
-				});
-				log.info(`Updating subtask with args: ${JSON.stringify(args)}`);
+				})
+				log.info(`Updating subtask with args: ${JSON.stringify(args)}`)
 
-				let tasksJsonPath;
+				let tasksJsonPath
 				try {
-					tasksJsonPath = findTasksPath(
-						{ projectRoot: args.projectRoot, file: args.file },
-						log
-					);
+					tasksJsonPath = findTasksPath({ projectRoot: args.projectRoot, file: args.file }, log)
 				} catch (error) {
-					log.error(`${toolName}: Error finding tasks.json: ${error.message}`);
-					return createErrorResponse(
-						`Failed to find tasks.json: ${error.message}`
-					);
+					log.error(`${toolName}: Error finding tasks.json: ${error.message}`)
+					return createErrorResponse(`Failed to find tasks.json: ${error.message}`)
 				}
 
 				const result = await updateSubtaskByIdDirect(
@@ -73,31 +59,19 @@ export function registerUpdateSubtaskTool(server) {
 					},
 					log,
 					{ session }
-				);
+				)
 
 				if (result.success) {
-					log.info(`Successfully updated subtask with ID ${args.id}`);
+					log.info(`Successfully updated subtask with ID ${args.id}`)
 				} else {
-					log.error(
-						`Failed to update subtask: ${result.error?.message || 'Unknown error'}`
-					);
+					log.error(`Failed to update subtask: ${result.error?.message || 'Unknown error'}`)
 				}
 
-				return handleApiResult(
-					result,
-					log,
-					'Error updating subtask',
-					undefined,
-					args.projectRoot
-				);
+				return handleApiResult(result, log, 'Error updating subtask', undefined, args.projectRoot)
 			} catch (error) {
-				log.error(
-					`Critical error in ${toolName} tool execute: ${error.message}`
-				);
-				return createErrorResponse(
-					`Internal tool error (${toolName}): ${error.message}`
-				);
+				log.error(`Critical error in ${toolName} tool execute: ${error.message}`)
+				return createErrorResponse(`Internal tool error (${toolName}): ${error.message}`)
 			}
 		})
-	});
+	})
 }

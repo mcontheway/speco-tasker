@@ -2,12 +2,9 @@
  * Direct function wrapper for expandAllTasks
  */
 
-import { expandAllTasks } from '../../../../scripts/modules/task-manager.js';
-import {
-	enableSilentMode,
-	disableSilentMode
-} from '../../../../scripts/modules/utils.js';
-import { createLogWrapper } from '../../tools/utils.js';
+import { expandAllTasks } from '../../../../scripts/modules/task-manager.js'
+import { disableSilentMode, enableSilentMode } from '../../../../scripts/modules/utils.js'
+import { createLogWrapper } from '../../tools/utils.js'
 
 /**
  * Expand all pending tasks with subtasks (Direct Function Wrapper)
@@ -24,36 +21,35 @@ import { createLogWrapper } from '../../tools/utils.js';
  * @returns {Promise<{success: boolean, data?: Object, error?: {code: string, message: string}}>}
  */
 export async function expandAllTasksDirect(args, log, context = {}) {
-	const { session } = context; // Extract session
+	const { session } = context // Extract session
 	// Destructure expected args, including projectRoot
-	const { tasksJsonPath, num, research, prompt, force, projectRoot, tag } =
-		args;
+	const { tasksJsonPath, num, research, prompt, force, projectRoot, tag } = args
 
 	// Create logger wrapper using the utility
-	const mcpLog = createLogWrapper(log);
+	const mcpLog = createLogWrapper(log)
 
 	if (!tasksJsonPath) {
-		log.error('expandAllTasksDirect called without tasksJsonPath');
+		log.error('expandAllTasksDirect called without tasksJsonPath')
 		return {
 			success: false,
 			error: {
 				code: 'MISSING_ARGUMENT',
 				message: 'tasksJsonPath is required'
 			}
-		};
+		}
 	}
 
-	enableSilentMode(); // Enable silent mode for the core function call
+	enableSilentMode() // Enable silent mode for the core function call
 	try {
 		log.info(
 			`Calling core expandAllTasks with args: ${JSON.stringify({ num, research, prompt, force, projectRoot, tag })}`
-		);
+		)
 
 		// Parse parameters (ensure correct types)
-		const numSubtasks = num ? parseInt(num, 10) : undefined;
-		const useResearch = research === true;
-		const additionalContext = prompt || '';
-		const forceFlag = force === true;
+		const numSubtasks = num ? parseInt(num, 10) : undefined
+		const useResearch = research === true
+		const additionalContext = prompt || ''
+		const forceFlag = force === true
 
 		// Call the core function, passing options and the context object { session, mcpLog, projectRoot }
 		const result = await expandAllTasks(
@@ -64,7 +60,7 @@ export async function expandAllTasksDirect(args, log, context = {}) {
 			forceFlag,
 			{ session, mcpLog, projectRoot, tag },
 			'json'
-		);
+		)
 
 		// Core function now returns a summary object including the *aggregated* telemetryData
 		return {
@@ -79,10 +75,10 @@ export async function expandAllTasksDirect(args, log, context = {}) {
 				},
 				telemetryData: result.telemetryData // Pass the aggregated object
 			}
-		};
+		}
 	} catch (error) {
 		// Log the error using the MCP logger
-		log.error(`Error during core expandAllTasks execution: ${error.message}`);
+		log.error(`Error during core expandAllTasks execution: ${error.message}`)
 		// Optionally log stack trace if available and debug enabled
 		// if (error.stack && log.debug) { log.debug(error.stack); }
 
@@ -92,8 +88,8 @@ export async function expandAllTasksDirect(args, log, context = {}) {
 				code: 'CORE_FUNCTION_ERROR', // Or a more specific code if possible
 				message: error.message
 			}
-		};
+		}
 	} finally {
-		disableSilentMode(); // IMPORTANT: Ensure silent mode is always disabled
+		disableSilentMode() // IMPORTANT: Ensure silent mode is always disabled
 	}
 }

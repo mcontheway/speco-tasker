@@ -70,4 +70,4 @@
  * @property {ClaudeCodeSettings} [defaultSettings] - Default settings to use for all models
  */
 
-export {}; // This ensures the file is treated as a module
+export {} // This ensures the file is treated as a module

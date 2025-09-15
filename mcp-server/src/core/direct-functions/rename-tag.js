@@ -3,12 +3,9 @@
  * Direct function implementation for renaming a tag
  */
 
-import { renameTag } from '../../../../scripts/modules/task-manager/tag-management.js';
-import {
-	enableSilentMode,
-	disableSilentMode
-} from '../../../../scripts/modules/utils.js';
-import { createLogWrapper } from '../../tools/utils.js';
+import { renameTag } from '../../../../scripts/modules/task-manager/tag-management.js'
+import { disableSilentMode, enableSilentMode } from '../../../../scripts/modules/utils.js'
+import { createLogWrapper } from '../../tools/utils.js'
 
 /**
  * Direct function wrapper for renaming a tag with error handling.
@@ -24,55 +21,55 @@ import { createLogWrapper } from '../../tools/utils.js';
  */
 export async function renameTagDirect(args, log, context = {}) {
 	// Destructure expected args
-	const { tasksJsonPath, oldName, newName, projectRoot } = args;
-	const { session } = context;
+	const { tasksJsonPath, oldName, newName, projectRoot } = args
+	const { session } = context
 
 	// Enable silent mode to prevent console logs from interfering with JSON response
-	enableSilentMode();
+	enableSilentMode()
 
 	// Create logger wrapper using the utility
-	const mcpLog = createLogWrapper(log);
+	const mcpLog = createLogWrapper(log)
 
 	try {
 		// Check if tasksJsonPath was provided
 		if (!tasksJsonPath) {
-			log.error('renameTagDirect called without tasksJsonPath');
-			disableSilentMode();
+			log.error('renameTagDirect called without tasksJsonPath')
+			disableSilentMode()
 			return {
 				success: false,
 				error: {
 					code: 'MISSING_ARGUMENT',
 					message: 'tasksJsonPath is required'
 				}
-			};
+			}
 		}
 
 		// Check required parameters
 		if (!oldName || typeof oldName !== 'string') {
-			log.error('Missing required parameter: oldName');
-			disableSilentMode();
+			log.error('Missing required parameter: oldName')
+			disableSilentMode()
 			return {
 				success: false,
 				error: {
 					code: 'MISSING_PARAMETER',
 					message: 'Old tag name is required and must be a string'
 				}
-			};
+			}
 		}
 
 		if (!newName || typeof newName !== 'string') {
-			log.error('Missing required parameter: newName');
-			disableSilentMode();
+			log.error('Missing required parameter: newName')
+			disableSilentMode()
 			return {
 				success: false,
 				error: {
 					code: 'MISSING_PARAMETER',
 					message: 'New tag name is required and must be a string'
 				}
-			};
+			}
 		}
 
-		log.info(`Renaming tag from "${oldName}" to "${newName}"`);
+		log.info(`Renaming tag from "${oldName}" to "${newName}"`)
 
 		// Call the renameTag function
 		const result = await renameTag(
@@ -86,10 +83,10 @@ export async function renameTagDirect(args, log, context = {}) {
 				projectRoot
 			},
 			'json' // outputFormat - use 'json' to suppress CLI UI
-		);
+		)
 
 		// Restore normal logging
-		disableSilentMode();
+		disableSilentMode()
 
 		return {
 			success: true,
@@ -101,18 +98,18 @@ export async function renameTagDirect(args, log, context = {}) {
 				wasCurrentTag: result.wasCurrentTag,
 				message: `Successfully renamed tag from "${result.oldName}" to "${result.newName}"`
 			}
-		};
+		}
 	} catch (error) {
 		// Make sure to restore normal logging even if there's an error
-		disableSilentMode();
+		disableSilentMode()
 
-		log.error(`Error in renameTagDirect: ${error.message}`);
+		log.error(`Error in renameTagDirect: ${error.message}`)
 		return {
 			success: false,
 			error: {
 				code: error.code || 'RENAME_TAG_ERROR',
 				message: error.message
 			}
-		};
+		}
 	}
 }

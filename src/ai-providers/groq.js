@@ -5,13 +5,13 @@
  * using the Vercel AI SDK.
  */
 
-import { createGroq } from '@ai-sdk/groq';
-import { BaseAIProvider } from './base-provider.js';
+import { createGroq } from '@ai-sdk/groq'
+import { BaseAIProvider } from './base-provider.js'
 
 export class GroqProvider extends BaseAIProvider {
 	constructor() {
-		super();
-		this.name = 'Groq';
+		super()
+		this.name = 'Groq'
 	}
 
 	/**
@@ -19,7 +19,7 @@ export class GroqProvider extends BaseAIProvider {
 	 * @returns {string} The environment variable name for the Groq API key
 	 */
 	getRequiredApiKeyName() {
-		return 'GROQ_API_KEY';
+		return 'GROQ_API_KEY'
 	}
 
 	/**
@@ -32,18 +32,18 @@ export class GroqProvider extends BaseAIProvider {
 	 */
 	getClient(params) {
 		try {
-			const { apiKey, baseURL } = params;
+			const { apiKey, baseURL } = params
 
 			if (!apiKey) {
-				throw new Error('Groq API key is required.');
+				throw new Error('Groq API key is required.')
 			}
 
 			return createGroq({
 				apiKey,
 				...(baseURL && { baseURL })
-			});
+			})
 		} catch (error) {
-			this.handleError('client initialization', error);
+			this.handleError('client initialization', error)
 		}
 	}
 }

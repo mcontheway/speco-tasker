@@ -3,12 +3,9 @@
  * Direct function implementation for copying a tag
  */
 
-import { copyTag } from '../../../../scripts/modules/task-manager/tag-management.js';
-import {
-	enableSilentMode,
-	disableSilentMode
-} from '../../../../scripts/modules/utils.js';
-import { createLogWrapper } from '../../tools/utils.js';
+import { copyTag } from '../../../../scripts/modules/task-manager/tag-management.js'
+import { disableSilentMode, enableSilentMode } from '../../../../scripts/modules/utils.js'
+import { createLogWrapper } from '../../tools/utils.js'
 
 /**
  * Direct function wrapper for copying a tag with error handling.
@@ -25,61 +22,60 @@ import { createLogWrapper } from '../../tools/utils.js';
  */
 export async function copyTagDirect(args, log, context = {}) {
 	// Destructure expected args
-	const { tasksJsonPath, sourceName, targetName, description, projectRoot } =
-		args;
-	const { session } = context;
+	const { tasksJsonPath, sourceName, targetName, description, projectRoot } = args
+	const { session } = context
 
 	// Enable silent mode to prevent console logs from interfering with JSON response
-	enableSilentMode();
+	enableSilentMode()
 
 	// Create logger wrapper using the utility
-	const mcpLog = createLogWrapper(log);
+	const mcpLog = createLogWrapper(log)
 
 	try {
 		// Check if tasksJsonPath was provided
 		if (!tasksJsonPath) {
-			log.error('copyTagDirect called without tasksJsonPath');
-			disableSilentMode();
+			log.error('copyTagDirect called without tasksJsonPath')
+			disableSilentMode()
 			return {
 				success: false,
 				error: {
 					code: 'MISSING_ARGUMENT',
 					message: 'tasksJsonPath is required'
 				}
-			};
+			}
 		}
 
 		// Check required parameters
 		if (!sourceName || typeof sourceName !== 'string') {
-			log.error('Missing required parameter: sourceName');
-			disableSilentMode();
+			log.error('Missing required parameter: sourceName')
+			disableSilentMode()
 			return {
 				success: false,
 				error: {
 					code: 'MISSING_PARAMETER',
 					message: 'Source tag name is required and must be a string'
 				}
-			};
+			}
 		}
 
 		if (!targetName || typeof targetName !== 'string') {
-			log.error('Missing required parameter: targetName');
-			disableSilentMode();
+			log.error('Missing required parameter: targetName')
+			disableSilentMode()
 			return {
 				success: false,
 				error: {
 					code: 'MISSING_PARAMETER',
 					message: 'Target tag name is required and must be a string'
 				}
-			};
+			}
 		}
 
-		log.info(`Copying tag from "${sourceName}" to "${targetName}"`);
+		log.info(`Copying tag from "${sourceName}" to "${targetName}"`)
 
 		// Prepare options
 		const options = {
 			description
-		};
+		}
 
 		// Call the copyTag function
 		const result = await copyTag(
@@ -93,10 +89,10 @@ export async function copyTagDirect(args, log, context = {}) {
 				projectRoot
 			},
 			'json' // outputFormat - use 'json' to suppress CLI UI
-		);
+		)
 
 		// Restore normal logging
-		disableSilentMode();
+		disableSilentMode()
 
 		return {
 			success: true,
@@ -108,18 +104,18 @@ export async function copyTagDirect(args, log, context = {}) {
 				description: result.description,
 				message: `Successfully copied tag from "${result.sourceName}" to "${result.targetName}"`
 			}
-		};
+		}
 	} catch (error) {
 		// Make sure to restore normal logging even if there's an error
-		disableSilentMode();
+		disableSilentMode()
 
-		log.error(`Error in copyTagDirect: ${error.message}`);
+		log.error(`Error in copyTagDirect: ${error.message}`)
 		return {
 			success: false,
 			error: {
 				code: error.code || 'COPY_TAG_ERROR',
 				message: error.message
 			}
-		};
+		}
 	}
 }

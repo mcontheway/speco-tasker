@@ -2,18 +2,15 @@
  * Polling Status Indicator Component
  */
 
-import React from 'react';
-import type { AppState } from '../types';
+import type React from 'react'
+import type { AppState } from '../types'
 
 interface PollingStatusProps {
-	polling: AppState['polling'];
-	onRetry?: () => void;
+	polling: AppState['polling']
+	onRetry?: () => void
 }
 
-export const PollingStatus: React.FC<PollingStatusProps> = ({
-	polling,
-	onRetry
-}) => {
+export const PollingStatus: React.FC<PollingStatusProps> = ({ polling, onRetry }) => {
 	const {
 		isActive,
 		errorCount,
@@ -21,7 +18,7 @@ export const PollingStatus: React.FC<PollingStatusProps> = ({
 		connectionStatus,
 		reconnectAttempts,
 		maxReconnectAttempts
-	} = polling;
+	} = polling
 
 	if (isOfflineMode || connectionStatus === 'offline') {
 		return (
@@ -41,7 +38,7 @@ export const PollingStatus: React.FC<PollingStatusProps> = ({
 					Retry
 				</button>
 			</div>
-		);
+		)
 	}
 
 	if (connectionStatus === 'reconnecting') {
@@ -53,7 +50,7 @@ export const PollingStatus: React.FC<PollingStatusProps> = ({
 				<div className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse" />
 				<span className="text-xs">Reconnecting</span>
 			</div>
-		);
+		)
 	}
 
 	if (errorCount > 0) {
@@ -65,20 +62,17 @@ export const PollingStatus: React.FC<PollingStatusProps> = ({
 				<div className="w-2 h-2 rounded-full bg-yellow-400" />
 				<span className="text-xs">Live (errors)</span>
 			</div>
-		);
+		)
 	}
 
 	if (isActive) {
 		return (
-			<div
-				className="flex items-center gap-1 text-green-400"
-				title="Live updates active"
-			>
+			<div className="flex items-center gap-1 text-green-400" title="Live updates active">
 				<div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
 				<span className="text-xs">Live</span>
 			</div>
-		);
+		)
 	}
 
-	return null;
-};
+	return null
+}

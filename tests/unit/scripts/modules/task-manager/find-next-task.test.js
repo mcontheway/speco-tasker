@@ -1,8 +1,8 @@
 /**
  * Tests for the find-next-task.js module
  */
-import { jest } from '@jest/globals';
-import findNextTask from '../../../../../scripts/modules/task-manager/find-next-task.js';
+import { jest } from '@jest/globals'
+import findNextTask from '../../../../../scripts/modules/task-manager/find-next-task.js'
 
 describe('findNextTask', () => {
 	test('should return the highest priority task with all dependencies satisfied', () => {
@@ -35,14 +35,14 @@ describe('findNextTask', () => {
 				dependencies: [2, 3],
 				priority: 'high'
 			}
-		];
+		]
 
-		const nextTask = findNextTask(tasks);
+		const nextTask = findNextTask(tasks)
 
-		expect(nextTask).toBeDefined();
-		expect(nextTask.id).toBe(2);
-		expect(nextTask.title).toBe('Implement Core Features');
-	});
+		expect(nextTask).toBeDefined()
+		expect(nextTask.id).toBe(2)
+		expect(nextTask.title).toBe('Implement Core Features')
+	})
 
 	test('should prioritize by priority level when dependencies are equal', () => {
 		const tasks = [
@@ -74,13 +74,13 @@ describe('findNextTask', () => {
 				dependencies: [1],
 				priority: 'high'
 			}
-		];
+		]
 
-		const nextTask = findNextTask(tasks);
+		const nextTask = findNextTask(tasks)
 
-		expect(nextTask.id).toBe(4);
-		expect(nextTask.priority).toBe('high');
-	});
+		expect(nextTask.id).toBe(4)
+		expect(nextTask.priority).toBe('high')
+	})
 
 	test('should return null when all tasks are completed', () => {
 		const tasks = [
@@ -98,12 +98,12 @@ describe('findNextTask', () => {
 				dependencies: [1],
 				priority: 'high'
 			}
-		];
+		]
 
-		const nextTask = findNextTask(tasks);
+		const nextTask = findNextTask(tasks)
 
-		expect(nextTask).toBeNull();
-	});
+		expect(nextTask).toBeNull()
+	})
 
 	test('should return null when all pending tasks have unsatisfied dependencies', () => {
 		const tasks = [
@@ -121,18 +121,18 @@ describe('findNextTask', () => {
 				dependencies: [1],
 				priority: 'high'
 			}
-		];
+		]
 
-		const nextTask = findNextTask(tasks);
+		const nextTask = findNextTask(tasks)
 
-		expect(nextTask).toBeNull();
-	});
+		expect(nextTask).toBeNull()
+	})
 
 	test('should handle empty tasks array', () => {
-		const nextTask = findNextTask([]);
+		const nextTask = findNextTask([])
 
-		expect(nextTask).toBeNull();
-	});
+		expect(nextTask).toBeNull()
+	})
 
 	test('should consider subtask dependencies when finding next task', () => {
 		const tasks = [
@@ -164,12 +164,12 @@ describe('findNextTask', () => {
 				dependencies: [1],
 				priority: 'high'
 			}
-		];
+		]
 
-		const nextTask = findNextTask(tasks);
+		const nextTask = findNextTask(tasks)
 
 		// Task 2 should not be returned because Task 1 is not completely done
 		// (it has a pending subtask)
-		expect(nextTask).not.toEqual(expect.objectContaining({ id: 2 }));
-	});
-});
+		expect(nextTask).not.toEqual(expect.objectContaining({ id: 2 }))
+	})
+})

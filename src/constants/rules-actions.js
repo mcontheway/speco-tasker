@@ -8,12 +8,12 @@
 export const RULES_ACTIONS = {
 	ADD: 'add',
 	REMOVE: 'remove'
-};
+}
 
 /**
  * Special rules command (not a CRUD operation)
  */
-export const RULES_SETUP_ACTION = 'setup';
+export const RULES_SETUP_ACTION = 'setup'
 
 /**
  * Check if a given action is a valid rules action
@@ -21,5 +21,5 @@ export const RULES_SETUP_ACTION = 'setup';
  * @returns {boolean} True if the action is valid, false otherwise
  */
 export function isValidRulesAction(action) {
-	return Object.values(RULES_ACTIONS).includes(action);
+	return Object.values(RULES_ACTIONS).includes(action)
 }

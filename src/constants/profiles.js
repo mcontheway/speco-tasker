@@ -45,21 +45,14 @@ export const RULE_PROFILES = [
 	'vscode',
 	'windsurf',
 	'zed'
-];
+]
 
 /**
  * Centralized enum for all supported Roo agent modes
  * @type {string[]}
  * @description Available Roo Code IDE modes for rule generation
  */
-export const ROO_MODES = [
-	'architect',
-	'ask',
-	'orchestrator',
-	'code',
-	'debug',
-	'test'
-];
+export const ROO_MODES = ['architect', 'ask', 'orchestrator', 'code', 'debug', 'test']
 
 /**
  * Check if a given rule profile is valid
@@ -67,5 +60,5 @@ export const ROO_MODES = [
  * @returns {boolean} True if the rule profile is valid, false otherwise
  */
 export function isValidRulesProfile(rulesProfile) {
-	return RULE_PROFILES.includes(rulesProfile);
+	return RULE_PROFILES.includes(rulesProfile)
 }

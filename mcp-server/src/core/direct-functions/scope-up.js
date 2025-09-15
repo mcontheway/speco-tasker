@@ -3,12 +3,9 @@
  * Direct function implementation for scoping up task complexity
  */
 
-import { scopeUpTask } from '../../../../scripts/modules/task-manager.js';
-import {
-	enableSilentMode,
-	disableSilentMode
-} from '../../../../scripts/modules/utils.js';
-import { createLogWrapper } from '../../tools/utils.js';
+import { scopeUpTask } from '../../../../scripts/modules/task-manager.js'
+import { disableSilentMode, enableSilentMode } from '../../../../scripts/modules/utils.js'
+import { createLogWrapper } from '../../tools/utils.js'
 
 /**
  * Direct function wrapper for scoping up task complexity with error handling.
@@ -35,48 +32,48 @@ export async function scopeUpDirect(args, log, context = {}) {
 		research = false,
 		projectRoot,
 		tag
-	} = args;
-	const { session } = context; // Destructure session from context
+	} = args
+	const { session } = context // Destructure session from context
 
 	// Enable silent mode to prevent console logs from interfering with JSON response
-	enableSilentMode();
+	enableSilentMode()
 
 	// Create logger wrapper using the utility
-	const mcpLog = createLogWrapper(log);
+	const mcpLog = createLogWrapper(log)
 
 	try {
 		// Check if tasksJsonPath was provided
 		if (!tasksJsonPath) {
-			log.error('scopeUpDirect called without tasksJsonPath');
-			disableSilentMode(); // Disable before returning
+			log.error('scopeUpDirect called without tasksJsonPath')
+			disableSilentMode() // Disable before returning
 			return {
 				success: false,
 				error: {
 					code: 'MISSING_ARGUMENT',
 					message: 'tasksJsonPath is required'
 				}
-			};
+			}
 		}
 
 		// Check required parameters
 		if (!id) {
-			log.error('Missing required parameter: id');
-			disableSilentMode();
+			log.error('Missing required parameter: id')
+			disableSilentMode()
 			return {
 				success: false,
 				error: {
 					code: 'MISSING_PARAMETER',
 					message: 'The id parameter is required for scoping up tasks'
 				}
-			};
+			}
 		}
 
 		// Parse task IDs - convert to numbers as expected by scopeUpTask
-		const taskIds = id.split(',').map((taskId) => parseInt(taskId.trim(), 10));
+		const taskIds = id.split(',').map((taskId) => parseInt(taskId.trim(), 10))
 
 		log.info(
 			`Scoping up tasks: ${taskIds.join(', ')}, strength: ${strength}, research: ${research}`
-		);
+		)
 
 		// Call the scopeUpTask function
 		const result = await scopeUpTask(
@@ -94,10 +91,10 @@ export async function scopeUpDirect(args, log, context = {}) {
 				research
 			},
 			'json' // outputFormat
-		);
+		)
 
 		// Restore normal logging
-		disableSilentMode();
+		disableSilentMode()
 
 		return {
 			success: true,
@@ -107,18 +104,18 @@ export async function scopeUpDirect(args, log, context = {}) {
 				message: `Successfully scoped up ${result.updatedTasks.length} task(s)`,
 				telemetryData: result.telemetryData
 			}
-		};
+		}
 	} catch (error) {
 		// Make sure to restore normal logging even if there's an error
-		disableSilentMode();
+		disableSilentMode()
 
-		log.error(`Error in scopeUpDirect: ${error.message}`);
+		log.error(`Error in scopeUpDirect: ${error.message}`)
 		return {
 			success: false,
 			error: {
 				code: error.code || 'SCOPE_UP_ERROR',
 				message: error.message
 			}
-		};
+		}
 	}
 }

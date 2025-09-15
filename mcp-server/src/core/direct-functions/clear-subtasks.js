@@ -2,14 +2,10 @@
  * Direct function wrapper for clearSubtasks
  */
 
-import { clearSubtasks } from '../../../../scripts/modules/task-manager.js';
-import {
-	enableSilentMode,
-	disableSilentMode,
-	readJSON
-} from '../../../../scripts/modules/utils.js';
-import fs from 'fs';
-import path from 'path';
+import fs from 'fs'
+import path from 'path'
+import { clearSubtasks } from '../../../../scripts/modules/task-manager.js'
+import { disableSilentMode, enableSilentMode, readJSON } from '../../../../scripts/modules/utils.js'
 
 /**
  * Clear subtasks from specified tasks
@@ -24,20 +20,20 @@ import path from 'path';
  */
 export async function clearSubtasksDirect(args, log) {
 	// Destructure expected args
-	const { tasksJsonPath, id, all, tag, projectRoot } = args;
+	const { tasksJsonPath, id, all, tag, projectRoot } = args
 	try {
-		log.info(`Clearing subtasks with args: ${JSON.stringify(args)}`);
+		log.info(`Clearing subtasks with args: ${JSON.stringify(args)}`)
 
 		// Check if tasksJsonPath was provided
 		if (!tasksJsonPath) {
-			log.error('clearSubtasksDirect called without tasksJsonPath');
+			log.error('clearSubtasksDirect called without tasksJsonPath')
 			return {
 				success: false,
 				error: {
 					code: 'MISSING_ARGUMENT',
 					message: 'tasksJsonPath is required'
 				}
-			};
+			}
 		}
 
 		// Either id or all must be provided
@@ -46,14 +42,13 @@ export async function clearSubtasksDirect(args, log) {
 				success: false,
 				error: {
 					code: 'INPUT_VALIDATION_ERROR',
-					message:
-						'Either task IDs with id parameter or all parameter must be provided'
+					message: 'Either task IDs with id parameter or all parameter must be provided'
 				}
-			};
+			}
 		}
 
 		// Use provided path
-		const tasksPath = tasksJsonPath;
+		const tasksPath = tasksJsonPath
 
 		// Check if tasks.json exists
 		if (!fs.existsSync(tasksPath)) {
@@ -63,13 +58,13 @@ export async function clearSubtasksDirect(args, log) {
 					code: 'FILE_NOT_FOUND_ERROR',
 					message: `Tasks file not found at ${tasksPath}`
 				}
-			};
+			}
 		}
 
-		let taskIds;
+		let taskIds
 
 		// Use readJSON which handles silent migration and tag resolution
-		const data = readJSON(tasksPath, projectRoot, tag);
+		const data = readJSON(tasksPath, projectRoot, tag)
 
 		if (!data || !data.tasks) {
 			return {
@@ -78,15 +73,15 @@ export async function clearSubtasksDirect(args, log) {
 					code: 'INPUT_VALIDATION_ERROR',
 					message: `No tasks found in tasks file: ${tasksPath}`
 				}
-			};
+			}
 		}
 
-		const currentTag = data.tag || tag;
-		const tasks = data.tasks;
+		const currentTag = data.tag || tag
+		const tasks = data.tasks
 
 		// If all is specified, get all task IDs
 		if (all) {
-			log.info(`Clearing subtasks from all tasks in tag '${currentTag}'`);
+			log.info(`Clearing subtasks from all tasks in tag '${currentTag}'`)
 			if (tasks.length === 0) {
 				return {
 					success: false,
@@ -94,37 +89,37 @@ export async function clearSubtasksDirect(args, log) {
 						code: 'INPUT_VALIDATION_ERROR',
 						message: `No tasks found in tag context '${currentTag}'`
 					}
-				};
+				}
 			}
-			taskIds = tasks.map((t) => t.id).join(',');
+			taskIds = tasks.map((t) => t.id).join(',')
 		} else {
 			// Use the provided task IDs
-			taskIds = id;
+			taskIds = id
 		}
 
-		log.info(`Clearing subtasks from tasks: ${taskIds} in tag '${currentTag}'`);
+		log.info(`Clearing subtasks from tasks: ${taskIds} in tag '${currentTag}'`)
 
 		// Enable silent mode to prevent console logs from interfering with JSON response
-		enableSilentMode();
+		enableSilentMode()
 
 		// Call the core function
-		clearSubtasks(tasksPath, taskIds, { projectRoot, tag: currentTag });
+		clearSubtasks(tasksPath, taskIds, { projectRoot, tag: currentTag })
 
 		// Restore normal logging
-		disableSilentMode();
+		disableSilentMode()
 
 		// Read the updated data to provide a summary
-		const updatedData = readJSON(tasksPath, projectRoot, currentTag);
-		const taskIdArray = taskIds.split(',').map((id) => parseInt(id.trim(), 10));
+		const updatedData = readJSON(tasksPath, projectRoot, currentTag)
+		const taskIdArray = taskIds.split(',').map((id) => parseInt(id.trim(), 10))
 
 		// Build a summary of what was done
-		const clearedTasksCount = taskIdArray.length;
-		const updatedTasks = updatedData.tasks || [];
+		const clearedTasksCount = taskIdArray.length
+		const updatedTasks = updatedData.tasks || []
 
 		const taskSummary = taskIdArray.map((id) => {
-			const task = updatedTasks.find((t) => t.id === id);
-			return task ? { id, title: task.title } : { id, title: 'Task not found' };
-		});
+			const task = updatedTasks.find((t) => t.id === id)
+			return task ? { id, title: task.title } : { id, title: 'Task not found' }
+		})
 
 		return {
 			success: true,
@@ -133,18 +128,18 @@ export async function clearSubtasksDirect(args, log) {
 				tasksCleared: taskSummary,
 				tag: currentTag
 			}
-		};
+		}
 	} catch (error) {
 		// Make sure to restore normal logging even if there's an error
-		disableSilentMode();
+		disableSilentMode()
 
-		log.error(`Error in clearSubtasksDirect: ${error.message}`);
+		log.error(`Error in clearSubtasksDirect: ${error.message}`)
 		return {
 			success: false,
 			error: {
 				code: 'CORE_FUNCTION_ERROR',
 				message: error.message
 			}
-		};
+		}
 	}
 }

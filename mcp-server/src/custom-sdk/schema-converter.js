@@ -11,7 +11,7 @@
 export function convertSchemaToInstructions(schema, objectName = 'result') {
 	try {
 		// Generate example structure from schema
-		const exampleStructure = generateExampleFromSchema(schema);
+		const exampleStructure = generateExampleFromSchema(schema)
 
 		return `
 CRITICAL JSON GENERATION INSTRUCTIONS:
@@ -29,7 +29,7 @@ STRICT REQUIREMENTS:
 6. Follow the exact property names and types shown above
 7. All required fields must be present
 
-Begin your response immediately with the opening brace {`;
+Begin your response immediately with the opening brace {`
 	} catch (error) {
 		// Fallback to basic JSON instructions if schema parsing fails
 		return `
@@ -44,7 +44,7 @@ STRICT REQUIREMENTS:
 4. Do not wrap in markdown code blocks
 5. Do not include explanations or comments
 
-Begin your response immediately with the opening brace {`;
+Begin your response immediately with the opening brace {`
 	}
 }
 
@@ -58,62 +58,62 @@ function generateExampleFromSchema(schema) {
 	// For production, you might want to use a more sophisticated library
 
 	if (!schema || typeof schema._def === 'undefined') {
-		return {};
+		return {}
 	}
 
-	const def = schema._def;
+	const def = schema._def
 
 	switch (def.typeName) {
 		case 'ZodObject':
-			const result = {};
-			const shape = def.shape();
+			const result = {}
+			const shape = def.shape()
 
 			for (const [key, fieldSchema] of Object.entries(shape)) {
-				result[key] = generateExampleFromSchema(fieldSchema);
+				result[key] = generateExampleFromSchema(fieldSchema)
 			}
 
-			return result;
+			return result
 
 		case 'ZodString':
-			return 'string';
+			return 'string'
 
 		case 'ZodNumber':
-			return 0;
+			return 0
 
 		case 'ZodBoolean':
-			return false;
+			return false
 
 		case 'ZodArray':
-			const elementExample = generateExampleFromSchema(def.type);
-			return [elementExample];
+			const elementExample = generateExampleFromSchema(def.type)
+			return [elementExample]
 
 		case 'ZodOptional':
-			return generateExampleFromSchema(def.innerType);
+			return generateExampleFromSchema(def.innerType)
 
 		case 'ZodNullable':
-			return generateExampleFromSchema(def.innerType);
+			return generateExampleFromSchema(def.innerType)
 
 		case 'ZodEnum':
-			return def.values[0] || 'enum_value';
+			return def.values[0] || 'enum_value'
 
 		case 'ZodLiteral':
-			return def.value;
+			return def.value
 
 		case 'ZodUnion':
 			// Use the first option from the union
 			if (def.options && def.options.length > 0) {
-				return generateExampleFromSchema(def.options[0]);
+				return generateExampleFromSchema(def.options[0])
 			}
-			return 'union_value';
+			return 'union_value'
 
 		case 'ZodRecord':
 			return {
 				key: generateExampleFromSchema(def.valueType)
-			};
+			}
 
 		default:
 			// For unknown types, return a placeholder
-			return `<${def.typeName || 'unknown'}>`;
+			return `<${def.typeName || 'unknown'}>`
 	}
 }
 
@@ -124,27 +124,25 @@ function generateExampleFromSchema(schema) {
  * @returns {Array} Enhanced prompt array
  */
 export function enhancePromptForJSON(prompt, jsonInstructions) {
-	const enhancedPrompt = [...prompt];
+	const enhancedPrompt = [...prompt]
 
 	// Find system message or create one
-	let systemMessageIndex = enhancedPrompt.findIndex(
-		(msg) => msg.role === 'system'
-	);
+	const systemMessageIndex = enhancedPrompt.findIndex((msg) => msg.role === 'system')
 
 	if (systemMessageIndex >= 0) {
 		// Append to existing system message
-		const currentContent = enhancedPrompt[systemMessageIndex].content;
+		const currentContent = enhancedPrompt[systemMessageIndex].content
 		enhancedPrompt[systemMessageIndex] = {
 			...enhancedPrompt[systemMessageIndex],
 			content: currentContent + '\n\n' + jsonInstructions
-		};
+		}
 	} else {
 		// Add new system message at the beginning
 		enhancedPrompt.unshift({
 			role: 'system',
 			content: jsonInstructions
-		});
+		})
 	}
 
-	return enhancedPrompt;
+	return enhancedPrompt
 }

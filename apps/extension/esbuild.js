@@ -1,8 +1,8 @@
-const esbuild = require('esbuild');
-const path = require('path');
+const esbuild = require('esbuild')
+const path = require('path')
 
-const production = process.argv.includes('--production');
-const watch = process.argv.includes('--watch');
+const production = process.argv.includes('--production')
+const watch = process.argv.includes('--watch')
 
 /**
  * @type {import('esbuild').Plugin}
@@ -12,19 +12,17 @@ const esbuildProblemMatcherPlugin = {
 
 	setup(build) {
 		build.onStart(() => {
-			console.log('[watch] build started');
-		});
+			console.log('[watch] build started')
+		})
 		build.onEnd((result) => {
 			result.errors.forEach(({ text, location }) => {
-				console.error(`✘ [ERROR] ${text}`);
-				console.error(
-					`    ${location.file}:${location.line}:${location.column}:`
-				);
-			});
-			console.log('[watch] build finished');
-		});
+				console.error(`✘ [ERROR] ${text}`)
+				console.error(`    ${location.file}:${location.line}:${location.column}:`)
+			})
+			console.log('[watch] build finished')
+		})
 	}
-};
+}
 
 /**
  * @type {import('esbuild').Plugin}
@@ -34,33 +32,33 @@ const aliasPlugin = {
 	setup(build) {
 		// Handle @/ aliases for shadcn/ui
 		build.onResolve({ filter: /^@\// }, (args) => {
-			const resolvedPath = path.resolve(__dirname, 'src', args.path.slice(2));
+			const resolvedPath = path.resolve(__dirname, 'src', args.path.slice(2))
 
 			// Try to resolve with common TypeScript extensions
-			const fs = require('fs');
-			const extensions = ['.tsx', '.ts', '.jsx', '.js'];
+			const fs = require('fs')
+			const extensions = ['.tsx', '.ts', '.jsx', '.js']
 
 			// Check if it's a file first
 			for (const ext of extensions) {
-				const fullPath = resolvedPath + ext;
+				const fullPath = resolvedPath + ext
 				if (fs.existsSync(fullPath)) {
-					return { path: fullPath };
+					return { path: fullPath }
 				}
 			}
 
 			// Check if it's a directory with index file
 			for (const ext of extensions) {
-				const indexPath = path.join(resolvedPath, 'index' + ext);
+				const indexPath = path.join(resolvedPath, 'index' + ext)
 				if (fs.existsSync(indexPath)) {
-					return { path: indexPath };
+					return { path: indexPath }
 				}
 			}
 
 			// Fallback to original behavior
-			return { path: resolvedPath };
-		});
+			return { path: resolvedPath }
+		})
 	}
-};
+}
 
 async function main() {
 	// Build configuration for the VS Code extension
@@ -81,7 +79,7 @@ async function main() {
 			pure: ['console.log', 'console.debug', 'console.trace']
 		}),
 		plugins: [esbuildProblemMatcherPlugin, aliasPlugin]
-	});
+	})
 
 	// Build configuration for the React webview
 	const webviewCtx = await esbuild.context({
@@ -116,7 +114,7 @@ async function main() {
 			pure: ['console.log', 'console.debug', 'console.trace']
 		}),
 		plugins: [esbuildProblemMatcherPlugin, aliasPlugin]
-	});
+	})
 
 	// Build configuration for the React sidebar
 	const sidebarCtx = await esbuild.context({
@@ -147,27 +145,19 @@ async function main() {
 			pure: ['console.log', 'console.debug', 'console.trace']
 		}),
 		plugins: [esbuildProblemMatcherPlugin, aliasPlugin]
-	});
+	})
 
 	if (watch) {
-		await Promise.all([
-			extensionCtx.watch(),
-			webviewCtx.watch(),
-			sidebarCtx.watch()
-		]);
+		await Promise.all([extensionCtx.watch(), webviewCtx.watch(), sidebarCtx.watch()])
 	} else {
-		await Promise.all([
-			extensionCtx.rebuild(),
-			webviewCtx.rebuild(),
-			sidebarCtx.rebuild()
-		]);
-		await extensionCtx.dispose();
-		await webviewCtx.dispose();
-		await sidebarCtx.dispose();
+		await Promise.all([extensionCtx.rebuild(), webviewCtx.rebuild(), sidebarCtx.rebuild()])
+		await extensionCtx.dispose()
+		await webviewCtx.dispose()
+		await sidebarCtx.dispose()
 	}
 }
 
 main().catch((e) => {
-	console.error(e);
-	process.exit(1);
-});
+	console.error(e)
+	process.exit(1)
+})

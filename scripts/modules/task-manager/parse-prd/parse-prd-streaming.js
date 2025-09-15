@@ -2,22 +2,19 @@
  * Streaming handler for PRD parsing
  */
 
-import { createParsePrdTracker } from '../../../../src/progress/parse-prd-tracker.js';
-import { displayParsePrdStart } from '../../../../src/ui/parse-prd.js';
-import { getPriorityIndicators } from '../../../../src/ui/indicators.js';
-import { TimeoutManager } from '../../../../src/utils/timeout-manager.js';
+import { createParsePrdTracker } from '../../../../src/progress/parse-prd-tracker.js'
+import { getPriorityIndicators } from '../../../../src/ui/indicators.js'
+import { displayParsePrdStart } from '../../../../src/ui/parse-prd.js'
+import { TimeoutManager } from '../../../../src/utils/timeout-manager.js'
+import { generateObjectService, streamObjectService } from '../../ai-services-unified.js'
 import {
-	streamObjectService,
-	generateObjectService
-} from '../../ai-services-unified.js';
-import {
+	getDefaultPriority,
 	getMainModelId,
 	getParametersForRole,
-	getResearchModelId,
-	getDefaultPriority
-} from '../../config-manager.js';
-import { LoggingConfig, prdResponseSchema } from './parse-prd-config.js';
-import { estimateTokens, reportTaskProgress } from './parse-prd-helpers.js';
+	getResearchModelId
+} from '../../config-manager.js'
+import { LoggingConfig, prdResponseSchema } from './parse-prd-config.js'
+import { estimateTokens, reportTaskProgress } from './parse-prd-helpers.js'
 
 /**
  * Extract a readable stream from various stream result formats
@@ -30,20 +27,20 @@ function extractStreamFromResult(streamResult) {
 		throw new StreamingError(
 			'Stream result is null or undefined',
 			STREAMING_ERROR_CODES.NOT_ASYNC_ITERABLE
-		);
+		)
 	}
 
 	// Try extraction strategies in priority order
-	const stream = tryExtractStream(streamResult);
+	const stream = tryExtractStream(streamResult)
 
 	if (!stream) {
 		throw new StreamingError(
 			'Stream object is not async iterable or readable',
 			STREAMING_ERROR_CODES.NOT_ASYNC_ITERABLE
-		);
+		)
 	}
 
-	return stream;
+	return stream
 }
 
 /**
@@ -55,25 +52,25 @@ function tryExtractStream(streamResult) {
 		{ key: 'textStream', extractor: (obj) => extractCallable(obj.textStream) },
 		{ key: 'stream', extractor: (obj) => extractCallable(obj.stream) },
 		{ key: 'baseStream', extractor: (obj) => obj.baseStream }
-	];
+	]
 
 	for (const { key, extractor } of streamExtractors) {
-		const stream = extractor(streamResult);
+		const stream = extractor(streamResult)
 		if (stream && isStreamable(stream)) {
-			return stream;
+			return stream
 		}
 	}
 
 	// Check if already streamable
-	return isStreamable(streamResult) ? streamResult : null;
+	return isStreamable(streamResult) ? streamResult : null
 }
 
 /**
  * Extract a property that might be a function or direct value
  */
 function extractCallable(property) {
-	if (!property) return null;
-	return typeof property === 'function' ? property() : property;
+	if (!property) return null
+	return typeof property === 'function' ? property() : property
 }
 
 /**
@@ -84,7 +81,7 @@ function isStreamable(obj) {
 		obj &&
 		(typeof obj[Symbol.asyncIterator] === 'function' ||
 			(obj.getReader && typeof obj.getReader === 'function'))
-	);
+	)
 }
 
 /**
@@ -95,20 +92,13 @@ function isStreamable(obj) {
  * @returns {Promise<Object>} Parsed tasks and telemetry
  */
 export async function handleStreamingService(config, prompts, numTasks) {
-	const context = createStreamingContext(config, prompts, numTasks);
+	const context = createStreamingContext(config, prompts, numTasks)
 
-	await initializeProgress(config, numTasks, context.estimatedInputTokens);
+	await initializeProgress(config, numTasks, context.estimatedInputTokens)
 
-	const aiServiceResponse = await callAIServiceWithTimeout(
-		config,
-		prompts,
-		config.streamingTimeout
-	);
+	const aiServiceResponse = await callAIServiceWithTimeout(config, prompts, config.streamingTimeout)
 
-	const { progressTracker, priorityMap } = await setupProgressTracking(
-		config,
-		numTasks
-	);
+	const { progressTracker, priorityMap } = await setupProgressTracking(config, numTasks)
 
 	const streamingResult = await processStreamResponse(
 		aiServiceResponse.mainResult,
@@ -120,15 +110,15 @@ export async function handleStreamingService(config, prompts, numTasks) {
 		context.defaultPriority,
 		context.estimatedInputTokens,
 		context.logger
-	);
+	)
 
-	validateStreamingResult(streamingResult);
+	validateStreamingResult(streamingResult)
 
 	// If we have usage data from streaming, log telemetry now
 	if (streamingResult.usage && config.projectRoot) {
-		const { logAiUsage } = await import('../../ai-services-unified.js');
-		const { getUserId } = await import('../../config-manager.js');
-		const userId = getUserId(config.projectRoot);
+		const { logAiUsage } = await import('../../ai-services-unified.js')
+		const { getUserId } = await import('../../config-manager.js')
+		const userId = getUserId(config.projectRoot)
 
 		if (userId && aiServiceResponse.providerName && aiServiceResponse.modelId) {
 			try {
@@ -140,17 +130,14 @@ export async function handleStreamingService(config, prompts, numTasks) {
 					inputTokens: streamingResult.usage.promptTokens || 0,
 					outputTokens: streamingResult.usage.completionTokens || 0,
 					outputType: config.isMCP ? 'mcp' : 'cli'
-				});
+				})
 
 				// Add telemetry to the response
 				if (telemetryData) {
-					aiServiceResponse.telemetryData = telemetryData;
+					aiServiceResponse.telemetryData = telemetryData
 				}
 			} catch (telemetryError) {
-				context.logger.report(
-					`Failed to log telemetry: ${telemetryError.message}`,
-					'debug'
-				);
+				context.logger.report(`Failed to log telemetry: ${telemetryError.message}`, 'debug')
 			}
 		}
 	}
@@ -160,19 +147,19 @@ export async function handleStreamingService(config, prompts, numTasks) {
 		aiServiceResponse,
 		context.estimatedInputTokens,
 		progressTracker
-	);
+	)
 }
 
 /**
  * Create streaming context with common values
  */
 function createStreamingContext(config, prompts, numTasks) {
-	const { systemPrompt, userPrompt } = prompts;
+	const { systemPrompt, userPrompt } = prompts
 	return {
 		logger: new LoggingConfig(config.mcpLog, config.reportProgress),
 		estimatedInputTokens: estimateTokens(systemPrompt + userPrompt),
 		defaultPriority: getDefaultPriority(config.projectRoot) || 'medium'
-	};
+	}
 }
 
 /**
@@ -180,7 +167,7 @@ function createStreamingContext(config, prompts, numTasks) {
  */
 function validateStreamingResult(streamingResult) {
 	if (streamingResult.parsedTasks.length === 0) {
-		throw new Error('No tasks were generated from the PRD');
+		throw new Error('No tasks were generated from the PRD')
 	}
 }
 
@@ -193,7 +180,7 @@ async function initializeProgress(config, numTasks, estimatedInputTokens) {
 			progress: 0,
 			total: numTasks,
 			message: `Starting PRD analysis (Input: ${estimatedInputTokens} tokens)${config.research ? ' with research' : ''}...`
-		});
+		})
 	}
 }
 
@@ -201,7 +188,7 @@ async function initializeProgress(config, numTasks, estimatedInputTokens) {
  * Call AI service with timeout
  */
 async function callAIServiceWithTimeout(config, prompts, timeout) {
-	const { systemPrompt, userPrompt } = prompts;
+	const { systemPrompt, userPrompt } = prompts
 
 	return await TimeoutManager.withTimeout(
 		streamObjectService({
@@ -216,27 +203,25 @@ async function callAIServiceWithTimeout(config, prompts, timeout) {
 		}),
 		timeout,
 		'Streaming operation'
-	);
+	)
 }
 
 /**
  * Setup progress tracking for CLI output
  */
 async function setupProgressTracking(config, numTasks) {
-	const priorityMap = getPriorityIndicators(config.isMCP);
-	let progressTracker = null;
+	const priorityMap = getPriorityIndicators(config.isMCP)
+	let progressTracker = null
 
 	if (config.outputFormat === 'text' && !config.isMCP) {
 		progressTracker = createParsePrdTracker({
 			numUnits: numTasks,
 			unitName: 'task',
 			append: config.append
-		});
+		})
 
-		const modelId = config.research ? getResearchModelId() : getMainModelId();
-		const parameters = getParametersForRole(
-			config.research ? 'research' : 'main'
-		);
+		const modelId = config.research ? getResearchModelId() : getMainModelId()
+		const parameters = getParametersForRole(config.research ? 'research' : 'main')
 
 		displayParsePrdStart({
 			prdFilePath: config.prdPath,
@@ -249,12 +234,12 @@ async function setupProgressTracking(config, numTasks) {
 			nextId: 1,
 			model: modelId || 'Default',
 			temperature: parameters?.temperature || 0.7
-		});
+		})
 
-		progressTracker.start();
+		progressTracker.start()
 	}
 
-	return { progressTracker, priorityMap };
+	return { progressTracker, priorityMap }
 }
 
 /**
@@ -271,7 +256,7 @@ async function processStreamResponse(
 	estimatedInputTokens,
 	logger
 ) {
-	const { systemPrompt, userPrompt } = prompts;
+	const { systemPrompt, userPrompt } = prompts
 	const context = {
 		config: {
 			...config,
@@ -284,7 +269,7 @@ async function processStreamResponse(
 		estimatedInputTokens,
 		prompt: userPrompt,
 		systemPrompt: systemPrompt
-	};
+	}
 
 	try {
 		const streamingState = {
@@ -292,33 +277,26 @@ async function processStreamResponse(
 			taskCount: 0,
 			estimatedOutputTokens: 0,
 			usage: null
-		};
+		}
 
-		await processPartialStream(
-			streamResult.partialObjectStream,
-			streamingState,
-			context
-		);
+		await processPartialStream(streamResult.partialObjectStream, streamingState, context)
 
 		// Wait for usage data if available
 		if (streamResult.usage) {
 			try {
-				streamingState.usage = await streamResult.usage;
+				streamingState.usage = await streamResult.usage
 			} catch (usageError) {
-				logger.report(
-					`Failed to get usage data: ${usageError.message}`,
-					'debug'
-				);
+				logger.report(`Failed to get usage data: ${usageError.message}`, 'debug')
 			}
 		}
 
-		return finalizeStreamingResults(streamingState, context);
+		return finalizeStreamingResults(streamingState, context)
 	} catch (error) {
 		logger.report(
 			`StreamObject processing failed: ${error.message}. Falling back to generateObject.`,
 			'debug'
-		);
-		return await processWithGenerateObject(context, logger);
+		)
+		return await processWithGenerateObject(context, logger)
 	}
 }
 
@@ -327,15 +305,13 @@ async function processStreamResponse(
  */
 async function processPartialStream(partialStream, state, context) {
 	for await (const partialObject of partialStream) {
-		state.lastPartialObject = partialObject;
+		state.lastPartialObject = partialObject
 
 		if (partialObject) {
-			state.estimatedOutputTokens = estimateTokens(
-				JSON.stringify(partialObject)
-			);
+			state.estimatedOutputTokens = estimateTokens(JSON.stringify(partialObject))
 		}
 
-		await processStreamingTasks(partialObject, state, context);
+		await processStreamingTasks(partialObject, state, context)
 	}
 }
 
@@ -344,10 +320,10 @@ async function processPartialStream(partialStream, state, context) {
  */
 async function processStreamingTasks(partialObject, state, context) {
 	if (!partialObject?.tasks || !Array.isArray(partialObject.tasks)) {
-		return;
+		return
 	}
 
-	const newTaskCount = partialObject.tasks.length;
+	const newTaskCount = partialObject.tasks.length
 
 	if (newTaskCount > state.taskCount) {
 		await processNewTasks(
@@ -356,29 +332,23 @@ async function processStreamingTasks(partialObject, state, context) {
 			newTaskCount,
 			state.estimatedOutputTokens,
 			context
-		);
-		state.taskCount = newTaskCount;
+		)
+		state.taskCount = newTaskCount
 	} else if (context.progressTracker && state.estimatedOutputTokens > 0) {
 		context.progressTracker.updateTokens(
 			context.estimatedInputTokens,
 			state.estimatedOutputTokens,
 			true
-		);
+		)
 	}
 }
 
 /**
  * Process newly appeared tasks in the stream
  */
-async function processNewTasks(
-	tasks,
-	startIndex,
-	endIndex,
-	estimatedOutputTokens,
-	context
-) {
+async function processNewTasks(tasks, startIndex, endIndex, estimatedOutputTokens, context) {
 	for (let i = startIndex; i < endIndex; i++) {
-		const task = tasks[i] || {};
+		const task = tasks[i] || {}
 
 		if (task.title) {
 			await reportTaskProgress({
@@ -391,9 +361,9 @@ async function processNewTasks(
 				priorityMap: context.priorityMap,
 				defaultPriority: context.defaultPriority,
 				estimatedInputTokens: context.estimatedInputTokens
-			});
+			})
 		} else {
-			await reportPlaceholderTask(i + 1, estimatedOutputTokens, context);
+			await reportPlaceholderTask(i + 1, estimatedOutputTokens, context)
 		}
 	}
 }
@@ -401,30 +371,12 @@ async function processNewTasks(
 /**
  * Report a placeholder task while it's being generated
  */
-async function reportPlaceholderTask(
-	taskNumber,
-	estimatedOutputTokens,
-	context
-) {
-	const {
-		progressTracker,
-		config,
-		numTasks,
-		defaultPriority,
-		estimatedInputTokens
-	} = context;
+async function reportPlaceholderTask(taskNumber, estimatedOutputTokens, context) {
+	const { progressTracker, config, numTasks, defaultPriority, estimatedInputTokens } = context
 
 	if (progressTracker) {
-		progressTracker.addTaskLine(
-			taskNumber,
-			`Generating task ${taskNumber}...`,
-			defaultPriority
-		);
-		progressTracker.updateTokens(
-			estimatedInputTokens,
-			estimatedOutputTokens,
-			true
-		);
+		progressTracker.addTaskLine(taskNumber, `Generating task ${taskNumber}...`, defaultPriority)
+		progressTracker.updateTokens(estimatedInputTokens, estimatedOutputTokens, true)
 	}
 
 	if (config.reportProgress && !progressTracker) {
@@ -432,7 +384,7 @@ async function reportPlaceholderTask(
 			progress: taskNumber,
 			total: numTasks,
 			message: `Generating task ${taskNumber}/${numTasks}...`
-		});
+		})
 	}
 }
 
@@ -440,15 +392,15 @@ async function reportPlaceholderTask(
  * Finalize streaming results and update progress display
  */
 async function finalizeStreamingResults(state, context) {
-	const { lastPartialObject, estimatedOutputTokens, taskCount, usage } = state;
+	const { lastPartialObject, estimatedOutputTokens, taskCount, usage } = state
 
 	if (!lastPartialObject?.tasks || !Array.isArray(lastPartialObject.tasks)) {
-		throw new Error('No tasks generated from streamObject');
+		throw new Error('No tasks generated from streamObject')
 	}
 
 	// Use actual token counts if available, otherwise use estimates
-	const finalOutputTokens = usage?.completionTokens || estimatedOutputTokens;
-	const finalInputTokens = usage?.promptTokens || context.estimatedInputTokens;
+	const finalOutputTokens = usage?.completionTokens || estimatedOutputTokens
+	const finalInputTokens = usage?.promptTokens || context.estimatedInputTokens
 
 	if (context.progressTracker) {
 		await updateFinalProgress(
@@ -457,7 +409,7 @@ async function finalizeStreamingResults(state, context) {
 			usage ? finalOutputTokens : estimatedOutputTokens,
 			context,
 			usage ? finalInputTokens : null
-		);
+		)
 	}
 
 	return {
@@ -466,7 +418,7 @@ async function finalizeStreamingResults(state, context) {
 		actualInputTokens: finalInputTokens,
 		usage,
 		usedFallback: false
-	};
+	}
 }
 
 /**
@@ -479,20 +431,16 @@ async function updateFinalProgress(
 	context,
 	actualInputTokens = null
 ) {
-	const { progressTracker, defaultPriority, estimatedInputTokens } = context;
+	const { progressTracker, defaultPriority, estimatedInputTokens } = context
 
 	if (taskCount > 0) {
-		updateTaskLines(tasks, progressTracker, defaultPriority);
+		updateTaskLines(tasks, progressTracker, defaultPriority)
 	} else {
-		await reportAllTasks(tasks, outputTokens, context);
+		await reportAllTasks(tasks, outputTokens, context)
 	}
 
-	progressTracker.updateTokens(
-		actualInputTokens || estimatedInputTokens,
-		outputTokens,
-		false
-	);
-	progressTracker.stop();
+	progressTracker.updateTokens(actualInputTokens || estimatedInputTokens, outputTokens, false)
+	progressTracker.stop()
 }
 
 /**
@@ -500,13 +448,9 @@ async function updateFinalProgress(
  */
 function updateTaskLines(tasks, progressTracker, defaultPriority) {
 	for (let i = 0; i < tasks.length; i++) {
-		const task = tasks[i];
+		const task = tasks[i]
 		if (task?.title) {
-			progressTracker.addTaskLine(
-				i + 1,
-				task.title,
-				task.priority || defaultPriority
-			);
+			progressTracker.addTaskLine(i + 1, task.title, task.priority || defaultPriority)
 		}
 	}
 }
@@ -516,7 +460,7 @@ function updateTaskLines(tasks, progressTracker, defaultPriority) {
  */
 async function reportAllTasks(tasks, estimatedOutputTokens, context) {
 	for (let i = 0; i < tasks.length; i++) {
-		const task = tasks[i];
+		const task = tasks[i]
 		if (task?.title) {
 			await reportTaskProgress({
 				task,
@@ -528,7 +472,7 @@ async function reportAllTasks(tasks, estimatedOutputTokens, context) {
 				priorityMap: context.priorityMap,
 				defaultPriority: context.defaultPriority,
 				estimatedInputTokens: context.estimatedInputTokens
-			});
+			})
 		}
 	}
 }
@@ -537,7 +481,7 @@ async function reportAllTasks(tasks, estimatedOutputTokens, context) {
  * Process with generateObject as fallback when streaming fails
  */
 async function processWithGenerateObject(context, logger) {
-	logger.report('Using generateObject fallback for PRD parsing', 'info');
+	logger.report('Using generateObject fallback for PRD parsing', 'info')
 
 	// Show placeholder tasks while generating
 	if (context.progressTracker) {
@@ -546,12 +490,8 @@ async function processWithGenerateObject(context, logger) {
 				i + 1,
 				`Generating task ${i + 1}...`,
 				context.defaultPriority
-			);
-			context.progressTracker.updateTokens(
-				context.estimatedInputTokens,
-				0,
-				true
-			);
+			)
+			context.progressTracker.updateTokens(context.estimatedInputTokens, 0, true)
 		}
 	}
 
@@ -565,48 +505,45 @@ async function processWithGenerateObject(context, logger) {
 		outputFormat: context.config.outputFormat || 'text',
 		projectRoot: context.config.projectRoot,
 		session: context.config.session
-	});
+	})
 
 	// Extract tasks from the result (handle both direct tasks and mainResult.tasks)
-	const tasks = result?.mainResult || result;
+	const tasks = result?.mainResult || result
 
 	// Process the generated tasks
 	if (tasks && Array.isArray(tasks.tasks)) {
 		// Update progress tracker with final tasks
 		if (context.progressTracker) {
 			for (let i = 0; i < tasks.tasks.length; i++) {
-				const task = tasks.tasks[i];
+				const task = tasks.tasks[i]
 				if (task && task.title) {
 					context.progressTracker.addTaskLine(
 						i + 1,
 						task.title,
 						task.priority || context.defaultPriority
-					);
+					)
 				}
 			}
 
 			// Final token update - use actual telemetry if available
 			const outputTokens =
-				result.telemetryData?.outputTokens ||
-				estimateTokens(JSON.stringify(tasks));
-			const inputTokens =
-				result.telemetryData?.inputTokens || context.estimatedInputTokens;
+				result.telemetryData?.outputTokens || estimateTokens(JSON.stringify(tasks))
+			const inputTokens = result.telemetryData?.inputTokens || context.estimatedInputTokens
 
-			context.progressTracker.updateTokens(inputTokens, outputTokens, false);
+			context.progressTracker.updateTokens(inputTokens, outputTokens, false)
 		}
 
 		return {
 			parsedTasks: tasks.tasks,
 			estimatedOutputTokens:
-				result.telemetryData?.outputTokens ||
-				estimateTokens(JSON.stringify(tasks)),
+				result.telemetryData?.outputTokens || estimateTokens(JSON.stringify(tasks)),
 			actualInputTokens: result.telemetryData?.inputTokens,
 			telemetryData: result.telemetryData,
 			usedFallback: true
-		};
+		}
 	}
 
-	throw new Error('Failed to generate tasks using generateObject fallback');
+	throw new Error('Failed to generate tasks using generateObject fallback')
 }
 
 /**
@@ -618,22 +555,22 @@ function prepareFinalResult(
 	estimatedInputTokens,
 	progressTracker
 ) {
-	let summary = null;
+	let summary = null
 	if (progressTracker) {
-		summary = progressTracker.getSummary();
-		progressTracker.cleanup();
+		summary = progressTracker.getSummary()
+		progressTracker.cleanup()
 	}
 
 	// If we have actual usage data from streaming, update the AI service response
 	if (streamingResult.usage && aiServiceResponse) {
 		// Map the Vercel AI SDK usage format to our telemetry format
-		const usage = streamingResult.usage;
+		const usage = streamingResult.usage
 		if (!aiServiceResponse.usage) {
 			aiServiceResponse.usage = {
 				promptTokens: usage.promptTokens || 0,
 				completionTokens: usage.completionTokens || 0,
 				totalTokens: usage.totalTokens || 0
-			};
+			}
 		}
 
 		// The telemetry should have been logged in the unified service runner
@@ -643,11 +580,10 @@ function prepareFinalResult(
 	return {
 		parsedTasks: streamingResult.parsedTasks,
 		aiServiceResponse,
-		estimatedInputTokens:
-			streamingResult.actualInputTokens || estimatedInputTokens,
+		estimatedInputTokens: streamingResult.actualInputTokens || estimatedInputTokens,
 		estimatedOutputTokens: streamingResult.estimatedOutputTokens,
 		usedFallback: streamingResult.usedFallback,
 		progressTracker,
 		summary
-	};
+	}
 }

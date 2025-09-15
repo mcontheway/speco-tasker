@@ -1,23 +1,23 @@
-import path from 'path';
-import fs from 'fs';
-import inquirer from 'inquirer';
-import chalk from 'chalk';
-import boxen from 'boxen';
-import Table from 'cli-table3';
+import fs from 'fs'
+import path from 'path'
+import boxen from 'boxen'
+import chalk from 'chalk'
+import Table from 'cli-table3'
+import inquirer from 'inquirer'
 
+import { displayBanner, getStatusWithColor } from '../ui.js'
 import {
+	findProjectRoot,
+	getCurrentTag,
+	getTasksForTag,
 	log,
 	readJSON,
-	writeJSON,
-	getCurrentTag,
 	resolveTag,
-	getTasksForTag,
 	setTasksForTag,
-	findProjectRoot,
-	truncate
-} from '../utils.js';
-import { displayBanner, getStatusWithColor } from '../ui.js';
-import findNextTask from './find-next-task.js';
+	truncate,
+	writeJSON
+} from '../utils.js'
+import findNextTask from './find-next-task.js'
 
 /**
  * Create a new tag context
@@ -33,15 +33,9 @@ import findNextTask from './find-next-task.js';
  * @param {string} outputFormat - Output format (text or json)
  * @returns {Promise<Object>} Result object with tag creation details
  */
-async function createTag(
-	tasksPath,
-	tagName,
-	options = {},
-	context = {},
-	outputFormat = 'text'
-) {
-	const { mcpLog, projectRoot } = context;
-	const { copyFromCurrent = false, copyFromTag, description } = options;
+async function createTag(tasksPath, tagName, options = {}, context = {}, outputFormat = 'text') {
+	const { mcpLog, projectRoot } = context
+	const { copyFromCurrent = false, copyFromTag, description } = options
 
 	// Create a consistent logFn object regardless of context
 	const logFn = mcpLog || {
@@ -50,40 +44,38 @@ async function createTag(
 		error: (...args) => log('error', ...args),
 		debug: (...args) => log('debug', ...args),
 		success: (...args) => log('success', ...args)
-	};
+	}
 
 	try {
 		// Validate tag name
 		if (!tagName || typeof tagName !== 'string') {
-			throw new Error('Tag name is required and must be a string');
+			throw new Error('Tag name is required and must be a string')
 		}
 
 		// Validate tag name format (alphanumeric, hyphens, underscores only)
 		if (!/^[a-zA-Z0-9_-]+$/.test(tagName)) {
-			throw new Error(
-				'Tag name can only contain letters, numbers, hyphens, and underscores'
-			);
+			throw new Error('Tag name can only contain letters, numbers, hyphens, and underscores')
 		}
 
 		// Reserved tag names
-		const reservedNames = ['master', 'main', 'default'];
+		const reservedNames = ['master', 'main', 'default']
 		if (reservedNames.includes(tagName.toLowerCase())) {
-			throw new Error(`"${tagName}" is a reserved tag name`);
+			throw new Error(`"${tagName}" is a reserved tag name`)
 		}
 
-		logFn.info(`Creating new tag: ${tagName}`);
+		logFn.info(`Creating new tag: ${tagName}`)
 
 		// Read current tasks data
-		const data = readJSON(tasksPath, projectRoot);
+		const data = readJSON(tasksPath, projectRoot)
 		if (!data) {
-			throw new Error(`Could not read tasks file at ${tasksPath}`);
+			throw new Error(`Could not read tasks file at ${tasksPath}`)
 		}
 
 		// Use raw tagged data for tag operations - ensure we get the actual tagged structure
-		let rawData;
+		let rawData
 		if (data._rawTaggedData) {
 			// If we have _rawTaggedData, use it (this is the clean tagged structure)
-			rawData = data._rawTaggedData;
+			rawData = data._rawTaggedData
 		} else if (data.tasks && !data.master) {
 			// This is legacy format - create a master tag structure
 			rawData = {
@@ -95,35 +87,35 @@ async function createTag(
 						description: 'Tasks live here by default'
 					}
 				}
-			};
+			}
 		} else {
 			// This is already in tagged format, use it directly but exclude internal fields
-			rawData = {};
+			rawData = {}
 			for (const [key, value] of Object.entries(data)) {
 				if (key !== '_rawTaggedData' && key !== 'tag') {
-					rawData[key] = value;
+					rawData[key] = value
 				}
 			}
 		}
 
 		// Check if tag already exists
 		if (rawData[tagName]) {
-			throw new Error(`Tag "${tagName}" already exists`);
+			throw new Error(`Tag "${tagName}" already exists`)
 		}
 
 		// Determine source for copying tasks (only if explicitly requested)
-		let sourceTasks = [];
+		let sourceTasks = []
 		if (copyFromCurrent || copyFromTag) {
-			const sourceTag = copyFromTag || getCurrentTag(projectRoot);
-			sourceTasks = getTasksForTag(rawData, sourceTag);
+			const sourceTag = copyFromTag || getCurrentTag(projectRoot)
+			sourceTasks = getTasksForTag(rawData, sourceTag)
 
 			if (copyFromTag && sourceTasks.length === 0) {
-				logFn.warn(`Source tag "${copyFromTag}" not found or has no tasks`);
+				logFn.warn(`Source tag "${copyFromTag}" not found or has no tasks`)
 			}
 
-			logFn.info(`Copying ${sourceTasks.length} tasks from tag "${sourceTag}"`);
+			logFn.info(`Copying ${sourceTasks.length} tasks from tag "${sourceTag}"`)
 		} else {
-			logFn.info('Creating empty tag (no tasks copied)');
+			logFn.info('Creating empty tag (no tasks copied)')
 		}
 
 		// Create the new tag structure in raw data
@@ -132,23 +124,22 @@ async function createTag(
 			metadata: {
 				created: new Date().toISOString(),
 				updated: new Date().toISOString(),
-				description:
-					description || `Tag created on ${new Date().toLocaleDateString()}`
+				description: description || `Tag created on ${new Date().toLocaleDateString()}`
 			}
-		};
+		}
 
 		// Create clean data for writing (exclude _rawTaggedData to prevent corruption)
-		const cleanData = {};
+		const cleanData = {}
 		for (const [key, value] of Object.entries(rawData)) {
 			if (key !== '_rawTaggedData') {
-				cleanData[key] = value;
+				cleanData[key] = value
 			}
 		}
 
 		// Write the clean data back to file with proper context to avoid tag corruption
-		writeJSON(tasksPath, cleanData, projectRoot);
+		writeJSON(tasksPath, cleanData, projectRoot)
 
-		logFn.success(`Successfully created tag "${tagName}"`);
+		logFn.success(`Successfully created tag "${tagName}"`)
 
 		// For JSON output, return structured data
 		if (outputFormat === 'json') {
@@ -157,12 +148,9 @@ async function createTag(
 				created: true,
 				tasksCopied: sourceTasks.length,
 				sourceTag:
-					copyFromCurrent || copyFromTag
-						? copyFromTag || getCurrentTag(projectRoot)
-						: null,
-				description:
-					description || `Tag created on ${new Date().toLocaleDateString()}`
-			};
+					copyFromCurrent || copyFromTag ? copyFromTag || getCurrentTag(projectRoot) : null,
+				description: description || `Tag created on ${new Date().toLocaleDateString()}`
+			}
 		}
 
 		// For text output, display success message
@@ -183,23 +171,19 @@ async function createTag(
 						margin: { top: 1, bottom: 1 }
 					}
 				)
-			);
+			)
 		}
 
 		return {
 			tagName,
 			created: true,
 			tasksCopied: sourceTasks.length,
-			sourceTag:
-				copyFromCurrent || copyFromTag
-					? copyFromTag || getCurrentTag(projectRoot)
-					: null,
-			description:
-				description || `Tag created on ${new Date().toLocaleDateString()}`
-		};
+			sourceTag: copyFromCurrent || copyFromTag ? copyFromTag || getCurrentTag(projectRoot) : null,
+			description: description || `Tag created on ${new Date().toLocaleDateString()}`
+		}
 	} catch (error) {
-		logFn.error(`Error creating tag: ${error.message}`);
-		throw error;
+		logFn.error(`Error creating tag: ${error.message}`)
+		throw error
 	}
 }
 
@@ -215,15 +199,9 @@ async function createTag(
  * @param {string} outputFormat - Output format (text or json)
  * @returns {Promise<Object>} Result object with deletion details
  */
-async function deleteTag(
-	tasksPath,
-	tagName,
-	options = {},
-	context = {},
-	outputFormat = 'text'
-) {
-	const { mcpLog, projectRoot } = context;
-	const { yes = false } = options;
+async function deleteTag(tasksPath, tagName, options = {}, context = {}, outputFormat = 'text') {
+	const { mcpLog, projectRoot } = context
+	const { yes = false } = options
 
 	// Create a consistent logFn object regardless of context
 	const logFn = mcpLog || {
@@ -232,32 +210,32 @@ async function deleteTag(
 		error: (...args) => log('error', ...args),
 		debug: (...args) => log('debug', ...args),
 		success: (...args) => log('success', ...args)
-	};
+	}
 
 	try {
 		// Validate tag name
 		if (!tagName || typeof tagName !== 'string') {
-			throw new Error('Tag name is required and must be a string');
+			throw new Error('Tag name is required and must be a string')
 		}
 
 		// Prevent deletion of master tag
 		if (tagName === 'master') {
-			throw new Error('Cannot delete the "master" tag');
+			throw new Error('Cannot delete the "master" tag')
 		}
 
-		logFn.info(`Deleting tag: ${tagName}`);
+		logFn.info(`Deleting tag: ${tagName}`)
 
 		// Read current tasks data
-		const data = readJSON(tasksPath, projectRoot);
+		const data = readJSON(tasksPath, projectRoot)
 		if (!data) {
-			throw new Error(`Could not read tasks file at ${tasksPath}`);
+			throw new Error(`Could not read tasks file at ${tasksPath}`)
 		}
 
 		// Use raw tagged data for tag operations - ensure we get the actual tagged structure
-		let rawData;
+		let rawData
 		if (data._rawTaggedData) {
 			// If we have _rawTaggedData, use it (this is the clean tagged structure)
-			rawData = data._rawTaggedData;
+			rawData = data._rawTaggedData
 		} else if (data.tasks && !data.master) {
 			// This is legacy format - create a master tag structure
 			rawData = {
@@ -269,29 +247,29 @@ async function deleteTag(
 						description: 'Tasks live here by default'
 					}
 				}
-			};
+			}
 		} else {
 			// This is already in tagged format, use it directly but exclude internal fields
-			rawData = {};
+			rawData = {}
 			for (const [key, value] of Object.entries(data)) {
 				if (key !== '_rawTaggedData' && key !== 'tag') {
-					rawData[key] = value;
+					rawData[key] = value
 				}
 			}
 		}
 
 		// Check if tag exists
 		if (!rawData[tagName]) {
-			throw new Error(`Tag "${tagName}" does not exist`);
+			throw new Error(`Tag "${tagName}" does not exist`)
 		}
 
 		// Get current tag to check if we're deleting the active tag
-		const currentTag = getCurrentTag(projectRoot);
-		const isCurrentTag = currentTag === tagName;
+		const currentTag = getCurrentTag(projectRoot)
+		const isCurrentTag = currentTag === tagName
 
 		// Get task count for confirmation
-		const tasks = getTasksForTag(rawData, tagName);
-		const taskCount = tasks.length;
+		const tasks = getTasksForTag(rawData, tagName)
+		const taskCount = tasks.length
 
 		// If not forced and has tasks, require confirmation (for CLI)
 		if (!yes && taskCount > 0 && outputFormat === 'text') {
@@ -308,7 +286,7 @@ async function deleteTag(
 						margin: { top: 1, bottom: 1 }
 					}
 				)
-			);
+			)
 
 			// First confirmation
 			const firstConfirm = await inquirer.prompt([
@@ -318,11 +296,11 @@ async function deleteTag(
 					message: `Are you sure you want to delete tag "${tagName}" and its ${taskCount} tasks?`,
 					default: false
 				}
-			]);
+			])
 
 			if (!firstConfirm.proceed) {
-				logFn.info('Tag deletion cancelled by user');
-				throw new Error('Tag deletion cancelled');
+				logFn.info('Tag deletion cancelled by user')
+				throw new Error('Tag deletion cancelled')
 			}
 
 			// Second confirmation (double-check)
@@ -333,42 +311,42 @@ async function deleteTag(
 					message: `To confirm deletion, please type the tag name "${tagName}":`,
 					validate: (input) => {
 						if (input === tagName) {
-							return true;
+							return true
 						}
-						return `Please type exactly "${tagName}" to confirm deletion`;
+						return `Please type exactly "${tagName}" to confirm deletion`
 					}
 				}
-			]);
+			])
 
 			if (secondConfirm.tagNameConfirm !== tagName) {
-				logFn.info('Tag deletion cancelled - incorrect tag name confirmation');
-				throw new Error('Tag deletion cancelled');
+				logFn.info('Tag deletion cancelled - incorrect tag name confirmation')
+				throw new Error('Tag deletion cancelled')
 			}
 
-			logFn.info('Double confirmation received, proceeding with deletion...');
+			logFn.info('Double confirmation received, proceeding with deletion...')
 		}
 
 		// Delete the tag
-		delete rawData[tagName];
+		delete rawData[tagName]
 
 		// If we're deleting the current tag, switch to master
 		if (isCurrentTag) {
-			await switchCurrentTag(projectRoot, 'master');
-			logFn.info('Switched current tag to "master"');
+			await switchCurrentTag(projectRoot, 'master')
+			logFn.info('Switched current tag to "master"')
 		}
 
 		// Create clean data for writing (exclude _rawTaggedData to prevent corruption)
-		const cleanData = {};
+		const cleanData = {}
 		for (const [key, value] of Object.entries(rawData)) {
 			if (key !== '_rawTaggedData') {
-				cleanData[key] = value;
+				cleanData[key] = value
 			}
 		}
 
 		// Write the clean data back to file with proper context to avoid tag corruption
-		writeJSON(tasksPath, cleanData, projectRoot);
+		writeJSON(tasksPath, cleanData, projectRoot)
 
-		logFn.success(`Successfully deleted tag "${tagName}"`);
+		logFn.success(`Successfully deleted tag "${tagName}"`)
 
 		// For JSON output, return structured data
 		if (outputFormat === 'json') {
@@ -378,7 +356,7 @@ async function deleteTag(
 				tasksDeleted: taskCount,
 				wasCurrentTag: isCurrentTag,
 				switchedToMaster: isCurrentTag
-			};
+			}
 		}
 
 		// For text output, display success message
@@ -388,9 +366,7 @@ async function deleteTag(
 					chalk.red.bold('✓ Tag Deleted Successfully') +
 						`\n\nTag Name: ${chalk.cyan(tagName)}` +
 						`\nTasks Deleted: ${chalk.yellow(taskCount)}` +
-						(isCurrentTag
-							? `\n${chalk.yellow('⚠ Switched current tag to "master"')}`
-							: ''),
+						(isCurrentTag ? `\n${chalk.yellow('⚠ Switched current tag to "master"')}` : ''),
 					{
 						padding: 1,
 						borderColor: 'red',
@@ -398,7 +374,7 @@ async function deleteTag(
 						margin: { top: 1, bottom: 1 }
 					}
 				)
-			);
+			)
 		}
 
 		return {
@@ -407,10 +383,10 @@ async function deleteTag(
 			tasksDeleted: taskCount,
 			wasCurrentTag: isCurrentTag,
 			switchedToMaster: isCurrentTag
-		};
+		}
 	} catch (error) {
-		logFn.error(`Error deleting tag: ${error.message}`);
-		throw error;
+		logFn.error(`Error deleting tag: ${error.message}`)
+		throw error
 	}
 }
 
@@ -422,17 +398,16 @@ async function deleteTag(
  * @returns {Promise<boolean>} True if any tags were enhanced
  */
 async function enhanceTagsWithMetadata(tasksPath, rawData, context = {}) {
-	let enhanced = false;
+	let enhanced = false
 
 	try {
 		// Get file stats for creation date fallback
-		let fileCreatedDate;
+		let fileCreatedDate
 		try {
-			const stats = fs.statSync(tasksPath);
-			fileCreatedDate =
-				stats.birthtime < stats.mtime ? stats.birthtime : stats.mtime;
+			const stats = fs.statSync(tasksPath)
+			fileCreatedDate = stats.birthtime < stats.mtime ? stats.birthtime : stats.mtime
 		} catch (error) {
-			fileCreatedDate = new Date();
+			fileCreatedDate = new Date()
 		}
 
 		for (const [tagName, tagData] of Object.entries(rawData)) {
@@ -445,57 +420,57 @@ async function enhanceTagsWithMetadata(tasksPath, rawData, context = {}) {
 				typeof tagData !== 'object' ||
 				!Array.isArray(tagData.tasks)
 			) {
-				continue;
+				continue
 			}
 
 			// Check if tag needs metadata enhancement
 			if (!tagData.metadata) {
-				tagData.metadata = {};
-				enhanced = true;
+				tagData.metadata = {}
+				enhanced = true
 			}
 
 			// Add missing metadata fields
 			if (!tagData.metadata.created) {
-				tagData.metadata.created = fileCreatedDate.toISOString();
-				enhanced = true;
+				tagData.metadata.created = fileCreatedDate.toISOString()
+				enhanced = true
 			}
 
 			if (!tagData.metadata.description) {
 				if (tagName === 'master') {
-					tagData.metadata.description = 'Tasks live here by default';
+					tagData.metadata.description = 'Tasks live here by default'
 				} else {
-					tagData.metadata.description = `Tag created on ${new Date(tagData.metadata.created).toLocaleDateString()}`;
+					tagData.metadata.description = `Tag created on ${new Date(tagData.metadata.created).toLocaleDateString()}`
 				}
-				enhanced = true;
+				enhanced = true
 			}
 
 			// Add updated field if missing (set to created date initially)
 			if (!tagData.metadata.updated) {
-				tagData.metadata.updated = tagData.metadata.created;
-				enhanced = true;
+				tagData.metadata.updated = tagData.metadata.created
+				enhanced = true
 			}
 		}
 
 		// If we enhanced any tags, write the data back
 		if (enhanced) {
 			// Create clean data for writing (exclude _rawTaggedData to prevent corruption)
-			const cleanData = {};
+			const cleanData = {}
 			for (const [key, value] of Object.entries(rawData)) {
 				if (key !== '_rawTaggedData') {
-					cleanData[key] = value;
+					cleanData[key] = value
 				}
 			}
-			writeJSON(tasksPath, cleanData, context.projectRoot);
+			writeJSON(tasksPath, cleanData, context.projectRoot)
 		}
 	} catch (error) {
 		// Don't throw - just log and continue
 		const logFn = context.mcpLog || {
 			warn: (...args) => log('warn', ...args)
-		};
-		logFn.warn(`Could not enhance tag metadata: ${error.message}`);
+		}
+		logFn.warn(`Could not enhance tag metadata: ${error.message}`)
 	}
 
-	return enhanced;
+	return enhanced
 }
 
 /**
@@ -510,14 +485,9 @@ async function enhanceTagsWithMetadata(tasksPath, rawData, context = {}) {
  * @param {string} outputFormat - Output format (text or json)
  * @returns {Promise<Object>} Result object with tags list
  */
-async function tags(
-	tasksPath,
-	options = {},
-	context = {},
-	outputFormat = 'text'
-) {
-	const { mcpLog, projectRoot } = context;
-	const { showTaskCounts = true, showMetadata = false } = options;
+async function tags(tasksPath, options = {}, context = {}, outputFormat = 'text') {
+	const { mcpLog, projectRoot } = context
+	const { showTaskCounts = true, showMetadata = false } = options
 
 	// Create a consistent logFn object regardless of context
 	const logFn = mcpLog || {
@@ -526,28 +496,28 @@ async function tags(
 		error: (...args) => log('error', ...args),
 		debug: (...args) => log('debug', ...args),
 		success: (...args) => log('success', ...args)
-	};
+	}
 
 	try {
-		logFn.info('Listing available tags');
+		logFn.info('Listing available tags')
 
 		// Read current tasks data
-		const data = readJSON(tasksPath, projectRoot);
+		const data = readJSON(tasksPath, projectRoot)
 		if (!data) {
-			throw new Error(`Could not read tasks file at ${tasksPath}`);
+			throw new Error(`Could not read tasks file at ${tasksPath}`)
 		}
 
 		// Get current tag
-		const currentTag = getCurrentTag(projectRoot);
+		const currentTag = getCurrentTag(projectRoot)
 
 		// Use raw tagged data if available, otherwise use the data directly
-		const rawData = data._rawTaggedData || data;
+		const rawData = data._rawTaggedData || data
 
 		// Enhance existing tags with metadata if they don't have it
-		await enhanceTagsWithMetadata(tasksPath, rawData, context);
+		await enhanceTagsWithMetadata(tasksPath, rawData, context)
 
 		// Extract all tags
-		const tagList = [];
+		const tagList = []
 		for (const [tagName, tagData] of Object.entries(rawData)) {
 			// Skip non-tag properties (like legacy 'tasks' array, 'tag', '_rawTaggedData')
 			if (
@@ -558,32 +528,30 @@ async function tags(
 				typeof tagData !== 'object' ||
 				!Array.isArray(tagData.tasks)
 			) {
-				continue;
+				continue
 			}
 
-			const tasks = tagData.tasks || [];
-			const metadata = tagData.metadata || {};
+			const tasks = tagData.tasks || []
+			const metadata = tagData.metadata || {}
 
 			tagList.push({
 				name: tagName,
 				isCurrent: tagName === currentTag,
-				completedTasks: tasks.filter(
-					(t) => t.status === 'done' || t.status === 'completed'
-				).length,
+				completedTasks: tasks.filter((t) => t.status === 'done' || t.status === 'completed').length,
 				tasks: tasks || [],
 				created: metadata.created || 'Unknown',
 				description: metadata.description || 'No description'
-			});
+			})
 		}
 
 		// Sort tags: current tag first, then alphabetically
 		tagList.sort((a, b) => {
-			if (a.isCurrent) return -1;
-			if (b.isCurrent) return 1;
-			return a.name.localeCompare(b.name);
-		});
+			if (a.isCurrent) return -1
+			if (b.isCurrent) return 1
+			return a.name.localeCompare(b.name)
+		})
 
-		logFn.success(`Found ${tagList.length} tags`);
+		logFn.success(`Found ${tagList.length} tags`)
 
 		// For JSON output, return structured data
 		if (outputFormat === 'json') {
@@ -591,7 +559,7 @@ async function tags(
 				tags: tagList,
 				currentTag,
 				totalTags: tagList.length
-			};
+			}
 		}
 
 		// For text output, display formatted table
@@ -604,52 +572,50 @@ async function tags(
 						borderStyle: 'round',
 						margin: { top: 1, bottom: 1 }
 					})
-				);
-				return { tags: [], currentTag, totalTags: 0 };
+				)
+				return { tags: [], currentTag, totalTags: 0 }
 			}
 
 			// Create table headers based on options
-			const headers = [chalk.cyan.bold('Tag Name')];
+			const headers = [chalk.cyan.bold('Tag Name')]
 			if (showTaskCounts) {
-				headers.push(chalk.cyan.bold('Tasks'));
-				headers.push(chalk.cyan.bold('Completed'));
+				headers.push(chalk.cyan.bold('Tasks'))
+				headers.push(chalk.cyan.bold('Completed'))
 			}
 			if (showMetadata) {
-				headers.push(chalk.cyan.bold('Created'));
-				headers.push(chalk.cyan.bold('Description'));
+				headers.push(chalk.cyan.bold('Created'))
+				headers.push(chalk.cyan.bold('Description'))
 			}
 
 			const table = new Table({
 				head: headers,
 				colWidths: showMetadata ? [20, 10, 12, 15, 50] : [25, 10, 12]
-			});
+			})
 
 			// Add rows
 			tagList.forEach((tag) => {
-				const row = [];
+				const row = []
 
 				// Tag name with current indicator
 				const tagDisplay = tag.isCurrent
 					? `${chalk.green('●')} ${chalk.green.bold(tag.name)} ${chalk.gray('(current)')}`
-					: `  ${tag.name}`;
-				row.push(tagDisplay);
+					: `  ${tag.name}`
+				row.push(tagDisplay)
 
 				if (showTaskCounts) {
-					row.push(chalk.white(tag.tasks.length.toString()));
-					row.push(chalk.green(tag.completedTasks.toString()));
+					row.push(chalk.white(tag.tasks.length.toString()))
+					row.push(chalk.green(tag.completedTasks.toString()))
 				}
 
 				if (showMetadata) {
 					const createdDate =
-						tag.created !== 'Unknown'
-							? new Date(tag.created).toLocaleDateString()
-							: 'Unknown';
-					row.push(chalk.gray(createdDate));
-					row.push(chalk.gray(truncate(tag.description, 50)));
+						tag.created !== 'Unknown' ? new Date(tag.created).toLocaleDateString() : 'Unknown'
+					row.push(chalk.gray(createdDate))
+					row.push(chalk.gray(truncate(tag.description, 50)))
 				}
 
-				table.push(row);
-			});
+				table.push(row)
+			})
 
 			// console.log(
 			// 	boxen(
@@ -664,17 +630,17 @@ async function tags(
 			// 	)
 			// );
 
-			console.log(table.toString());
+			console.log(table.toString())
 		}
 
 		return {
 			tags: tagList,
 			currentTag,
 			totalTags: tagList.length
-		};
+		}
 	} catch (error) {
-		logFn.error(`Error listing tags: ${error.message}`);
-		throw error;
+		logFn.error(`Error listing tags: ${error.message}`)
+		throw error
 	}
 }
 
@@ -689,14 +655,8 @@ async function tags(
  * @param {string} outputFormat - Output format (text or json)
  * @returns {Promise<Object>} Result object with switch details
  */
-async function useTag(
-	tasksPath,
-	tagName,
-	options = {},
-	context = {},
-	outputFormat = 'text'
-) {
-	const { mcpLog, projectRoot } = context;
+async function useTag(tasksPath, tagName, options = {}, context = {}, outputFormat = 'text') {
+	const { mcpLog, projectRoot } = context
 
 	// Create a consistent logFn object regardless of context
 	const logFn = mcpLog || {
@@ -705,45 +665,45 @@ async function useTag(
 		error: (...args) => log('error', ...args),
 		debug: (...args) => log('debug', ...args),
 		success: (...args) => log('success', ...args)
-	};
+	}
 
 	try {
 		// Validate tag name
 		if (!tagName || typeof tagName !== 'string') {
-			throw new Error('Tag name is required and must be a string');
+			throw new Error('Tag name is required and must be a string')
 		}
 
-		logFn.info(`Switching to tag: ${tagName}`);
+		logFn.info(`Switching to tag: ${tagName}`)
 
 		// Read current tasks data to verify tag exists
-		const data = readJSON(tasksPath, projectRoot);
+		const data = readJSON(tasksPath, projectRoot)
 		if (!data) {
-			throw new Error(`Could not read tasks file at ${tasksPath}`);
+			throw new Error(`Could not read tasks file at ${tasksPath}`)
 		}
 
 		// Use raw tagged data to check if tag exists
-		const rawData = data._rawTaggedData || data;
+		const rawData = data._rawTaggedData || data
 
 		// Check if tag exists
 		if (!rawData[tagName]) {
-			throw new Error(`Tag "${tagName}" does not exist`);
+			throw new Error(`Tag "${tagName}" does not exist`)
 		}
 
 		// Get current tag
-		const previousTag = getCurrentTag(projectRoot);
+		const previousTag = getCurrentTag(projectRoot)
 
 		// Switch to the new tag
-		await switchCurrentTag(projectRoot, tagName);
+		await switchCurrentTag(projectRoot, tagName)
 
 		// Get task count for the new tag - read tasks specifically for this tag
-		const tagData = readJSON(tasksPath, projectRoot, tagName);
-		const tasks = tagData ? tagData.tasks || [] : [];
-		const taskCount = tasks.length;
+		const tagData = readJSON(tasksPath, projectRoot, tagName)
+		const tasks = tagData ? tagData.tasks || [] : []
+		const taskCount = tasks.length
 
 		// Find the next task to work on in this tag
-		const nextTask = findNextTask(tasks);
+		const nextTask = findNextTask(tasks)
 
-		logFn.success(`Successfully switched to tag "${tagName}"`);
+		logFn.success(`Successfully switched to tag "${tagName}"`)
 
 		// For JSON output, return structured data
 		if (outputFormat === 'json') {
@@ -753,16 +713,16 @@ async function useTag(
 				switched: true,
 				taskCount,
 				nextTask
-			};
+			}
 		}
 
 		// For text output, display success message
 		if (outputFormat === 'text') {
-			let nextTaskInfo = '';
+			let nextTaskInfo = ''
 			if (nextTask) {
-				nextTaskInfo = `\nNext Task: ${chalk.cyan(`#${nextTask.id}`)} - ${chalk.white(nextTask.title)}`;
+				nextTaskInfo = `\nNext Task: ${chalk.cyan(`#${nextTask.id}`)} - ${chalk.white(nextTask.title)}`
 			} else {
-				nextTaskInfo = `\nNext Task: ${chalk.gray('No eligible tasks available')}`;
+				nextTaskInfo = `\nNext Task: ${chalk.gray('No eligible tasks available')}`
 			}
 
 			console.log(
@@ -779,7 +739,7 @@ async function useTag(
 						margin: { top: 1, bottom: 1 }
 					}
 				)
-			);
+			)
 		}
 
 		return {
@@ -788,10 +748,10 @@ async function useTag(
 			switched: true,
 			taskCount,
 			nextTask
-		};
+		}
 	} catch (error) {
-		logFn.error(`Error switching tag: ${error.message}`);
-		throw error;
+		logFn.error(`Error switching tag: ${error.message}`)
+		throw error
 	}
 }
 
@@ -815,7 +775,7 @@ async function renameTag(
 	context = {},
 	outputFormat = 'text'
 ) {
-	const { mcpLog, projectRoot } = context;
+	const { mcpLog, projectRoot } = context
 
 	// Create a consistent logFn object regardless of context
 	const logFn = mcpLog || {
@@ -824,95 +784,93 @@ async function renameTag(
 		error: (...args) => log('error', ...args),
 		debug: (...args) => log('debug', ...args),
 		success: (...args) => log('success', ...args)
-	};
+	}
 
 	try {
 		// Validate parameters
 		if (!oldName || typeof oldName !== 'string') {
-			throw new Error('Old tag name is required and must be a string');
+			throw new Error('Old tag name is required and must be a string')
 		}
 		if (!newName || typeof newName !== 'string') {
-			throw new Error('New tag name is required and must be a string');
+			throw new Error('New tag name is required and must be a string')
 		}
 
 		// Validate new tag name format
 		if (!/^[a-zA-Z0-9_-]+$/.test(newName)) {
-			throw new Error(
-				'New tag name can only contain letters, numbers, hyphens, and underscores'
-			);
+			throw new Error('New tag name can only contain letters, numbers, hyphens, and underscores')
 		}
 
 		// Prevent renaming master tag
 		if (oldName === 'master') {
-			throw new Error('Cannot rename the "master" tag');
+			throw new Error('Cannot rename the "master" tag')
 		}
 
 		// Reserved tag names
-		const reservedNames = ['master', 'main', 'default'];
+		const reservedNames = ['master', 'main', 'default']
 		if (reservedNames.includes(newName.toLowerCase())) {
-			throw new Error(`"${newName}" is a reserved tag name`);
+			throw new Error(`"${newName}" is a reserved tag name`)
 		}
 
-		logFn.info(`Renaming tag from "${oldName}" to "${newName}"`);
+		logFn.info(`Renaming tag from "${oldName}" to "${newName}"`)
 
 		// Read current tasks data
-		const data = readJSON(tasksPath, projectRoot);
+		const data = readJSON(tasksPath, projectRoot)
 		if (!data) {
-			throw new Error(`Could not read tasks file at ${tasksPath}`);
+			throw new Error(`Could not read tasks file at ${tasksPath}`)
 		}
 
 		// Use raw tagged data for tag operations
-		const rawData = data._rawTaggedData || data;
+		const rawData = data._rawTaggedData || data
 
 		// Check if old tag exists
 		if (!rawData[oldName]) {
-			throw new Error(`Tag "${oldName}" does not exist`);
+			throw new Error(`Tag "${oldName}" does not exist`)
 		}
 
 		// Check if new tag name already exists
 		if (rawData[newName]) {
-			throw new Error(`Tag "${newName}" already exists`);
+			throw new Error(`Tag "${newName}" already exists`)
 		}
 
 		// Get current tag to check if we're renaming the active tag
-		const currentTag = getCurrentTag(projectRoot);
-		const isCurrentTag = currentTag === oldName;
+		const currentTag = getCurrentTag(projectRoot)
+		const isCurrentTag = currentTag === oldName
 
 		// Rename the tag by copying data and deleting old
-		rawData[newName] = { ...rawData[oldName] };
+		rawData[newName] = { ...rawData[oldName] }
 
 		// Update metadata if it exists
 		if (rawData[newName].metadata) {
 			rawData[newName].metadata.renamed = {
 				from: oldName,
 				date: new Date().toISOString()
-			};
+			}
 		}
 
-		delete rawData[oldName];
+		delete rawData[oldName]
 
 		// If we're renaming the current tag, update the current tag reference
 		if (isCurrentTag) {
-			await switchCurrentTag(projectRoot, newName);
-			logFn.info(`Updated current tag reference to "${newName}"`);
+			await switchCurrentTag(projectRoot, newName)
+			logFn.info(`Updated current tag reference to "${newName}"`)
 		}
 
 		// Create clean data for writing (exclude _rawTaggedData to prevent corruption)
-		const cleanData = {};
+		const cleanData = {}
 		for (const [key, value] of Object.entries(rawData)) {
 			if (key !== '_rawTaggedData') {
-				cleanData[key] = value;
+				cleanData[key] = value
 			}
 		}
 
 		// Write the clean data back to file with proper context to avoid tag corruption
-		writeJSON(tasksPath, cleanData, projectRoot);
+		writeJSON(tasksPath, cleanData, projectRoot)
 
 		// Get task count
-		const tasks = getTasksForTag(rawData, newName);
-		const taskCount = tasks.length;
+		const tasks = getTasksForTag(rawData, newName)
+		const taskCount = tasks.length
 
-		logFn.success(`Successfully renamed tag from "${oldName}" to "${newName}"`);
+		logFn.success(`Successfully renamed tag from "${oldName}" to "${newName}"`)
 
 		// For JSON output, return structured data
 		if (outputFormat === 'json') {
@@ -923,7 +881,7 @@ async function renameTag(
 				taskCount,
 				wasCurrentTag: isCurrentTag,
 				isCurrentTag: isCurrentTag
-			};
+			}
 		}
 
 		// For text output, display success message
@@ -942,7 +900,7 @@ async function renameTag(
 						margin: { top: 1, bottom: 1 }
 					}
 				)
-			);
+			)
 		}
 
 		return {
@@ -952,10 +910,10 @@ async function renameTag(
 			taskCount,
 			wasCurrentTag: isCurrentTag,
 			isCurrentTag: isCurrentTag
-		};
+		}
 	} catch (error) {
-		logFn.error(`Error renaming tag: ${error.message}`);
-		throw error;
+		logFn.error(`Error renaming tag: ${error.message}`)
+		throw error
 	}
 }
 
@@ -980,8 +938,8 @@ async function copyTag(
 	context = {},
 	outputFormat = 'text'
 ) {
-	const { mcpLog, projectRoot } = context;
-	const { description } = options;
+	const { mcpLog, projectRoot } = context
+	const { description } = options
 
 	// Create a consistent logFn object regardless of context
 	const logFn = mcpLog || {
@@ -990,53 +948,51 @@ async function copyTag(
 		error: (...args) => log('error', ...args),
 		debug: (...args) => log('debug', ...args),
 		success: (...args) => log('success', ...args)
-	};
+	}
 
 	try {
 		// Validate parameters
 		if (!sourceName || typeof sourceName !== 'string') {
-			throw new Error('Source tag name is required and must be a string');
+			throw new Error('Source tag name is required and must be a string')
 		}
 		if (!targetName || typeof targetName !== 'string') {
-			throw new Error('Target tag name is required and must be a string');
+			throw new Error('Target tag name is required and must be a string')
 		}
 
 		// Validate target tag name format
 		if (!/^[a-zA-Z0-9_-]+$/.test(targetName)) {
-			throw new Error(
-				'Target tag name can only contain letters, numbers, hyphens, and underscores'
-			);
+			throw new Error('Target tag name can only contain letters, numbers, hyphens, and underscores')
 		}
 
 		// Reserved tag names
-		const reservedNames = ['master', 'main', 'default'];
+		const reservedNames = ['master', 'main', 'default']
 		if (reservedNames.includes(targetName.toLowerCase())) {
-			throw new Error(`"${targetName}" is a reserved tag name`);
+			throw new Error(`"${targetName}" is a reserved tag name`)
 		}
 
-		logFn.info(`Copying tag from "${sourceName}" to "${targetName}"`);
+		logFn.info(`Copying tag from "${sourceName}" to "${targetName}"`)
 
 		// Read current tasks data
-		const data = readJSON(tasksPath, projectRoot);
+		const data = readJSON(tasksPath, projectRoot)
 		if (!data) {
-			throw new Error(`Could not read tasks file at ${tasksPath}`);
+			throw new Error(`Could not read tasks file at ${tasksPath}`)
 		}
 
 		// Use raw tagged data for tag operations
-		const rawData = data._rawTaggedData || data;
+		const rawData = data._rawTaggedData || data
 
 		// Check if source tag exists
 		if (!rawData[sourceName]) {
-			throw new Error(`Source tag "${sourceName}" does not exist`);
+			throw new Error(`Source tag "${sourceName}" does not exist`)
 		}
 
 		// Check if target tag already exists
 		if (rawData[targetName]) {
-			throw new Error(`Target tag "${targetName}" already exists`);
+			throw new Error(`Target tag "${targetName}" already exists`)
 		}
 
 		// Get source tasks
-		const sourceTasks = getTasksForTag(rawData, sourceName);
+		const sourceTasks = getTasksForTag(rawData, sourceName)
 
 		// Create deep copy of the source tag data
 		rawData[targetName] = {
@@ -1045,29 +1001,26 @@ async function copyTag(
 				created: new Date().toISOString(),
 				updated: new Date().toISOString(),
 				description:
-					description ||
-					`Copy of "${sourceName}" created on ${new Date().toLocaleDateString()}`,
+					description || `Copy of "${sourceName}" created on ${new Date().toLocaleDateString()}`,
 				copiedFrom: {
 					tag: sourceName,
 					date: new Date().toISOString()
 				}
 			}
-		};
+		}
 
 		// Create clean data for writing (exclude _rawTaggedData to prevent corruption)
-		const cleanData = {};
+		const cleanData = {}
 		for (const [key, value] of Object.entries(rawData)) {
 			if (key !== '_rawTaggedData') {
-				cleanData[key] = value;
+				cleanData[key] = value
 			}
 		}
 
 		// Write the clean data back to file with proper context to avoid tag corruption
-		writeJSON(tasksPath, cleanData, projectRoot);
+		writeJSON(tasksPath, cleanData, projectRoot)
 
-		logFn.success(
-			`Successfully copied tag from "${sourceName}" to "${targetName}"`
-		);
+		logFn.success(`Successfully copied tag from "${sourceName}" to "${targetName}"`)
 
 		// For JSON output, return structured data
 		if (outputFormat === 'json') {
@@ -1076,9 +1029,8 @@ async function copyTag(
 				targetName,
 				copied: true,
 				description:
-					description ||
-					`Copy of "${sourceName}" created on ${new Date().toLocaleDateString()}`
-			};
+					description || `Copy of "${sourceName}" created on ${new Date().toLocaleDateString()}`
+			}
 		}
 
 		// For text output, display success message
@@ -1097,7 +1049,7 @@ async function copyTag(
 						margin: { top: 1, bottom: 1 }
 					}
 				)
-			);
+			)
 		}
 
 		return {
@@ -1105,12 +1057,11 @@ async function copyTag(
 			targetName,
 			copied: true,
 			description:
-				description ||
-				`Copy of "${sourceName}" created on ${new Date().toLocaleDateString()}`
-		};
+				description || `Copy of "${sourceName}" created on ${new Date().toLocaleDateString()}`
+		}
 	} catch (error) {
-		logFn.error(`Error copying tag: ${error.message}`);
-		throw error;
+		logFn.error(`Error copying tag: ${error.message}`)
+		throw error
 	}
 }
 
@@ -1122,31 +1073,31 @@ async function copyTag(
  */
 async function switchCurrentTag(projectRoot, tagName) {
 	try {
-		const statePath = path.join(projectRoot, '.taskmaster', 'state.json');
+		const statePath = path.join(projectRoot, '.taskmaster', 'state.json')
 
 		// Read current state or create default
-		let state = {};
+		let state = {}
 		if (fs.existsSync(statePath)) {
-			const rawState = fs.readFileSync(statePath, 'utf8');
-			state = JSON.parse(rawState);
+			const rawState = fs.readFileSync(statePath, 'utf8')
+			state = JSON.parse(rawState)
 		}
 
 		// Update current tag and timestamp
-		state.currentTag = tagName;
-		state.lastSwitched = new Date().toISOString();
+		state.currentTag = tagName
+		state.lastSwitched = new Date().toISOString()
 
 		// Ensure other required state properties exist
 		if (!state.branchTagMapping) {
-			state.branchTagMapping = {};
+			state.branchTagMapping = {}
 		}
 		if (state.migrationNoticeShown === undefined) {
-			state.migrationNoticeShown = false;
+			state.migrationNoticeShown = false
 		}
 
 		// Write updated state
-		fs.writeFileSync(statePath, JSON.stringify(state, null, 2), 'utf8');
+		fs.writeFileSync(statePath, JSON.stringify(state, null, 2), 'utf8')
 	} catch (error) {
-		log('warn', `Could not update current tag in state.json: ${error.message}`);
+		log('warn', `Could not update current tag in state.json: ${error.message}`)
 		// Don't throw - this is not critical for tag operations
 	}
 }
@@ -1160,27 +1111,27 @@ async function switchCurrentTag(projectRoot, tagName) {
  */
 async function updateBranchTagMapping(projectRoot, branchName, tagName) {
 	try {
-		const statePath = path.join(projectRoot, '.taskmaster', 'state.json');
+		const statePath = path.join(projectRoot, '.taskmaster', 'state.json')
 
 		// Read current state or create default
-		let state = {};
+		let state = {}
 		if (fs.existsSync(statePath)) {
-			const rawState = fs.readFileSync(statePath, 'utf8');
-			state = JSON.parse(rawState);
+			const rawState = fs.readFileSync(statePath, 'utf8')
+			state = JSON.parse(rawState)
 		}
 
 		// Ensure branchTagMapping exists
 		if (!state.branchTagMapping) {
-			state.branchTagMapping = {};
+			state.branchTagMapping = {}
 		}
 
 		// Update the mapping
-		state.branchTagMapping[branchName] = tagName;
+		state.branchTagMapping[branchName] = tagName
 
 		// Write updated state
-		fs.writeFileSync(statePath, JSON.stringify(state, null, 2), 'utf8');
+		fs.writeFileSync(statePath, JSON.stringify(state, null, 2), 'utf8')
 	} catch (error) {
-		log('warn', `Could not update branch-tag mapping: ${error.message}`);
+		log('warn', `Could not update branch-tag mapping: ${error.message}`)
 		// Don't throw - this is not critical for tag operations
 	}
 }
@@ -1193,18 +1144,18 @@ async function updateBranchTagMapping(projectRoot, branchName, tagName) {
  */
 async function getTagForBranch(projectRoot, branchName) {
 	try {
-		const statePath = path.join(projectRoot, '.taskmaster', 'state.json');
+		const statePath = path.join(projectRoot, '.taskmaster', 'state.json')
 
 		if (!fs.existsSync(statePath)) {
-			return null;
+			return null
 		}
 
-		const rawState = fs.readFileSync(statePath, 'utf8');
-		const state = JSON.parse(rawState);
+		const rawState = fs.readFileSync(statePath, 'utf8')
+		const state = JSON.parse(rawState)
 
-		return state.branchTagMapping?.[branchName] || null;
+		return state.branchTagMapping?.[branchName] || null
 	} catch (error) {
-		return null;
+		return null
 	}
 }
 
@@ -1230,13 +1181,11 @@ async function createTagFromBranch(
 	context = {},
 	outputFormat = 'text'
 ) {
-	const { mcpLog, projectRoot } = context;
-	const { copyFromCurrent, copyFromTag, description, autoSwitch } = options;
+	const { mcpLog, projectRoot } = context
+	const { copyFromCurrent, copyFromTag, description, autoSwitch } = options
 
 	// Import git utilities
-	const { sanitizeBranchNameForTag, isValidBranchForTag } = await import(
-		'../utils/git-utils.js'
-	);
+	const { sanitizeBranchNameForTag, isValidBranchForTag } = await import('../utils/git-utils.js')
 
 	// Create a consistent logFn object regardless of context
 	const logFn = mcpLog || {
@@ -1245,25 +1194,23 @@ async function createTagFromBranch(
 		error: (...args) => log('error', ...args),
 		debug: (...args) => log('debug', ...args),
 		success: (...args) => log('success', ...args)
-	};
+	}
 
 	try {
 		// Validate branch name
 		if (!branchName || typeof branchName !== 'string') {
-			throw new Error('Branch name is required and must be a string');
+			throw new Error('Branch name is required and must be a string')
 		}
 
 		// Check if branch name is valid for tag creation
 		if (!isValidBranchForTag(branchName)) {
-			throw new Error(
-				`Branch "${branchName}" cannot be converted to a valid tag name`
-			);
+			throw new Error(`Branch "${branchName}" cannot be converted to a valid tag name`)
 		}
 
 		// Sanitize branch name to create tag name
-		const tagName = sanitizeBranchNameForTag(branchName);
+		const tagName = sanitizeBranchNameForTag(branchName)
 
-		logFn.info(`Creating tag "${tagName}" from git branch "${branchName}"`);
+		logFn.info(`Creating tag "${tagName}" from git branch "${branchName}"`)
 
 		// Create the tag using existing createTag function
 		const createResult = await createTag(
@@ -1272,21 +1219,20 @@ async function createTagFromBranch(
 			{
 				copyFromCurrent,
 				copyFromTag,
-				description:
-					description || `Tag created from git branch "${branchName}"`
+				description: description || `Tag created from git branch "${branchName}"`
 			},
 			context,
 			outputFormat
-		);
+		)
 
 		// Update branch-tag mapping
-		await updateBranchTagMapping(projectRoot, branchName, tagName);
-		logFn.info(`Updated branch-tag mapping: ${branchName} -> ${tagName}`);
+		await updateBranchTagMapping(projectRoot, branchName, tagName)
+		logFn.info(`Updated branch-tag mapping: ${branchName} -> ${tagName}`)
 
 		// Auto-switch to the new tag if requested
 		if (autoSwitch) {
-			await switchCurrentTag(projectRoot, tagName);
-			logFn.info(`Automatically switched to tag "${tagName}"`);
+			await switchCurrentTag(projectRoot, tagName)
+			logFn.info(`Automatically switched to tag "${tagName}"`)
 		}
 
 		// For JSON output, return structured data
@@ -1297,7 +1243,7 @@ async function createTagFromBranch(
 				tagName,
 				mappingUpdated: true,
 				autoSwitched: autoSwitch || false
-			};
+			}
 		}
 
 		// For text output, the createTag function already handles display
@@ -1307,10 +1253,10 @@ async function createTagFromBranch(
 			created: true,
 			mappingUpdated: true,
 			autoSwitched: autoSwitch || false
-		};
+		}
 	} catch (error) {
-		logFn.error(`Error creating tag from branch: ${error.message}`);
-		throw error;
+		logFn.error(`Error creating tag from branch: ${error.message}`)
+		throw error
 	}
 }
 
@@ -1332,16 +1278,12 @@ async function autoSwitchTagForBranch(
 	context = {},
 	outputFormat = 'text'
 ) {
-	const { mcpLog, projectRoot } = context;
-	const { createIfMissing, copyFromCurrent } = options;
+	const { mcpLog, projectRoot } = context
+	const { createIfMissing, copyFromCurrent } = options
 
 	// Import git utilities
-	const {
-		getCurrentBranch,
-		isGitRepository,
-		sanitizeBranchNameForTag,
-		isValidBranchForTag
-	} = await import('../utils/git-utils.js');
+	const { getCurrentBranch, isGitRepository, sanitizeBranchNameForTag, isValidBranchForTag } =
+		await import('../utils/git-utils.js')
 
 	// Create a consistent logFn object regardless of context
 	const logFn = mcpLog || {
@@ -1350,50 +1292,50 @@ async function autoSwitchTagForBranch(
 		error: (...args) => log('error', ...args),
 		debug: (...args) => log('debug', ...args),
 		success: (...args) => log('success', ...args)
-	};
+	}
 
 	try {
 		// Check if we're in a git repository
 		if (!(await isGitRepository(projectRoot))) {
-			logFn.warn('Not in a git repository, cannot auto-switch tags');
-			return { switched: false, reason: 'not_git_repo' };
+			logFn.warn('Not in a git repository, cannot auto-switch tags')
+			return { switched: false, reason: 'not_git_repo' }
 		}
 
 		// Get current git branch
-		const currentBranch = await getCurrentBranch(projectRoot);
+		const currentBranch = await getCurrentBranch(projectRoot)
 		if (!currentBranch) {
-			logFn.warn('Could not determine current git branch');
-			return { switched: false, reason: 'no_current_branch' };
+			logFn.warn('Could not determine current git branch')
+			return { switched: false, reason: 'no_current_branch' }
 		}
 
-		logFn.info(`Current git branch: ${currentBranch}`);
+		logFn.info(`Current git branch: ${currentBranch}`)
 
 		// Check if branch is valid for tag creation
 		if (!isValidBranchForTag(currentBranch)) {
-			logFn.info(`Branch "${currentBranch}" is not suitable for tag creation`);
+			logFn.info(`Branch "${currentBranch}" is not suitable for tag creation`)
 			return {
 				switched: false,
 				reason: 'invalid_branch_for_tag',
 				branchName: currentBranch
-			};
+			}
 		}
 
 		// Check if there's already a mapping for this branch
-		let tagName = await getTagForBranch(projectRoot, currentBranch);
+		let tagName = await getTagForBranch(projectRoot, currentBranch)
 
 		if (!tagName) {
 			// No mapping exists, create tag name from branch
-			tagName = sanitizeBranchNameForTag(currentBranch);
+			tagName = sanitizeBranchNameForTag(currentBranch)
 		}
 
 		// Check if tag exists
-		const data = readJSON(tasksPath, projectRoot);
-		const rawData = data._rawTaggedData || data;
-		const tagExists = rawData[tagName];
+		const data = readJSON(tasksPath, projectRoot)
+		const rawData = data._rawTaggedData || data
+		const tagExists = rawData[tagName]
 
 		if (!tagExists && createIfMissing) {
 			// Create the tag from branch
-			logFn.info(`Creating new tag "${tagName}" for branch "${currentBranch}"`);
+			logFn.info(`Creating new tag "${tagName}" for branch "${currentBranch}"`)
 
 			const createResult = await createTagFromBranch(
 				tasksPath,
@@ -1404,7 +1346,7 @@ async function autoSwitchTagForBranch(
 				},
 				context,
 				outputFormat
-			);
+			)
 
 			return {
 				switched: true,
@@ -1412,24 +1354,16 @@ async function autoSwitchTagForBranch(
 				branchName: currentBranch,
 				tagName,
 				...createResult
-			};
+			}
 		} else if (tagExists) {
 			// Tag exists, switch to it
-			logFn.info(
-				`Switching to existing tag "${tagName}" for branch "${currentBranch}"`
-			);
+			logFn.info(`Switching to existing tag "${tagName}" for branch "${currentBranch}"`)
 
-			const switchResult = await useTag(
-				tasksPath,
-				tagName,
-				{},
-				context,
-				outputFormat
-			);
+			const switchResult = await useTag(tasksPath, tagName, {}, context, outputFormat)
 
 			// Update mapping if it didn't exist
 			if (!(await getTagForBranch(projectRoot, currentBranch))) {
-				await updateBranchTagMapping(projectRoot, currentBranch, tagName);
+				await updateBranchTagMapping(projectRoot, currentBranch, tagName)
 			}
 
 			return {
@@ -1438,22 +1372,20 @@ async function autoSwitchTagForBranch(
 				branchName: currentBranch,
 				tagName,
 				...switchResult
-			};
+			}
 		} else {
 			// Tag doesn't exist and createIfMissing is false
-			logFn.warn(
-				`Tag "${tagName}" for branch "${currentBranch}" does not exist`
-			);
+			logFn.warn(`Tag "${tagName}" for branch "${currentBranch}" does not exist`)
 			return {
 				switched: false,
 				reason: 'tag_not_found',
 				branchName: currentBranch,
 				tagName
-			};
+			}
 		}
 	} catch (error) {
-		logFn.error(`Error in auto-switch tag for branch: ${error.message}`);
-		throw error;
+		logFn.error(`Error in auto-switch tag for branch: ${error.message}`)
+		throw error
 	}
 }
 
@@ -1467,16 +1399,16 @@ async function autoSwitchTagForBranch(
 async function checkAndAutoSwitchTag(projectRoot, tasksPath, context = {}) {
 	try {
 		// Read configuration
-		const configPath = path.join(projectRoot, '.taskmaster', 'config.json');
+		const configPath = path.join(projectRoot, '.taskmaster', 'config.json')
 		if (!fs.existsSync(configPath)) {
-			return null;
+			return null
 		}
 
-		const rawConfig = fs.readFileSync(configPath, 'utf8');
-		const config = JSON.parse(rawConfig);
+		const rawConfig = fs.readFileSync(configPath, 'utf8')
+		const config = JSON.parse(rawConfig)
 
 		// Git workflow has been removed - return null to disable auto-switching
-		return null;
+		return null
 
 		// Perform auto-switch
 		return await autoSwitchTagForBranch(
@@ -1484,10 +1416,10 @@ async function checkAndAutoSwitchTag(projectRoot, tasksPath, context = {}) {
 			{ createIfMissing: true, copyFromCurrent: false },
 			context,
 			'json'
-		);
+		)
 	} catch (error) {
 		// Silently fail - this is not critical
-		return null;
+		return null
 	}
 }
 
@@ -1505,4 +1437,4 @@ export {
 	createTagFromBranch,
 	autoSwitchTagForBranch,
 	checkAndAutoSwitchTag
-};
+}

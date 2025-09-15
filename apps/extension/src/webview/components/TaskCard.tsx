@@ -2,26 +2,22 @@
  * Task Card Component for Kanban Board
  */
 
-import React from 'react';
-import { KanbanCard } from '@/components/ui/shadcn-io/kanban';
-import { PriorityBadge } from './PriorityBadge';
-import type { TaskMasterTask } from '../types';
+import { KanbanCard } from '@/components/ui/shadcn-io/kanban'
+import React from 'react'
+import type { TaskMasterTask } from '../types'
+import { PriorityBadge } from './PriorityBadge'
 
 interface TaskCardProps {
-	task: TaskMasterTask;
-	dragging?: boolean;
-	onViewDetails?: (taskId: string) => void;
+	task: TaskMasterTask
+	dragging?: boolean
+	onViewDetails?: (taskId: string) => void
 }
 
-export const TaskCard: React.FC<TaskCardProps> = ({
-	task,
-	dragging,
-	onViewDetails
-}) => {
+export const TaskCard: React.FC<TaskCardProps> = ({ task, dragging, onViewDetails }) => {
 	const handleCardClick = (e: React.MouseEvent) => {
-		e.preventDefault();
-		onViewDetails?.(task.id);
-	};
+		e.preventDefault()
+		onViewDetails?.(task.id)
+	}
 
 	return (
 		<KanbanCard
@@ -49,9 +45,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
 				)}
 
 				<div className="flex items-center justify-between text-xs mt-auto pt-2 flex-shrink-0 border-t border-vscode-border/20">
-					<span className="font-mono text-vscode-foreground/50 flex-shrink-0">
-						#{task.id}
-					</span>
+					<span className="font-mono text-vscode-foreground/50 flex-shrink-0">#{task.id}</span>
 					{task.dependencies && task.dependencies.length > 0 && (
 						<div className="flex items-center gap-1 text-vscode-foreground/50 flex-shrink-0 ml-2">
 							<span>Deps:</span>
@@ -61,8 +55,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({
 										<button
 											className="font-mono hover:text-vscode-link-activeForeground hover:underline transition-colors"
 											onClick={(e) => {
-												e.stopPropagation();
-												onViewDetails?.(depId);
+												e.stopPropagation()
+												onViewDetails?.(depId)
 											}}
 										>
 											#{depId}
@@ -76,5 +70,5 @@ export const TaskCard: React.FC<TaskCardProps> = ({
 				</div>
 			</div>
 		</KanbanCard>
-	);
-};
+	)
+}

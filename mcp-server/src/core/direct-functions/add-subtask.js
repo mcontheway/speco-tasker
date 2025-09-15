@@ -2,11 +2,8 @@
  * Direct function wrapper for addSubtask
  */
 
-import { addSubtask } from '../../../../scripts/modules/task-manager.js';
-import {
-	enableSilentMode,
-	disableSilentMode
-} from '../../../../scripts/modules/utils.js';
+import { addSubtask } from '../../../../scripts/modules/task-manager.js'
+import { disableSilentMode, enableSilentMode } from '../../../../scripts/modules/utils.js'
 
 /**
  * Add a subtask to an existing task
@@ -39,20 +36,20 @@ export async function addSubtaskDirect(args, log) {
 		skipGenerate,
 		projectRoot,
 		tag
-	} = args;
+	} = args
 	try {
-		log.info(`Adding subtask with args: ${JSON.stringify(args)}`);
+		log.info(`Adding subtask with args: ${JSON.stringify(args)}`)
 
 		// Check if tasksJsonPath was provided
 		if (!tasksJsonPath) {
-			log.error('addSubtaskDirect called without tasksJsonPath');
+			log.error('addSubtaskDirect called without tasksJsonPath')
 			return {
 				success: false,
 				error: {
 					code: 'MISSING_ARGUMENT',
 					message: 'tasksJsonPath is required'
 				}
-			};
+			}
 		}
 
 		if (!id) {
@@ -62,7 +59,7 @@ export async function addSubtaskDirect(args, log) {
 					code: 'INPUT_VALIDATION_ERROR',
 					message: 'Parent task ID is required'
 				}
-			};
+			}
 		}
 
 		// Either taskId or title must be provided
@@ -73,38 +70,38 @@ export async function addSubtaskDirect(args, log) {
 					code: 'INPUT_VALIDATION_ERROR',
 					message: 'Either taskId or title must be provided'
 				}
-			};
+			}
 		}
 
 		// Use provided path
-		const tasksPath = tasksJsonPath;
+		const tasksPath = tasksJsonPath
 
 		// Parse dependencies if provided
-		let dependencies = [];
+		let dependencies = []
 		if (dependenciesStr) {
 			dependencies = dependenciesStr.split(',').map((depId) => {
 				// Handle both regular IDs and dot notation
-				return depId.includes('.') ? depId.trim() : parseInt(depId.trim(), 10);
-			});
+				return depId.includes('.') ? depId.trim() : parseInt(depId.trim(), 10)
+			})
 		}
 
 		// Convert existingTaskId to a number if provided
-		const existingTaskId = taskId ? parseInt(taskId, 10) : null;
+		const existingTaskId = taskId ? parseInt(taskId, 10) : null
 
 		// Convert parent ID to a number
-		const parentId = parseInt(id, 10);
+		const parentId = parseInt(id, 10)
 
 		// Determine if we should generate files
-		const generateFiles = !skipGenerate;
+		const generateFiles = !skipGenerate
 
 		// Enable silent mode to prevent console logs from interfering with JSON response
-		enableSilentMode();
+		enableSilentMode()
 
-		const context = { projectRoot, tag };
+		const context = { projectRoot, tag }
 
 		// Case 1: Convert existing task to subtask
 		if (existingTaskId) {
-			log.info(`Converting task ${existingTaskId} to a subtask of ${parentId}`);
+			log.info(`Converting task ${existingTaskId} to a subtask of ${parentId}`)
 			const result = await addSubtask(
 				tasksPath,
 				parentId,
@@ -112,10 +109,10 @@ export async function addSubtaskDirect(args, log) {
 				null,
 				generateFiles,
 				context
-			);
+			)
 
 			// Restore normal logging
-			disableSilentMode();
+			disableSilentMode()
 
 			return {
 				success: true,
@@ -123,11 +120,11 @@ export async function addSubtaskDirect(args, log) {
 					message: `Task ${existingTaskId} successfully converted to a subtask of task ${parentId}`,
 					subtask: result
 				}
-			};
+			}
 		}
 		// Case 2: Create new subtask
 		else {
-			log.info(`Creating new subtask for parent task ${parentId}`);
+			log.info(`Creating new subtask for parent task ${parentId}`)
 
 			const newSubtaskData = {
 				title: title,
@@ -135,7 +132,7 @@ export async function addSubtaskDirect(args, log) {
 				details: details || '',
 				status: status || 'pending',
 				dependencies: dependencies
-			};
+			}
 
 			const result = await addSubtask(
 				tasksPath,
@@ -144,10 +141,10 @@ export async function addSubtaskDirect(args, log) {
 				newSubtaskData,
 				generateFiles,
 				context
-			);
+			)
 
 			// Restore normal logging
-			disableSilentMode();
+			disableSilentMode()
 
 			return {
 				success: true,
@@ -155,19 +152,19 @@ export async function addSubtaskDirect(args, log) {
 					message: `New subtask ${parentId}.${result.id} successfully created`,
 					subtask: result
 				}
-			};
+			}
 		}
 	} catch (error) {
 		// Make sure to restore normal logging even if there's an error
-		disableSilentMode();
+		disableSilentMode()
 
-		log.error(`Error in addSubtaskDirect: ${error.message}`);
+		log.error(`Error in addSubtaskDirect: ${error.message}`)
 		return {
 			success: false,
 			error: {
 				code: 'CORE_FUNCTION_ERROR',
 				message: error.message
 			}
-		};
+		}
 	}
 }

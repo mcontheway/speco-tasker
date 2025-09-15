@@ -14,4 +14,4 @@ export const AI_COMMAND_NAMES = [
 	'update-subtask',
 	'update-task',
 	'update-tasks'
-];
+]

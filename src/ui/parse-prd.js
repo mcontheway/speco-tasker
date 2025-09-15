@@ -3,10 +3,10 @@
  * UI functions specifically for PRD parsing operations
  */
 
-import chalk from 'chalk';
-import boxen from 'boxen';
-import Table from 'cli-table3';
-import { formatElapsedTime } from '../utils/format.js';
+import boxen from 'boxen'
+import chalk from 'chalk'
+import Table from 'cli-table3'
+import { formatElapsedTime } from '../utils/format.js'
 
 // Constants
 const CONSTANTS = {
@@ -14,19 +14,19 @@ const CONSTANTS = {
 	TABLE_COL_WIDTHS: [28, 50],
 	DEFAULT_MODEL: 'Default',
 	DEFAULT_TEMPERATURE: 0.7
-};
+}
 
 const PRIORITIES = {
 	HIGH: 'high',
 	MEDIUM: 'medium',
 	LOW: 'low'
-};
+}
 
 const PRIORITY_COLORS = {
 	[PRIORITIES.HIGH]: '#CC0000',
 	[PRIORITIES.MEDIUM]: '#FF8800',
 	[PRIORITIES.LOW]: '#FFCC00'
-};
+}
 
 // Reusable box styles
 const BOX_STYLES = {
@@ -54,7 +54,7 @@ const BOX_STYLES = {
 		borderStyle: 'round',
 		margin: { top: 1, right: 0, bottom: 1, left: 0 }
 	}
-};
+}
 
 /**
  * Helper function for building main message content
@@ -77,11 +77,11 @@ function buildMainMessage({
 	append,
 	research
 }) {
-	const actionVerb = append ? 'Appending' : 'Generating';
+	const actionVerb = append ? 'Appending' : 'Generating'
 
-	let modelLine = `Model: ${model} | Temperature: ${temperature}`;
+	let modelLine = `Model: ${model} | Temperature: ${temperature}`
 	if (research) {
-		modelLine += ` | ${chalk.cyan.bold('🔬 Research Mode')}`;
+		modelLine += ` | ${chalk.cyan.bold('🔬 Research Mode')}`
 	}
 
 	return (
@@ -94,7 +94,7 @@ function buildMainMessage({
 		chalk.blue(`Output: ${outputPath}`) +
 		'\n' +
 		chalk.blue(`Tasks to ${append ? 'Append' : 'Generate'}: ${numTasks}`)
-	);
+	)
 }
 
 /**
@@ -102,7 +102,7 @@ function buildMainMessage({
  * @param {string} message - The message content to display in the box
  */
 function displayMainMessageBox(message) {
-	console.log(boxen(message, BOX_STYLES.main));
+	console.log(boxen(message, BOX_STYLES.main))
 }
 
 /**
@@ -114,7 +114,7 @@ function displayAppendModeNotice(existingTasksCount, nextId) {
 	console.log(
 		chalk.yellow.bold('📝 Append mode') +
 			` - Adding to ${existingTasksCount} existing tasks (next ID: ${nextId})`
-	);
+	)
 }
 
 /**
@@ -123,10 +123,10 @@ function displayAppendModeNotice(existingTasksCount, nextId) {
  * @returns {string} The formatted force mode message
  */
 function createForceMessage(append) {
-	const baseMessage = chalk.red.bold('⚠️  Force flag enabled');
+	const baseMessage = chalk.red.bold('⚠️  Force flag enabled')
 	return append
 		? `${baseMessage} - Will overwrite if conflicts occur`
-		: `${baseMessage} - Overwriting existing tasks`;
+		: `${baseMessage} - Overwriting existing tasks`
 }
 
 /**
@@ -156,19 +156,11 @@ function displayParsePrdStart({
 	nextId = 1
 }) {
 	// Input validation
-	if (
-		!prdFilePath ||
-		typeof prdFilePath !== 'string' ||
-		prdFilePath.trim() === ''
-	) {
-		throw new Error('prdFilePath is required and must be a non-empty string');
+	if (!prdFilePath || typeof prdFilePath !== 'string' || prdFilePath.trim() === '') {
+		throw new Error('prdFilePath is required and must be a non-empty string')
 	}
-	if (
-		!outputPath ||
-		typeof outputPath !== 'string' ||
-		outputPath.trim() === ''
-	) {
-		throw new Error('outputPath is required and must be a non-empty string');
+	if (!outputPath || typeof outputPath !== 'string' || outputPath.trim() === '') {
+		throw new Error('outputPath is required and must be a non-empty string')
 	}
 
 	// Build and display the main message box
@@ -180,23 +172,23 @@ function displayParsePrdStart({
 		temperature,
 		append,
 		research
-	});
-	displayMainMessageBox(message);
+	})
+	displayMainMessageBox(message)
 
 	// Display append/force notices beneath the boxen if either flag is set
 	if (append || force) {
 		// Add append mode details if enabled
 		if (append) {
-			displayAppendModeNotice(existingTasks.length, nextId);
+			displayAppendModeNotice(existingTasks.length, nextId)
 		}
 
 		// Add force mode details if enabled
 		if (force) {
-			console.log(createForceMessage(append));
+			console.log(createForceMessage(append))
 		}
 
 		// Add a blank line after notices for spacing
-		console.log();
+		console.log()
 	}
 }
 
@@ -207,17 +199,17 @@ function displayParsePrdStart({
  * @returns {Object} Priority statistics with counts and percentages
  */
 function calculatePriorityStats(taskPriorities, totalTasks) {
-	const stats = {};
+	const stats = {}
 
 	Object.values(PRIORITIES).forEach((priority) => {
-		const count = taskPriorities[priority] || 0;
+		const count = taskPriorities[priority] || 0
 		stats[priority] = {
 			count,
 			percentage: totalTasks > 0 ? Math.round((count / totalTasks) * 100) : 0
-		};
-	});
+		}
+	})
 
-	return stats;
+	return stats
 }
 
 /**
@@ -227,41 +219,37 @@ function calculatePriorityStats(taskPriorities, totalTasks) {
  * @returns {Object} Character counts for each priority
  */
 function calculateBarDistribution(priorityStats, totalTasks) {
-	const barWidth = CONSTANTS.BAR_WIDTH;
-	const distribution = {};
+	const barWidth = CONSTANTS.BAR_WIDTH
+	const distribution = {}
 
 	if (totalTasks === 0) {
 		Object.values(PRIORITIES).forEach((priority) => {
-			distribution[priority] = 0;
-		});
-		return distribution;
+			distribution[priority] = 0
+		})
+		return distribution
 	}
 
 	// Calculate raw proportions
-	const rawChars = {};
+	const rawChars = {}
 	Object.values(PRIORITIES).forEach((priority) => {
-		rawChars[priority] =
-			(priorityStats[priority].count / totalTasks) * barWidth;
-	});
+		rawChars[priority] = (priorityStats[priority].count / totalTasks) * barWidth
+	})
 
 	// Initial distribution - floor values
 	Object.values(PRIORITIES).forEach((priority) => {
-		distribution[priority] = Math.floor(rawChars[priority]);
-	});
+		distribution[priority] = Math.floor(rawChars[priority])
+	})
 
 	// Ensure non-zero priorities get at least 1 character
 	Object.values(PRIORITIES).forEach((priority) => {
 		if (priorityStats[priority].count > 0 && distribution[priority] === 0) {
-			distribution[priority] = 1;
+			distribution[priority] = 1
 		}
-	});
+	})
 
 	// Distribute remaining characters based on decimal parts
-	const currentTotal = Object.values(distribution).reduce(
-		(sum, val) => sum + val,
-		0
-	);
-	const remainingChars = barWidth - currentTotal;
+	const currentTotal = Object.values(distribution).reduce((sum, val) => sum + val, 0)
+	const remainingChars = barWidth - currentTotal
 
 	if (remainingChars > 0) {
 		const decimals = Object.values(PRIORITIES)
@@ -269,14 +257,14 @@ function calculateBarDistribution(priorityStats, totalTasks) {
 				priority,
 				decimal: rawChars[priority] - Math.floor(rawChars[priority])
 			}))
-			.sort((a, b) => b.decimal - a.decimal);
+			.sort((a, b) => b.decimal - a.decimal)
 
 		for (let i = 0; i < remainingChars && i < decimals.length; i++) {
-			distribution[decimals[i].priority]++;
+			distribution[decimals[i].priority]++
 		}
 	}
 
-	return distribution;
+	return distribution
 }
 
 /**
@@ -285,25 +273,20 @@ function calculateBarDistribution(priorityStats, totalTasks) {
  * @returns {string} Visual bar string
  */
 function createPriorityBar(barDistribution) {
-	let bar = '';
+	let bar = ''
 
-	bar += chalk.hex(PRIORITY_COLORS[PRIORITIES.HIGH])(
-		'█'.repeat(barDistribution[PRIORITIES.HIGH])
-	);
+	bar += chalk.hex(PRIORITY_COLORS[PRIORITIES.HIGH])('█'.repeat(barDistribution[PRIORITIES.HIGH]))
 	bar += chalk.hex(PRIORITY_COLORS[PRIORITIES.MEDIUM])(
 		'█'.repeat(barDistribution[PRIORITIES.MEDIUM])
-	);
-	bar += chalk.yellow('█'.repeat(barDistribution[PRIORITIES.LOW]));
+	)
+	bar += chalk.yellow('█'.repeat(barDistribution[PRIORITIES.LOW]))
 
-	const totalChars = Object.values(barDistribution).reduce(
-		(sum, val) => sum + val,
-		0
-	);
+	const totalChars = Object.values(barDistribution).reduce((sum, val) => sum + val, 0)
 	if (totalChars < CONSTANTS.BAR_WIDTH) {
-		bar += chalk.gray('░'.repeat(CONSTANTS.BAR_WIDTH - totalChars));
+		bar += chalk.gray('░'.repeat(CONSTANTS.BAR_WIDTH - totalChars))
 	}
 
-	return bar;
+	return bar
 }
 
 /**
@@ -312,24 +295,22 @@ function createPriorityBar(barDistribution) {
  * @returns {Array} Table row for priority distribution
  */
 function buildPriorityRow(priorityStats) {
-	const parts = [];
+	const parts = []
 
 	Object.entries(PRIORITIES).forEach(([key, priority]) => {
-		const stats = priorityStats[priority];
+		const stats = priorityStats[priority]
 		const color =
 			priority === PRIORITIES.HIGH
 				? chalk.hex(PRIORITY_COLORS[PRIORITIES.HIGH])
 				: priority === PRIORITIES.MEDIUM
 					? chalk.hex(PRIORITY_COLORS[PRIORITIES.MEDIUM])
-					: chalk.yellow;
+					: chalk.yellow
 
-		const label = key.charAt(0) + key.slice(1).toLowerCase();
-		parts.push(
-			`${color.bold(stats.count)} ${color(label)} (${stats.percentage}%)`
-		);
-	});
+		const label = key.charAt(0) + key.slice(1).toLowerCase()
+		parts.push(`${color.bold(stats.count)} ${color(label)} (${stats.percentage}%)`)
+	})
 
-	return [chalk.cyan('Priority distribution:'), parts.join(' · ')];
+	return [chalk.cyan('Priority distribution:'), parts.join(' · ')]
 }
 
 /**
@@ -352,10 +333,10 @@ function displayParsePrdSummary(summary) {
 		elapsedTime,
 		usedFallback = false,
 		actionVerb = 'generated'
-	} = summary;
+	} = summary
 
 	// Format the elapsed time
-	const timeDisplay = formatElapsedTime(elapsedTime);
+	const timeDisplay = formatElapsedTime(elapsedTime)
 
 	// Create a table for better alignment
 	const table = new Table({
@@ -378,39 +359,36 @@ function displayParsePrdSummary(summary) {
 		},
 		style: { border: [], 'padding-left': 2 },
 		colWidths: CONSTANTS.TABLE_COL_WIDTHS
-	});
+	})
 
 	// Basic info
 	// Use the action verb to properly display if tasks were generated or appended
 	table.push(
 		[chalk.cyan(`Total tasks ${actionVerb}:`), chalk.bold(totalTasks)],
 		[chalk.cyan('Processing time:'), chalk.bold(timeDisplay)]
-	);
+	)
 
 	// Priority distribution if available
 	if (taskPriorities && Object.keys(taskPriorities).length > 0) {
-		const priorityStats = calculatePriorityStats(taskPriorities, totalTasks);
-		const priorityRow = buildPriorityRow(priorityStats);
-		table.push(priorityRow);
+		const priorityStats = calculatePriorityStats(taskPriorities, totalTasks)
+		const priorityRow = buildPriorityRow(priorityStats)
+		table.push(priorityRow)
 
 		// Visual bar representation
-		const barDistribution = calculateBarDistribution(priorityStats, totalTasks);
-		const distributionBar = createPriorityBar(barDistribution);
-		table.push([chalk.cyan('Distribution:'), distributionBar]);
+		const barDistribution = calculateBarDistribution(priorityStats, totalTasks)
+		const distributionBar = createPriorityBar(barDistribution)
+		table.push([chalk.cyan('Distribution:'), distributionBar])
 	}
 
 	// Add file paths
 	table.push(
 		[chalk.cyan('PRD source:'), chalk.italic(prdFilePath)],
 		[chalk.cyan('Tasks file:'), chalk.italic(outputPath)]
-	);
+	)
 
 	// Add fallback parsing indicator if applicable
 	if (usedFallback) {
-		table.push([
-			chalk.yellow('Fallback parsing:'),
-			chalk.yellow('✓ Used fallback parsing')
-		]);
+		table.push([chalk.yellow('Fallback parsing:'), chalk.yellow('✓ Used fallback parsing')])
 	}
 
 	// Final string output with title and footer
@@ -420,18 +398,18 @@ function displayParsePrdSummary(summary) {
 		),
 		'',
 		table.toString()
-	].join('\n');
+	].join('\n')
 
 	// Display the summary box
-	console.log(boxen(output, BOX_STYLES.summary));
+	console.log(boxen(output, BOX_STYLES.summary))
 
 	// Show fallback parsing warning if needed
 	if (usedFallback) {
-		displayFallbackWarning();
+		displayFallbackWarning()
 	}
 
 	// Show next steps
-	displayNextSteps();
+	displayNextSteps()
 }
 
 /**
@@ -441,13 +419,9 @@ function displayFallbackWarning() {
 	const warningContent =
 		chalk.yellow.bold('⚠️ Fallback Parsing Used') +
 		'\n\n' +
-		chalk.white(
-			'The system used fallback parsing to complete task generation.'
-		) +
+		chalk.white('The system used fallback parsing to complete task generation.') +
 		'\n' +
-		chalk.white(
-			'This typically happens when streaming JSON parsing is incomplete.'
-		) +
+		chalk.white('This typically happens when streaming JSON parsing is incomplete.') +
 		'\n' +
 		chalk.white('Your tasks were successfully generated, but consider:') +
 		'\n' +
@@ -455,9 +429,9 @@ function displayFallbackWarning() {
 		'\n' +
 		chalk.white('• Checking for any missing details') +
 		'\n\n' +
-		chalk.white("This is normal and usually doesn't indicate any issues.");
+		chalk.white("This is normal and usually doesn't indicate any issues.")
 
-	console.log(boxen(warningContent, BOX_STYLES.warning));
+	console.log(boxen(warningContent, BOX_STYLES.warning))
 }
 
 /**
@@ -469,9 +443,9 @@ function displayNextSteps() {
 		'\n\n' +
 		`${chalk.cyan('1.')} Run ${chalk.yellow('task-master list')} to view all tasks\n` +
 		`${chalk.cyan('2.')} Run ${chalk.yellow('task-master expand --id=<id>')} to break down a task into subtasks\n` +
-		`${chalk.cyan('3.')} Run ${chalk.yellow('task-master analyze-complexity')} to analyze task complexity`;
+		`${chalk.cyan('3.')} Run ${chalk.yellow('task-master analyze-complexity')} to analyze task complexity`
 
-	console.log(boxen(stepsContent, BOX_STYLES.nextSteps));
+	console.log(boxen(stepsContent, BOX_STYLES.nextSteps))
 }
 
-export { displayParsePrdStart, displayParsePrdSummary, formatElapsedTime };
+export { displayParsePrdStart, displayParsePrdSummary, formatElapsedTime }

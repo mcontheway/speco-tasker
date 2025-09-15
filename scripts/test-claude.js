@@ -10,21 +10,21 @@
  * 3. Simulating a failure to test retry logic
  */
 
-import fs from 'fs';
-import path from 'path';
-import dotenv from 'dotenv';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
+import fs from 'fs'
+import path from 'path'
+import { dirname } from 'path'
+import { fileURLToPath } from 'url'
+import dotenv from 'dotenv'
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
 // Load environment variables from .env file
-dotenv.config();
+dotenv.config()
 
 // Create a simple PRD for testing
 const createTestPRD = (size = 'small', taskComplexity = 'simple') => {
-	let content = `# Test PRD - ${size.toUpperCase()} SIZE, ${taskComplexity.toUpperCase()} COMPLEXITY\n\n`;
+	let content = `# Test PRD - ${size.toUpperCase()} SIZE, ${taskComplexity.toUpperCase()} COMPLEXITY\n\n`
 
 	// Add more content based on size
 	if (size === 'small') {
@@ -43,7 +43,7 @@ This is a small test PRD to verify the callClaude function improvements.
 - Frontend: React
 - Backend: Node.js
 - Database: MongoDB
-`;
+`
 	} else if (size === 'medium') {
 		// Medium-sized PRD with more requirements
 		content += `
@@ -75,7 +75,7 @@ This is a medium-sized test PRD to verify the callClaude function improvements.
 - Deployment: Docker and Kubernetes
 - CI/CD: GitHub Actions
 - Monitoring: Prometheus and Grafana
-`;
+`
 	} else if (size === 'large') {
 		// Large PRD with many requirements
 		content += `
@@ -83,10 +83,10 @@ This is a medium-sized test PRD to verify the callClaude function improvements.
 This is a large test PRD to verify the callClaude function improvements.
 
 ## Requirements
-`;
+`
 		// Generate 30 requirements
 		for (let i = 1; i <= 30; i++) {
-			content += `${i}. Requirement ${i} - This is a detailed description of requirement ${i}.\n`;
+			content += `${i}. Requirement ${i} - This is a detailed description of requirement ${i}.\n`
 		}
 
 		content += `
@@ -100,10 +100,10 @@ This is a large test PRD to verify the callClaude function improvements.
 - Monitoring: Prometheus and Grafana
 
 ## User Stories
-`;
+`
 		// Generate 20 user stories
 		for (let i = 1; i <= 20; i++) {
-			content += `- As a user, I want to be able to ${i} so that I can achieve benefit ${i}.\n`;
+			content += `- As a user, I want to be able to ${i} so that I can achieve benefit ${i}.\n`
 		}
 
 		content += `
@@ -113,7 +113,7 @@ This is a large test PRD to verify the callClaude function improvements.
 - Availability: The system should have 99.9% uptime
 - Security: The system should comply with OWASP top 10
 - Accessibility: The system should comply with WCAG 2.1 AA
-`;
+`
 	}
 
 	// Add complexity if needed
@@ -130,31 +130,31 @@ This is a large test PRD to verify the callClaude function improvements.
 - Add a custom workflow engine
 - Implement a custom reporting system
 - Add a custom dashboard builder
-`;
+`
 	}
 
-	return content;
-};
+	return content
+}
 
 // Function to run the tests
 async function runTests() {
-	console.log('Starting tests for callClaude function improvements...');
+	console.log('Starting tests for callClaude function improvements...')
 
 	try {
 		// Instead of importing the callClaude function directly, we'll use the dev.js script
 		// with our test PRDs by running it as a child process
 
 		// Test 1: Small PRD, 5 tasks
-		console.log('\n=== Test 1: Small PRD, 5 tasks ===');
-		const smallPRD = createTestPRD('small', 'simple');
-		const smallPRDPath = path.join(__dirname, 'test-small-prd.txt');
-		fs.writeFileSync(smallPRDPath, smallPRD, 'utf8');
+		console.log('\n=== Test 1: Small PRD, 5 tasks ===')
+		const smallPRD = createTestPRD('small', 'simple')
+		const smallPRDPath = path.join(__dirname, 'test-small-prd.txt')
+		fs.writeFileSync(smallPRDPath, smallPRD, 'utf8')
 
-		console.log(`Created test PRD at ${smallPRDPath}`);
-		console.log('Running dev.js with small PRD...');
+		console.log(`Created test PRD at ${smallPRDPath}`)
+		console.log('Running dev.js with small PRD...')
 
 		// Use the child_process module to run the dev.js script
-		const { execSync } = await import('child_process');
+		const { execSync } = await import('child_process')
 
 		try {
 			const smallResult = execSync(
@@ -162,20 +162,20 @@ async function runTests() {
 				{
 					stdio: 'inherit'
 				}
-			);
-			console.log('Small PRD test completed successfully');
+			)
+			console.log('Small PRD test completed successfully')
 		} catch (error) {
-			console.error('Small PRD test failed:', error.message);
+			console.error('Small PRD test failed:', error.message)
 		}
 
 		// Test 2: Medium PRD, 15 tasks
-		console.log('\n=== Test 2: Medium PRD, 15 tasks ===');
-		const mediumPRD = createTestPRD('medium', 'simple');
-		const mediumPRDPath = path.join(__dirname, 'test-medium-prd.txt');
-		fs.writeFileSync(mediumPRDPath, mediumPRD, 'utf8');
+		console.log('\n=== Test 2: Medium PRD, 15 tasks ===')
+		const mediumPRD = createTestPRD('medium', 'simple')
+		const mediumPRDPath = path.join(__dirname, 'test-medium-prd.txt')
+		fs.writeFileSync(mediumPRDPath, mediumPRD, 'utf8')
 
-		console.log(`Created test PRD at ${mediumPRDPath}`);
-		console.log('Running dev.js with medium PRD...');
+		console.log(`Created test PRD at ${mediumPRDPath}`)
+		console.log('Running dev.js with medium PRD...')
 
 		try {
 			const mediumResult = execSync(
@@ -183,20 +183,20 @@ async function runTests() {
 				{
 					stdio: 'inherit'
 				}
-			);
-			console.log('Medium PRD test completed successfully');
+			)
+			console.log('Medium PRD test completed successfully')
 		} catch (error) {
-			console.error('Medium PRD test failed:', error.message);
+			console.error('Medium PRD test failed:', error.message)
 		}
 
 		// Test 3: Large PRD, 25 tasks
-		console.log('\n=== Test 3: Large PRD, 25 tasks ===');
-		const largePRD = createTestPRD('large', 'complex');
-		const largePRDPath = path.join(__dirname, 'test-large-prd.txt');
-		fs.writeFileSync(largePRDPath, largePRD, 'utf8');
+		console.log('\n=== Test 3: Large PRD, 25 tasks ===')
+		const largePRD = createTestPRD('large', 'complex')
+		const largePRDPath = path.join(__dirname, 'test-large-prd.txt')
+		fs.writeFileSync(largePRDPath, largePRD, 'utf8')
 
-		console.log(`Created test PRD at ${largePRDPath}`);
-		console.log('Running dev.js with large PRD...');
+		console.log(`Created test PRD at ${largePRDPath}`)
+		console.log('Running dev.js with large PRD...')
 
 		try {
 			const largeResult = execSync(
@@ -204,37 +204,37 @@ async function runTests() {
 				{
 					stdio: 'inherit'
 				}
-			);
-			console.log('Large PRD test completed successfully');
+			)
+			console.log('Large PRD test completed successfully')
 		} catch (error) {
-			console.error('Large PRD test failed:', error.message);
+			console.error('Large PRD test failed:', error.message)
 		}
 
-		console.log('\nAll tests completed!');
+		console.log('\nAll tests completed!')
 	} catch (error) {
-		console.error('Test failed:', error);
+		console.error('Test failed:', error)
 	} finally {
 		// Clean up test files
-		console.log('\nCleaning up test files...');
+		console.log('\nCleaning up test files...')
 		const testFiles = [
 			path.join(__dirname, 'test-small-prd.txt'),
 			path.join(__dirname, 'test-medium-prd.txt'),
 			path.join(__dirname, 'test-large-prd.txt')
-		];
+		]
 
 		testFiles.forEach((file) => {
 			if (fs.existsSync(file)) {
-				fs.unlinkSync(file);
-				console.log(`Deleted ${file}`);
+				fs.unlinkSync(file)
+				console.log(`Deleted ${file}`)
 			}
-		});
+		})
 
-		console.log('Cleanup complete.');
+		console.log('Cleanup complete.')
 	}
 }
 
 // Run the tests
 runTests().catch((error) => {
-	console.error('Error running tests:', error);
-	process.exit(1);
-});
+	console.error('Error running tests:', error)
+	process.exit(1)
+})

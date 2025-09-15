@@ -3,15 +3,11 @@
  * Tool to update tasks based on new context/prompt
  */
 
-import { z } from 'zod';
-import {
-	handleApiResult,
-	createErrorResponse,
-	withNormalizedProjectRoot
-} from './utils.js';
-import { updateTasksDirect } from '../core/task-master-core.js';
-import { findTasksPath } from '../core/utils/path-utils.js';
-import { resolveTag } from '../../../scripts/modules/utils.js';
+import { z } from 'zod'
+import { resolveTag } from '../../../scripts/modules/utils.js'
+import { updateTasksDirect } from '../core/task-master-core.js'
+import { findTasksPath } from '../core/utils/path-utils.js'
+import { createErrorResponse, handleApiResult, withNormalizedProjectRoot } from './utils.js'
 
 /**
  * Register the update tool with the MCP server
@@ -28,48 +24,36 @@ export function registerUpdateTool(server) {
 				.describe(
 					"Task ID from which to start updating (inclusive). IMPORTANT: This tool uses 'from', not 'id'"
 				),
-			prompt: z
-				.string()
-				.describe('Explanation of changes or new context to apply'),
-			research: z
-				.boolean()
-				.optional()
-				.describe('Use Perplexity AI for research-backed updates'),
-			file: z
-				.string()
-				.optional()
-				.describe('Path to the tasks file relative to project root'),
+			prompt: z.string().describe('Explanation of changes or new context to apply'),
+			research: z.boolean().optional().describe('Use Perplexity AI for research-backed updates'),
+			file: z.string().optional().describe('Path to the tasks file relative to project root'),
 			projectRoot: z
 				.string()
 				.optional()
-				.describe(
-					'The directory of the project. (Optional, usually from session)'
-				),
+				.describe('The directory of the project. (Optional, usually from session)'),
 			tag: z.string().optional().describe('Tag context to operate on')
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
-			const toolName = 'update';
-			const { from, prompt, research, file, projectRoot, tag } = args;
+			const toolName = 'update'
+			const { from, prompt, research, file, projectRoot, tag } = args
 
 			const resolvedTag = resolveTag({
 				projectRoot: args.projectRoot,
 				tag: args.tag
-			});
+			})
 
 			try {
-				log.info(
-					`Executing ${toolName} tool with normalized root: ${projectRoot}`
-				);
+				log.info(`Executing ${toolName} tool with normalized root: ${projectRoot}`)
 
-				let tasksJsonPath;
+				let tasksJsonPath
 				try {
-					tasksJsonPath = findTasksPath({ projectRoot, file }, log);
-					log.info(`${toolName}: Resolved tasks path: ${tasksJsonPath}`);
+					tasksJsonPath = findTasksPath({ projectRoot, file }, log)
+					log.info(`${toolName}: Resolved tasks path: ${tasksJsonPath}`)
 				} catch (error) {
-					log.error(`${toolName}: Error finding tasks.json: ${error.message}`);
+					log.error(`${toolName}: Error finding tasks.json: ${error.message}`)
 					return createErrorResponse(
 						`Failed to find tasks.json within project root '${projectRoot}': ${error.message}`
-					);
+					)
 				}
 
 				const result = await updateTasksDirect(
@@ -83,26 +67,14 @@ export function registerUpdateTool(server) {
 					},
 					log,
 					{ session }
-				);
+				)
 
-				log.info(
-					`${toolName}: Direct function result: success=${result.success}`
-				);
-				return handleApiResult(
-					result,
-					log,
-					'Error updating tasks',
-					undefined,
-					args.projectRoot
-				);
+				log.info(`${toolName}: Direct function result: success=${result.success}`)
+				return handleApiResult(result, log, 'Error updating tasks', undefined, args.projectRoot)
 			} catch (error) {
-				log.error(
-					`Critical error in ${toolName} tool execute: ${error.message}`
-				);
-				return createErrorResponse(
-					`Internal tool error (${toolName}): ${error.message}`
-				);
+				log.error(`Critical error in ${toolName} tool execute: ${error.message}`)
+				return createErrorResponse(`Internal tool error (${toolName}): ${error.message}`)
 			}
 		})
-	});
+	})
 }

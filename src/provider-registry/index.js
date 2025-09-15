@@ -7,7 +7,7 @@
  */
 
 // Singleton instance
-let instance = null;
+let instance = null
 
 /**
  * Provider Registry class - Manages dynamic provider registration
@@ -15,10 +15,10 @@ let instance = null;
 class ProviderRegistry {
 	constructor() {
 		// Private provider map
-		this._providers = new Map();
+		this._providers = new Map()
 
 		// Flag to track initialization
-		this._initialized = false;
+		this._initialized = false
 	}
 
 	/**
@@ -27,9 +27,9 @@ class ProviderRegistry {
 	 */
 	static getInstance() {
 		if (!instance) {
-			instance = new ProviderRegistry();
+			instance = new ProviderRegistry()
 		}
-		return instance;
+		return instance
 	}
 
 	/**
@@ -38,11 +38,11 @@ class ProviderRegistry {
 	 */
 	initialize() {
 		if (this._initialized) {
-			return this;
+			return this
 		}
 
-		this._initialized = true;
-		return this;
+		this._initialized = true
+		return this
 	}
 
 	/**
@@ -54,11 +54,11 @@ class ProviderRegistry {
 	 */
 	registerProvider(providerName, provider, options = {}) {
 		if (!providerName || typeof providerName !== 'string') {
-			throw new Error('Provider name must be a non-empty string');
+			throw new Error('Provider name must be a non-empty string')
 		}
 
 		if (!provider) {
-			throw new Error('Provider instance is required');
+			throw new Error('Provider instance is required')
 		}
 
 		// Validate that provider implements the required interface
@@ -67,7 +67,7 @@ class ProviderRegistry {
 			typeof provider.streamText !== 'function' ||
 			typeof provider.generateObject !== 'function'
 		) {
-			throw new Error('Provider must implement BaseAIProvider interface');
+			throw new Error('Provider must implement BaseAIProvider interface')
 		}
 
 		// Add provider to the registry
@@ -75,9 +75,9 @@ class ProviderRegistry {
 			instance: provider,
 			options,
 			registeredAt: new Date()
-		});
+		})
 
-		return this;
+		return this
 	}
 
 	/**
@@ -86,7 +86,7 @@ class ProviderRegistry {
 	 * @returns {boolean} True if the provider exists
 	 */
 	hasProvider(providerName) {
-		return this._providers.has(providerName);
+		return this._providers.has(providerName)
 	}
 
 	/**
@@ -95,8 +95,8 @@ class ProviderRegistry {
 	 * @returns {object|null} The provider instance or null if not found
 	 */
 	getProvider(providerName) {
-		const providerEntry = this._providers.get(providerName);
-		return providerEntry ? providerEntry.instance : null;
+		const providerEntry = this._providers.get(providerName)
+		return providerEntry ? providerEntry.instance : null
 	}
 
 	/**
@@ -104,7 +104,7 @@ class ProviderRegistry {
 	 * @returns {Map} Map of all registered providers
 	 */
 	getAllProviders() {
-		return new Map(this._providers);
+		return new Map(this._providers)
 	}
 
 	/**
@@ -114,21 +114,21 @@ class ProviderRegistry {
 	 */
 	unregisterProvider(providerName) {
 		if (this._providers.has(providerName)) {
-			this._providers.delete(providerName);
-			return true;
+			this._providers.delete(providerName)
+			return true
 		}
-		return false;
+		return false
 	}
 
 	/**
 	 * Reset the registry (primarily for testing)
 	 */
 	reset() {
-		this._providers.clear();
-		this._initialized = false;
+		this._providers.clear()
+		this._initialized = false
 	}
 }
 
-ProviderRegistry.getInstance().initialize(); // Ensure singleton is initialized on import
+ProviderRegistry.getInstance().initialize() // Ensure singleton is initialized on import
 // Export singleton getter
-export default ProviderRegistry;
+export default ProviderRegistry

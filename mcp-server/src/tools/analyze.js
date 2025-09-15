@@ -3,19 +3,15 @@
  * Tool for analyzing task complexity and generating recommendations
  */
 
-import { z } from 'zod';
-import path from 'path';
-import fs from 'fs'; // Import fs for directory check/creation
-import {
-	handleApiResult,
-	createErrorResponse,
-	withNormalizedProjectRoot
-} from './utils.js';
-import { analyzeTaskComplexityDirect } from '../core/task-master-core.js'; // Assuming core functions are exported via task-master-core.js
-import { findTasksPath } from '../core/utils/path-utils.js';
-import { resolveTag } from '../../../scripts/modules/utils.js';
-import { COMPLEXITY_REPORT_FILE } from '../../../src/constants/paths.js';
-import { resolveComplexityReportOutputPath } from '../../../src/utils/path-utils.js';
+import fs from 'fs' // Import fs for directory check/creation
+import path from 'path'
+import { z } from 'zod'
+import { resolveTag } from '../../../scripts/modules/utils.js'
+import { COMPLEXITY_REPORT_FILE } from '../../../src/constants/paths.js'
+import { resolveComplexityReportOutputPath } from '../../../src/utils/path-utils.js'
+import { analyzeTaskComplexityDirect } from '../core/task-master-core.js' // Assuming core functions are exported via task-master-core.js
+import { findTasksPath } from '../core/utils/path-utils.js'
+import { createErrorResponse, handleApiResult, withNormalizedProjectRoot } from './utils.js'
 
 /**
  * Register the analyze_project_complexity tool
@@ -24,8 +20,7 @@ import { resolveComplexityReportOutputPath } from '../../../src/utils/path-utils
 export function registerAnalyzeProjectComplexityTool(server) {
 	server.addTool({
 		name: 'analyze_project_complexity',
-		description:
-			'Analyze task complexity and generate expansion recommendations.',
+		description: 'Analyze task complexity and generate expansion recommendations.',
 		parameters: z.object({
 			threshold: z.coerce // Use coerce for number conversion from string if needed
 				.number()
@@ -49,15 +44,11 @@ export function registerAnalyzeProjectComplexityTool(server) {
 			file: z
 				.string()
 				.optional()
-				.describe(
-					'Path to the tasks file relative to project root (default: tasks/tasks.json).'
-				),
+				.describe('Path to the tasks file relative to project root (default: tasks/tasks.json).'),
 			ids: z
 				.string()
 				.optional()
-				.describe(
-					'Comma-separated list of task IDs to analyze specifically (e.g., "1,3,5").'
-				),
+				.describe('Comma-separated list of task IDs to analyze specifically (e.g., "1,3,5").'),
 			from: z.coerce
 				.number()
 				.int()
@@ -70,36 +61,29 @@ export function registerAnalyzeProjectComplexityTool(server) {
 				.positive()
 				.optional()
 				.describe('Ending task ID in a range to analyze.'),
-			projectRoot: z
-				.string()
-				.describe('The directory of the project. Must be an absolute path.'),
+			projectRoot: z.string().describe('The directory of the project. Must be an absolute path.'),
 			tag: z.string().optional().describe('Tag context to operate on')
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
-			const toolName = 'analyze_project_complexity'; // Define tool name for logging
+			const toolName = 'analyze_project_complexity' // Define tool name for logging
 
 			try {
-				log.info(
-					`Executing ${toolName} tool with args: ${JSON.stringify(args)}`
-				);
+				log.info(`Executing ${toolName} tool with args: ${JSON.stringify(args)}`)
 
 				const resolvedTag = resolveTag({
 					projectRoot: args.projectRoot,
 					tag: args.tag
-				});
+				})
 
-				let tasksJsonPath;
+				let tasksJsonPath
 				try {
-					tasksJsonPath = findTasksPath(
-						{ projectRoot: args.projectRoot, file: args.file },
-						log
-					);
-					log.info(`${toolName}: Resolved tasks path: ${tasksJsonPath}`);
+					tasksJsonPath = findTasksPath({ projectRoot: args.projectRoot, file: args.file }, log)
+					log.info(`${toolName}: Resolved tasks path: ${tasksJsonPath}`)
 				} catch (error) {
-					log.error(`${toolName}: Error finding tasks.json: ${error.message}`);
+					log.error(`${toolName}: Error finding tasks.json: ${error.message}`)
 					return createErrorResponse(
 						`Failed to find tasks.json within project root '${args.projectRoot}': ${error.message}`
-					);
+					)
 				}
 
 				const outputPath = resolveComplexityReportOutputPath(
@@ -109,24 +93,22 @@ export function registerAnalyzeProjectComplexityTool(server) {
 						tag: resolvedTag
 					},
 					log
-				);
+				)
 
-				log.info(`${toolName}: Report output path: ${outputPath}`);
+				log.info(`${toolName}: Report output path: ${outputPath}`)
 
 				// Ensure output directory exists
-				const outputDir = path.dirname(outputPath);
+				const outputDir = path.dirname(outputPath)
 				try {
 					if (!fs.existsSync(outputDir)) {
-						fs.mkdirSync(outputDir, { recursive: true });
-						log.info(`${toolName}: Created output directory: ${outputDir}`);
+						fs.mkdirSync(outputDir, { recursive: true })
+						log.info(`${toolName}: Created output directory: ${outputDir}`)
 					}
 				} catch (dirError) {
 					log.error(
 						`${toolName}: Failed to create output directory ${outputDir}: ${dirError.message}`
-					);
-					return createErrorResponse(
-						`Failed to create output directory: ${dirError.message}`
-					);
+					)
+					return createErrorResponse(`Failed to create output directory: ${dirError.message}`)
 				}
 
 				// 3. Call Direct Function - Pass projectRoot in first arg object
@@ -144,27 +126,21 @@ export function registerAnalyzeProjectComplexityTool(server) {
 					},
 					log,
 					{ session }
-				);
+				)
 
 				// 4. Handle Result
-				log.info(
-					`${toolName}: Direct function result: success=${result.success}`
-				);
+				log.info(`${toolName}: Direct function result: success=${result.success}`)
 				return handleApiResult(
 					result,
 					log,
 					'Error analyzing task complexity',
 					undefined,
 					args.projectRoot
-				);
+				)
 			} catch (error) {
-				log.error(
-					`Critical error in ${toolName} tool execute: ${error.message}`
-				);
-				return createErrorResponse(
-					`Internal tool error (${toolName}): ${error.message}`
-				);
+				log.error(`Critical error in ${toolName} tool execute: ${error.message}`)
+				return createErrorResponse(`Internal tool error (${toolName}): ${error.message}`)
 			}
 		})
-	});
+	})
 }

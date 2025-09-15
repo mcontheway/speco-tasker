@@ -1,11 +1,11 @@
-import React from 'react';
-import { TaskMasterKanban } from './TaskMasterKanban';
-import TaskDetailsView from '@/components/TaskDetailsView';
-import { ConfigView } from '@/components/ConfigView';
-import { useVSCodeContext } from '../contexts/VSCodeContext';
+import { ConfigView } from '@/components/ConfigView'
+import TaskDetailsView from '@/components/TaskDetailsView'
+import type React from 'react'
+import { useVSCodeContext } from '../contexts/VSCodeContext'
+import { TaskMasterKanban } from './TaskMasterKanban'
 
 export const AppContent: React.FC = () => {
-	const { state, dispatch, sendMessage } = useVSCodeContext();
+	const { state, dispatch, sendMessage } = useVSCodeContext()
 
 	if (state.currentView === 'config') {
 		return (
@@ -13,7 +13,7 @@ export const AppContent: React.FC = () => {
 				sendMessage={sendMessage}
 				onNavigateBack={() => dispatch({ type: 'NAVIGATE_TO_KANBAN' })}
 			/>
-		);
+		)
 	}
 
 	if (state.currentView === 'task-details' && state.selectedTaskId) {
@@ -25,9 +25,9 @@ export const AppContent: React.FC = () => {
 					dispatch({ type: 'NAVIGATE_TO_TASK', payload: taskId })
 				}
 			/>
-		);
+		)
 	}
 
 	// Default to Kanban view
-	return <TaskMasterKanban />;
-};
+	return <TaskMasterKanban />
+}

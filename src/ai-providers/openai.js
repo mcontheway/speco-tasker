@@ -3,13 +3,13 @@
  * AI provider implementation for OpenAI models using Vercel AI SDK.
  */
 
-import { createOpenAI } from '@ai-sdk/openai';
-import { BaseAIProvider } from './base-provider.js';
+import { createOpenAI } from '@ai-sdk/openai'
+import { BaseAIProvider } from './base-provider.js'
 
 export class OpenAIProvider extends BaseAIProvider {
 	constructor() {
-		super();
-		this.name = 'OpenAI';
+		super()
+		this.name = 'OpenAI'
 	}
 
 	/**
@@ -17,7 +17,7 @@ export class OpenAIProvider extends BaseAIProvider {
 	 * @returns {string} The environment variable name for the OpenAI API key
 	 */
 	getRequiredApiKeyName() {
-		return 'OPENAI_API_KEY';
+		return 'OPENAI_API_KEY'
 	}
 
 	/**
@@ -27,7 +27,7 @@ export class OpenAIProvider extends BaseAIProvider {
 	 * @returns {boolean} True if the model requires max_completion_tokens
 	 */
 	requiresMaxCompletionTokens(modelId) {
-		return modelId && modelId.startsWith('gpt-5');
+		return modelId && modelId.startsWith('gpt-5')
 	}
 
 	/**
@@ -40,18 +40,18 @@ export class OpenAIProvider extends BaseAIProvider {
 	 */
 	getClient(params) {
 		try {
-			const { apiKey, baseURL } = params;
+			const { apiKey, baseURL } = params
 
 			if (!apiKey) {
-				throw new Error('OpenAI API key is required.');
+				throw new Error('OpenAI API key is required.')
 			}
 
 			return createOpenAI({
 				apiKey,
 				...(baseURL && { baseURL })
-			});
+			})
 		} catch (error) {
-			this.handleError('client initialization', error);
+			this.handleError('client initialization', error)
 		}
 	}
 }

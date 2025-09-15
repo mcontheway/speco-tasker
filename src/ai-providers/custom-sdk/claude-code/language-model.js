@@ -2,25 +2,25 @@
  * @fileoverview Claude Code Language Model implementation
  */
 
-import { NoSuchModelError } from '@ai-sdk/provider';
-import { generateId } from '@ai-sdk/provider-utils';
-import { convertToClaudeCodeMessages } from './message-converter.js';
-import { extractJson } from './json-extractor.js';
-import { createAPICallError, createAuthenticationError } from './errors.js';
+import { NoSuchModelError } from '@ai-sdk/provider'
+import { generateId } from '@ai-sdk/provider-utils'
+import { createAPICallError, createAuthenticationError } from './errors.js'
+import { extractJson } from './json-extractor.js'
+import { convertToClaudeCodeMessages } from './message-converter.js'
 
-let query;
-let AbortError;
+let query
+let AbortError
 
 async function loadClaudeCodeModule() {
 	if (!query || !AbortError) {
 		try {
-			const mod = await import('@anthropic-ai/claude-code');
-			query = mod.query;
-			AbortError = mod.AbortError;
+			const mod = await import('@anthropic-ai/claude-code')
+			query = mod.query
+			AbortError = mod.AbortError
 		} catch (err) {
 			throw new Error(
 				"Claude Code SDK is not installed. Please install '@anthropic-ai/claude-code' to use the claude-code provider."
-			);
+			)
 		}
 	}
 }
@@ -34,45 +34,41 @@ async function loadClaudeCodeModule() {
 const modelMap = {
 	opus: 'opus',
 	sonnet: 'sonnet'
-};
+}
 
 export class ClaudeCodeLanguageModel {
-	specificationVersion = 'v1';
-	defaultObjectGenerationMode = 'json';
-	supportsImageUrls = false;
-	supportsStructuredOutputs = false;
+	specificationVersion = 'v1'
+	defaultObjectGenerationMode = 'json'
+	supportsImageUrls = false
+	supportsStructuredOutputs = false
 
 	/** @type {ClaudeCodeModelId} */
-	modelId;
+	modelId
 
 	/** @type {ClaudeCodeSettings} */
-	settings;
+	settings
 
 	/** @type {string|undefined} */
-	sessionId;
+	sessionId
 
 	/**
 	 * @param {ClaudeCodeLanguageModelOptions} options
 	 */
 	constructor(options) {
-		this.modelId = options.id;
-		this.settings = options.settings ?? {};
+		this.modelId = options.id
+		this.settings = options.settings ?? {}
 
 		// Validate model ID format
-		if (
-			!this.modelId ||
-			typeof this.modelId !== 'string' ||
-			this.modelId.trim() === ''
-		) {
+		if (!this.modelId || typeof this.modelId !== 'string' || this.modelId.trim() === '') {
 			throw new NoSuchModelError({
 				modelId: this.modelId,
 				modelType: 'languageModel'
-			});
+			})
 		}
 	}
 
 	get provider() {
-		return 'claude-code';
+		return 'claude-code'
 	}
 
 	/**
@@ -80,8 +76,8 @@ export class ClaudeCodeLanguageModel {
 	 * @returns {string}
 	 */
 	getModel() {
-		const mapped = modelMap[this.modelId];
-		return mapped ?? this.modelId;
+		const mapped = modelMap[this.modelId]
+		return mapped ?? this.modelId
 	}
 
 	/**
@@ -90,22 +86,19 @@ export class ClaudeCodeLanguageModel {
 	 * @returns {Array} Warnings array
 	 */
 	generateUnsupportedWarnings(options) {
-		const warnings = [];
-		const unsupportedParams = [];
+		const warnings = []
+		const unsupportedParams = []
 
 		// Check for unsupported parameters
-		if (options.temperature !== undefined)
-			unsupportedParams.push('temperature');
-		if (options.maxTokens !== undefined) unsupportedParams.push('maxTokens');
-		if (options.topP !== undefined) unsupportedParams.push('topP');
-		if (options.topK !== undefined) unsupportedParams.push('topK');
-		if (options.presencePenalty !== undefined)
-			unsupportedParams.push('presencePenalty');
-		if (options.frequencyPenalty !== undefined)
-			unsupportedParams.push('frequencyPenalty');
+		if (options.temperature !== undefined) unsupportedParams.push('temperature')
+		if (options.maxTokens !== undefined) unsupportedParams.push('maxTokens')
+		if (options.topP !== undefined) unsupportedParams.push('topP')
+		if (options.topK !== undefined) unsupportedParams.push('topK')
+		if (options.presencePenalty !== undefined) unsupportedParams.push('presencePenalty')
+		if (options.frequencyPenalty !== undefined) unsupportedParams.push('frequencyPenalty')
 		if (options.stopSequences !== undefined && options.stopSequences.length > 0)
-			unsupportedParams.push('stopSequences');
-		if (options.seed !== undefined) unsupportedParams.push('seed');
+			unsupportedParams.push('stopSequences')
+		if (options.seed !== undefined) unsupportedParams.push('seed')
 
 		if (unsupportedParams.length > 0) {
 			// Add a warning for each unsupported parameter
@@ -114,11 +107,11 @@ export class ClaudeCodeLanguageModel {
 					type: 'unsupported-setting',
 					setting: param,
 					details: `Claude Code CLI does not support the ${param} parameter. It will be ignored.`
-				});
+				})
 			}
 		}
 
-		return warnings;
+		return warnings
 	}
 
 	/**
@@ -127,17 +120,12 @@ export class ClaudeCodeLanguageModel {
 	 * @returns {Promise<Object>}
 	 */
 	async doGenerate(options) {
-		await loadClaudeCodeModule();
-		const { messagesPrompt } = convertToClaudeCodeMessages(
-			options.prompt,
-			options.mode
-		);
+		await loadClaudeCodeModule()
+		const { messagesPrompt } = convertToClaudeCodeMessages(options.prompt, options.mode)
 
-		const abortController = new AbortController();
+		const abortController = new AbortController()
 		if (options.abortSignal) {
-			options.abortSignal.addEventListener('abort', () =>
-				abortController.abort()
-			);
+			options.abortSignal.addEventListener('abort', () => abortController.abort())
 		}
 
 		const queryOptions = {
@@ -158,55 +146,53 @@ export class ClaudeCodeLanguageModel {
 			allowedTools: this.settings.allowedTools,
 			disallowedTools: this.settings.disallowedTools,
 			mcpServers: this.settings.mcpServers
-		};
+		}
 
-		let text = '';
-		let usage = { promptTokens: 0, completionTokens: 0 };
-		let finishReason = 'stop';
-		let costUsd;
-		let durationMs;
-		let rawUsage;
-		const warnings = this.generateUnsupportedWarnings(options);
+		let text = ''
+		let usage = { promptTokens: 0, completionTokens: 0 }
+		let finishReason = 'stop'
+		let costUsd
+		let durationMs
+		let rawUsage
+		const warnings = this.generateUnsupportedWarnings(options)
 
 		try {
 			if (!query) {
 				throw new Error(
 					"Claude Code SDK is not installed. Please install '@anthropic-ai/claude-code' to use the claude-code provider."
-				);
+				)
 			}
 			const response = query({
 				prompt: messagesPrompt,
 				options: queryOptions
-			});
+			})
 
 			for await (const message of response) {
 				if (message.type === 'assistant') {
-					text += message.message.content
-						.map((c) => (c.type === 'text' ? c.text : ''))
-						.join('');
+					text += message.message.content.map((c) => (c.type === 'text' ? c.text : '')).join('')
 				} else if (message.type === 'result') {
-					this.sessionId = message.session_id;
-					costUsd = message.total_cost_usd;
-					durationMs = message.duration_ms;
+					this.sessionId = message.session_id
+					costUsd = message.total_cost_usd
+					durationMs = message.duration_ms
 
 					if ('usage' in message) {
-						rawUsage = message.usage;
+						rawUsage = message.usage
 						usage = {
 							promptTokens:
 								(message.usage.cache_creation_input_tokens ?? 0) +
 								(message.usage.cache_read_input_tokens ?? 0) +
 								(message.usage.input_tokens ?? 0),
 							completionTokens: message.usage.output_tokens ?? 0
-						};
+						}
 					}
 
 					if (message.subtype === 'error_max_turns') {
-						finishReason = 'length';
+						finishReason = 'length'
 					} else if (message.subtype === 'error_during_execution') {
-						finishReason = 'error';
+						finishReason = 'error'
 					}
 				} else if (message.type === 'system' && message.subtype === 'init') {
-					this.sessionId = message.session_id;
+					this.sessionId = message.session_id
 				}
 			}
 		} catch (error) {
@@ -221,21 +207,18 @@ export class ClaudeCodeLanguageModel {
 			const isJsonTruncation =
 				error instanceof SyntaxError &&
 				/JSON/i.test(error.message || '') &&
-				(error.message.includes('position') ||
-					error.message.includes('Unexpected end'));
+				(error.message.includes('position') || error.message.includes('Unexpected end'))
 			if (isJsonTruncation && text && text.length > 0) {
 				warnings.push({
 					type: 'provider-warning',
 					details:
 						'Claude Code SDK emitted a JSON parse error but Task Master recovered buffered text (possible CLI truncation).'
-				});
-				finishReason = 'truncated';
+				})
+				finishReason = 'truncated'
 				// Skip re-throwing: fall through so the caller receives usable data
 			} else {
 				if (AbortError && error instanceof AbortError) {
-					throw options.abortSignal?.aborted
-						? options.abortSignal.reason
-						: error;
+					throw options.abortSignal?.aborted ? options.abortSignal.reason : error
 				}
 
 				// Check for authentication errors
@@ -248,7 +231,7 @@ export class ClaudeCodeLanguageModel {
 						message:
 							error.message ||
 							'Authentication failed. Please ensure Claude Code CLI is properly authenticated.'
-					});
+					})
 				}
 
 				// Wrap other errors with API call error
@@ -259,13 +242,13 @@ export class ClaudeCodeLanguageModel {
 					stderr: error.stderr,
 					promptExcerpt: messagesPrompt.substring(0, 200),
 					isRetryable: error.code === 'ENOENT' || error.code === 'ECONNREFUSED'
-				});
+				})
 			}
 		}
 
 		// Extract JSON if in object-json mode
 		if (options.mode?.type === 'object-json' && text) {
-			text = extractJson(text);
+			text = extractJson(text)
 		}
 
 		return {
@@ -293,7 +276,7 @@ export class ClaudeCodeLanguageModel {
 					...(rawUsage !== undefined && { rawUsage })
 				}
 			}
-		};
+		}
 	}
 
 	/**
@@ -302,17 +285,12 @@ export class ClaudeCodeLanguageModel {
 	 * @returns {Promise<Object>}
 	 */
 	async doStream(options) {
-		await loadClaudeCodeModule();
-		const { messagesPrompt } = convertToClaudeCodeMessages(
-			options.prompt,
-			options.mode
-		);
+		await loadClaudeCodeModule()
+		const { messagesPrompt } = convertToClaudeCodeMessages(options.prompt, options.mode)
 
-		const abortController = new AbortController();
+		const abortController = new AbortController()
 		if (options.abortSignal) {
-			options.abortSignal.addEventListener('abort', () =>
-				abortController.abort()
-			);
+			options.abortSignal.addEventListener('abort', () => abortController.abort())
 		}
 
 		const queryOptions = {
@@ -333,9 +311,9 @@ export class ClaudeCodeLanguageModel {
 			allowedTools: this.settings.allowedTools,
 			disallowedTools: this.settings.disallowedTools,
 			mcpServers: this.settings.mcpServers
-		};
+		}
 
-		const warnings = this.generateUnsupportedWarnings(options);
+		const warnings = this.generateUnsupportedWarnings(options)
 
 		const stream = new ReadableStream({
 			start: async (controller) => {
@@ -343,24 +321,24 @@ export class ClaudeCodeLanguageModel {
 					if (!query) {
 						throw new Error(
 							"Claude Code SDK is not installed. Please install '@anthropic-ai/claude-code' to use the claude-code provider."
-						);
+						)
 					}
 					const response = query({
 						prompt: messagesPrompt,
 						options: queryOptions
-					});
+					})
 
-					let usage = { promptTokens: 0, completionTokens: 0 };
-					let accumulatedText = '';
+					let usage = { promptTokens: 0, completionTokens: 0 }
+					let accumulatedText = ''
 
 					for await (const message of response) {
 						if (message.type === 'assistant') {
 							const text = message.message.content
 								.map((c) => (c.type === 'text' ? c.text : ''))
-								.join('');
+								.join('')
 
 							if (text) {
-								accumulatedText += text;
+								accumulatedText += text
 
 								// In object-json mode, we need to accumulate the full text
 								// and extract JSON at the end, so don't stream individual deltas
@@ -368,39 +346,39 @@ export class ClaudeCodeLanguageModel {
 									controller.enqueue({
 										type: 'text-delta',
 										textDelta: text
-									});
+									})
 								}
 							}
 						} else if (message.type === 'result') {
-							let rawUsage;
+							let rawUsage
 							if ('usage' in message) {
-								rawUsage = message.usage;
+								rawUsage = message.usage
 								usage = {
 									promptTokens:
 										(message.usage.cache_creation_input_tokens ?? 0) +
 										(message.usage.cache_read_input_tokens ?? 0) +
 										(message.usage.input_tokens ?? 0),
 									completionTokens: message.usage.output_tokens ?? 0
-								};
+								}
 							}
 
-							let finishReason = 'stop';
+							let finishReason = 'stop'
 							if (message.subtype === 'error_max_turns') {
-								finishReason = 'length';
+								finishReason = 'length'
 							} else if (message.subtype === 'error_during_execution') {
-								finishReason = 'error';
+								finishReason = 'error'
 							}
 
 							// Store session ID in the model instance
-							this.sessionId = message.session_id;
+							this.sessionId = message.session_id
 
 							// In object-json mode, extract JSON and send the full text at once
 							if (options.mode?.type === 'object-json' && accumulatedText) {
-								const extractedJson = extractJson(accumulatedText);
+								const extractedJson = extractJson(accumulatedText)
 								controller.enqueue({
 									type: 'text-delta',
 									textDelta: extractedJson
-								});
+								})
 							}
 
 							controller.enqueue({
@@ -419,13 +397,10 @@ export class ClaudeCodeLanguageModel {
 										...(rawUsage !== undefined && { rawUsage })
 									}
 								}
-							});
-						} else if (
-							message.type === 'system' &&
-							message.subtype === 'init'
-						) {
+							})
+						} else if (message.type === 'system' && message.subtype === 'init') {
 							// Store session ID for future use
-							this.sessionId = message.session_id;
+							this.sessionId = message.session_id
 
 							// Emit response metadata when session is initialized
 							controller.enqueue({
@@ -433,7 +408,7 @@ export class ClaudeCodeLanguageModel {
 								id: message.session_id,
 								timestamp: new Date(),
 								modelId: this.modelId
-							});
+							})
 						}
 					}
 
@@ -445,25 +420,18 @@ export class ClaudeCodeLanguageModel {
 					const isJsonTruncation =
 						error instanceof SyntaxError &&
 						/JSON/i.test(error.message || '') &&
-						(error.message.includes('position') ||
-							error.message.includes('Unexpected end'));
+						(error.message.includes('position') || error.message.includes('Unexpected end'))
 
-					if (
-						isJsonTruncation &&
-						accumulatedText &&
-						accumulatedText.length > 0
-					) {
+					if (isJsonTruncation && accumulatedText && accumulatedText.length > 0) {
 						// Prepare final text payload
 						const finalText =
-							options.mode?.type === 'object-json'
-								? extractJson(accumulatedText)
-								: accumulatedText;
+							options.mode?.type === 'object-json' ? extractJson(accumulatedText) : accumulatedText
 
 						// Emit any remaining text
 						controller.enqueue({
 							type: 'text-delta',
 							textDelta: finalText
-						});
+						})
 
 						// Emit finish with truncated reason and warning
 						controller.enqueue({
@@ -474,24 +442,21 @@ export class ClaudeCodeLanguageModel {
 							warnings: [
 								{
 									type: 'provider-warning',
-									details:
-										'Claude Code SDK JSON truncation detected; stream recovered.'
+									details: 'Claude Code SDK JSON truncation detected; stream recovered.'
 								}
 							]
-						});
+						})
 
-						controller.close();
-						return; // Skip normal error path
+						controller.close()
+						return // Skip normal error path
 					}
 
-					controller.close();
+					controller.close()
 				} catch (error) {
-					let errorToEmit;
+					let errorToEmit
 
 					if (AbortError && error instanceof AbortError) {
-						errorToEmit = options.abortSignal?.aborted
-							? options.abortSignal.reason
-							: error;
+						errorToEmit = options.abortSignal?.aborted ? options.abortSignal.reason : error
 					} else if (
 						error.message?.includes('not logged in') ||
 						error.message?.includes('authentication') ||
@@ -501,7 +466,7 @@ export class ClaudeCodeLanguageModel {
 							message:
 								error.message ||
 								'Authentication failed. Please ensure Claude Code CLI is properly authenticated.'
-						});
+						})
 					} else {
 						errorToEmit = createAPICallError({
 							message: error.message || 'Claude Code CLI error',
@@ -509,21 +474,20 @@ export class ClaudeCodeLanguageModel {
 							exitCode: error.exitCode,
 							stderr: error.stderr,
 							promptExcerpt: messagesPrompt.substring(0, 200),
-							isRetryable:
-								error.code === 'ENOENT' || error.code === 'ECONNREFUSED'
-						});
+							isRetryable: error.code === 'ENOENT' || error.code === 'ECONNREFUSED'
+						})
 					}
 
 					// Emit error as a stream part
 					controller.enqueue({
 						type: 'error',
 						error: errorToEmit
-					});
+					})
 
-					controller.close();
+					controller.close()
 				}
 			}
-		});
+		})
 
 		return {
 			stream,
@@ -535,6 +499,6 @@ export class ClaudeCodeLanguageModel {
 			request: {
 				body: messagesPrompt
 			}
-		};
+		}
 	}
 }

@@ -1,14 +1,10 @@
-import { log, readJSON, isSilentMode, findProjectRoot } from '../utils.js';
-import {
-	startLoadingIndicator,
-	stopLoadingIndicator,
-	displayAiUsageSummary
-} from '../ui.js';
-import expandTask from './expand-task.js';
-import { getDebugFlag } from '../config-manager.js';
-import { aggregateTelemetry } from '../utils.js';
-import chalk from 'chalk';
-import boxen from 'boxen';
+import boxen from 'boxen'
+import chalk from 'chalk'
+import { getDebugFlag } from '../config-manager.js'
+import { displayAiUsageSummary, startLoadingIndicator, stopLoadingIndicator } from '../ui.js'
+import { findProjectRoot, isSilentMode, log, readJSON } from '../utils.js'
+import { aggregateTelemetry } from '../utils.js'
+import expandTask from './expand-task.js'
 
 /**
  * Expand all eligible pending or in-progress tasks using the expandTask function.
@@ -35,18 +31,12 @@ async function expandAllTasks(
 	context = {},
 	outputFormat = 'text' // Assume text default for CLI
 ) {
-	const {
-		session,
-		mcpLog,
-		projectRoot: providedProjectRoot,
-		tag,
-		complexityReportPath
-	} = context;
-	const isMCPCall = !!mcpLog; // Determine if called from MCP
+	const { session, mcpLog, projectRoot: providedProjectRoot, tag, complexityReportPath } = context
+	const isMCPCall = !!mcpLog // Determine if called from MCP
 
-	const projectRoot = providedProjectRoot || findProjectRoot();
+	const projectRoot = providedProjectRoot || findProjectRoot()
 	if (!projectRoot) {
-		throw new Error('Could not determine project root directory');
+		throw new Error('Could not determine project root directory')
 	}
 
 	// Use mcpLog if available, otherwise use the default console log wrapper respecting silent mode
@@ -65,27 +55,24 @@ async function expandAllTasks(
 					info: (msg) => !isSilentMode() && log('info', msg),
 					warn: (msg) => !isSilentMode() && log('warn', msg),
 					error: (msg) => !isSilentMode() && log('error', msg),
-					debug: (msg) =>
-						!isSilentMode() && getDebugFlag(session) && log('debug', msg)
-				});
+					debug: (msg) => !isSilentMode() && getDebugFlag(session) && log('debug', msg)
+				})
 
-	let loadingIndicator = null;
-	let expandedCount = 0;
-	let failedCount = 0;
-	let tasksToExpandCount = 0;
-	const allTelemetryData = []; // Still collect individual data first
+	let loadingIndicator = null
+	let expandedCount = 0
+	let failedCount = 0
+	let tasksToExpandCount = 0
+	const allTelemetryData = [] // Still collect individual data first
 
 	if (!isMCPCall && outputFormat === 'text') {
-		loadingIndicator = startLoadingIndicator(
-			'Analyzing tasks for expansion...'
-		);
+		loadingIndicator = startLoadingIndicator('Analyzing tasks for expansion...')
 	}
 
 	try {
-		logger.info(`Reading tasks from ${tasksPath}`);
-		const data = readJSON(tasksPath, projectRoot, tag);
+		logger.info(`Reading tasks from ${tasksPath}`)
+		const data = readJSON(tasksPath, projectRoot, tag)
 		if (!data || !data.tasks) {
-			throw new Error(`Invalid tasks data in ${tasksPath}`);
+			throw new Error(`Invalid tasks data in ${tasksPath}`)
 		}
 
 		// --- Restore Original Filtering Logic ---
@@ -93,17 +80,17 @@ async function expandAllTasks(
 			(task) =>
 				(task.status === 'pending' || task.status === 'in-progress') && // Include 'in-progress'
 				(!task.subtasks || task.subtasks.length === 0 || force) // Check subtasks/force here
-		);
-		tasksToExpandCount = tasksToExpand.length; // Get the count from the filtered array
-		logger.info(`Found ${tasksToExpandCount} tasks eligible for expansion.`);
+		)
+		tasksToExpandCount = tasksToExpand.length // Get the count from the filtered array
+		logger.info(`Found ${tasksToExpandCount} tasks eligible for expansion.`)
 		// --- End Restored Filtering Logic ---
 
 		if (loadingIndicator) {
-			stopLoadingIndicator(loadingIndicator, 'Analysis complete.');
+			stopLoadingIndicator(loadingIndicator, 'Analysis complete.')
 		}
 
 		if (tasksToExpandCount === 0) {
-			logger.info('No tasks eligible for expansion.');
+			logger.info('No tasks eligible for expansion.')
 			// --- Fix: Restore success: true and add message ---
 			return {
 				success: true, // Indicate overall success despite no action
@@ -113,16 +100,16 @@ async function expandAllTasks(
 				tasksToExpand: 0,
 				telemetryData: allTelemetryData,
 				message: 'No tasks eligible for expansion.'
-			};
+			}
 			// --- End Fix ---
 		}
 
 		// Iterate over the already filtered tasks
 		for (const task of tasksToExpand) {
 			// Start indicator for individual task expansion in CLI mode
-			let taskIndicator = null;
+			let taskIndicator = null
 			if (!isMCPCall && outputFormat === 'text') {
-				taskIndicator = startLoadingIndicator(`Expanding task ${task.id}...`);
+				taskIndicator = startLoadingIndicator(`Expanding task ${task.id}...`)
 			}
 
 			try {
@@ -140,42 +127,33 @@ async function expandAllTasks(
 						complexityReportPath
 					}, // Pass the whole context object with projectRoot and resolved tag
 					force
-				);
-				expandedCount++;
+				)
+				expandedCount++
 
 				// Collect individual telemetry data
 				if (result && result.telemetryData) {
-					allTelemetryData.push(result.telemetryData);
+					allTelemetryData.push(result.telemetryData)
 				}
 
 				if (taskIndicator) {
-					stopLoadingIndicator(taskIndicator, `Task ${task.id} expanded.`);
+					stopLoadingIndicator(taskIndicator, `Task ${task.id} expanded.`)
 				}
-				logger.info(`Successfully expanded task ${task.id}.`);
+				logger.info(`Successfully expanded task ${task.id}.`)
 			} catch (error) {
-				failedCount++;
+				failedCount++
 				if (taskIndicator) {
-					stopLoadingIndicator(
-						taskIndicator,
-						`Failed to expand task ${task.id}.`,
-						false
-					);
+					stopLoadingIndicator(taskIndicator, `Failed to expand task ${task.id}.`, false)
 				}
-				logger.error(`Failed to expand task ${task.id}: ${error.message}`);
+				logger.error(`Failed to expand task ${task.id}: ${error.message}`)
 				// Continue to the next task
 			}
 		}
 
 		// --- AGGREGATION AND DISPLAY ---
-		logger.info(
-			`Expansion complete: ${expandedCount} expanded, ${failedCount} failed.`
-		);
+		logger.info(`Expansion complete: ${expandedCount} expanded, ${failedCount} failed.`)
 
 		// Aggregate the collected telemetry data
-		const aggregatedTelemetryData = aggregateTelemetry(
-			allTelemetryData,
-			'expand-all-tasks'
-		);
+		const aggregatedTelemetryData = aggregateTelemetry(allTelemetryData, 'expand-all-tasks')
 
 		if (outputFormat === 'text') {
 			const summaryContent =
@@ -184,7 +162,7 @@ async function expandAllTasks(
 				`${chalk.green('-')} Expanded:  ${chalk.bold(expandedCount)}\n` +
 				// Skipped count is always 0 now due to pre-filtering
 				`${chalk.gray('-')} Skipped:   ${chalk.bold(0)}\n` +
-				`${chalk.red('-')} Failed:    ${chalk.bold(failedCount)}`;
+				`${chalk.red('-')} Failed:    ${chalk.bold(failedCount)}`
 
 			console.log(
 				boxen(summaryContent, {
@@ -193,11 +171,11 @@ async function expandAllTasks(
 					borderColor: failedCount > 0 ? 'red' : 'green', // Red if failures, green otherwise
 					borderStyle: 'round'
 				})
-			);
+			)
 		}
 
 		if (outputFormat === 'text' && aggregatedTelemetryData) {
-			displayAiUsageSummary(aggregatedTelemetryData, 'cli');
+			displayAiUsageSummary(aggregatedTelemetryData, 'cli')
 		}
 
 		// Return summary including the AGGREGATED telemetry data
@@ -208,20 +186,19 @@ async function expandAllTasks(
 			skippedCount: 0,
 			tasksToExpand: tasksToExpandCount,
 			telemetryData: aggregatedTelemetryData
-		};
+		}
 	} catch (error) {
-		if (loadingIndicator)
-			stopLoadingIndicator(loadingIndicator, 'Error.', false);
-		logger.error(`Error during expand all operation: ${error.message}`);
+		if (loadingIndicator) stopLoadingIndicator(loadingIndicator, 'Error.', false)
+		logger.error(`Error during expand all operation: ${error.message}`)
 		if (!isMCPCall && getDebugFlag(session)) {
-			console.error(error); // Log full stack in debug CLI mode
+			console.error(error) // Log full stack in debug CLI mode
 		}
 		// Re-throw error for the caller to handle, the direct function will format it
-		throw error; // Let direct function wrapper handle formatting
+		throw error // Let direct function wrapper handle formatting
 		/* Original re-throw:
 		throw new Error(`Failed to expand all tasks: ${error.message}`);
 		*/
 	}
 }
 
-export default expandAllTasks;
+export default expandAllTasks

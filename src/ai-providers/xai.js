@@ -3,13 +3,13 @@
  * AI provider implementation for xAI models using Vercel AI SDK.
  */
 
-import { createXai } from '@ai-sdk/xai';
-import { BaseAIProvider } from './base-provider.js';
+import { createXai } from '@ai-sdk/xai'
+import { BaseAIProvider } from './base-provider.js'
 
 export class XAIProvider extends BaseAIProvider {
 	constructor() {
-		super();
-		this.name = 'xAI';
+		super()
+		this.name = 'xAI'
 	}
 
 	/**
@@ -17,7 +17,7 @@ export class XAIProvider extends BaseAIProvider {
 	 * @returns {string} The environment variable name for the xAI API key
 	 */
 	getRequiredApiKeyName() {
-		return 'XAI_API_KEY';
+		return 'XAI_API_KEY'
 	}
 
 	/**
@@ -30,18 +30,18 @@ export class XAIProvider extends BaseAIProvider {
 	 */
 	getClient(params) {
 		try {
-			const { apiKey, baseURL } = params;
+			const { apiKey, baseURL } = params
 
 			if (!apiKey) {
-				throw new Error('xAI API key is required.');
+				throw new Error('xAI API key is required.')
 			}
 
 			return createXai({
 				apiKey,
 				baseURL: baseURL || 'https://api.x.ai/v1'
-			});
+			})
 		} catch (error) {
-			this.handleError('client initialization', error);
+			this.handleError('client initialization', error)
 		}
 	}
 }

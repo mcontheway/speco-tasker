@@ -2,43 +2,40 @@
  * Error Boundary Component
  */
 
-import React from 'react';
+import React from 'react'
 
 interface ErrorBoundaryState {
-	hasError: boolean;
-	error?: Error;
-	errorInfo?: React.ErrorInfo;
+	hasError: boolean
+	error?: Error
+	errorInfo?: React.ErrorInfo
 }
 
 interface ErrorBoundaryProps {
-	children: React.ReactNode;
-	onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
+	children: React.ReactNode
+	onError?: (error: Error, errorInfo: React.ErrorInfo) => void
 }
 
-export class ErrorBoundary extends React.Component<
-	ErrorBoundaryProps,
-	ErrorBoundaryState
-> {
+export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
 	constructor(props: ErrorBoundaryProps) {
-		super(props);
-		this.state = { hasError: false };
+		super(props)
+		this.state = { hasError: false }
 	}
 
 	static getDerivedStateFromError(error: Error): ErrorBoundaryState {
-		return { hasError: true, error };
+		return { hasError: true, error }
 	}
 
 	componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-		console.error('React Error Boundary caught:', error, errorInfo);
+		console.error('React Error Boundary caught:', error, errorInfo)
 
 		// Log to extension
 		if (this.props.onError) {
-			this.props.onError(error, errorInfo);
+			this.props.onError(error, errorInfo)
 		}
 
 		// Send error to extension for centralized handling
 		if (window.acquireVsCodeApi) {
-			const vscode = window.acquireVsCodeApi();
+			const vscode = window.acquireVsCodeApi()
 			vscode.postMessage({
 				type: 'reactError',
 				data: {
@@ -47,7 +44,7 @@ export class ErrorBoundary extends React.Component<
 					componentStack: errorInfo.componentStack,
 					timestamp: Date.now()
 				}
-			});
+			})
 		}
 	}
 
@@ -105,9 +102,9 @@ export class ErrorBoundary extends React.Component<
 						)}
 					</div>
 				</div>
-			);
+			)
 		}
 
-		return this.props.children;
+		return this.props.children
 	}
 }

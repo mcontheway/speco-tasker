@@ -1,19 +1,19 @@
-import type React from 'react';
-import { useState } from 'react';
-import { Button } from './button';
-import { ChevronDown, ChevronRight } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
+import { ChevronDown, ChevronRight } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
+import type React from 'react'
+import { useState } from 'react'
+import { Button } from './button'
 
 interface CollapsibleSectionProps {
-	title: string;
-	icon?: LucideIcon;
-	defaultExpanded?: boolean;
-	className?: string;
-	headerClassName?: string;
-	contentClassName?: string;
-	buttonClassName?: string;
-	children: React.ReactNode;
-	rightElement?: React.ReactNode;
+	title: string
+	icon?: LucideIcon
+	defaultExpanded?: boolean
+	className?: string
+	headerClassName?: string
+	contentClassName?: string
+	buttonClassName?: string
+	children: React.ReactNode
+	rightElement?: React.ReactNode
 }
 
 export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
@@ -27,7 +27,7 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
 	children,
 	rightElement
 }) => {
-	const [isExpanded, setIsExpanded] = useState(defaultExpanded);
+	const [isExpanded, setIsExpanded] = useState(defaultExpanded)
 
 	return (
 		<div className={`mb-8 ${className}`}>
@@ -57,5 +57,5 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
 				</div>
 			)}
 		</div>
-	);
-};
+	)
+}

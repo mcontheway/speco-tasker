@@ -5,8 +5,8 @@
  * using the Vercel AI SDK.
  */
 
-import { createAnthropic } from '@ai-sdk/anthropic';
-import { BaseAIProvider } from './base-provider.js';
+import { createAnthropic } from '@ai-sdk/anthropic'
+import { BaseAIProvider } from './base-provider.js'
 
 // TODO: Implement standardized functions for generateText, streamText, generateObject
 
@@ -19,8 +19,8 @@ import { BaseAIProvider } from './base-provider.js';
 
 export class AnthropicAIProvider extends BaseAIProvider {
 	constructor() {
-		super();
-		this.name = 'Anthropic';
+		super()
+		this.name = 'Anthropic'
 	}
 
 	/**
@@ -28,7 +28,7 @@ export class AnthropicAIProvider extends BaseAIProvider {
 	 * @returns {string} The environment variable name for the Anthropic API key
 	 */
 	getRequiredApiKeyName() {
-		return 'ANTHROPIC_API_KEY';
+		return 'ANTHROPIC_API_KEY'
 	}
 
 	/**
@@ -41,10 +41,10 @@ export class AnthropicAIProvider extends BaseAIProvider {
 	 */
 	getClient(params) {
 		try {
-			const { apiKey, baseURL } = params;
+			const { apiKey, baseURL } = params
 
 			if (!apiKey) {
-				throw new Error('Anthropic API key is required.');
+				throw new Error('Anthropic API key is required.')
 			}
 
 			return createAnthropic({
@@ -53,9 +53,9 @@ export class AnthropicAIProvider extends BaseAIProvider {
 				headers: {
 					'anthropic-beta': 'output-128k-2025-02-19'
 				}
-			});
+			})
 		} catch (error) {
-			this.handleError('client initialization', error);
+			this.handleError('client initialization', error)
 		}
 	}
 }

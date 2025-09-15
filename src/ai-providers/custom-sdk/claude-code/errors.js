@@ -2,7 +2,7 @@
  * @fileoverview Error handling utilities for Claude Code provider
  */
 
-import { APICallError, LoadAPIKeyError } from '@ai-sdk/provider';
+import { APICallError, LoadAPIKeyError } from '@ai-sdk/provider'
 
 /**
  * @typedef {import('./types.js').ClaudeCodeErrorMetadata} ClaudeCodeErrorMetadata
@@ -33,7 +33,7 @@ export function createAPICallError({
 		exitCode,
 		stderr,
 		promptExcerpt
-	};
+	}
 
 	return new APICallError({
 		message,
@@ -41,7 +41,7 @@ export function createAPICallError({
 		url: 'claude-code-cli://command',
 		requestBodyValues: promptExcerpt ? { prompt: promptExcerpt } : undefined,
 		data: metadata
-	});
+	})
 }
 
 /**
@@ -53,9 +53,8 @@ export function createAPICallError({
 export function createAuthenticationError({ message }) {
 	return new LoadAPIKeyError({
 		message:
-			message ||
-			'Authentication failed. Please ensure Claude Code CLI is properly authenticated.'
-	});
+			message || 'Authentication failed. Please ensure Claude Code CLI is properly authenticated.'
+	})
 }
 
 /**
@@ -73,7 +72,7 @@ export function createTimeoutError({ message, promptExcerpt, timeoutMs }) {
 		code: 'TIMEOUT',
 		promptExcerpt,
 		timeoutMs
-	};
+	}
 
 	return new APICallError({
 		message,
@@ -81,7 +80,7 @@ export function createTimeoutError({ message, promptExcerpt, timeoutMs }) {
 		url: 'claude-code-cli://command',
 		requestBodyValues: promptExcerpt ? { prompt: promptExcerpt } : undefined,
 		data: metadata
-	});
+	})
 }
 
 /**
@@ -90,13 +89,13 @@ export function createTimeoutError({ message, promptExcerpt, timeoutMs }) {
  * @returns {boolean}
  */
 export function isAuthenticationError(error) {
-	if (error instanceof LoadAPIKeyError) return true;
+	if (error instanceof LoadAPIKeyError) return true
 	if (
 		error instanceof APICallError &&
 		/** @type {ClaudeCodeErrorMetadata} */ (error.data)?.exitCode === 401
 	)
-		return true;
-	return false;
+		return true
+	return false
 }
 
 /**
@@ -109,8 +108,8 @@ export function isTimeoutError(error) {
 		error instanceof APICallError &&
 		/** @type {ClaudeCodeErrorMetadata} */ (error.data)?.code === 'TIMEOUT'
 	)
-		return true;
-	return false;
+		return true
+	return false
 }
 
 /**
@@ -120,7 +119,7 @@ export function isTimeoutError(error) {
  */
 export function getErrorMetadata(error) {
 	if (error instanceof APICallError && error.data) {
-		return /** @type {ClaudeCodeErrorMetadata} */ (error.data);
+		return /** @type {ClaudeCodeErrorMetadata} */ (error.data)
 	}
-	return undefined;
+	return undefined
 }

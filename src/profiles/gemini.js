@@ -1,5 +1,5 @@
 // Gemini profile for rule-transformer
-import { createProfile } from './base-profile.js';
+import { createProfile } from './base-profile.js'
 
 // Create and export gemini profile using the base factory
 export const geminiProfile = createProfile({
@@ -14,4 +14,4 @@ export const geminiProfile = createProfile({
 	fileMap: {
 		'AGENTS.md': 'GEMINI.md'
 	}
-});
+})

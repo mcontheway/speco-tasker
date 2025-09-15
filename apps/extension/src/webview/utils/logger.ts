@@ -3,32 +3,32 @@
  * Provides conditional logging based on environment
  */
 
-type LogLevel = 'log' | 'warn' | 'error' | 'debug' | 'info';
+type LogLevel = 'log' | 'warn' | 'error' | 'debug' | 'info'
 
 interface LogEntry {
-	level: LogLevel;
-	message: string;
-	data?: any;
-	timestamp: number;
+	level: LogLevel
+	message: string
+	data?: any
+	timestamp: number
 }
 
 class WebviewLogger {
-	private static instance: WebviewLogger;
-	private enabled: boolean;
-	private logHistory: LogEntry[] = [];
-	private maxHistorySize = 100;
+	private static instance: WebviewLogger
+	private enabled: boolean
+	private logHistory: LogEntry[] = []
+	private maxHistorySize = 100
 
 	private constructor() {
 		// Enable logging in development, disable in production
 		// Check for development mode via various indicators
-		this.enabled = this.isDevelopment();
+		this.enabled = this.isDevelopment()
 	}
 
 	static getInstance(): WebviewLogger {
 		if (!WebviewLogger.instance) {
-			WebviewLogger.instance = new WebviewLogger();
+			WebviewLogger.instance = new WebviewLogger()
 		}
-		return WebviewLogger.instance;
+		return WebviewLogger.instance
 	}
 
 	private isDevelopment(): boolean {
@@ -43,13 +43,13 @@ class WebviewLogger {
 			(window as any).__VSCODE_DEV_MODE__ === true ||
 			// Default to false in production
 			false
-		);
+		)
 	}
 
 	private addToHistory(entry: LogEntry): void {
-		this.logHistory.push(entry);
+		this.logHistory.push(entry)
 		if (this.logHistory.length > this.maxHistorySize) {
-			this.logHistory.shift();
+			this.logHistory.shift()
 		}
 	}
 
@@ -59,39 +59,39 @@ class WebviewLogger {
 			message,
 			data: args.length > 0 ? args : undefined,
 			timestamp: Date.now()
-		};
+		}
 
-		this.addToHistory(entry);
+		this.addToHistory(entry)
 
 		if (!this.enabled) {
-			return;
+			return
 		}
 
 		// Format the message with timestamp
-		const timestamp = new Date().toISOString();
-		const prefix = `[${timestamp}] [${level.toUpperCase()}]`;
+		const timestamp = new Date().toISOString()
+		const prefix = `[${timestamp}] [${level.toUpperCase()}]`
 
 		// Use appropriate console method
 		switch (level) {
 			case 'error':
-				console.error(prefix, message, ...args);
-				break;
+				console.error(prefix, message, ...args)
+				break
 			case 'warn':
-				console.warn(prefix, message, ...args);
-				break;
+				console.warn(prefix, message, ...args)
+				break
 			case 'debug':
-				console.debug(prefix, message, ...args);
-				break;
+				console.debug(prefix, message, ...args)
+				break
 			case 'info':
-				console.info(prefix, message, ...args);
-				break;
+				console.info(prefix, message, ...args)
+				break
 			default:
-				console.log(prefix, message, ...args);
+				console.log(prefix, message, ...args)
 		}
 	}
 
 	log(message: string, ...args: any[]): void {
-		this.logMessage('log', message, ...args);
+		this.logMessage('log', message, ...args)
 	}
 
 	error(message: string, ...args: any[]): void {
@@ -101,55 +101,55 @@ class WebviewLogger {
 			message,
 			data: args.length > 0 ? args : undefined,
 			timestamp: Date.now()
-		};
-		this.addToHistory(entry);
-		console.error(`[${new Date().toISOString()}] [ERROR]`, message, ...args);
+		}
+		this.addToHistory(entry)
+		console.error(`[${new Date().toISOString()}] [ERROR]`, message, ...args)
 	}
 
 	warn(message: string, ...args: any[]): void {
-		this.logMessage('warn', message, ...args);
+		this.logMessage('warn', message, ...args)
 	}
 
 	debug(message: string, ...args: any[]): void {
-		this.logMessage('debug', message, ...args);
+		this.logMessage('debug', message, ...args)
 	}
 
 	info(message: string, ...args: any[]): void {
-		this.logMessage('info', message, ...args);
+		this.logMessage('info', message, ...args)
 	}
 
 	// Enable/disable logging dynamically
 	setEnabled(enabled: boolean): void {
-		this.enabled = enabled;
+		this.enabled = enabled
 		if (enabled) {
-			console.log('[WebviewLogger] Logging enabled');
+			console.log('[WebviewLogger] Logging enabled')
 		}
 	}
 
 	// Get log history (useful for debugging)
 	getHistory(): LogEntry[] {
-		return [...this.logHistory];
+		return [...this.logHistory]
 	}
 
 	// Clear log history
 	clearHistory(): void {
-		this.logHistory = [];
+		this.logHistory = []
 	}
 
 	// Export logs as string (useful for bug reports)
 	exportLogs(): string {
 		return this.logHistory
 			.map((entry) => {
-				const timestamp = new Date(entry.timestamp).toISOString();
-				const data = entry.data ? JSON.stringify(entry.data) : '';
-				return `[${timestamp}] [${entry.level.toUpperCase()}] ${entry.message} ${data}`;
+				const timestamp = new Date(entry.timestamp).toISOString()
+				const data = entry.data ? JSON.stringify(entry.data) : ''
+				return `[${timestamp}] [${entry.level.toUpperCase()}] ${entry.message} ${data}`
 			})
-			.join('\n');
+			.join('\n')
 	}
 }
 
 // Export singleton instance
-export const logger = WebviewLogger.getInstance();
+export const logger = WebviewLogger.getInstance()
 
 // Export type for use in other files
-export type { WebviewLogger };
+export type { WebviewLogger }

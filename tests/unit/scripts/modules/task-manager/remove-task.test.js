@@ -1,4 +1,4 @@
-import { jest } from '@jest/globals';
+import { jest } from '@jest/globals'
 
 // --- Mock dependencies BEFORE module import ---
 jest.unstable_mockModule('../../../../../scripts/modules/utils.js', () => ({
@@ -14,38 +14,34 @@ jest.unstable_mockModule('../../../../../scripts/modules/utils.js', () => ({
 	findTaskById: jest.fn(),
 	truncate: jest.fn((t) => t),
 	isSilentMode: jest.fn(() => false)
-}));
+}))
 
 jest.unstable_mockModule(
 	'../../../../../scripts/modules/task-manager/generate-task-files.js',
 	() => ({
 		default: jest.fn().mockResolvedValue()
 	})
-);
+)
 
 // fs is used for file deletion side-effects – stub the methods we touch
 jest.unstable_mockModule('fs', () => ({
 	existsSync: jest.fn(() => true),
 	unlinkSync: jest.fn()
-}));
+}))
 
 // path is fine to keep as real since only join/dirname used – no side effects
 
 // Import mocked modules
-const { readJSON, writeJSON, log } = await import(
-	'../../../../../scripts/modules/utils.js'
-);
+const { readJSON, writeJSON, log } = await import('../../../../../scripts/modules/utils.js')
 const generateTaskFiles = (
-	await import(
-		'../../../../../scripts/modules/task-manager/generate-task-files.js'
-	)
-).default;
-const fs = await import('fs');
+	await import('../../../../../scripts/modules/task-manager/generate-task-files.js')
+).default
+const fs = await import('fs')
 
 // Import module under test (AFTER mocks in place)
 const { default: removeTask } = await import(
 	'../../../../../scripts/modules/task-manager/remove-task.js'
-);
+)
 
 // ---- Test data helpers ----
 const buildSampleTaggedTasks = () => ({
@@ -58,77 +54,75 @@ const buildSampleTaggedTasks = () => ({
 				title: 'Parent',
 				status: 'pending',
 				dependencies: [],
-				subtasks: [
-					{ id: 1, title: 'Sub 3.1', status: 'pending', dependencies: [] }
-				]
+				subtasks: [{ id: 1, title: 'Sub 3.1', status: 'pending', dependencies: [] }]
 			}
 		]
 	},
 	other: {
 		tasks: [{ id: 99, title: 'Shadow', status: 'pending', dependencies: [1] }]
 	}
-});
+})
 
 // Utility to deep clone sample each test
-const getFreshData = () => JSON.parse(JSON.stringify(buildSampleTaggedTasks()));
+const getFreshData = () => JSON.parse(JSON.stringify(buildSampleTaggedTasks()))
 
 // ----- Tests -----
 
 describe('removeTask', () => {
 	beforeEach(() => {
-		jest.clearAllMocks();
+		jest.clearAllMocks()
 		// readJSON returns deep copy so each test isolated
 		readJSON.mockImplementation(() => {
 			return {
 				...getFreshData().master,
 				tag: 'master',
 				_rawTaggedData: getFreshData()
-			};
-		});
-		writeJSON.mockResolvedValue();
-		log.mockImplementation(() => {});
-		fs.unlinkSync.mockImplementation(() => {});
-	});
+			}
+		})
+		writeJSON.mockResolvedValue()
+		log.mockImplementation(() => {})
+		fs.unlinkSync.mockImplementation(() => {})
+	})
 
 	test('removes a main task and cleans dependencies across tags', async () => {
-		const result = await removeTask('tasks/tasks.json', '1', { tag: 'master' });
+		const result = await removeTask('tasks/tasks.json', '1', { tag: 'master' })
 
 		// Expect success true
-		expect(result.success).toBe(true);
+		expect(result.success).toBe(true)
 		// writeJSON called with data where task 1 is gone in master & dependencies removed in other tags
-		const written = writeJSON.mock.calls[0][1];
-		expect(written.master.tasks.find((t) => t.id === 1)).toBeUndefined();
+		const written = writeJSON.mock.calls[0][1]
+		expect(written.master.tasks.find((t) => t.id === 1)).toBeUndefined()
 		// deps removed from child tasks
-		const task2 = written.master.tasks.find((t) => t.id === 2);
-		expect(task2.dependencies).not.toContain(1);
-		const shadow = written.other.tasks.find((t) => t.id === 99);
-		expect(shadow.dependencies).not.toContain(1);
+		const task2 = written.master.tasks.find((t) => t.id === 2)
+		expect(task2.dependencies).not.toContain(1)
+		const shadow = written.other.tasks.find((t) => t.id === 99)
+		expect(shadow.dependencies).not.toContain(1)
 		// Task file deletion attempted
-		expect(fs.unlinkSync).toHaveBeenCalled();
-	});
+		expect(fs.unlinkSync).toHaveBeenCalled()
+	})
 
 	test('removes a subtask only and leaves parent intact', async () => {
 		const result = await removeTask('tasks/tasks.json', '3.1', {
 			tag: 'master'
-		});
+		})
 
-		expect(result.success).toBe(true);
-		const written = writeJSON.mock.calls[0][1];
-		const parent = written.master.tasks.find((t) => t.id === 3);
-		expect(parent.subtasks || []).toHaveLength(0);
+		expect(result.success).toBe(true)
+		const written = writeJSON.mock.calls[0][1]
+		const parent = written.master.tasks.find((t) => t.id === 3)
+		expect(parent.subtasks || []).toHaveLength(0)
 		// Ensure parent still exists
-		expect(parent).toBeDefined();
+		expect(parent).toBeDefined()
 		// No task files should be deleted for subtasks
-		expect(fs.unlinkSync).not.toHaveBeenCalled();
-	});
+		expect(fs.unlinkSync).not.toHaveBeenCalled()
+	})
 
 	test('handles non-existent task gracefully', async () => {
 		const result = await removeTask('tasks/tasks.json', '42', {
 			tag: 'master'
-		});
-		expect(result.success).toBe(false);
-		expect(result.error).toContain('not found');
+		})
+		expect(result.success).toBe(false)
+		expect(result.error).toContain('not found')
 		// writeJSON not called because nothing changed
-		expect(writeJSON).not.toHaveBeenCalled();
-	});
-});
+		expect(writeJSON).not.toHaveBeenCalled()
+	})
+})

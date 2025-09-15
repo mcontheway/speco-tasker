@@ -1,15 +1,12 @@
 /**
  * Tests for the expand-all-tasks.js module
  */
-import { jest } from '@jest/globals';
+import { jest } from '@jest/globals'
 
 // Mock the dependencies before importing the module under test
-jest.unstable_mockModule(
-	'../../../../../scripts/modules/task-manager/expand-task.js',
-	() => ({
-		default: jest.fn()
-	})
-);
+jest.unstable_mockModule('../../../../../scripts/modules/task-manager/expand-task.js', () => ({
+	default: jest.fn()
+}))
 
 jest.unstable_mockModule('../../../../../scripts/modules/utils.js', () => ({
 	readJSON: jest.fn(),
@@ -17,20 +14,17 @@ jest.unstable_mockModule('../../../../../scripts/modules/utils.js', () => ({
 	isSilentMode: jest.fn(() => false),
 	findProjectRoot: jest.fn(() => '/test/project'),
 	aggregateTelemetry: jest.fn()
-}));
+}))
 
-jest.unstable_mockModule(
-	'../../../../../scripts/modules/config-manager.js',
-	() => ({
-		getDebugFlag: jest.fn(() => false)
-	})
-);
+jest.unstable_mockModule('../../../../../scripts/modules/config-manager.js', () => ({
+	getDebugFlag: jest.fn(() => false)
+}))
 
 jest.unstable_mockModule('../../../../../scripts/modules/ui.js', () => ({
 	startLoadingIndicator: jest.fn(),
 	stopLoadingIndicator: jest.fn(),
 	displayAiUsageSummary: jest.fn()
-}));
+}))
 
 jest.unstable_mockModule('chalk', () => ({
 	default: {
@@ -41,40 +35,40 @@ jest.unstable_mockModule('chalk', () => ({
 		red: jest.fn((text) => text),
 		bold: jest.fn((text) => text)
 	}
-}));
+}))
 
 jest.unstable_mockModule('boxen', () => ({
 	default: jest.fn((text) => text)
-}));
+}))
 
 // Import the mocked modules
 const { default: expandTask } = await import(
 	'../../../../../scripts/modules/task-manager/expand-task.js'
-);
+)
 const { readJSON, aggregateTelemetry, findProjectRoot } = await import(
 	'../../../../../scripts/modules/utils.js'
-);
+)
 
 // Import the module under test
 const { default: expandAllTasks } = await import(
 	'../../../../../scripts/modules/task-manager/expand-all-tasks.js'
-);
+)
 
-const mockExpandTask = expandTask;
-const mockReadJSON = readJSON;
-const mockAggregateTelemetry = aggregateTelemetry;
-const mockFindProjectRoot = findProjectRoot;
+const mockExpandTask = expandTask
+const mockReadJSON = readJSON
+const mockAggregateTelemetry = aggregateTelemetry
+const mockFindProjectRoot = findProjectRoot
 
 describe('expandAllTasks', () => {
-	const mockTasksPath = '/test/tasks.json';
-	const mockProjectRoot = '/test/project';
-	const mockSession = { userId: 'test-user' };
+	const mockTasksPath = '/test/tasks.json'
+	const mockProjectRoot = '/test/project'
+	const mockSession = { userId: 'test-user' }
 	const mockMcpLog = {
 		info: jest.fn(),
 		warn: jest.fn(),
 		error: jest.fn(),
 		debug: jest.fn()
-	};
+	}
 
 	const sampleTasksData = {
 		tag: 'master',
@@ -104,11 +98,11 @@ describe('expandAllTasks', () => {
 				subtasks: [{ id: '4.1', title: 'Existing subtask' }]
 			}
 		]
-	};
+	}
 
 	beforeEach(() => {
-		jest.clearAllMocks();
-		mockReadJSON.mockReturnValue(sampleTasksData);
+		jest.clearAllMocks()
+		mockReadJSON.mockReturnValue(sampleTasksData)
 		mockAggregateTelemetry.mockReturnValue({
 			timestamp: '2024-01-01T00:00:00.000Z',
 			commandName: 'expand-all-tasks',
@@ -116,8 +110,8 @@ describe('expandAllTasks', () => {
 			totalTokens: 2000,
 			inputTokens: 1200,
 			outputTokens: 800
-		});
-	});
+		})
+	})
 
 	describe('successful expansion', () => {
 		test('should expand all eligible pending tasks', async () => {
@@ -127,11 +121,11 @@ describe('expandAllTasks', () => {
 				commandName: 'expand-task',
 				totalCost: 0.05,
 				totalTokens: 1000
-			};
+			}
 
 			mockExpandTask.mockResolvedValue({
 				telemetryData: mockTelemetryData
-			});
+			})
 
 			// Act
 			const result = await expandAllTasks(
@@ -147,25 +141,21 @@ describe('expandAllTasks', () => {
 					tag: 'master'
 				},
 				'json' // outputFormat
-			);
+			)
 
 			// Assert
-			expect(result.success).toBe(true);
-			expect(result.expandedCount).toBe(2); // Tasks 1 and 2 (pending and in-progress)
-			expect(result.failedCount).toBe(0);
-			expect(result.skippedCount).toBe(0);
-			expect(result.tasksToExpand).toBe(2);
-			expect(result.telemetryData).toBeDefined();
+			expect(result.success).toBe(true)
+			expect(result.expandedCount).toBe(2) // Tasks 1 and 2 (pending and in-progress)
+			expect(result.failedCount).toBe(0)
+			expect(result.skippedCount).toBe(0)
+			expect(result.tasksToExpand).toBe(2)
+			expect(result.telemetryData).toBeDefined()
 
 			// Verify readJSON was called correctly
-			expect(mockReadJSON).toHaveBeenCalledWith(
-				mockTasksPath,
-				mockProjectRoot,
-				'master'
-			);
+			expect(mockReadJSON).toHaveBeenCalledWith(mockTasksPath, mockProjectRoot, 'master')
 
 			// Verify expandTask was called for eligible tasks
-			expect(mockExpandTask).toHaveBeenCalledTimes(2);
+			expect(mockExpandTask).toHaveBeenCalledTimes(2)
 			expect(mockExpandTask).toHaveBeenCalledWith(
 				mockTasksPath,
 				1,
@@ -179,14 +169,14 @@ describe('expandAllTasks', () => {
 					tag: 'master'
 				}),
 				false
-			);
-		});
+			)
+		})
 
 		test('should handle force flag to expand tasks with existing subtasks', async () => {
 			// Arrange
 			mockExpandTask.mockResolvedValue({
 				telemetryData: { commandName: 'expand-task', totalCost: 0.05 }
-			});
+			})
 
 			// Act
 			const result = await expandAllTasks(
@@ -202,18 +192,18 @@ describe('expandAllTasks', () => {
 					tag: 'master'
 				},
 				'json'
-			);
+			)
 
 			// Assert
-			expect(result.expandedCount).toBe(3); // Tasks 1, 2, and 4 (including task with existing subtasks)
-			expect(mockExpandTask).toHaveBeenCalledTimes(3);
-		});
+			expect(result.expandedCount).toBe(3) // Tasks 1, 2, and 4 (including task with existing subtasks)
+			expect(mockExpandTask).toHaveBeenCalledTimes(3)
+		})
 
 		test('should handle research flag', async () => {
 			// Arrange
 			mockExpandTask.mockResolvedValue({
 				telemetryData: { commandName: 'expand-task', totalCost: 0.08 }
-			});
+			})
 
 			// Act
 			const result = await expandAllTasks(
@@ -229,10 +219,10 @@ describe('expandAllTasks', () => {
 					tag: 'master'
 				},
 				'json'
-			);
+			)
 
 			// Assert
-			expect(result.success).toBe(true);
+			expect(result.success).toBe(true)
 			expect(mockExpandTask).toHaveBeenCalledWith(
 				mockTasksPath,
 				expect.any(Number),
@@ -241,8 +231,8 @@ describe('expandAllTasks', () => {
 				'research context',
 				expect.any(Object),
 				false
-			);
-		});
+			)
+		})
 
 		test('should return success with message when no tasks are eligible', async () => {
 			// Arrange - Mock tasks data with no eligible tasks
@@ -256,8 +246,8 @@ describe('expandAllTasks', () => {
 						subtasks: [{ id: '2.1', title: 'existing' }]
 					}
 				]
-			};
-			mockReadJSON.mockReturnValue(noEligibleTasksData);
+			}
+			mockReadJSON.mockReturnValue(noEligibleTasksData)
 
 			// Act
 			const result = await expandAllTasks(
@@ -273,25 +263,25 @@ describe('expandAllTasks', () => {
 					tag: 'master'
 				},
 				'json'
-			);
+			)
 
 			// Assert
-			expect(result.success).toBe(true);
-			expect(result.expandedCount).toBe(0);
-			expect(result.failedCount).toBe(0);
-			expect(result.skippedCount).toBe(0);
-			expect(result.tasksToExpand).toBe(0);
-			expect(result.message).toBe('No tasks eligible for expansion.');
-			expect(mockExpandTask).not.toHaveBeenCalled();
-		});
-	});
+			expect(result.success).toBe(true)
+			expect(result.expandedCount).toBe(0)
+			expect(result.failedCount).toBe(0)
+			expect(result.skippedCount).toBe(0)
+			expect(result.tasksToExpand).toBe(0)
+			expect(result.message).toBe('No tasks eligible for expansion.')
+			expect(mockExpandTask).not.toHaveBeenCalled()
+		})
+	})
 
 	describe('error handling', () => {
 		test('should handle expandTask failures gracefully', async () => {
 			// Arrange
 			mockExpandTask
 				.mockResolvedValueOnce({ telemetryData: { totalCost: 0.05 } }) // First task succeeds
-				.mockRejectedValueOnce(new Error('AI service error')); // Second task fails
+				.mockRejectedValueOnce(new Error('AI service error')) // Second task fails
 
 			// Act
 			const result = await expandAllTasks(
@@ -307,17 +297,17 @@ describe('expandAllTasks', () => {
 					tag: 'master'
 				},
 				'json'
-			);
+			)
 
 			// Assert
-			expect(result.success).toBe(true);
-			expect(result.expandedCount).toBe(1);
-			expect(result.failedCount).toBe(1);
-		});
+			expect(result.success).toBe(true)
+			expect(result.expandedCount).toBe(1)
+			expect(result.failedCount).toBe(1)
+		})
 
 		test('should throw error when tasks.json is invalid', async () => {
 			// Arrange
-			mockReadJSON.mockReturnValue(null);
+			mockReadJSON.mockReturnValue(null)
 
 			// Act & Assert
 			await expect(
@@ -335,12 +325,12 @@ describe('expandAllTasks', () => {
 					},
 					'json'
 				)
-			).rejects.toThrow('Invalid tasks data');
-		});
+			).rejects.toThrow('Invalid tasks data')
+		})
 
 		test('should throw error when project root cannot be determined', async () => {
 			// Arrange - Mock findProjectRoot to return null for this test
-			mockFindProjectRoot.mockReturnValueOnce(null);
+			mockFindProjectRoot.mockReturnValueOnce(null)
 
 			// Act & Assert
 			await expect(
@@ -358,9 +348,9 @@ describe('expandAllTasks', () => {
 					},
 					'json'
 				)
-			).rejects.toThrow('Could not determine project root directory');
-		});
-	});
+			).rejects.toThrow('Could not determine project root directory')
+		})
+	})
 
 	describe('telemetry aggregation', () => {
 		test('should aggregate telemetry data from multiple expand operations', async () => {
@@ -369,16 +359,16 @@ describe('expandAllTasks', () => {
 				commandName: 'expand-task',
 				totalCost: 0.03,
 				totalTokens: 600
-			};
+			}
 			const telemetryData2 = {
 				commandName: 'expand-task',
 				totalCost: 0.04,
 				totalTokens: 800
-			};
+			}
 
 			mockExpandTask
 				.mockResolvedValueOnce({ telemetryData: telemetryData1 })
-				.mockResolvedValueOnce({ telemetryData: telemetryData2 });
+				.mockResolvedValueOnce({ telemetryData: telemetryData2 })
 
 			// Act
 			const result = await expandAllTasks(
@@ -394,20 +384,20 @@ describe('expandAllTasks', () => {
 					tag: 'master'
 				},
 				'json'
-			);
+			)
 
 			// Assert
 			expect(mockAggregateTelemetry).toHaveBeenCalledWith(
 				[telemetryData1, telemetryData2],
 				'expand-all-tasks'
-			);
-			expect(result.telemetryData).toBeDefined();
-			expect(result.telemetryData.commandName).toBe('expand-all-tasks');
-		});
+			)
+			expect(result.telemetryData).toBeDefined()
+			expect(result.telemetryData.commandName).toBe('expand-all-tasks')
+		})
 
 		test('should handle missing telemetry data gracefully', async () => {
 			// Arrange
-			mockExpandTask.mockResolvedValue({}); // No telemetryData
+			mockExpandTask.mockResolvedValue({}) // No telemetryData
 
 			// Act
 			const result = await expandAllTasks(
@@ -423,23 +413,20 @@ describe('expandAllTasks', () => {
 					tag: 'master'
 				},
 				'json'
-			);
+			)
 
 			// Assert
-			expect(result.success).toBe(true);
-			expect(mockAggregateTelemetry).toHaveBeenCalledWith(
-				[],
-				'expand-all-tasks'
-			);
-		});
-	});
+			expect(result.success).toBe(true)
+			expect(mockAggregateTelemetry).toHaveBeenCalledWith([], 'expand-all-tasks')
+		})
+	})
 
 	describe('output format handling', () => {
 		test('should use text output format for CLI calls', async () => {
 			// Arrange
 			mockExpandTask.mockResolvedValue({
 				telemetryData: { commandName: 'expand-task', totalCost: 0.05 }
-			});
+			})
 
 			// Act
 			const result = await expandAllTasks(
@@ -454,24 +441,24 @@ describe('expandAllTasks', () => {
 					// No mcpLog provided, should use CLI logger
 				},
 				'text' // CLI output format
-			);
+			)
 
 			// Assert
-			expect(result.success).toBe(true);
+			expect(result.success).toBe(true)
 			// In text mode, loading indicators and console output would be used
 			// This is harder to test directly but we can verify the result structure
-		});
+		})
 
 		test('should handle context tag properly', async () => {
 			// Arrange
 			const taggedTasksData = {
 				...sampleTasksData,
 				tag: 'feature-branch'
-			};
-			mockReadJSON.mockReturnValue(taggedTasksData);
+			}
+			mockReadJSON.mockReturnValue(taggedTasksData)
 			mockExpandTask.mockResolvedValue({
 				telemetryData: { commandName: 'expand-task', totalCost: 0.05 }
-			});
+			})
 
 			// Act
 			const result = await expandAllTasks(
@@ -487,14 +474,10 @@ describe('expandAllTasks', () => {
 					tag: 'feature-branch'
 				},
 				'json'
-			);
+			)
 
 			// Assert
-			expect(mockReadJSON).toHaveBeenCalledWith(
-				mockTasksPath,
-				mockProjectRoot,
-				'feature-branch'
-			);
+			expect(mockReadJSON).toHaveBeenCalledWith(mockTasksPath, mockProjectRoot, 'feature-branch')
 			expect(mockExpandTask).toHaveBeenCalledWith(
 				mockTasksPath,
 				expect.any(Number),
@@ -505,7 +488,7 @@ describe('expandAllTasks', () => {
 					tag: 'feature-branch'
 				}),
 				false
-			);
-		});
-	});
-});
+			)
+		})
+	})
+})

@@ -1,28 +1,28 @@
-import type React from 'react';
-import { useContext, useState, useCallback } from 'react';
-import { Button } from '@/components/ui/button';
-import { useQueryClient } from '@tanstack/react-query';
-import { RefreshCw } from 'lucide-react';
 import {
 	Breadcrumb,
 	BreadcrumbItem,
 	BreadcrumbLink,
 	BreadcrumbList,
 	BreadcrumbSeparator
-} from '@/components/ui/breadcrumb';
-import { VSCodeContext } from '../webview/contexts/VSCodeContext';
-import { AIActionsSection } from './TaskDetails/AIActionsSection';
-import { SubtasksSection } from './TaskDetails/SubtasksSection';
-import { TaskMetadataSidebar } from './TaskDetails/TaskMetadataSidebar';
-import { DetailsSection } from './TaskDetails/DetailsSection';
-import { useTaskDetails } from './TaskDetails/useTaskDetails';
-import { useTasks, taskKeys } from '../webview/hooks/useTaskQueries';
-import type { TaskMasterTask } from '../webview/types';
+} from '@/components/ui/breadcrumb'
+import { Button } from '@/components/ui/button'
+import { useQueryClient } from '@tanstack/react-query'
+import { RefreshCw } from 'lucide-react'
+import type React from 'react'
+import { useCallback, useContext, useState } from 'react'
+import { VSCodeContext } from '../webview/contexts/VSCodeContext'
+import { taskKeys, useTasks } from '../webview/hooks/useTaskQueries'
+import type { TaskMasterTask } from '../webview/types'
+import { AIActionsSection } from './TaskDetails/AIActionsSection'
+import { DetailsSection } from './TaskDetails/DetailsSection'
+import { SubtasksSection } from './TaskDetails/SubtasksSection'
+import { TaskMetadataSidebar } from './TaskDetails/TaskMetadataSidebar'
+import { useTaskDetails } from './TaskDetails/useTaskDetails'
 
 interface TaskDetailsViewProps {
-	taskId: string;
-	onNavigateBack: () => void;
-	onNavigateToTask: (taskId: string) => void;
+	taskId: string
+	onNavigateBack: () => void
+	onNavigateToTask: (taskId: string) => void
 }
 
 export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({
@@ -30,18 +30,18 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({
 	onNavigateBack,
 	onNavigateToTask
 }) => {
-	const context = useContext(VSCodeContext);
+	const context = useContext(VSCodeContext)
 	if (!context) {
-		throw new Error('TaskDetailsView must be used within VSCodeProvider');
+		throw new Error('TaskDetailsView must be used within VSCodeProvider')
 	}
 
-	const { state, sendMessage } = context;
-	const { currentTag } = state;
-	const queryClient = useQueryClient();
-	const [isRefreshing, setIsRefreshing] = useState(false);
+	const { state, sendMessage } = context
+	const { currentTag } = state
+	const queryClient = useQueryClient()
+	const [isRefreshing, setIsRefreshing] = useState(false)
 
 	// Use React Query to fetch all tasks
-	const { data: allTasks = [] } = useTasks({ tag: currentTag });
+	const { data: allTasks = [] } = useTasks({ tag: currentTag })
 
 	const {
 		currentTask,
@@ -51,15 +51,13 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({
 		taskFileDataError,
 		complexity,
 		refreshComplexityAfterAI
-	} = useTaskDetails({ taskId, sendMessage, tasks: allTasks });
+	} = useTaskDetails({ taskId, sendMessage, tasks: allTasks })
 
 	const displayId =
-		isSubtask && parentTask
-			? `${parentTask.id}.${currentTask?.id}`
-			: currentTask?.id;
+		isSubtask && parentTask ? `${parentTask.id}.${currentTask?.id}` : currentTask?.id
 
 	const handleStatusChange = async (newStatus: TaskMasterTask['status']) => {
-		if (!currentTask) return;
+		if (!currentTask) return
 
 		try {
 			await sendMessage({
@@ -68,40 +66,38 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({
 					taskId: displayId,
 					newStatus: newStatus
 				}
-			});
+			})
 		} catch (error) {
-			console.error('❌ TaskDetailsView: Failed to update task status:', error);
+			console.error('❌ TaskDetailsView: Failed to update task status:', error)
 		}
-	};
+	}
 
 	const handleDependencyClick = (depId: string) => {
-		onNavigateToTask(depId);
-	};
+		onNavigateToTask(depId)
+	}
 
 	const handleRefresh = useCallback(async () => {
-		setIsRefreshing(true);
+		setIsRefreshing(true)
 		try {
 			// Invalidate all task queries
-			await queryClient.invalidateQueries({ queryKey: taskKeys.all });
+			await queryClient.invalidateQueries({ queryKey: taskKeys.all })
 		} finally {
 			// Reset after a short delay to show the animation
-			setTimeout(() => setIsRefreshing(false), 500);
+			setTimeout(() => setIsRefreshing(false), 500)
 		}
-	}, [queryClient]);
+	}, [queryClient])
 
 	if (!currentTask) {
 		return (
 			<div className="flex items-center justify-center h-full">
 				<div className="text-center">
-					<p className="text-lg text-vscode-foreground/70 mb-4">
-						Task not found
-					</p>
+					<p className="text-lg text-vscode-foreground/70 mb-4">Task not found</p>
 					<Button onClick={onNavigateBack} variant="outline">
 						Back to Kanban Board
 					</Button>
 				</div>
 			</div>
-		);
+		)
 	}
 
 	return (
@@ -214,7 +210,7 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({
 				/>
 			</div>
 		</div>
-	);
-};
+	)
+}
 
-export default TaskDetailsView;
+export default TaskDetailsView

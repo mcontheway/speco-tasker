@@ -1,17 +1,17 @@
-import * as vscode from 'vscode';
-import type { TaskMasterApi } from '../utils/task-master-api';
+import * as vscode from 'vscode'
+import type { TaskMasterApi } from '../utils/task-master-api'
 
 export class SidebarWebviewManager implements vscode.WebviewViewProvider {
-	private webviewView?: vscode.WebviewView;
-	private api?: TaskMasterApi;
+	private webviewView?: vscode.WebviewView
+	private api?: TaskMasterApi
 
 	constructor(private readonly extensionUri: vscode.Uri) {}
 
 	setApi(api: TaskMasterApi): void {
-		this.api = api;
+		this.api = api
 		// Update connection status if webview exists
 		if (this.webviewView) {
-			this.updateConnectionStatus();
+			this.updateConnectionStatus()
 		}
 	}
 
@@ -20,7 +20,7 @@ export class SidebarWebviewManager implements vscode.WebviewViewProvider {
 		context: vscode.WebviewViewResolveContext,
 		token: vscode.CancellationToken
 	): void {
-		this.webviewView = webviewView;
+		this.webviewView = webviewView
 
 		webviewView.webview.options = {
 			enableScripts: true,
@@ -28,39 +28,39 @@ export class SidebarWebviewManager implements vscode.WebviewViewProvider {
 				vscode.Uri.joinPath(this.extensionUri, 'dist'),
 				vscode.Uri.joinPath(this.extensionUri, 'assets')
 			]
-		};
+		}
 
-		webviewView.webview.html = this.getHtmlContent(webviewView.webview);
+		webviewView.webview.html = this.getHtmlContent(webviewView.webview)
 
 		// Handle messages from the webview
 		webviewView.webview.onDidReceiveMessage((message) => {
 			if (message.command === 'openBoard') {
-				vscode.commands.executeCommand('tm.showKanbanBoard');
+				vscode.commands.executeCommand('tm.showKanbanBoard')
 			}
-		});
+		})
 
 		// Update connection status on load
-		this.updateConnectionStatus();
+		this.updateConnectionStatus()
 	}
 
 	updateConnectionStatus(): void {
-		if (!this.webviewView || !this.api) return;
+		if (!this.webviewView || !this.api) return
 
-		const status = this.api.getConnectionStatus();
+		const status = this.api.getConnectionStatus()
 		this.webviewView.webview.postMessage({
 			type: 'connectionStatus',
 			data: status
-		});
+		})
 	}
 
 	private getHtmlContent(webview: vscode.Webview): string {
 		const scriptUri = webview.asWebviewUri(
 			vscode.Uri.joinPath(this.extensionUri, 'dist', 'sidebar.js')
-		);
+		)
 		const styleUri = webview.asWebviewUri(
 			vscode.Uri.joinPath(this.extensionUri, 'dist', 'index.css')
-		);
-		const nonce = this.getNonce();
+		)
+		const nonce = this.getNonce()
 
 		return `<!DOCTYPE html>
 <html lang="en">
@@ -75,16 +75,15 @@ export class SidebarWebviewManager implements vscode.WebviewViewProvider {
   <div id="root"></div>
   <script nonce="${nonce}" src="${scriptUri}"></script>
 </body>
-</html>`;
+</html>`
 	}
 
 	private getNonce(): string {
-		let text = '';
-		const possible =
-			'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+		let text = ''
+		const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
 		for (let i = 0; i < 32; i++) {
-			text += possible.charAt(Math.floor(Math.random() * possible.length));
+			text += possible.charAt(Math.floor(Math.random() * possible.length))
 		}
-		return text;
+		return text
 	}
 }

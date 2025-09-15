@@ -3,13 +3,10 @@
  * Direct function implementation for AI-powered research queries
  */
 
-import path from 'path';
-import { performResearch } from '../../../../scripts/modules/task-manager.js';
-import {
-	enableSilentMode,
-	disableSilentMode
-} from '../../../../scripts/modules/utils.js';
-import { createLogWrapper } from '../../tools/utils.js';
+import path from 'path'
+import { performResearch } from '../../../../scripts/modules/task-manager.js'
+import { disableSilentMode, enableSilentMode } from '../../../../scripts/modules/utils.js'
+import { createLogWrapper } from '../../tools/utils.js'
 
 /**
  * Direct function wrapper for performing AI-powered research with project context.
@@ -42,28 +39,27 @@ export async function researchDirect(args, log, context = {}) {
 		saveToFile = false,
 		projectRoot,
 		tag
-	} = args;
-	const { session } = context; // Destructure session from context
+	} = args
+	const { session } = context // Destructure session from context
 
 	// Enable silent mode to prevent console logs from interfering with JSON response
-	enableSilentMode();
+	enableSilentMode()
 
 	// Create logger wrapper using the utility
-	const mcpLog = createLogWrapper(log);
+	const mcpLog = createLogWrapper(log)
 
 	try {
 		// Check required parameters
 		if (!query || typeof query !== 'string' || query.trim().length === 0) {
-			log.error('Missing or invalid required parameter: query');
-			disableSilentMode();
+			log.error('Missing or invalid required parameter: query')
+			disableSilentMode()
 			return {
 				success: false,
 				error: {
 					code: 'MISSING_PARAMETER',
-					message:
-						'The query parameter is required and must be a non-empty string'
+					message: 'The query parameter is required and must be a non-empty string'
 				}
-			};
+			}
 		}
 
 		// Parse comma-separated task IDs if provided
@@ -72,7 +68,7 @@ export async function researchDirect(args, log, context = {}) {
 					.split(',')
 					.map((id) => id.trim())
 					.filter((id) => id.length > 0)
-			: [];
+			: []
 
 		// Parse comma-separated file paths if provided
 		const parsedFilePaths = filePaths
@@ -80,20 +76,20 @@ export async function researchDirect(args, log, context = {}) {
 					.split(',')
 					.map((path) => path.trim())
 					.filter((path) => path.length > 0)
-			: [];
+			: []
 
 		// Validate detail level
-		const validDetailLevels = ['low', 'medium', 'high'];
+		const validDetailLevels = ['low', 'medium', 'high']
 		if (!validDetailLevels.includes(detailLevel)) {
-			log.error(`Invalid detail level: ${detailLevel}`);
-			disableSilentMode();
+			log.error(`Invalid detail level: ${detailLevel}`)
+			disableSilentMode()
 			return {
 				success: false,
 				error: {
 					code: 'INVALID_PARAMETER',
 					message: `Detail level must be one of: ${validDetailLevels.join(', ')}`
 				}
-			};
+			}
 		}
 
 		log.info(
@@ -103,7 +99,7 @@ export async function researchDirect(args, log, context = {}) {
 				`detailLevel: ${detailLevel}, ` +
 				`includeProjectTree: ${includeProjectTree}, ` +
 				`projectRoot: ${projectRoot}`
-		);
+		)
 
 		// Prepare options for the research function
 		const researchOptions = {
@@ -115,7 +111,7 @@ export async function researchDirect(args, log, context = {}) {
 			projectRoot,
 			tag,
 			saveToFile
-		};
+		}
 
 		// Prepare context for the research function
 		const researchContext = {
@@ -123,7 +119,7 @@ export async function researchDirect(args, log, context = {}) {
 			mcpLog,
 			commandName: 'research',
 			outputType: 'mcp'
-		};
+		}
 
 		// Call the performResearch function
 		const result = await performResearch(
@@ -132,12 +128,12 @@ export async function researchDirect(args, log, context = {}) {
 			researchContext,
 			'json', // outputFormat - use 'json' to suppress CLI UI
 			false // allowFollowUp - disable for MCP calls
-		);
+		)
 
 		// Auto-save to task/subtask if requested
 		if (saveTo) {
 			try {
-				const isSubtask = saveTo.includes('.');
+				const isSubtask = saveTo.includes('.')
 
 				// Format research content for saving
 				const researchContent = `## Research Query: ${query.trim()}
@@ -148,20 +144,15 @@ export async function researchDirect(args, log, context = {}) {
 
 ### Results
 
-${result.result}`;
+${result.result}`
 
 				if (isSubtask) {
 					// Save to subtask
 					const { updateSubtaskById } = await import(
 						'../../../../scripts/modules/task-manager/update-subtask-by-id.js'
-					);
+					)
 
-					const tasksPath = path.join(
-						projectRoot,
-						'.taskmaster',
-						'tasks',
-						'tasks.json'
-					);
+					const tasksPath = path.join(projectRoot, '.taskmaster', 'tasks', 'tasks.json')
 					await updateSubtaskById(
 						tasksPath,
 						saveTo,
@@ -176,24 +167,17 @@ ${result.result}`;
 							tag
 						},
 						'json'
-					);
+					)
 
-					log.info(`Research saved to subtask ${saveTo}`);
+					log.info(`Research saved to subtask ${saveTo}`)
 				} else {
 					// Save to task
 					const updateTaskById = (
-						await import(
-							'../../../../scripts/modules/task-manager/update-task-by-id.js'
-						)
-					).default;
+						await import('../../../../scripts/modules/task-manager/update-task-by-id.js')
+					).default
 
-					const taskIdNum = parseInt(saveTo, 10);
-					const tasksPath = path.join(
-						projectRoot,
-						'.taskmaster',
-						'tasks',
-						'tasks.json'
-					);
+					const taskIdNum = parseInt(saveTo, 10)
+					const tasksPath = path.join(projectRoot, '.taskmaster', 'tasks', 'tasks.json')
 					await updateTaskById(
 						tasksPath,
 						taskIdNum,
@@ -209,17 +193,17 @@ ${result.result}`;
 						},
 						'json',
 						true // appendMode = true
-					);
+					)
 
-					log.info(`Research saved to task ${saveTo}`);
+					log.info(`Research saved to task ${saveTo}`)
 				}
 			} catch (saveError) {
-				log.warn(`Error saving research to task/subtask: ${saveError.message}`);
+				log.warn(`Error saving research to task/subtask: ${saveError.message}`)
 			}
 		}
 
 		// Restore normal logging
-		disableSilentMode();
+		disableSilentMode()
 
 		return {
 			success: true,
@@ -237,18 +221,18 @@ ${result.result}`;
 				tagInfo: result.tagInfo,
 				savedFilePath: result.savedFilePath
 			}
-		};
+		}
 	} catch (error) {
 		// Make sure to restore normal logging even if there's an error
-		disableSilentMode();
+		disableSilentMode()
 
-		log.error(`Error in researchDirect: ${error.message}`);
+		log.error(`Error in researchDirect: ${error.message}`)
 		return {
 			success: false,
 			error: {
 				code: error.code || 'RESEARCH_ERROR',
 				message: error.message
 			}
-		};
+		}
 	}
 }

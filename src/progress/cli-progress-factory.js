@@ -1,4 +1,4 @@
-import cliProgress from 'cli-progress';
+import cliProgress from 'cli-progress'
 
 /**
  * Default configuration for progress bars
@@ -9,7 +9,7 @@ const DEFAULT_CONFIG = {
 	stopOnComplete: true,
 	hideCursor: true,
 	barsize: 40 // Standard terminal width for progress bar
-};
+}
 
 /**
  * Available presets for progress bar styling
@@ -20,7 +20,7 @@ const PRESETS = {
 	shades_grey: cliProgress.Presets.shades_grey,
 	rect: cliProgress.Presets.rect,
 	legacy: cliProgress.Presets.legacy
-};
+}
 
 /**
  * Factory class for creating CLI progress bars
@@ -28,8 +28,8 @@ const PRESETS = {
  */
 export class ProgressBarFactory {
 	constructor(defaultOptions = {}, defaultPreset = PRESETS.shades_classic) {
-		this.defaultOptions = { ...DEFAULT_CONFIG, ...defaultOptions };
-		this.defaultPreset = defaultPreset;
+		this.defaultOptions = { ...DEFAULT_CONFIG, ...defaultOptions }
+		this.defaultPreset = defaultPreset
 	}
 
 	/**
@@ -39,10 +39,10 @@ export class ProgressBarFactory {
 	 * @returns {cliProgress.SingleBar} Configured single progress bar instance
 	 */
 	createSingleBar(opts = {}, preset = null) {
-		const config = this._mergeConfig(opts);
-		const barPreset = preset || this.defaultPreset;
+		const config = this._mergeConfig(opts)
+		const barPreset = preset || this.defaultPreset
 
-		return new cliProgress.SingleBar(config, barPreset);
+		return new cliProgress.SingleBar(config, barPreset)
 	}
 
 	/**
@@ -52,10 +52,10 @@ export class ProgressBarFactory {
 	 * @returns {cliProgress.MultiBar} Configured multi-bar instance
 	 */
 	createMultiBar(opts = {}, preset = null) {
-		const config = this._mergeConfig(opts);
-		const barPreset = preset || this.defaultPreset;
+		const config = this._mergeConfig(opts)
+		const barPreset = preset || this.defaultPreset
 
-		return new cliProgress.MultiBar(config, barPreset);
+		return new cliProgress.MultiBar(config, barPreset)
 	}
 
 	/**
@@ -65,7 +65,7 @@ export class ProgressBarFactory {
 	 * @returns {Object} Merged configuration
 	 */
 	_mergeConfig(customOpts) {
-		return { ...this.defaultOptions, ...customOpts };
+		return { ...this.defaultOptions, ...customOpts }
 	}
 
 	/**
@@ -73,7 +73,7 @@ export class ProgressBarFactory {
 	 * @param {Object} options - New default options
 	 */
 	setDefaultOptions(options) {
-		this.defaultOptions = { ...this.defaultOptions, ...options };
+		this.defaultOptions = { ...this.defaultOptions, ...options }
 	}
 
 	/**
@@ -81,12 +81,12 @@ export class ProgressBarFactory {
 	 * @param {Object} preset - New default preset
 	 */
 	setDefaultPreset(preset) {
-		this.defaultPreset = preset;
+		this.defaultPreset = preset
 	}
 }
 
 // Create a default factory instance for backward compatibility
-const defaultFactory = new ProgressBarFactory();
+const defaultFactory = new ProgressBarFactory()
 
 /**
  * Legacy function for creating a single progress bar
@@ -95,7 +95,7 @@ const defaultFactory = new ProgressBarFactory();
  * @returns {cliProgress.SingleBar} Single progress bar instance
  */
 export function newSingle(opts = {}) {
-	return defaultFactory.createSingleBar(opts);
+	return defaultFactory.createSingleBar(opts)
 }
 
 /**
@@ -105,11 +105,11 @@ export function newSingle(opts = {}) {
  * @returns {cliProgress.MultiBar} Multi-bar instance
  */
 export function newMultiBar(opts = {}) {
-	return defaultFactory.createMultiBar(opts);
+	return defaultFactory.createMultiBar(opts)
 }
 
 // Export presets for easy access
-export { PRESETS };
+export { PRESETS }
 
 // Export the factory class as default
-export default ProgressBarFactory;
+export default ProgressBarFactory

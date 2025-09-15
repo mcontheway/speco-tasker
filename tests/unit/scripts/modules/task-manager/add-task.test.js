@@ -1,8 +1,8 @@
 /**
  * Tests for the add-task.js module
  */
-import { jest } from '@jest/globals';
-import { hasCodebaseAnalysis } from '../../../../../scripts/modules/config-manager.js';
+import { jest } from '@jest/globals'
+import { hasCodebaseAnalysis } from '../../../../../scripts/modules/config-manager.js'
 
 // Mock the dependencies before importing the module under test
 jest.unstable_mockModule('../../../../../scripts/modules/utils.js', () => ({
@@ -19,39 +19,39 @@ jest.unstable_mockModule('../../../../../scripts/modules/utils.js', () => ({
 	truncate: jest.fn((text) => text),
 	isSilentMode: jest.fn(() => false),
 	findTaskById: jest.fn((tasks, id) => {
-		if (!tasks) return null;
-		const allTasks = [];
-		const queue = [...tasks];
+		if (!tasks) return null
+		const allTasks = []
+		const queue = [...tasks]
 		while (queue.length > 0) {
-			const task = queue.shift();
-			allTasks.push(task);
+			const task = queue.shift()
+			allTasks.push(task)
 			if (task.subtasks) {
-				queue.push(...task.subtasks);
+				queue.push(...task.subtasks)
 			}
 		}
-		return allTasks.find((task) => String(task.id) === String(id));
+		return allTasks.find((task) => String(task.id) === String(id))
 	}),
 	getCurrentTag: jest.fn(() => 'master'),
 	ensureTagMetadata: jest.fn((tagObj) => tagObj),
 	flattenTasksWithSubtasks: jest.fn((tasks) => {
-		const allTasks = [];
-		const queue = [...(tasks || [])];
+		const allTasks = []
+		const queue = [...(tasks || [])]
 		while (queue.length > 0) {
-			const task = queue.shift();
-			allTasks.push(task);
+			const task = queue.shift()
+			allTasks.push(task)
 			if (task.subtasks) {
 				for (const subtask of task.subtasks) {
-					queue.push({ ...subtask, id: `${task.id}.${subtask.id}` });
+					queue.push({ ...subtask, id: `${task.id}.${subtask.id}` })
 				}
 			}
 		}
-		return allTasks;
+		return allTasks
 	}),
 	markMigrationForNotice: jest.fn(),
 	performCompleteTagMigration: jest.fn(),
 	setTasksForTag: jest.fn(),
 	getTasksForTag: jest.fn((data, tag) => data[tag]?.tasks || [])
-}));
+}))
 
 jest.unstable_mockModule('../../../../../scripts/modules/ui.js', () => ({
 	displayBanner: jest.fn(),
@@ -64,78 +64,65 @@ jest.unstable_mockModule('../../../../../scripts/modules/ui.js', () => ({
 	infoLoadingIndicator: jest.fn(),
 	displayAiUsageSummary: jest.fn(),
 	displayContextAnalysis: jest.fn()
-}));
+}))
 
-jest.unstable_mockModule(
-	'../../../../../scripts/modules/ai-services-unified.js',
-	() => ({
-		generateObjectService: jest.fn().mockResolvedValue({
-			mainResult: {
-				object: {
-					title: 'Task from prompt: Create a new authentication system',
-					description:
-						'Task generated from: Create a new authentication system',
-					details:
-						'Implementation details for task generated from prompt: Create a new authentication system',
-					testStrategy: 'Write unit tests to verify functionality',
-					dependencies: []
-				}
-			},
-			telemetryData: {
-				timestamp: new Date().toISOString(),
-				userId: '1234567890',
-				commandName: 'add-task',
-				modelUsed: 'claude-3-5-sonnet',
-				providerName: 'anthropic',
-				inputTokens: 1000,
-				outputTokens: 500,
-				totalTokens: 1500,
-				totalCost: 0.012414,
-				currency: 'USD'
+jest.unstable_mockModule('../../../../../scripts/modules/ai-services-unified.js', () => ({
+	generateObjectService: jest.fn().mockResolvedValue({
+		mainResult: {
+			object: {
+				title: 'Task from prompt: Create a new authentication system',
+				description: 'Task generated from: Create a new authentication system',
+				details:
+					'Implementation details for task generated from prompt: Create a new authentication system',
+				testStrategy: 'Write unit tests to verify functionality',
+				dependencies: []
 			}
+		},
+		telemetryData: {
+			timestamp: new Date().toISOString(),
+			userId: '1234567890',
+			commandName: 'add-task',
+			modelUsed: 'claude-3-5-sonnet',
+			providerName: 'anthropic',
+			inputTokens: 1000,
+			outputTokens: 500,
+			totalTokens: 1500,
+			totalCost: 0.012414,
+			currency: 'USD'
+		}
+	})
+}))
+
+jest.unstable_mockModule('../../../../../scripts/modules/config-manager.js', () => ({
+	getDefaultPriority: jest.fn(() => 'medium'),
+	hasCodebaseAnalysis: jest.fn(() => false)
+}))
+
+jest.unstable_mockModule('../../../../../scripts/modules/utils/contextGatherer.js', () => ({
+	default: jest.fn().mockImplementation(() => ({
+		gather: jest.fn().mockResolvedValue({
+			contextSummary: 'Mock context summary',
+			allRelatedTaskIds: [],
+			graphVisualization: 'Mock graph'
 		})
-	})
-);
-
-jest.unstable_mockModule(
-	'../../../../../scripts/modules/config-manager.js',
-	() => ({
-		getDefaultPriority: jest.fn(() => 'medium'),
-		hasCodebaseAnalysis: jest.fn(() => false)
-	})
-);
-
-jest.unstable_mockModule(
-	'../../../../../scripts/modules/utils/contextGatherer.js',
-	() => ({
-		default: jest.fn().mockImplementation(() => ({
-			gather: jest.fn().mockResolvedValue({
-				contextSummary: 'Mock context summary',
-				allRelatedTaskIds: [],
-				graphVisualization: 'Mock graph'
-			})
-		}))
-	})
-);
+	}))
+}))
 
 jest.unstable_mockModule(
 	'../../../../../scripts/modules/task-manager/generate-task-files.js',
 	() => ({
 		default: jest.fn().mockResolvedValue()
 	})
-);
+)
 
-jest.unstable_mockModule(
-	'../../../../../scripts/modules/prompt-manager.js',
-	() => ({
-		getPromptManager: jest.fn().mockReturnValue({
-			loadPrompt: jest.fn().mockResolvedValue({
-				systemPrompt: 'Mocked system prompt',
-				userPrompt: 'Mocked user prompt'
-			})
+jest.unstable_mockModule('../../../../../scripts/modules/prompt-manager.js', () => ({
+	getPromptManager: jest.fn().mockReturnValue({
+		loadPrompt: jest.fn().mockResolvedValue({
+			systemPrompt: 'Mocked system prompt',
+			userPrompt: 'Mocked user prompt'
 		})
 	})
-);
+}))
 
 // Mock external UI libraries
 jest.unstable_mockModule('chalk', () => ({
@@ -151,38 +138,32 @@ jest.unstable_mockModule('chalk', () => ({
 		yellow: jest.fn((text) => text),
 		bold: jest.fn((text) => text)
 	}
-}));
+}))
 
 jest.unstable_mockModule('boxen', () => ({
 	default: jest.fn((text) => text)
-}));
+}))
 
 jest.unstable_mockModule('cli-table3', () => ({
 	default: jest.fn().mockImplementation(() => ({
 		push: jest.fn(),
 		toString: jest.fn(() => 'mocked table')
 	}))
-}));
+}))
 
 // Import the mocked modules
-const { readJSON, writeJSON, log } = await import(
-	'../../../../../scripts/modules/utils.js'
-);
+const { readJSON, writeJSON, log } = await import('../../../../../scripts/modules/utils.js')
 
 const { generateObjectService } = await import(
 	'../../../../../scripts/modules/ai-services-unified.js'
-);
+)
 
 const generateTaskFiles = (
-	await import(
-		'../../../../../scripts/modules/task-manager/generate-task-files.js'
-	)
-).default;
+	await import('../../../../../scripts/modules/task-manager/generate-task-files.js')
+).default
 
 // Import the module under test
-const { default: addTask } = await import(
-	'../../../../../scripts/modules/task-manager/add-task.js'
-);
+const { default: addTask } = await import('../../../../../scripts/modules/task-manager/add-task.js')
 
 describe('addTask', () => {
 	const sampleTasks = {
@@ -211,7 +192,7 @@ describe('addTask', () => {
 				}
 			]
 		}
-	};
+	}
 
 	// Create a helper function for consistent mcpLog mock
 	const createMcpLogMock = () => ({
@@ -220,46 +201,35 @@ describe('addTask', () => {
 		error: jest.fn(),
 		debug: jest.fn(),
 		success: jest.fn()
-	});
+	})
 
 	beforeEach(() => {
-		jest.clearAllMocks();
-		readJSON.mockReturnValue(JSON.parse(JSON.stringify(sampleTasks)));
+		jest.clearAllMocks()
+		readJSON.mockReturnValue(JSON.parse(JSON.stringify(sampleTasks)))
 
 		// Mock console.log to avoid output during tests
-		jest.spyOn(console, 'log').mockImplementation(() => {});
-	});
+		jest.spyOn(console, 'log').mockImplementation(() => {})
+	})
 
 	afterEach(() => {
-		console.log.mockRestore();
-	});
+		console.log.mockRestore()
+	})
 
 	test('should add a new task using AI', async () => {
 		// Arrange
-		const prompt = 'Create a new authentication system';
+		const prompt = 'Create a new authentication system'
 		const context = {
 			mcpLog: createMcpLogMock(),
 			projectRoot: '/mock/project/root',
 			tag: 'master'
-		};
+		}
 
 		// Act
-		const result = await addTask(
-			'tasks/tasks.json',
-			prompt,
-			[],
-			'medium',
-			context,
-			'json'
-		);
+		const result = await addTask('tasks/tasks.json', prompt, [], 'medium', context, 'json')
 
 		// Assert
-		expect(readJSON).toHaveBeenCalledWith(
-			'tasks/tasks.json',
-			'/mock/project/root',
-			'master'
-		);
-		expect(generateObjectService).toHaveBeenCalledWith(expect.any(Object));
+		expect(readJSON).toHaveBeenCalledWith('tasks/tasks.json', '/mock/project/root', 'master')
+		expect(generateObjectService).toHaveBeenCalledWith(expect.any(Object))
 		expect(writeJSON).toHaveBeenCalledWith(
 			'tasks/tasks.json',
 			expect.objectContaining({
@@ -267,9 +237,7 @@ describe('addTask', () => {
 					tasks: expect.arrayContaining([
 						expect.objectContaining({
 							id: 4, // Next ID after existing tasks
-							title: expect.stringContaining(
-								'Create a new authentication system'
-							),
+							title: expect.stringContaining('Create a new authentication system'),
 							status: 'pending'
 						})
 					])
@@ -277,24 +245,24 @@ describe('addTask', () => {
 			}),
 			'/mock/project/root', // projectRoot parameter
 			'master' // tag parameter
-		);
+		)
 		expect(result).toEqual(
 			expect.objectContaining({
 				newTaskId: 4,
 				telemetryData: expect.any(Object)
 			})
-		);
-	});
+		)
+	})
 
 	test('should validate dependencies when adding a task', async () => {
 		// Arrange
-		const prompt = 'Create a new authentication system';
-		const validDependencies = [1, 2]; // These exist in sampleTasks
+		const prompt = 'Create a new authentication system'
+		const validDependencies = [1, 2] // These exist in sampleTasks
 		const context = {
 			mcpLog: createMcpLogMock(),
 			projectRoot: '/mock/project/root',
 			tag: 'master'
-		};
+		}
 
 		// Act
 		const result = await addTask(
@@ -304,7 +272,7 @@ describe('addTask', () => {
 			'medium',
 			context,
 			'json'
-		);
+		)
 
 		// Assert
 		expect(writeJSON).toHaveBeenCalledWith(
@@ -321,18 +289,18 @@ describe('addTask', () => {
 			}),
 			'/mock/project/root', // projectRoot parameter
 			'master' // tag parameter
-		);
-	});
+		)
+	})
 
 	test('should filter out invalid dependencies', async () => {
 		// Arrange
-		const prompt = 'Create a new authentication system';
-		const invalidDependencies = [999]; // Non-existent task ID
+		const prompt = 'Create a new authentication system'
+		const invalidDependencies = [999] // Non-existent task ID
 		const context = {
 			mcpLog: createMcpLogMock(),
 			projectRoot: '/mock/project/root',
 			tag: 'master'
-		};
+		}
 
 		// Act
 		const result = await addTask(
@@ -342,7 +310,7 @@ describe('addTask', () => {
 			'medium',
 			context,
 			'json'
-		);
+		)
 
 		// Assert
 		expect(writeJSON).toHaveBeenCalledWith(
@@ -359,26 +327,24 @@ describe('addTask', () => {
 			}),
 			'/mock/project/root', // projectRoot parameter
 			'master' // tag parameter
-		);
+		)
 		expect(context.mcpLog.warn).toHaveBeenCalledWith(
-			expect.stringContaining(
-				'The following dependencies do not exist or are invalid: 999'
-			)
-		);
-	});
+			expect.stringContaining('The following dependencies do not exist or are invalid: 999')
+		)
+	})
 
 	test('should use specified priority', async () => {
 		// Arrange
-		const prompt = 'Create a new authentication system';
-		const priority = 'high';
+		const prompt = 'Create a new authentication system'
+		const priority = 'high'
 		const context = {
 			mcpLog: createMcpLogMock(),
 			projectRoot: '/mock/project/root',
 			tag: 'master'
-		};
+		}
 
 		// Act
-		await addTask('tasks/tasks.json', prompt, [], priority, context, 'json');
+		await addTask('tasks/tasks.json', prompt, [], priority, context, 'json')
 
 		// Assert
 		expect(writeJSON).toHaveBeenCalledWith(
@@ -394,31 +360,24 @@ describe('addTask', () => {
 			}),
 			'/mock/project/root', // projectRoot parameter
 			'master' // tag parameter
-		);
-	});
+		)
+	})
 
 	test('should handle empty tasks file', async () => {
 		// Arrange
-		readJSON.mockReturnValue({ master: { tasks: [] } });
-		const prompt = 'Create a new authentication system';
+		readJSON.mockReturnValue({ master: { tasks: [] } })
+		const prompt = 'Create a new authentication system'
 		const context = {
 			mcpLog: createMcpLogMock(),
 			projectRoot: '/mock/project/root',
 			tag: 'master'
-		};
+		}
 
 		// Act
-		const result = await addTask(
-			'tasks/tasks.json',
-			prompt,
-			[],
-			'medium',
-			context,
-			'json'
-		);
+		const result = await addTask('tasks/tasks.json', prompt, [], 'medium', context, 'json')
 
 		// Assert
-		expect(result.newTaskId).toBe(1); // First task should have ID 1
+		expect(result.newTaskId).toBe(1) // First task should have ID 1
 		expect(writeJSON).toHaveBeenCalledWith(
 			'tasks/tasks.json',
 			expect.objectContaining({
@@ -432,83 +391,76 @@ describe('addTask', () => {
 			}),
 			'/mock/project/root', // projectRoot parameter
 			'master' // tag parameter
-		);
-	});
+		)
+	})
 
 	test('should handle missing tasks file', async () => {
 		// Arrange
-		readJSON.mockReturnValue(null);
-		const prompt = 'Create a new authentication system';
+		readJSON.mockReturnValue(null)
+		const prompt = 'Create a new authentication system'
 		const context = {
 			mcpLog: createMcpLogMock(),
 			projectRoot: '/mock/project/root',
 			tag: 'master'
-		};
+		}
 
 		// Act
-		const result = await addTask(
-			'tasks/tasks.json',
-			prompt,
-			[],
-			'medium',
-			context,
-			'json'
-		);
+		const result = await addTask('tasks/tasks.json', prompt, [], 'medium', context, 'json')
 
 		// Assert
-		expect(result.newTaskId).toBe(1); // First task should have ID 1
-		expect(writeJSON).toHaveBeenCalledTimes(1); // Should create file and add task in one go.
-	});
+		expect(result.newTaskId).toBe(1) // First task should have ID 1
+		expect(writeJSON).toHaveBeenCalledTimes(1) // Should create file and add task in one go.
+	})
 
 	test('should handle AI service errors', async () => {
 		// Arrange
-		generateObjectService.mockRejectedValueOnce(new Error('AI service failed'));
-		const prompt = 'Create a new authentication system';
+		generateObjectService.mockRejectedValueOnce(new Error('AI service failed'))
+		const prompt = 'Create a new authentication system'
 		const context = {
 			mcpLog: createMcpLogMock(),
 			projectRoot: '/mock/project/root',
 			tag: 'master'
-		};
+		}
 
 		// Act & Assert
 		await expect(
 			addTask('tasks/tasks.json', prompt, [], 'medium', context, 'json')
-		).rejects.toThrow('AI service failed');
-	});
+		).rejects.toThrow('AI service failed')
+	})
 
 	test('should handle file read errors', async () => {
 		// Arrange
 		readJSON.mockImplementation(() => {
-			throw new Error('File read failed');
-		});
-		const prompt = 'Create a new authentication system';
+			throw new Error('File read failed')
+		})
+		const prompt = 'Create a new authentication system'
 		const context = {
 			mcpLog: createMcpLogMock(),
 			projectRoot: '/mock/project/root',
 			tag: 'master'
-		};
+		}
 
 		// Act & Assert
 		await expect(
 			addTask('tasks/tasks.json', prompt, [], 'medium', context, 'json')
-		).rejects.toThrow('File read failed');
-	});
+		).rejects.toThrow('File read failed')
+	})
 
 	test('should handle file write errors', async () => {
 		// Arrange
 		writeJSON.mockImplementation(() => {
-			throw new Error('File write failed');
-		});
-		const prompt = 'Create a new authentication system';
+			throw new Error('File write failed')
+		})
+		const prompt = 'Create a new authentication system'
 		const context = {
 			mcpLog: createMcpLogMock(),
 			projectRoot: '/mock/project/root',
 			tag: 'master'
-		};
+		}
 
 		// Act & Assert
 		await expect(
 			addTask('tasks/tasks.json', prompt, [], 'medium', context, 'json')
-		).rejects.toThrow('File write failed');
-	});
-});
+		).rejects.toThrow('File write failed')
+	})
+})

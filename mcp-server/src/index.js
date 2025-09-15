@@ -1,19 +1,19 @@
-import { FastMCP } from 'fastmcp';
-import path from 'path';
-import dotenv from 'dotenv';
-import { fileURLToPath } from 'url';
-import fs from 'fs';
-import logger from './logger.js';
-import { registerTaskMasterTools } from './tools/index.js';
-import ProviderRegistry from '../../src/provider-registry/index.js';
-import { MCPProvider } from './providers/mcp-provider.js';
+import fs from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url'
+import dotenv from 'dotenv'
+import { FastMCP } from 'fastmcp'
+import ProviderRegistry from '../../src/provider-registry/index.js'
+import logger from './logger.js'
+import { MCPProvider } from './providers/mcp-provider.js'
+import { registerTaskMasterTools } from './tools/index.js'
 
 // Load environment variables
-dotenv.config();
+dotenv.config()
 
 // Constants
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 /**
  * Main MCP server class that integrates with Task Master
@@ -21,38 +21,38 @@ const __dirname = path.dirname(__filename);
 class TaskMasterMCPServer {
 	constructor() {
 		// Get version from package.json using synchronous fs
-		const packagePath = path.join(__dirname, '../../package.json');
-		const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
+		const packagePath = path.join(__dirname, '../../package.json')
+		const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf8'))
 
 		this.options = {
 			name: 'Task Master MCP Server',
 			version: packageJson.version
-		};
+		}
 
-		this.server = new FastMCP(this.options);
-		this.initialized = false;
+		this.server = new FastMCP(this.options)
+		this.initialized = false
 
 		// Bind methods
-		this.init = this.init.bind(this);
-		this.start = this.start.bind(this);
-		this.stop = this.stop.bind(this);
+		this.init = this.init.bind(this)
+		this.start = this.start.bind(this)
+		this.stop = this.stop.bind(this)
 
 		// Setup logging
-		this.logger = logger;
+		this.logger = logger
 	}
 
 	/**
 	 * Initialize the MCP server with necessary tools and routes
 	 */
 	async init() {
-		if (this.initialized) return;
+		if (this.initialized) return
 
 		// Pass the manager instance to the tool registration function
-		registerTaskMasterTools(this.server, this.asyncManager);
+		registerTaskMasterTools(this.server, this.asyncManager)
 
-		this.initialized = true;
+		this.initialized = true
 
-		return this;
+		return this
 	}
 
 	/**
@@ -60,7 +60,7 @@ class TaskMasterMCPServer {
 	 */
 	async start() {
 		if (!this.initialized) {
-			await this.init();
+			await this.init()
 		}
 
 		this.server.on('connect', (event) => {
@@ -70,17 +70,17 @@ class TaskMasterMCPServer {
 					message: `MCP Server connected: ${event.session.name}`
 				},
 				level: 'info'
-			});
-			this.registerRemoteProvider(event.session);
-		});
+			})
+			this.registerRemoteProvider(event.session)
+		})
 
 		// Start the FastMCP server with increased timeout
 		await this.server.start({
 			transportType: 'stdio',
 			timeout: 120000 // 2 minutes timeout (in milliseconds)
-		});
+		})
 
-		return this;
+		return this
 	}
 
 	/**
@@ -97,19 +97,19 @@ class TaskMasterMCPServer {
 						message: `MCP session missing required sampling capabilities, providers not registered`
 					},
 					level: 'info'
-				});
-				return;
+				})
+				return
 			}
 
 			// Register MCP provider with the Provider Registry
 
 			// Register the unified MCP provider
-			const mcpProvider = new MCPProvider();
-			mcpProvider.setSession(session);
+			const mcpProvider = new MCPProvider()
+			mcpProvider.setSession(session)
 
 			// Register provider with the registry
-			const providerRegistry = ProviderRegistry.getInstance();
-			providerRegistry.registerProvider('mcp', mcpProvider);
+			const providerRegistry = ProviderRegistry.getInstance()
+			providerRegistry.registerProvider('mcp', mcpProvider)
 
 			session.server.sendLoggingMessage({
 				data: {
@@ -117,7 +117,7 @@ class TaskMasterMCPServer {
 					message: `MCP Server connected`
 				},
 				level: 'info'
-			});
+			})
 		} else {
 			session.server.sendLoggingMessage({
 				data: {
@@ -125,7 +125,7 @@ class TaskMasterMCPServer {
 					message: `No MCP sessions available, providers not registered`
 				},
 				level: 'warn'
-			});
+			})
 		}
 	}
 
@@ -134,9 +134,9 @@ class TaskMasterMCPServer {
 	 */
 	async stop() {
 		if (this.server) {
-			await this.server.stop();
+			await this.server.stop()
 		}
 	}
 }
 
-export default TaskMasterMCPServer;
+export default TaskMasterMCPServer

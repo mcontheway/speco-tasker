@@ -5,7 +5,7 @@
  * Creates MCP language model instances with session-based AI operations.
  */
 
-import { MCPLanguageModel } from './language-model.js';
+import { MCPLanguageModel } from './language-model.js'
 
 /**
  * Create MCP provider factory function following AI SDK patterns
@@ -16,15 +16,13 @@ import { MCPLanguageModel } from './language-model.js';
  */
 export function createMCP(options = {}) {
 	if (!options.session) {
-		throw new Error('MCP provider requires session object');
+		throw new Error('MCP provider requires session object')
 	}
 
 	// Return the provider factory function that AI SDK expects
 	const provider = function (modelId, settings = {}) {
 		if (new.target) {
-			throw new Error(
-				'The MCP model function cannot be called with the new keyword.'
-			);
+			throw new Error('The MCP model function cannot be called with the new keyword.')
 		}
 
 		return new MCPLanguageModel({
@@ -36,12 +34,12 @@ export function createMCP(options = {}) {
 				...options.defaultSettings,
 				...settings
 			}
-		});
-	};
+		})
+	}
 
 	// Add required methods for AI SDK compatibility
-	provider.languageModel = (modelId, settings) => provider(modelId, settings);
-	provider.chat = (modelId, settings) => provider(modelId, settings);
+	provider.languageModel = (modelId, settings) => provider(modelId, settings)
+	provider.chat = (modelId, settings) => provider(modelId, settings)
 
-	return provider;
+	return provider
 }

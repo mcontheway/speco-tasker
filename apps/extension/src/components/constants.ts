@@ -12,9 +12,9 @@ export const STATUS_DOT_COLORS = {
 	deferred: '#ef4444', // Red
 	cancelled: '#6b7280', // Gray
 	pending: '#eab308' // Yellow (default)
-} as const;
+} as const
 
-export type TaskStatus = keyof typeof STATUS_DOT_COLORS;
+export type TaskStatus = keyof typeof STATUS_DOT_COLORS
 
 /**
  * Get the color for a status dot indicator
@@ -22,5 +22,5 @@ export type TaskStatus = keyof typeof STATUS_DOT_COLORS;
  * @returns The hex color code for the status
  */
 export function getStatusDotColor(status: string): string {
-	return STATUS_DOT_COLORS[status as TaskStatus] || STATUS_DOT_COLORS.pending;
+	return STATUS_DOT_COLORS[status as TaskStatus] || STATUS_DOT_COLORS.pending
 }

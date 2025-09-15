@@ -2,16 +2,16 @@
  * Helper functions for PRD parsing
  */
 
-import fs from 'fs';
-import path from 'path';
-import boxen from 'boxen';
-import chalk from 'chalk';
-import { ensureTagMetadata, findTaskById } from '../../utils.js';
-import { displayParsePrdSummary } from '../../../../src/ui/parse-prd.js';
-import { TimeoutManager } from '../../../../src/utils/timeout-manager.js';
-import { displayAiUsageSummary } from '../../ui.js';
-import { getPromptManager } from '../../prompt-manager.js';
-import { getDefaultPriority } from '../../config-manager.js';
+import fs from 'fs'
+import path from 'path'
+import boxen from 'boxen'
+import chalk from 'chalk'
+import { displayParsePrdSummary } from '../../../../src/ui/parse-prd.js'
+import { TimeoutManager } from '../../../../src/utils/timeout-manager.js'
+import { getDefaultPriority } from '../../config-manager.js'
+import { getPromptManager } from '../../prompt-manager.js'
+import { displayAiUsageSummary } from '../../ui.js'
+import { ensureTagMetadata, findTaskById } from '../../utils.js'
 
 /**
  * Estimate token count from text
@@ -20,7 +20,7 @@ import { getDefaultPriority } from '../../config-manager.js';
  */
 export function estimateTokens(text) {
 	// Common approximation: ~4 characters per token for English
-	return Math.ceil(text.length / 4);
+	return Math.ceil(text.length / 4)
 }
 
 /**
@@ -30,11 +30,11 @@ export function estimateTokens(text) {
  * @throws {Error} If file is empty or cannot be read
  */
 export function readPrdContent(prdPath) {
-	const prdContent = fs.readFileSync(prdPath, 'utf8');
+	const prdContent = fs.readFileSync(prdPath, 'utf8')
 	if (!prdContent) {
-		throw new Error(`Input file ${prdPath} is empty or could not be read.`);
+		throw new Error(`Input file ${prdPath} is empty or could not be read.`)
 	}
-	return prdContent;
+	return prdContent
 }
 
 /**
@@ -44,29 +44,29 @@ export function readPrdContent(prdPath) {
  * @returns {{tasks: Array, nextId: number}} Existing tasks and next ID
  */
 export function loadExistingTasks(tasksPath, targetTag) {
-	let existingTasks = [];
-	let nextId = 1;
+	let existingTasks = []
+	let nextId = 1
 
 	if (!fs.existsSync(tasksPath)) {
-		return { existingTasks, nextId };
+		return { existingTasks, nextId }
 	}
 
 	try {
-		const existingFileContent = fs.readFileSync(tasksPath, 'utf8');
-		const allData = JSON.parse(existingFileContent);
+		const existingFileContent = fs.readFileSync(tasksPath, 'utf8')
+		const allData = JSON.parse(existingFileContent)
 
 		if (allData[targetTag]?.tasks && Array.isArray(allData[targetTag].tasks)) {
-			existingTasks = allData[targetTag].tasks;
+			existingTasks = allData[targetTag].tasks
 			if (existingTasks.length > 0) {
-				nextId = Math.max(...existingTasks.map((t) => t.id || 0)) + 1;
+				nextId = Math.max(...existingTasks.map((t) => t.id || 0)) + 1
 			}
 		}
 	} catch (error) {
 		// If we can't read the file or parse it, assume no existing tasks
-		return { existingTasks: [], nextId: 1 };
+		return { existingTasks: [], nextId: 1 }
 	}
 
-	return { existingTasks, nextId };
+	return { existingTasks, nextId }
 }
 
 /**
@@ -75,48 +75,38 @@ export function loadExistingTasks(tasksPath, targetTag) {
  * @returns {void}
  * @throws {Error} If validation fails
  */
-export function validateFileOperations({
-	existingTasks,
-	targetTag,
-	append,
-	force,
-	isMCP,
-	logger
-}) {
-	const hasExistingTasks = existingTasks.length > 0;
+export function validateFileOperations({ existingTasks, targetTag, append, force, isMCP, logger }) {
+	const hasExistingTasks = existingTasks.length > 0
 
 	if (!hasExistingTasks) {
 		logger.report(
 			`Tag '${targetTag}' is empty or doesn't exist. Creating/updating tag with new tasks.`,
 			'info'
-		);
-		return;
+		)
+		return
 	}
 
 	if (append) {
 		logger.report(
 			`Append mode enabled. Found ${existingTasks.length} existing tasks in tag '${targetTag}'.`,
 			'info'
-		);
-		return;
+		)
+		return
 	}
 
 	if (!force) {
-		const errorMessage = `Tag '${targetTag}' already contains ${existingTasks.length} tasks. Use --force to overwrite or --append to add to existing tasks.`;
-		logger.report(errorMessage, 'error');
+		const errorMessage = `Tag '${targetTag}' already contains ${existingTasks.length} tasks. Use --force to overwrite or --append to add to existing tasks.`
+		logger.report(errorMessage, 'error')
 
 		if (isMCP) {
-			throw new Error(errorMessage);
+			throw new Error(errorMessage)
 		} else {
-			console.error(chalk.red(errorMessage));
-			process.exit(1);
+			console.error(chalk.red(errorMessage))
+			process.exit(1)
 		}
 	}
 
-	logger.report(
-		`Force flag enabled. Overwriting existing tasks in tag '${targetTag}'.`,
-		'debug'
-	);
+	logger.report(`Force flag enabled. Overwriting existing tasks in tag '${targetTag}'.`, 'debug')
 }
 
 /**
@@ -127,19 +117,14 @@ export function validateFileOperations({
  * @param {string} defaultPriority - Default priority for tasks
  * @returns {Array} Processed tasks with remapped IDs
  */
-export function processTasks(
-	rawTasks,
-	startId,
-	existingTasks,
-	defaultPriority
-) {
-	let currentId = startId;
-	const taskMap = new Map();
+export function processTasks(rawTasks, startId, existingTasks, defaultPriority) {
+	let currentId = startId
+	const taskMap = new Map()
 
 	// First pass: assign new IDs and create mapping
 	const processedTasks = rawTasks.map((task) => {
-		const newId = currentId++;
-		taskMap.set(task.id, newId);
+		const newId = currentId++
+		taskMap.set(task.id, newId)
 
 		return {
 			...task,
@@ -153,8 +138,8 @@ export function processTasks(
 			description: task.description || '',
 			details: task.details || '',
 			testStrategy: task.testStrategy || ''
-		};
-	});
+		}
+	})
 
 	// Second pass: remap dependencies
 	processedTasks.forEach((task) => {
@@ -164,12 +149,11 @@ export function processTasks(
 				(newDepId) =>
 					newDepId != null &&
 					newDepId < task.id &&
-					(findTaskById(existingTasks, newDepId) ||
-						processedTasks.some((t) => t.id === newDepId))
-			);
-	});
+					(findTaskById(existingTasks, newDepId) || processedTasks.some((t) => t.id === newDepId))
+			)
+	})
 
-	return processedTasks;
+	return processedTasks
 }
 
 /**
@@ -181,19 +165,19 @@ export function processTasks(
  */
 export function saveTasksToFile(tasksPath, tasks, targetTag, logger) {
 	// Create directory if it doesn't exist
-	const tasksDir = path.dirname(tasksPath);
+	const tasksDir = path.dirname(tasksPath)
 	if (!fs.existsSync(tasksDir)) {
-		fs.mkdirSync(tasksDir, { recursive: true });
+		fs.mkdirSync(tasksDir, { recursive: true })
 	}
 
 	// Read existing file to preserve other tags
-	let outputData = {};
+	let outputData = {}
 	if (fs.existsSync(tasksPath)) {
 		try {
-			const existingFileContent = fs.readFileSync(tasksPath, 'utf8');
-			outputData = JSON.parse(existingFileContent);
+			const existingFileContent = fs.readFileSync(tasksPath, 'utf8')
+			outputData = JSON.parse(existingFileContent)
 		} catch (error) {
-			outputData = {};
+			outputData = {}
 		}
 	}
 
@@ -201,25 +185,21 @@ export function saveTasksToFile(tasksPath, tasks, targetTag, logger) {
 	outputData[targetTag] = {
 		tasks: tasks,
 		metadata: {
-			created:
-				outputData[targetTag]?.metadata?.created || new Date().toISOString(),
+			created: outputData[targetTag]?.metadata?.created || new Date().toISOString(),
 			updated: new Date().toISOString(),
 			description: `Tasks for ${targetTag} context`
 		}
-	};
+	}
 
 	// Ensure proper metadata
 	ensureTagMetadata(outputData[targetTag], {
 		description: `Tasks for ${targetTag} context`
-	});
+	})
 
 	// Write back to file
-	fs.writeFileSync(tasksPath, JSON.stringify(outputData, null, 2));
+	fs.writeFileSync(tasksPath, JSON.stringify(outputData, null, 2))
 
-	logger.report(
-		`Successfully saved ${tasks.length} tasks to ${tasksPath}`,
-		'debug'
-	);
+	logger.report(`Successfully saved ${tasks.length} tasks to ${tasksPath}`, 'debug')
 }
 
 /**
@@ -230,9 +210,8 @@ export function saveTasksToFile(tasksPath, tasks, targetTag, logger) {
  * @returns {Promise<{systemPrompt: string, userPrompt: string}>}
  */
 export async function buildPrompts(config, prdContent, nextId) {
-	const promptManager = getPromptManager();
-	const defaultTaskPriority =
-		getDefaultPriority(config.projectRoot) || 'medium';
+	const promptManager = getPromptManager()
+	const defaultTaskPriority = getDefaultPriority(config.projectRoot) || 'medium'
 
 	return promptManager.loadPrompt('parse-prd', {
 		research: config.research,
@@ -243,7 +222,7 @@ export async function buildPrompts(config, prdContent, nextId) {
 		defaultTaskPriority,
 		hasCodebaseAnalysis: config.hasCodebaseAnalysis(),
 		projectRoot: config.projectRoot || ''
-	});
+	})
 }
 
 /**
@@ -261,29 +240,27 @@ export async function reportTaskProgress({
 	defaultPriority,
 	estimatedInputTokens
 }) {
-	const priority = task.priority || defaultPriority;
-	const priorityIndicator = priorityMap[priority] || priorityMap.medium;
+	const priority = task.priority || defaultPriority
+	const priorityIndicator = priorityMap[priority] || priorityMap.medium
 
 	// CLI progress tracker
 	if (progressTracker) {
-		progressTracker.addTaskLine(currentCount, task.title, priority);
+		progressTracker.addTaskLine(currentCount, task.title, priority)
 		if (estimatedTokens) {
-			progressTracker.updateTokens(estimatedInputTokens, estimatedTokens);
+			progressTracker.updateTokens(estimatedInputTokens, estimatedTokens)
 		}
 	}
 
 	// MCP progress reporting
 	if (reportProgress) {
 		try {
-			const outputTokens = estimatedTokens
-				? Math.floor(estimatedTokens / totalTasks)
-				: 0;
+			const outputTokens = estimatedTokens ? Math.floor(estimatedTokens / totalTasks) : 0
 
 			await reportProgress({
 				progress: currentCount,
 				total: totalTasks,
 				message: `${priorityIndicator} Task ${currentCount}/${totalTasks} - ${task.title} | ~Output: ${outputTokens} tokens`
-			});
+			})
 		} catch (error) {
 			// Ignore progress reporting errors
 		}
@@ -306,15 +283,15 @@ export async function displayCliSummary({
 	// Generate task file names
 	const taskFilesGenerated = (() => {
 		if (!Array.isArray(processedTasks) || processedTasks.length === 0) {
-			return `task_${String(nextId).padStart(3, '0')}.txt`;
+			return `task_${String(nextId).padStart(3, '0')}.txt`
 		}
-		const firstNewTaskId = processedTasks[0].id;
-		const lastNewTaskId = processedTasks[processedTasks.length - 1].id;
+		const firstNewTaskId = processedTasks[0].id
+		const lastNewTaskId = processedTasks[processedTasks.length - 1].id
 		if (processedTasks.length === 1) {
-			return `task_${String(firstNewTaskId).padStart(3, '0')}.txt`;
+			return `task_${String(firstNewTaskId).padStart(3, '0')}.txt`
 		}
-		return `task_${String(firstNewTaskId).padStart(3, '0')}.txt -> task_${String(lastNewTaskId).padStart(3, '0')}.txt`;
-	})();
+		return `task_${String(firstNewTaskId).padStart(3, '0')}.txt -> task_${String(lastNewTaskId).padStart(3, '0')}.txt`
+	})()
 
 	displayParsePrdSummary({
 		totalTasks: processedTasks.length,
@@ -325,20 +302,16 @@ export async function displayCliSummary({
 		usedFallback,
 		taskFilesGenerated,
 		actionVerb: summary.actionVerb
-	});
+	})
 
 	// Display telemetry
 	if (aiServiceResponse?.telemetryData) {
 		// For streaming, wait briefly to allow usage data to be captured
 		if (aiServiceResponse.mainResult?.usage) {
 			// Give the usage promise a short time to resolve
-			await TimeoutManager.withSoftTimeout(
-				aiServiceResponse.mainResult.usage,
-				1000,
-				undefined
-			);
+			await TimeoutManager.withSoftTimeout(aiServiceResponse.mainResult.usage, 1000, undefined)
 		}
-		displayAiUsageSummary(aiServiceResponse.telemetryData, 'cli');
+		displayAiUsageSummary(aiServiceResponse.telemetryData, 'cli')
 	}
 }
 
@@ -360,7 +333,7 @@ export function displayNonStreamingCliOutput({
 			),
 			{ padding: 1, borderColor: 'green', borderStyle: 'round' }
 		)
-	);
+	)
 
 	console.log(
 		boxen(
@@ -375,9 +348,9 @@ export function displayNonStreamingCliOutput({
 				margin: { top: 1 }
 			}
 		)
-	);
+	)
 
 	if (aiServiceResponse?.telemetryData) {
-		displayAiUsageSummary(aiServiceResponse.telemetryData, 'cli');
+		displayAiUsageSummary(aiServiceResponse.telemetryData, 'cli')
 	}
 }

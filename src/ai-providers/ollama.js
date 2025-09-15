@@ -3,13 +3,13 @@
  * AI provider implementation for Ollama models using the ollama-ai-provider package.
  */
 
-import { createOllama } from 'ollama-ai-provider';
-import { BaseAIProvider } from './base-provider.js';
+import { createOllama } from 'ollama-ai-provider'
+import { BaseAIProvider } from './base-provider.js'
 
 export class OllamaAIProvider extends BaseAIProvider {
 	constructor() {
-		super();
-		this.name = 'Ollama';
+		super()
+		this.name = 'Ollama'
 	}
 
 	/**
@@ -30,18 +30,18 @@ export class OllamaAIProvider extends BaseAIProvider {
 	 */
 	getClient(params) {
 		try {
-			const { baseURL } = params;
+			const { baseURL } = params
 
 			return createOllama({
 				...(baseURL && { baseURL })
-			});
+			})
 		} catch (error) {
-			this.handleError('client initialization', error);
+			this.handleError('client initialization', error)
 		}
 	}
 
 	isRequiredApiKey() {
-		return false;
+		return false
 	}
 
 	/**
@@ -49,6 +49,6 @@ export class OllamaAIProvider extends BaseAIProvider {
 	 * @returns {string} The environment variable name
 	 */
 	getRequiredApiKeyName() {
-		return 'OLLAMA_API_KEY';
+		return 'OLLAMA_API_KEY'
 	}
 }

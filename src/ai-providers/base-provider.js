@@ -1,14 +1,14 @@
 import {
+	JSONParseError,
+	NoObjectGeneratedError,
 	generateObject,
 	generateText,
-	streamText,
 	streamObject,
-	zodSchema,
-	JSONParseError,
-	NoObjectGeneratedError
-} from 'ai';
-import { jsonrepair } from 'jsonrepair';
-import { log } from '../../scripts/modules/utils.js';
+	streamText,
+	zodSchema
+} from 'ai'
+import { jsonrepair } from 'jsonrepair'
+import { log } from '../../scripts/modules/utils.js'
 
 /**
  * Base class for all AI providers
@@ -16,11 +16,11 @@ import { log } from '../../scripts/modules/utils.js';
 export class BaseAIProvider {
 	constructor() {
 		if (this.constructor === BaseAIProvider) {
-			throw new Error('BaseAIProvider cannot be instantiated directly');
+			throw new Error('BaseAIProvider cannot be instantiated directly')
 		}
 
 		// Each provider must set their name
-		this.name = this.constructor.name;
+		this.name = this.constructor.name
 	}
 
 	/**
@@ -30,7 +30,7 @@ export class BaseAIProvider {
 	validateAuth(params) {
 		// Default: require API key (most providers need this)
 		if (!params.apiKey) {
-			throw new Error(`${this.name} API key is required`);
+			throw new Error(`${this.name} API key is required`)
 		}
 	}
 
@@ -40,15 +40,15 @@ export class BaseAIProvider {
 	 */
 	validateParams(params) {
 		// Validate authentication (can be overridden by providers)
-		this.validateAuth(params);
+		this.validateAuth(params)
 
 		// Validate required model ID
 		if (!params.modelId) {
-			throw new Error(`${this.name} Model ID is required`);
+			throw new Error(`${this.name} Model ID is required`)
 		}
 
 		// Validate optional parameters
-		this.validateOptionalParams(params);
+		this.validateOptionalParams(params)
 	}
 
 	/**
@@ -56,16 +56,13 @@ export class BaseAIProvider {
 	 * @param {object} params - Parameters to validate
 	 */
 	validateOptionalParams(params) {
-		if (
-			params.temperature !== undefined &&
-			(params.temperature < 0 || params.temperature > 1)
-		) {
-			throw new Error('Temperature must be between 0 and 1');
+		if (params.temperature !== undefined && (params.temperature < 0 || params.temperature > 1)) {
+			throw new Error('Temperature must be between 0 and 1')
 		}
 		if (params.maxTokens !== undefined) {
-			const maxTokens = Number(params.maxTokens);
+			const maxTokens = Number(params.maxTokens)
 			if (!Number.isFinite(maxTokens) || maxTokens <= 0) {
-				throw new Error('maxTokens must be a finite number greater than 0');
+				throw new Error('maxTokens must be a finite number greater than 0')
 			}
 		}
 	}
@@ -75,14 +72,12 @@ export class BaseAIProvider {
 	 */
 	validateMessages(messages) {
 		if (!messages || !Array.isArray(messages) || messages.length === 0) {
-			throw new Error('Invalid or empty messages array provided');
+			throw new Error('Invalid or empty messages array provided')
 		}
 
 		for (const msg of messages) {
 			if (!msg.role || !msg.content) {
-				throw new Error(
-					'Invalid message format. Each message must have role and content'
-				);
+				throw new Error('Invalid message format. Each message must have role and content')
 			}
 		}
 	}
@@ -91,13 +86,11 @@ export class BaseAIProvider {
 	 * Common error handler
 	 */
 	handleError(operation, error) {
-		const errorMessage = error.message || 'Unknown error occurred';
+		const errorMessage = error.message || 'Unknown error occurred'
 		log('error', `${this.name} ${operation} failed: ${errorMessage}`, {
 			error
-		});
-		throw new Error(
-			`${this.name} API error during ${operation}: ${errorMessage}`
-		);
+		})
+		throw new Error(`${this.name} API error during ${operation}: ${errorMessage}`)
 	}
 
 	/**
@@ -105,7 +98,7 @@ export class BaseAIProvider {
 	 * @abstract
 	 */
 	getClient(params) {
-		throw new Error('getClient must be implemented by provider');
+		throw new Error('getClient must be implemented by provider')
 	}
 
 	/**
@@ -114,7 +107,7 @@ export class BaseAIProvider {
 	 * @returns {boolean} if the API key is required, defaults to true
 	 */
 	isRequiredApiKey() {
-		return true;
+		return true
 	}
 
 	/**
@@ -123,7 +116,7 @@ export class BaseAIProvider {
 	 * @returns {string|null} The environment variable name, or null if no API key is required
 	 */
 	getRequiredApiKeyName() {
-		throw new Error('getRequiredApiKeyName must be implemented by provider');
+		throw new Error('getRequiredApiKeyName must be implemented by provider')
 	}
 
 	/**
@@ -133,7 +126,7 @@ export class BaseAIProvider {
 	 * @returns {boolean} True if the model requires max_completion_tokens
 	 */
 	requiresMaxCompletionTokens(modelId) {
-		return false; // Default behavior - most models use maxTokens
+		return false // Default behavior - most models use maxTokens
 	}
 
 	/**
@@ -144,16 +137,16 @@ export class BaseAIProvider {
 	 */
 	prepareTokenParam(modelId, maxTokens) {
 		if (maxTokens === undefined) {
-			return {};
+			return {}
 		}
 
 		// Ensure maxTokens is an integer
-		const tokenValue = Math.floor(Number(maxTokens));
+		const tokenValue = Math.floor(Number(maxTokens))
 
 		if (this.requiresMaxCompletionTokens(modelId)) {
-			return { max_completion_tokens: tokenValue };
+			return { max_completion_tokens: tokenValue }
 		} else {
-			return { maxTokens: tokenValue };
+			return { maxTokens: tokenValue }
 		}
 	}
 
@@ -162,26 +155,20 @@ export class BaseAIProvider {
 	 */
 	async generateText(params) {
 		try {
-			this.validateParams(params);
-			this.validateMessages(params.messages);
+			this.validateParams(params)
+			this.validateMessages(params.messages)
 
-			log(
-				'debug',
-				`Generating ${this.name} text with model: ${params.modelId}`
-			);
+			log('debug', `Generating ${this.name} text with model: ${params.modelId}`)
 
-			const client = await this.getClient(params);
+			const client = await this.getClient(params)
 			const result = await generateText({
 				model: client(params.modelId),
 				messages: params.messages,
 				...this.prepareTokenParam(params.modelId, params.maxTokens),
 				temperature: params.temperature
-			});
+			})
 
-			log(
-				'debug',
-				`${this.name} generateText completed successfully for model: ${params.modelId}`
-			);
+			log('debug', `${this.name} generateText completed successfully for model: ${params.modelId}`)
 
 			return {
 				text: result.text,
@@ -190,9 +177,9 @@ export class BaseAIProvider {
 					outputTokens: result.usage?.completionTokens,
 					totalTokens: result.usage?.totalTokens
 				}
-			};
+			}
 		} catch (error) {
-			this.handleError('text generation', error);
+			this.handleError('text generation', error)
 		}
 	}
 
@@ -201,27 +188,24 @@ export class BaseAIProvider {
 	 */
 	async streamText(params) {
 		try {
-			this.validateParams(params);
-			this.validateMessages(params.messages);
+			this.validateParams(params)
+			this.validateMessages(params.messages)
 
-			log('debug', `Streaming ${this.name} text with model: ${params.modelId}`);
+			log('debug', `Streaming ${this.name} text with model: ${params.modelId}`)
 
-			const client = await this.getClient(params);
+			const client = await this.getClient(params)
 			const stream = await streamText({
 				model: client(params.modelId),
 				messages: params.messages,
 				...this.prepareTokenParam(params.modelId, params.maxTokens),
 				temperature: params.temperature
-			});
+			})
 
-			log(
-				'debug',
-				`${this.name} streamText initiated successfully for model: ${params.modelId}`
-			);
+			log('debug', `${this.name} streamText initiated successfully for model: ${params.modelId}`)
 
-			return stream;
+			return stream
 		} catch (error) {
-			this.handleError('text streaming', error);
+			this.handleError('text streaming', error)
 		}
 	}
 
@@ -230,19 +214,16 @@ export class BaseAIProvider {
 	 */
 	async streamObject(params) {
 		try {
-			this.validateParams(params);
-			this.validateMessages(params.messages);
+			this.validateParams(params)
+			this.validateMessages(params.messages)
 
 			if (!params.schema) {
-				throw new Error('Schema is required for object streaming');
+				throw new Error('Schema is required for object streaming')
 			}
 
-			log(
-				'debug',
-				`Streaming ${this.name} object with model: ${params.modelId}`
-			);
+			log('debug', `Streaming ${this.name} object with model: ${params.modelId}`)
 
-			const client = await this.getClient(params);
+			const client = await this.getClient(params)
 			const result = await streamObject({
 				model: client(params.modelId),
 				messages: params.messages,
@@ -250,18 +231,15 @@ export class BaseAIProvider {
 				mode: params.mode || 'auto',
 				maxTokens: params.maxTokens,
 				temperature: params.temperature
-			});
+			})
 
-			log(
-				'debug',
-				`${this.name} streamObject initiated successfully for model: ${params.modelId}`
-			);
+			log('debug', `${this.name} streamObject initiated successfully for model: ${params.modelId}`)
 
 			// Return the stream result directly
 			// The stream result contains partialObjectStream and other properties
-			return result;
+			return result
 		} catch (error) {
-			this.handleError('object streaming', error);
+			this.handleError('object streaming', error)
 		}
 	}
 
@@ -270,22 +248,22 @@ export class BaseAIProvider {
 	 */
 	async generateObject(params) {
 		try {
-			this.validateParams(params);
-			this.validateMessages(params.messages);
+			this.validateParams(params)
+			this.validateMessages(params.messages)
 
 			if (!params.schema) {
-				throw new Error('Schema is required for object generation');
+				throw new Error('Schema is required for object generation')
 			}
 			if (!params.objectName) {
-				throw new Error('Object name is required for object generation');
+				throw new Error('Object name is required for object generation')
 			}
 
 			log(
 				'debug',
 				`Generating ${this.name} object ('${params.objectName}') with model: ${params.modelId}`
-			);
+			)
 
-			const client = await this.getClient(params);
+			const client = await this.getClient(params)
 			const result = await generateObject({
 				model: client(params.modelId),
 				messages: params.messages,
@@ -293,12 +271,12 @@ export class BaseAIProvider {
 				mode: params.mode || 'auto',
 				...this.prepareTokenParam(params.modelId, params.maxTokens),
 				temperature: params.temperature
-			});
+			})
 
 			log(
 				'debug',
 				`${this.name} generateObject completed successfully for model: ${params.modelId}`
-			);
+			)
 
 			return {
 				object: result.object,
@@ -307,7 +285,7 @@ export class BaseAIProvider {
 					outputTokens: result.usage?.completionTokens,
 					totalTokens: result.usage?.totalTokens
 				}
-			};
+			}
 		} catch (error) {
 			// Check if this is a JSON parsing error that we can potentially fix
 			if (
@@ -315,17 +293,14 @@ export class BaseAIProvider {
 				JSONParseError.isInstance(error.cause) &&
 				error.cause.text
 			) {
-				log(
-					'warn',
-					`${this.name} generated malformed JSON, attempting to repair...`
-				);
+				log('warn', `${this.name} generated malformed JSON, attempting to repair...`)
 
 				try {
 					// Use jsonrepair to fix the malformed JSON
-					const repairedJson = jsonrepair(error.cause.text);
-					const parsed = JSON.parse(repairedJson);
+					const repairedJson = jsonrepair(error.cause.text)
+					const parsed = JSON.parse(repairedJson)
 
-					log('info', `Successfully repaired ${this.name} JSON output`);
+					log('info', `Successfully repaired ${this.name} JSON output`)
 
 					// Return in the expected format
 					return {
@@ -336,17 +311,14 @@ export class BaseAIProvider {
 							outputTokens: error.usage?.completionTokens || 0,
 							totalTokens: error.usage?.totalTokens || 0
 						}
-					};
+					}
 				} catch (repairError) {
-					log(
-						'error',
-						`Failed to repair ${this.name} JSON: ${repairError.message}`
-					);
+					log('error', `Failed to repair ${this.name} JSON: ${repairError.message}`)
 					// Fall through to handleError with original error
 				}
 			}
 
-			this.handleError('object generation', error);
+			this.handleError('object generation', error)
 		}
 	}
 }

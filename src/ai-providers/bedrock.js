@@ -1,15 +1,15 @@
-import { createAmazonBedrock } from '@ai-sdk/amazon-bedrock';
-import { fromNodeProviderChain } from '@aws-sdk/credential-providers';
-import { BaseAIProvider } from './base-provider.js';
+import { createAmazonBedrock } from '@ai-sdk/amazon-bedrock'
+import { fromNodeProviderChain } from '@aws-sdk/credential-providers'
+import { BaseAIProvider } from './base-provider.js'
 
 export class BedrockAIProvider extends BaseAIProvider {
 	constructor() {
-		super();
-		this.name = 'Bedrock';
+		super()
+		this.name = 'Bedrock'
 	}
 
 	isRequiredApiKey() {
-		return false;
+		return false
 	}
 
 	/**
@@ -18,7 +18,7 @@ export class BedrockAIProvider extends BaseAIProvider {
 	 * @returns {string} The environment variable name
 	 */
 	getRequiredApiKeyName() {
-		return 'AWS_ACCESS_KEY_ID';
+		return 'AWS_ACCESS_KEY_ID'
 	}
 
 	/**
@@ -34,13 +34,13 @@ export class BedrockAIProvider extends BaseAIProvider {
 	 */
 	getClient(params) {
 		try {
-			const credentialProvider = fromNodeProviderChain();
+			const credentialProvider = fromNodeProviderChain()
 
 			return createAmazonBedrock({
 				credentialProvider
-			});
+			})
 		} catch (error) {
-			this.handleError('client initialization', error);
+			this.handleError('client initialization', error)
 		}
 	}
 }

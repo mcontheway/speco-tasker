@@ -1,7 +1,7 @@
 /**
  * Tests for the set-task-status.js module
  */
-import { jest } from '@jest/globals';
+import { jest } from '@jest/globals'
 
 // Mock the dependencies before importing the module under test
 jest.unstable_mockModule('../../../../../scripts/modules/utils.js', () => ({
@@ -17,19 +17,17 @@ jest.unstable_mockModule('../../../../../scripts/modules/utils.js', () => ({
 	sanitizePrompt: jest.fn((prompt) => prompt),
 	truncate: jest.fn((text) => text),
 	isSilentMode: jest.fn(() => false),
-	findTaskById: jest.fn((tasks, id) =>
-		tasks.find((t) => t.id === parseInt(id))
-	),
+	findTaskById: jest.fn((tasks, id) => tasks.find((t) => t.id === parseInt(id))),
 	ensureTagMetadata: jest.fn((tagObj) => tagObj),
 	getCurrentTag: jest.fn(() => 'master')
-}));
+}))
 
 jest.unstable_mockModule(
 	'../../../../../scripts/modules/task-manager/generate-task-files.js',
 	() => ({
 		default: jest.fn().mockResolvedValue()
 	})
-);
+)
 
 jest.unstable_mockModule('../../../../../scripts/modules/ui.js', () => ({
 	formatDependenciesWithStatus: jest.fn(),
@@ -38,71 +36,47 @@ jest.unstable_mockModule('../../../../../scripts/modules/ui.js', () => ({
 	startLoadingIndicator: jest.fn(() => ({ stop: jest.fn() })),
 	stopLoadingIndicator: jest.fn(),
 	getStatusWithColor: jest.fn((status) => status)
-}));
+}))
 
 jest.unstable_mockModule('../../../../../src/constants/task-status.js', () => ({
 	isValidTaskStatus: jest.fn((status) =>
-		[
-			'pending',
-			'done',
-			'in-progress',
-			'review',
-			'deferred',
-			'cancelled'
-		].includes(status)
+		['pending', 'done', 'in-progress', 'review', 'deferred', 'cancelled'].includes(status)
 	),
-	TASK_STATUS_OPTIONS: [
-		'pending',
-		'done',
-		'in-progress',
-		'review',
-		'deferred',
-		'cancelled'
-	]
-}));
+	TASK_STATUS_OPTIONS: ['pending', 'done', 'in-progress', 'review', 'deferred', 'cancelled']
+}))
 
 jest.unstable_mockModule(
 	'../../../../../scripts/modules/task-manager/update-single-task-status.js',
 	() => ({
 		default: jest.fn()
 	})
-);
+)
 
-jest.unstable_mockModule(
-	'../../../../../scripts/modules/dependency-manager.js',
-	() => ({
-		validateTaskDependencies: jest.fn()
-	})
-);
+jest.unstable_mockModule('../../../../../scripts/modules/dependency-manager.js', () => ({
+	validateTaskDependencies: jest.fn()
+}))
 
-jest.unstable_mockModule(
-	'../../../../../scripts/modules/config-manager.js',
-	() => ({
-		getDebugFlag: jest.fn(() => false)
-	})
-);
+jest.unstable_mockModule('../../../../../scripts/modules/config-manager.js', () => ({
+	getDebugFlag: jest.fn(() => false)
+}))
 
 // Import the mocked modules
 const { readJSON, writeJSON, log, findTaskById } = await import(
 	'../../../../../scripts/modules/utils.js'
-);
+)
 
 const generateTaskFiles = (
-	await import(
-		'../../../../../scripts/modules/task-manager/generate-task-files.js'
-	)
-).default;
+	await import('../../../../../scripts/modules/task-manager/generate-task-files.js')
+).default
 
 const updateSingleTaskStatus = (
-	await import(
-		'../../../../../scripts/modules/task-manager/update-single-task-status.js'
-	)
-).default;
+	await import('../../../../../scripts/modules/task-manager/update-single-task-status.js')
+).default
 
 // Import the module under test
 const { default: setTaskStatus } = await import(
 	'../../../../../scripts/modules/task-manager/set-task-status.js'
-);
+)
 
 // Sample data for tests (from main test file) - TAGGED FORMAT
 const sampleTasks = {
@@ -158,126 +132,118 @@ const sampleTasks = {
 			}
 		]
 	}
-};
+}
 
 describe('setTaskStatus', () => {
 	beforeEach(() => {
-		jest.clearAllMocks();
+		jest.clearAllMocks()
 
 		// Mock console methods to suppress output
-		jest.spyOn(console, 'log').mockImplementation(() => {});
-		jest.spyOn(console, 'error').mockImplementation(() => {});
+		jest.spyOn(console, 'log').mockImplementation(() => {})
+		jest.spyOn(console, 'error').mockImplementation(() => {})
 
 		// Mock process.exit to prevent actual exit
 		jest.spyOn(process, 'exit').mockImplementation((code) => {
-			throw new Error(`process.exit: ${code}`);
-		});
+			throw new Error(`process.exit: ${code}`)
+		})
 
 		// Set up updateSingleTaskStatus mock to actually update the data
-		updateSingleTaskStatus.mockImplementation(
-			async (tasksPath, taskId, newStatus, data) => {
-				// This mock now operates on the tasks array passed in the `data` object
-				const { tasks } = data;
-				// Handle subtask notation (e.g., "3.1")
-				if (taskId.includes('.')) {
-					const [parentId, subtaskId] = taskId
-						.split('.')
-						.map((id) => parseInt(id, 10));
-					const parentTask = tasks.find((t) => t.id === parentId);
-					if (!parentTask) {
-						throw new Error(`Parent task ${parentId} not found`);
-					}
-					if (!parentTask.subtasks) {
-						throw new Error(`Parent task ${parentId} has no subtasks`);
-					}
-					const subtask = parentTask.subtasks.find((st) => st.id === subtaskId);
-					if (!subtask) {
-						throw new Error(
-							`Subtask ${subtaskId} not found in parent task ${parentId}`
-						);
-					}
-					subtask.status = newStatus;
-				} else {
-					// Handle regular task
-					const task = tasks.find((t) => t.id === parseInt(taskId, 10));
-					if (!task) {
-						throw new Error(`Task ${taskId} not found`);
-					}
-					task.status = newStatus;
+		updateSingleTaskStatus.mockImplementation(async (tasksPath, taskId, newStatus, data) => {
+			// This mock now operates on the tasks array passed in the `data` object
+			const { tasks } = data
+			// Handle subtask notation (e.g., "3.1")
+			if (taskId.includes('.')) {
+				const [parentId, subtaskId] = taskId.split('.').map((id) => parseInt(id, 10))
+				const parentTask = tasks.find((t) => t.id === parentId)
+				if (!parentTask) {
+					throw new Error(`Parent task ${parentId} not found`)
+				}
+				if (!parentTask.subtasks) {
+					throw new Error(`Parent task ${parentId} has no subtasks`)
+				}
+				const subtask = parentTask.subtasks.find((st) => st.id === subtaskId)
+				if (!subtask) {
+					throw new Error(`Subtask ${subtaskId} not found in parent task ${parentId}`)
+				}
+				subtask.status = newStatus
+			} else {
+				// Handle regular task
+				const task = tasks.find((t) => t.id === parseInt(taskId, 10))
+				if (!task) {
+					throw new Error(`Task ${taskId} not found`)
+				}
+				task.status = newStatus
 
-					// If marking parent as done, mark all subtasks as done too
-					if (newStatus === 'done' && task.subtasks) {
-						task.subtasks.forEach((subtask) => {
-							subtask.status = 'done';
-						});
-					}
+				// If marking parent as done, mark all subtasks as done too
+				if (newStatus === 'done' && task.subtasks) {
+					task.subtasks.forEach((subtask) => {
+						subtask.status = 'done'
+					})
 				}
 			}
-		);
-	});
+		})
+	})
 
 	afterEach(() => {
 		// Restore console methods
-		jest.restoreAllMocks();
-	});
+		jest.restoreAllMocks()
+	})
 
 	test('should update task status in tasks.json', async () => {
 		// Arrange
-		const testTasksData = JSON.parse(JSON.stringify(sampleTasks));
-		const tasksPath = '/mock/path/tasks.json';
+		const testTasksData = JSON.parse(JSON.stringify(sampleTasks))
+		const tasksPath = '/mock/path/tasks.json'
 
 		readJSON.mockReturnValue({
 			...testTasksData.master,
 			tag: 'master',
 			_rawTaggedData: testTasksData
-		});
+		})
 
 		// Act
 		await setTaskStatus(tasksPath, '2', 'done', {
 			tag: 'master',
 			mcpLog: { info: jest.fn() }
-		});
+		})
 
 		// Assert
-		expect(readJSON).toHaveBeenCalledWith(tasksPath, undefined, 'master');
+		expect(readJSON).toHaveBeenCalledWith(tasksPath, undefined, 'master')
 		expect(writeJSON).toHaveBeenCalledWith(
 			tasksPath,
 			expect.objectContaining({
 				master: expect.objectContaining({
-					tasks: expect.arrayContaining([
-						expect.objectContaining({ id: 2, status: 'done' })
-					])
+					tasks: expect.arrayContaining([expect.objectContaining({ id: 2, status: 'done' })])
 				})
 			}),
 			undefined,
 			'master'
-		);
+		)
 		// expect(generateTaskFiles).toHaveBeenCalledWith(
 		// 	tasksPath,
 		// 	expect.any(String),
 		// 	expect.any(Object)
 		// );
-	});
+	})
 
 	test('should update subtask status when using dot notation', async () => {
 		// Arrange
-		const testTasksData = JSON.parse(JSON.stringify(sampleTasks));
-		const tasksPath = '/mock/path/tasks.json';
+		const testTasksData = JSON.parse(JSON.stringify(sampleTasks))
+		const tasksPath = '/mock/path/tasks.json'
 
 		readJSON.mockReturnValue({
 			...testTasksData.master,
 			tag: 'master',
 			_rawTaggedData: testTasksData
-		});
+		})
 
 		// Act
 		await setTaskStatus(tasksPath, '3.1', 'done', {
 			tag: 'master',
 			mcpLog: { info: jest.fn() }
-		});
+		})
 
 		// Assert
-		expect(readJSON).toHaveBeenCalledWith(tasksPath, undefined, 'master');
+		expect(readJSON).toHaveBeenCalledWith(tasksPath, undefined, 'master')
 		expect(writeJSON).toHaveBeenCalledWith(
 			tasksPath,
 			expect.objectContaining({
@@ -285,37 +251,35 @@ describe('setTaskStatus', () => {
 					tasks: expect.arrayContaining([
 						expect.objectContaining({
 							id: 3,
-							subtasks: expect.arrayContaining([
-								expect.objectContaining({ id: 1, status: 'done' })
-							])
+							subtasks: expect.arrayContaining([expect.objectContaining({ id: 1, status: 'done' })])
 						})
 					])
 				})
 			}),
 			undefined,
 			'master'
-		);
-	});
+		)
+	})
 
 	test('should update multiple tasks when given comma-separated IDs', async () => {
 		// Arrange
-		const testTasksData = JSON.parse(JSON.stringify(sampleTasks));
-		const tasksPath = '/mock/path/tasks.json';
+		const testTasksData = JSON.parse(JSON.stringify(sampleTasks))
+		const tasksPath = '/mock/path/tasks.json'
 
 		readJSON.mockReturnValue({
 			...testTasksData.master,
 			tag: 'master',
 			_rawTaggedData: testTasksData
-		});
+		})
 
 		// Act
 		await setTaskStatus(tasksPath, '1,2', 'done', {
 			tag: 'master',
 			mcpLog: { info: jest.fn() }
-		});
+		})
 
 		// Assert
-		expect(readJSON).toHaveBeenCalledWith(tasksPath, undefined, 'master');
+		expect(readJSON).toHaveBeenCalledWith(tasksPath, undefined, 'master')
 		expect(writeJSON).toHaveBeenCalledWith(
 			tasksPath,
 			expect.objectContaining({
@@ -328,25 +292,25 @@ describe('setTaskStatus', () => {
 			}),
 			undefined,
 			'master'
-		);
-	});
+		)
+	})
 
 	test('should automatically mark subtasks as done when parent is marked done', async () => {
 		// Arrange
-		const testTasksData = JSON.parse(JSON.stringify(sampleTasks));
-		const tasksPath = '/mock/path/tasks.json';
+		const testTasksData = JSON.parse(JSON.stringify(sampleTasks))
+		const tasksPath = '/mock/path/tasks.json'
 
 		readJSON.mockReturnValue({
 			...testTasksData.master,
 			tag: 'master',
 			_rawTaggedData: testTasksData
-		});
+		})
 
 		// Act
 		await setTaskStatus(tasksPath, '3', 'done', {
 			tag: 'master',
 			mcpLog: { info: jest.fn() }
-		});
+		})
 
 		// Assert
 		expect(writeJSON).toHaveBeenCalledWith(
@@ -367,19 +331,19 @@ describe('setTaskStatus', () => {
 			}),
 			undefined,
 			'master'
-		);
-	});
+		)
+	})
 
 	test('should throw error for non-existent task ID', async () => {
 		// Arrange
-		const testTasksData = JSON.parse(JSON.stringify(sampleTasks));
-		const tasksPath = '/mock/path/tasks.json';
+		const testTasksData = JSON.parse(JSON.stringify(sampleTasks))
+		const tasksPath = '/mock/path/tasks.json'
 
 		readJSON.mockReturnValue({
 			...testTasksData.master,
 			tag: 'master',
 			_rawTaggedData: testTasksData
-		});
+		})
 
 		// Act & Assert
 		await expect(
@@ -387,41 +351,41 @@ describe('setTaskStatus', () => {
 				tag: 'master',
 				mcpLog: { info: jest.fn() }
 			})
-		).rejects.toThrow('Task 99 not found');
-	});
+		).rejects.toThrow('Task 99 not found')
+	})
 
 	test('should throw error for invalid status', async () => {
 		// Arrange
-		const testTasksData = JSON.parse(JSON.stringify(sampleTasks));
-		const tasksPath = '/mock/path/tasks.json';
+		const testTasksData = JSON.parse(JSON.stringify(sampleTasks))
+		const tasksPath = '/mock/path/tasks.json'
 
 		readJSON.mockReturnValue({
 			...testTasksData.master,
 			tag: 'master',
 			_rawTaggedData: testTasksData
-		});
+		})
 
 		// Act & Assert
 		await expect(
 			setTaskStatus(tasksPath, '2', 'InvalidStatus', {
 				mcpLog: { info: jest.fn() }
 			})
-		).rejects.toThrow(/Invalid status value: InvalidStatus/);
-	});
+		).rejects.toThrow(/Invalid status value: InvalidStatus/)
+	})
 
 	test('should handle parent tasks without subtasks when updating subtask', async () => {
 		// Arrange
-		const testTasksData = JSON.parse(JSON.stringify(sampleTasks));
+		const testTasksData = JSON.parse(JSON.stringify(sampleTasks))
 		// Remove subtasks from task 3
-		const { subtasks, ...taskWithoutSubtasks } = testTasksData.master.tasks[2];
-		testTasksData.master.tasks[2] = taskWithoutSubtasks;
+		const { subtasks, ...taskWithoutSubtasks } = testTasksData.master.tasks[2]
+		testTasksData.master.tasks[2] = taskWithoutSubtasks
 
-		const tasksPath = '/mock/path/tasks.json';
+		const tasksPath = '/mock/path/tasks.json'
 		readJSON.mockReturnValue({
 			...testTasksData.master,
 			tag: 'master',
 			_rawTaggedData: testTasksData
-		});
+		})
 
 		// Act & Assert
 		await expect(
@@ -429,19 +393,19 @@ describe('setTaskStatus', () => {
 				tag: 'master',
 				mcpLog: { info: jest.fn() }
 			})
-		).rejects.toThrow('has no subtasks');
-	});
+		).rejects.toThrow('has no subtasks')
+	})
 
 	test('should handle non-existent subtask ID', async () => {
 		// Arrange
-		const testTasksData = JSON.parse(JSON.stringify(sampleTasks));
-		const tasksPath = '/mock/path/tasks.json';
+		const testTasksData = JSON.parse(JSON.stringify(sampleTasks))
+		const tasksPath = '/mock/path/tasks.json'
 
 		readJSON.mockReturnValue({
 			...testTasksData.master,
 			tag: 'master',
 			_rawTaggedData: testTasksData
-		});
+		})
 
 		// Act & Assert
 		await expect(
@@ -449,68 +413,68 @@ describe('setTaskStatus', () => {
 				tag: 'master',
 				mcpLog: { info: jest.fn() }
 			})
-		).rejects.toThrow('Subtask 99 not found');
-	});
+		).rejects.toThrow('Subtask 99 not found')
+	})
 
 	test('should handle file read errors', async () => {
 		// Arrange
-		const tasksPath = 'tasks/tasks.json';
-		const taskId = '2';
-		const newStatus = 'done';
+		const tasksPath = 'tasks/tasks.json'
+		const taskId = '2'
+		const newStatus = 'done'
 
 		readJSON.mockImplementation(() => {
-			throw new Error('File not found');
-		});
+			throw new Error('File not found')
+		})
 
 		// Act & Assert
 		await expect(
 			setTaskStatus(tasksPath, taskId, newStatus, {
 				mcpLog: { info: jest.fn() }
 			})
-		).rejects.toThrow('File not found');
+		).rejects.toThrow('File not found')
 
 		// Verify that writeJSON was not called due to read error
-		expect(writeJSON).not.toHaveBeenCalled();
-	});
+		expect(writeJSON).not.toHaveBeenCalled()
+	})
 
 	test('should handle empty task ID input', async () => {
 		// Arrange
-		const tasksPath = 'tasks/tasks.json';
-		const emptyTaskId = '';
-		const newStatus = 'done';
+		const tasksPath = 'tasks/tasks.json'
+		const emptyTaskId = ''
+		const newStatus = 'done'
 
 		// Act & Assert
 		await expect(
 			setTaskStatus(tasksPath, emptyTaskId, newStatus, {
 				mcpLog: { info: jest.fn() }
 			})
-		).rejects.toThrow();
+		).rejects.toThrow()
 
 		// Verify that updateSingleTaskStatus was not called
-		expect(updateSingleTaskStatus).not.toHaveBeenCalled();
-	});
+		expect(updateSingleTaskStatus).not.toHaveBeenCalled()
+	})
 
 	test('should handle whitespace in comma-separated IDs', async () => {
 		// Arrange
-		const testTasksData = JSON.parse(JSON.stringify(sampleTasks));
-		const tasksPath = 'tasks/tasks.json';
-		const taskIds = ' 1 , 2 , 3 '; // IDs with whitespace
-		const newStatus = 'in-progress';
+		const testTasksData = JSON.parse(JSON.stringify(sampleTasks))
+		const tasksPath = 'tasks/tasks.json'
+		const taskIds = ' 1 , 2 , 3 ' // IDs with whitespace
+		const newStatus = 'in-progress'
 
 		readJSON.mockReturnValue({
 			...testTasksData.master,
 			tag: 'master',
 			_rawTaggedData: testTasksData
-		});
+		})
 
 		// Act
 		const result = await setTaskStatus(tasksPath, taskIds, newStatus, {
 			tag: 'master',
 			mcpLog: { info: jest.fn() }
-		});
+		})
 
 		// Assert
-		expect(updateSingleTaskStatus).toHaveBeenCalledTimes(3);
+		expect(updateSingleTaskStatus).toHaveBeenCalledTimes(3)
 		expect(updateSingleTaskStatus).toHaveBeenCalledWith(
 			tasksPath,
 			'1',
@@ -521,7 +485,7 @@ describe('setTaskStatus', () => {
 				_rawTaggedData: expect.any(Object)
 			}),
 			false
-		);
+		)
 		expect(updateSingleTaskStatus).toHaveBeenCalledWith(
 			tasksPath,
 			'2',
@@ -532,7 +496,7 @@ describe('setTaskStatus', () => {
 				_rawTaggedData: expect.any(Object)
 			}),
 			false
-		);
+		)
 		expect(updateSingleTaskStatus).toHaveBeenCalledWith(
 			tasksPath,
 			'3',
@@ -543,9 +507,9 @@ describe('setTaskStatus', () => {
 				_rawTaggedData: expect.any(Object)
 			}),
 			false
-		);
-		expect(result).toBeDefined();
-	});
+		)
+		expect(result).toBeDefined()
+	})
 
 	// Regression test to ensure tag preservation when updating in multi-tag environment
 	test('should preserve other tags when updating task status', async () => {
@@ -553,39 +517,37 @@ describe('setTaskStatus', () => {
 		const multiTagData = {
 			master: JSON.parse(JSON.stringify(sampleTasks.master)),
 			'feature-branch': {
-				tasks: [
-					{ id: 10, title: 'FB Task', status: 'pending', dependencies: [] }
-				],
+				tasks: [{ id: 10, title: 'FB Task', status: 'pending', dependencies: [] }],
 				metadata: { description: 'Feature branch tasks' }
 			}
-		};
-		const tasksPath = '/mock/path/tasks.json';
+		}
+		const tasksPath = '/mock/path/tasks.json'
 
 		readJSON.mockReturnValue({
 			...multiTagData.master, // resolved view not used
 			tag: 'master',
 			_rawTaggedData: multiTagData
-		});
+		})
 
 		// Act
 		await setTaskStatus(tasksPath, '1', 'done', {
 			tag: 'master',
 			mcpLog: { info: jest.fn() }
-		});
+		})
 
 		// Assert: writeJSON should be called with data containing both tags intact
-		const writeArgs = writeJSON.mock.calls[0];
-		expect(writeArgs[0]).toBe(tasksPath);
-		const writtenData = writeArgs[1];
-		expect(writtenData).toHaveProperty('master');
-		expect(writtenData).toHaveProperty('feature-branch');
+		const writeArgs = writeJSON.mock.calls[0]
+		expect(writeArgs[0]).toBe(tasksPath)
+		const writtenData = writeArgs[1]
+		expect(writtenData).toHaveProperty('master')
+		expect(writtenData).toHaveProperty('feature-branch')
 		// master task updated
-		const updatedTask = writtenData.master.tasks.find((t) => t.id === 1);
-		expect(updatedTask.status).toBe('done');
+		const updatedTask = writtenData.master.tasks.find((t) => t.id === 1)
+		expect(updatedTask.status).toBe('done')
 		// feature-branch untouched
-		expect(writtenData['feature-branch'].tasks[0].status).toBe('pending');
+		expect(writtenData['feature-branch'].tasks[0].status).toBe('pending')
 		// ensure additional args (projectRoot undefined, tag 'master') present
-		expect(writeArgs[2]).toBeUndefined();
-		expect(writeArgs[3]).toBe('master');
-	});
-});
+		expect(writeArgs[2]).toBeUndefined()
+		expect(writeArgs[3]).toBe('master')
+	})
+})

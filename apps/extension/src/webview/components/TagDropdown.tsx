@@ -1,11 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
+import type React from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 interface TagDropdownProps {
-	currentTag: string;
-	availableTags: string[];
-	onTagSwitch: (tagName: string) => Promise<void>;
-	sendMessage: (message: any) => Promise<any>;
-	dispatch: React.Dispatch<any>;
+	currentTag: string
+	availableTags: string[]
+	onTagSwitch: (tagName: string) => Promise<void>
+	sendMessage: (message: any) => Promise<any>
+	dispatch: React.Dispatch<any>
 }
 
 export const TagDropdown: React.FC<TagDropdownProps> = ({
@@ -15,70 +16,67 @@ export const TagDropdown: React.FC<TagDropdownProps> = ({
 	sendMessage,
 	dispatch
 }) => {
-	const [isOpen, setIsOpen] = useState(false);
-	const [isLoading, setIsLoading] = useState(false);
-	const dropdownRef = useRef<HTMLDivElement>(null);
+	const [isOpen, setIsOpen] = useState(false)
+	const [isLoading, setIsLoading] = useState(false)
+	const dropdownRef = useRef<HTMLDivElement>(null)
 
 	// Fetch tags when component mounts
 	useEffect(() => {
-		fetchTags();
-	}, []);
+		fetchTags()
+	}, [])
 
 	// Handle click outside to close dropdown
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
-			if (
-				dropdownRef.current &&
-				!dropdownRef.current.contains(event.target as Node)
-			) {
-				setIsOpen(false);
+			if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+				setIsOpen(false)
 			}
-		};
+		}
 
 		if (isOpen) {
-			document.addEventListener('mousedown', handleClickOutside);
+			document.addEventListener('mousedown', handleClickOutside)
 			return () => {
-				document.removeEventListener('mousedown', handleClickOutside);
-			};
+				document.removeEventListener('mousedown', handleClickOutside)
+			}
 		}
-	}, [isOpen]);
+	}, [isOpen])
 
 	const fetchTags = async () => {
 		try {
-			const result = await sendMessage({ type: 'getTags' });
+			const result = await sendMessage({ type: 'getTags' })
 
 			if (result?.tags && result?.currentTag) {
-				const tagNames = result.tags.map((tag: any) => tag.name || tag);
+				const tagNames = result.tags.map((tag: any) => tag.name || tag)
 				dispatch({
 					type: 'SET_TAG_DATA',
 					payload: {
 						currentTag: result.currentTag,
 						availableTags: tagNames
 					}
-				});
+				})
 			}
 		} catch (error) {
-			console.error('Failed to fetch tags:', error);
+			console.error('Failed to fetch tags:', error)
 		}
-	};
+	}
 
 	const handleTagSwitch = async (tagName: string) => {
 		if (tagName === currentTag) {
-			setIsOpen(false);
-			return;
+			setIsOpen(false)
+			return
 		}
 
-		setIsLoading(true);
+		setIsLoading(true)
 		try {
-			await onTagSwitch(tagName);
-			dispatch({ type: 'SET_CURRENT_TAG', payload: tagName });
-			setIsOpen(false);
+			await onTagSwitch(tagName)
+			dispatch({ type: 'SET_CURRENT_TAG', payload: tagName })
+			setIsOpen(false)
 		} catch (error) {
-			console.error('Failed to switch tag:', error);
+			console.error('Failed to switch tag:', error)
 		} finally {
-			setIsLoading(false);
+			setIsLoading(false)
 		}
-	};
+	}
 
 	return (
 		<div className="relative" ref={dropdownRef}>
@@ -94,12 +92,7 @@ export const TagDropdown: React.FC<TagDropdownProps> = ({
 					stroke="currentColor"
 					viewBox="0 0 24 24"
 				>
-					<path
-						strokeLinecap="round"
-						strokeLinejoin="round"
-						strokeWidth={2}
-						d="M19 9l-7 7-7-7"
-					/>
+					<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
 				</svg>
 			</button>
 
@@ -137,5 +130,5 @@ export const TagDropdown: React.FC<TagDropdownProps> = ({
 				</div>
 			)}
 		</div>
-	);
-};
+	)
+}

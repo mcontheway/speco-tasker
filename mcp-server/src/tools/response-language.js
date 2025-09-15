@@ -1,10 +1,6 @@
-import { z } from 'zod';
-import {
-	createErrorResponse,
-	handleApiResult,
-	withNormalizedProjectRoot
-} from './utils.js';
-import { responseLanguageDirect } from '../core/direct-functions/response-language.js';
+import { z } from 'zod'
+import { responseLanguageDirect } from '../core/direct-functions/response-language.js'
+import { createErrorResponse, handleApiResult, withNormalizedProjectRoot } from './utils.js'
 
 export function registerResponseLanguageTool(server) {
 	server.addTool({
@@ -18,15 +14,11 @@ export function registerResponseLanguageTool(server) {
 				),
 			language: z
 				.string()
-				.describe(
-					'The new response language to set. like "中文" "English" or "español".'
-				)
+				.describe('The new response language to set. like "中文" "English" or "español".')
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
 			try {
-				log.info(
-					`Executing response-language tool with args: ${JSON.stringify(args)}`
-				);
+				log.info(`Executing response-language tool with args: ${JSON.stringify(args)}`)
 
 				const result = await responseLanguageDirect(
 					{
@@ -35,12 +27,12 @@ export function registerResponseLanguageTool(server) {
 					},
 					log,
 					{ session }
-				);
-				return handleApiResult(result, log, 'Error setting response language');
+				)
+				return handleApiResult(result, log, 'Error setting response language')
 			} catch (error) {
-				log.error(`Error in response-language tool: ${error.message}`);
-				return createErrorResponse(error.message);
+				log.error(`Error in response-language tool: ${error.message}`)
+				return createErrorResponse(error.message)
 			}
 		})
-	});
+	})
 }

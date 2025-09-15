@@ -19,8 +19,7 @@ export const sampleClaudeResponse = {
 		{
 			id: 2,
 			title: 'Implement CLI Foundation',
-			description:
-				'Create the command-line interface foundation with basic commands',
+			description: 'Create the command-line interface foundation with basic commands',
 			status: 'pending',
 			dependencies: [1],
 			priority: 'high',
@@ -32,8 +31,7 @@ export const sampleClaudeResponse = {
 		{
 			id: 3,
 			title: 'Develop Task Management Operations',
-			description:
-				'Implement core operations for creating, reading, updating, and deleting tasks',
+			description: 'Implement core operations for creating, reading, updating, and deleting tasks',
 			status: 'pending',
 			dependencies: [1],
 			priority: 'medium',
@@ -49,4 +47,4 @@ export const sampleClaudeResponse = {
 		sourceFile: 'tests/fixtures/sample-prd.txt',
 		generatedAt: '2023-12-15'
 	}
-};
+}

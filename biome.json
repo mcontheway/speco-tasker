@@ -7,26 +7,35 @@
 			"tasks",
 			"package-lock.json",
 			"tests/fixture/*.json",
-			"dist"
-		]
+			"dist",
+			"node_modules",
+			"apps/docs/build",
+			"apps/extension/build",
+			"*.d.ts"
+		],
+		"include": ["**/*.js", "**/*.ts", "**/*.json", "apps/extension/**/*.tsx"]
 	},
 	"formatter": {
 		"bracketSpacing": true,
 		"enabled": true,
 		"indentStyle": "tab",
-		"lineWidth": 80
+		"lineWidth": 100
 	},
 	"javascript": {
 		"formatter": {
 			"arrowParentheses": "always",
 			"quoteStyle": "single",
-			"trailingCommas": "none"
+			"trailingCommas": "none",
+			"semicolons": "asNeeded"
+		}
+	},
+	"json": {
+		"formatter": {
+			"enabled": true
 		}
 	},
 	"linter": {
 		"enabled": true,
-		"include": ["apps/extension/**/*.ts", "apps/extension/**/*.tsx"],
-		"ignore": ["**/*", "!apps/extension/**/*"],
 		"rules": {
 			"recommended": true,
 			"complexity": {
@@ -36,11 +45,13 @@
 			},
 			"correctness": {
 				"noConstantCondition": "off",
-				"noUnreachable": "off"
+				"noUnreachable": "off",
+				"useExhaustiveDependencies": "off"
 			},
 			"suspicious": {
 				"noDuplicateTestHooks": "off",
-				"noPrototypeBuiltins": "off"
+				"noPrototypeBuiltins": "off",
+				"noExplicitAny": "warn"
 			},
 			"style": {
 				"noUselessElse": "off",
@@ -50,6 +61,9 @@
 				"useTemplate": "off",
 				"noUnusedTemplateLiteral": "off",
 				"noNonNullAssertion": "warn"
+			},
+			"performance": {
+				"noDelete": "off"
 			}
 		}
 	}

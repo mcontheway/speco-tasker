@@ -1,13 +1,13 @@
-import { jest } from '@jest/globals';
-import fs from 'fs';
-import path from 'path';
-import os from 'os';
+import fs from 'fs'
+import os from 'os'
+import path from 'path'
+import { jest } from '@jest/globals'
 
 // Reduce noise in test output
-process.env.TASKMASTER_LOG_LEVEL = 'error';
+process.env.TASKMASTER_LOG_LEVEL = 'error'
 
 // === Mock everything early ===
-jest.mock('child_process', () => ({ execSync: jest.fn() }));
+jest.mock('child_process', () => ({ execSync: jest.fn() }))
 jest.mock('fs', () => ({
 	...jest.requireActual('fs'),
 	mkdirSync: jest.fn(),
@@ -17,13 +17,13 @@ jest.mock('fs', () => ({
 	existsSync: jest.fn(),
 	mkdtempSync: jest.requireActual('fs').mkdtempSync,
 	rmSync: jest.requireActual('fs').rmSync
-}));
+}))
 
 // Mock console methods to suppress output
-const consoleMethods = ['log', 'info', 'warn', 'error', 'clear'];
+const consoleMethods = ['log', 'info', 'warn', 'error', 'clear']
 consoleMethods.forEach((method) => {
-	global.console[method] = jest.fn();
-});
+	global.console[method] = jest.fn()
+})
 
 // Mock ES modules using unstable_mockModule
 jest.unstable_mockModule('../../scripts/modules/utils.js', () => ({
@@ -31,12 +31,12 @@ jest.unstable_mockModule('../../scripts/modules/utils.js', () => ({
 	enableSilentMode: jest.fn(),
 	log: jest.fn(),
 	findProjectRoot: jest.fn(() => process.cwd())
-}));
+}))
 
 // Mock git-utils module
 jest.unstable_mockModule('../../scripts/modules/utils/git-utils.js', () => ({
 	insideGitWorkTree: jest.fn(() => false)
-}));
+}))
 
 // Mock rule transformer
 jest.unstable_mockModule('../../src/utils/rule-transformer.js', () => ({
@@ -45,18 +45,18 @@ jest.unstable_mockModule('../../src/utils/rule-transformer.js', () => ({
 		conversionConfig: {},
 		globalReplacements: []
 	}))
-}));
+}))
 
 // Mock any other modules that might output or do real operations
 jest.unstable_mockModule('../../scripts/modules/config-manager.js', () => ({
 	createDefaultConfig: jest.fn(() => ({ models: {}, project: {} })),
 	saveConfig: jest.fn()
-}));
+}))
 
 // Mock display libraries
-jest.mock('figlet', () => ({ textSync: jest.fn(() => 'MOCKED BANNER') }));
-jest.mock('boxen', () => jest.fn(() => 'MOCKED BOX'));
-jest.mock('gradient-string', () => jest.fn(() => jest.fn((text) => text)));
+jest.mock('figlet', () => ({ textSync: jest.fn(() => 'MOCKED BANNER') }))
+jest.mock('boxen', () => jest.fn(() => 'MOCKED BOX'))
+jest.mock('gradient-string', () => jest.fn(() => jest.fn((text) => text)))
 jest.mock('chalk', () => ({
 	blue: jest.fn((text) => text),
 	green: jest.fn((text) => text),
@@ -67,22 +67,22 @@ jest.mock('chalk', () => ({
 	dim: jest.fn((text) => text),
 	bold: jest.fn((text) => text),
 	underline: jest.fn((text) => text)
-}));
+}))
 
-const { execSync } = jest.requireMock('child_process');
-const mockFs = jest.requireMock('fs');
+const { execSync } = jest.requireMock('child_process')
+const mockFs = jest.requireMock('fs')
 
 // Import the mocked modules
-const mockUtils = await import('../../scripts/modules/utils.js');
-const mockGitUtils = await import('../../scripts/modules/utils/git-utils.js');
-const mockRuleTransformer = await import('../../src/utils/rule-transformer.js');
+const mockUtils = await import('../../scripts/modules/utils.js')
+const mockGitUtils = await import('../../scripts/modules/utils/git-utils.js')
+const mockRuleTransformer = await import('../../src/utils/rule-transformer.js')
 
 // Import after mocks
-const { initializeProject } = await import('../../scripts/init.js');
+const { initializeProject } = await import('../../scripts/init.js')
 
 describe('initializeProject – Git / Alias flag logic', () => {
-	let tmpDir;
-	const origCwd = process.cwd();
+	let tmpDir
+	const origCwd = process.cwd()
 
 	// Standard non-interactive options for all tests
 	const baseOptions = {
@@ -92,51 +92,51 @@ describe('initializeProject – Git / Alias flag logic', () => {
 		description: 'Test project description',
 		version: '1.0.0',
 		author: 'Test Author'
-	};
+	}
 
 	beforeEach(() => {
-		jest.clearAllMocks();
+		jest.clearAllMocks()
 
 		// Set up basic fs mocks
-		mockFs.mkdirSync.mockImplementation(() => {});
-		mockFs.writeFileSync.mockImplementation(() => {});
+		mockFs.mkdirSync.mockImplementation(() => {})
+		mockFs.writeFileSync.mockImplementation(() => {})
 		mockFs.readFileSync.mockImplementation((filePath) => {
 			if (filePath.includes('assets') || filePath.includes('.cursor/rules')) {
-				return 'mock template content';
+				return 'mock template content'
 			}
 			if (filePath.includes('.zshrc') || filePath.includes('.bashrc')) {
-				return '# existing config';
+				return '# existing config'
 			}
-			return '';
-		});
-		mockFs.appendFileSync.mockImplementation(() => {});
+			return ''
+		})
+		mockFs.appendFileSync.mockImplementation(() => {})
 		mockFs.existsSync.mockImplementation((filePath) => {
 			// Template source files exist
 			if (filePath.includes('assets') || filePath.includes('.cursor/rules')) {
-				return true;
+				return true
 			}
 			// Shell config files exist by default
 			if (filePath.includes('.zshrc') || filePath.includes('.bashrc')) {
-				return true;
+				return true
 			}
-			return false;
-		});
+			return false
+		})
 
 		// Reset utils mocks
-		mockUtils.isSilentMode.mockReturnValue(true);
-		mockGitUtils.insideGitWorkTree.mockReturnValue(false);
+		mockUtils.isSilentMode.mockReturnValue(true)
+		mockGitUtils.insideGitWorkTree.mockReturnValue(false)
 
 		// Default execSync mock
-		execSync.mockImplementation(() => '');
+		execSync.mockImplementation(() => '')
 
-		tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tm-init-'));
-		process.chdir(tmpDir);
-	});
+		tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tm-init-'))
+		process.chdir(tmpDir)
+	})
 
 	afterEach(() => {
-		process.chdir(origCwd);
-		fs.rmSync(tmpDir, { recursive: true, force: true });
-	});
+		process.chdir(origCwd)
+		fs.rmSync(tmpDir, { recursive: true, force: true })
+	})
 
 	describe('Git Flag Behavior', () => {
 		it('completes successfully with git:false in dry run', async () => {
@@ -145,13 +145,13 @@ describe('initializeProject – Git / Alias flag logic', () => {
 				git: false,
 				aliases: false,
 				dryRun: true
-			});
+			})
 
-			expect(result.dryRun).toBe(true);
-		});
+			expect(result.dryRun).toBe(true)
+		})
 
 		it('completes successfully with git:true when not inside repo', async () => {
-			mockGitUtils.insideGitWorkTree.mockReturnValue(false);
+			mockGitUtils.insideGitWorkTree.mockReturnValue(false)
 
 			await expect(
 				initializeProject({
@@ -160,11 +160,11 @@ describe('initializeProject – Git / Alias flag logic', () => {
 					aliases: false,
 					dryRun: false
 				})
-			).resolves.not.toThrow();
-		});
+			).resolves.not.toThrow()
+		})
 
 		it('completes successfully when already inside repo', async () => {
-			mockGitUtils.insideGitWorkTree.mockReturnValue(true);
+			mockGitUtils.insideGitWorkTree.mockReturnValue(true)
 
 			await expect(
 				initializeProject({
@@ -173,11 +173,11 @@ describe('initializeProject – Git / Alias flag logic', () => {
 					aliases: false,
 					dryRun: false
 				})
-			).resolves.not.toThrow();
-		});
+			).resolves.not.toThrow()
+		})
 
 		it('uses default git behavior without errors', async () => {
-			mockGitUtils.insideGitWorkTree.mockReturnValue(false);
+			mockGitUtils.insideGitWorkTree.mockReturnValue(false)
 
 			await expect(
 				initializeProject({
@@ -185,17 +185,17 @@ describe('initializeProject – Git / Alias flag logic', () => {
 					aliases: false,
 					dryRun: false
 				})
-			).resolves.not.toThrow();
-		});
+			).resolves.not.toThrow()
+		})
 
 		it('handles git command failures gracefully', async () => {
-			mockGitUtils.insideGitWorkTree.mockReturnValue(false);
+			mockGitUtils.insideGitWorkTree.mockReturnValue(false)
 			execSync.mockImplementation((cmd) => {
 				if (cmd.includes('git init')) {
-					throw new Error('git not found');
+					throw new Error('git not found')
 				}
-				return '';
-			});
+				return ''
+			})
 
 			await expect(
 				initializeProject({
@@ -204,17 +204,17 @@ describe('initializeProject – Git / Alias flag logic', () => {
 					aliases: false,
 					dryRun: false
 				})
-			).resolves.not.toThrow();
-		});
-	});
+			).resolves.not.toThrow()
+		})
+	})
 
 	describe('Alias Flag Behavior', () => {
 		it('completes successfully when aliases:true and environment is set up', async () => {
-			const originalShell = process.env.SHELL;
-			const originalHome = process.env.HOME;
+			const originalShell = process.env.SHELL
+			const originalHome = process.env.HOME
 
-			process.env.SHELL = '/bin/zsh';
-			process.env.HOME = '/mock/home';
+			process.env.SHELL = '/bin/zsh'
+			process.env.HOME = '/mock/home'
 
 			await expect(
 				initializeProject({
@@ -223,11 +223,11 @@ describe('initializeProject – Git / Alias flag logic', () => {
 					aliases: true,
 					dryRun: false
 				})
-			).resolves.not.toThrow();
+			).resolves.not.toThrow()
 
-			process.env.SHELL = originalShell;
-			process.env.HOME = originalHome;
-		});
+			process.env.SHELL = originalShell
+			process.env.HOME = originalHome
+		})
 
 		it('completes successfully when aliases:false', async () => {
 			await expect(
@@ -237,15 +237,15 @@ describe('initializeProject – Git / Alias flag logic', () => {
 					aliases: false,
 					dryRun: false
 				})
-			).resolves.not.toThrow();
-		});
+			).resolves.not.toThrow()
+		})
 
 		it('handles missing shell gracefully', async () => {
-			const originalShell = process.env.SHELL;
-			const originalHome = process.env.HOME;
+			const originalShell = process.env.SHELL
+			const originalHome = process.env.HOME
 
-			delete process.env.SHELL; // Remove shell env var
-			process.env.HOME = '/mock/home';
+			delete process.env.SHELL // Remove shell env var
+			process.env.HOME = '/mock/home'
 
 			await expect(
 				initializeProject({
@@ -254,29 +254,29 @@ describe('initializeProject – Git / Alias flag logic', () => {
 					aliases: true,
 					dryRun: false
 				})
-			).resolves.not.toThrow();
+			).resolves.not.toThrow()
 
-			process.env.SHELL = originalShell;
-			process.env.HOME = originalHome;
-		});
+			process.env.SHELL = originalShell
+			process.env.HOME = originalHome
+		})
 
 		it('handles missing shell config file gracefully', async () => {
-			const originalShell = process.env.SHELL;
-			const originalHome = process.env.HOME;
+			const originalShell = process.env.SHELL
+			const originalHome = process.env.HOME
 
-			process.env.SHELL = '/bin/zsh';
-			process.env.HOME = '/mock/home';
+			process.env.SHELL = '/bin/zsh'
+			process.env.HOME = '/mock/home'
 
 			// Shell config doesn't exist
 			mockFs.existsSync.mockImplementation((filePath) => {
 				if (filePath.includes('.zshrc') || filePath.includes('.bashrc')) {
-					return false;
+					return false
 				}
 				if (filePath.includes('assets') || filePath.includes('.cursor/rules')) {
-					return true;
+					return true
 				}
-				return false;
-			});
+				return false
+			})
 
 			await expect(
 				initializeProject({
@@ -285,12 +285,12 @@ describe('initializeProject – Git / Alias flag logic', () => {
 					aliases: true,
 					dryRun: false
 				})
-			).resolves.not.toThrow();
+			).resolves.not.toThrow()
 
-			process.env.SHELL = originalShell;
-			process.env.HOME = originalHome;
-		});
-	});
+			process.env.SHELL = originalShell
+			process.env.HOME = originalHome
+		})
+	})
 
 	describe('Flag Combinations', () => {
 		it.each`
@@ -300,16 +300,16 @@ describe('initializeProject – Git / Alias flag logic', () => {
 			${false} | ${true}  | ${'git disabled, aliases enabled'}
 			${false} | ${false} | ${'git & aliases disabled'}
 		`('handles $description without errors', async ({ git, aliases }) => {
-			const originalShell = process.env.SHELL;
-			const originalHome = process.env.HOME;
+			const originalShell = process.env.SHELL
+			const originalHome = process.env.HOME
 
 			if (aliases) {
-				process.env.SHELL = '/bin/zsh';
-				process.env.HOME = '/mock/home';
+				process.env.SHELL = '/bin/zsh'
+				process.env.HOME = '/mock/home'
 			}
 
 			if (git) {
-				mockGitUtils.insideGitWorkTree.mockReturnValue(false);
+				mockGitUtils.insideGitWorkTree.mockReturnValue(false)
 			}
 
 			await expect(
@@ -319,12 +319,12 @@ describe('initializeProject – Git / Alias flag logic', () => {
 					aliases,
 					dryRun: false
 				})
-			).resolves.not.toThrow();
+			).resolves.not.toThrow()
 
-			process.env.SHELL = originalShell;
-			process.env.HOME = originalHome;
-		});
-	});
+			process.env.SHELL = originalShell
+			process.env.HOME = originalHome
+		})
+	})
 
 	describe('Dry Run Mode', () => {
 		it('returns dry run result and performs no operations', async () => {
@@ -333,10 +333,10 @@ describe('initializeProject – Git / Alias flag logic', () => {
 				git: true,
 				aliases: true,
 				dryRun: true
-			});
+			})
 
-			expect(result.dryRun).toBe(true);
-		});
+			expect(result.dryRun).toBe(true)
+		})
 
 		it.each`
 			git      | aliases  | description
@@ -349,20 +349,20 @@ describe('initializeProject – Git / Alias flag logic', () => {
 				git,
 				aliases,
 				dryRun: true
-			});
+			})
 
-			expect(result.dryRun).toBe(true);
-		});
-	});
+			expect(result.dryRun).toBe(true)
+		})
+	})
 
 	describe('Error Handling', () => {
 		it('handles npm install failures gracefully', async () => {
 			execSync.mockImplementation((cmd) => {
 				if (cmd.includes('npm install')) {
-					throw new Error('npm failed');
+					throw new Error('npm failed')
 				}
-				return '';
-			});
+				return ''
+			})
 
 			await expect(
 				initializeProject({
@@ -372,17 +372,17 @@ describe('initializeProject – Git / Alias flag logic', () => {
 					skipInstall: false,
 					dryRun: false
 				})
-			).resolves.not.toThrow();
-		});
+			).resolves.not.toThrow()
+		})
 
 		it('handles git failures gracefully', async () => {
-			mockGitUtils.insideGitWorkTree.mockReturnValue(false);
+			mockGitUtils.insideGitWorkTree.mockReturnValue(false)
 			execSync.mockImplementation((cmd) => {
 				if (cmd.includes('git init')) {
-					throw new Error('git failed');
+					throw new Error('git failed')
 				}
-				return '';
-			});
+				return ''
+			})
 
 			await expect(
 				initializeProject({
@@ -391,13 +391,13 @@ describe('initializeProject – Git / Alias flag logic', () => {
 					aliases: false,
 					dryRun: false
 				})
-			).resolves.not.toThrow();
-		});
+			).resolves.not.toThrow()
+		})
 
 		it('handles file system errors gracefully', async () => {
 			mockFs.mkdirSync.mockImplementation(() => {
-				throw new Error('Permission denied');
-			});
+				throw new Error('Permission denied')
+			})
 
 			// Should handle file system errors gracefully
 			await expect(
@@ -407,9 +407,9 @@ describe('initializeProject – Git / Alias flag logic', () => {
 					aliases: false,
 					dryRun: false
 				})
-			).resolves.not.toThrow();
-		});
-	});
+			).resolves.not.toThrow()
+		})
+	})
 
 	describe('Non-Interactive Mode', () => {
 		it('bypasses prompts with yes:true', async () => {
@@ -418,10 +418,10 @@ describe('initializeProject – Git / Alias flag logic', () => {
 				git: true,
 				aliases: true,
 				dryRun: true
-			});
+			})
 
-			expect(result).toEqual({ dryRun: true });
-		});
+			expect(result).toEqual({ dryRun: true })
+		})
 
 		it('completes without hanging', async () => {
 			await expect(
@@ -431,8 +431,8 @@ describe('initializeProject – Git / Alias flag logic', () => {
 					aliases: false,
 					dryRun: false
 				})
-			).resolves.not.toThrow();
-		});
+			).resolves.not.toThrow()
+		})
 
 		it('handles all flag combinations without hanging', async () => {
 			const flagCombinations = [
@@ -441,7 +441,7 @@ describe('initializeProject – Git / Alias flag logic', () => {
 				{ git: false, aliases: true },
 				{ git: false, aliases: false },
 				{} // No flags (uses defaults)
-			];
+			]
 
 			for (const flags of flagCombinations) {
 				await expect(
@@ -450,9 +450,9 @@ describe('initializeProject – Git / Alias flag logic', () => {
 						...flags,
 						dryRun: true // Use dry run for speed
 					})
-				).resolves.not.toThrow();
+				).resolves.not.toThrow()
 			}
-		});
+		})
 
 		it('accepts complete project details', async () => {
 			await expect(
@@ -465,8 +465,8 @@ describe('initializeProject – Git / Alias flag logic', () => {
 					aliases: false,
 					dryRun: true
 				})
-			).resolves.not.toThrow();
-		});
+			).resolves.not.toThrow()
+		})
 
 		it('works with skipInstall option', async () => {
 			await expect(
@@ -477,9 +477,9 @@ describe('initializeProject – Git / Alias flag logic', () => {
 					aliases: false,
 					dryRun: false
 				})
-			).resolves.not.toThrow();
-		});
-	});
+			).resolves.not.toThrow()
+		})
+	})
 
 	describe('Function Integration', () => {
 		it('calls utility functions without errors', async () => {
@@ -488,20 +488,18 @@ describe('initializeProject – Git / Alias flag logic', () => {
 				git: false,
 				aliases: false,
 				dryRun: false
-			});
+			})
 
 			// Verify that utility functions were called
-			expect(mockUtils.isSilentMode).toHaveBeenCalled();
-			expect(
-				mockRuleTransformer.convertAllRulesToProfileRules
-			).toHaveBeenCalled();
-		});
+			expect(mockUtils.isSilentMode).toHaveBeenCalled()
+			expect(mockRuleTransformer.convertAllRulesToProfileRules).toHaveBeenCalled()
+		})
 
 		it('handles template operations gracefully', async () => {
 			// Make file operations throw errors
 			mockFs.writeFileSync.mockImplementation(() => {
-				throw new Error('Write failed');
-			});
+				throw new Error('Write failed')
+			})
 
 			// Should complete despite file operation failures
 			await expect(
@@ -511,8 +509,8 @@ describe('initializeProject – Git / Alias flag logic', () => {
 					aliases: false,
 					dryRun: false
 				})
-			).resolves.not.toThrow();
-		});
+			).resolves.not.toThrow()
+		})
 
 		it('validates boolean flag conversion', async () => {
 			// Test the boolean flag handling specifically
@@ -523,7 +521,7 @@ describe('initializeProject – Git / Alias flag logic', () => {
 					aliases: false, // Should convert to addAliases: false
 					dryRun: true
 				})
-			).resolves.not.toThrow();
+			).resolves.not.toThrow()
 
 			await expect(
 				initializeProject({
@@ -532,7 +530,7 @@ describe('initializeProject – Git / Alias flag logic', () => {
 					aliases: true, // Should convert to addAliases: true
 					dryRun: true
 				})
-			).resolves.not.toThrow();
-		});
-	});
-});
+			).resolves.not.toThrow()
+		})
+	})
+})

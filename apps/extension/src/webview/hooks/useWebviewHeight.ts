@@ -2,41 +2,39 @@
  * Hook for managing webview height
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react'
 
 export const useWebviewHeight = () => {
-	const [availableHeight, setAvailableHeight] = useState<number>(
-		window.innerHeight
-	);
+	const [availableHeight, setAvailableHeight] = useState<number>(window.innerHeight)
 
 	const updateAvailableHeight = useCallback(() => {
-		const height = window.innerHeight;
-		console.log('📏 Available height updated:', height);
-		setAvailableHeight(height);
-	}, []);
+		const height = window.innerHeight
+		console.log('📏 Available height updated:', height)
+		setAvailableHeight(height)
+	}, [])
 
 	useEffect(() => {
-		updateAvailableHeight();
+		updateAvailableHeight()
 
 		const handleResize = () => {
-			updateAvailableHeight();
-		};
+			updateAvailableHeight()
+		}
 
-		window.addEventListener('resize', handleResize);
+		window.addEventListener('resize', handleResize)
 
 		// Also listen for VS Code specific events if available
 		const handleVisibilityChange = () => {
 			// Small delay to ensure VS Code has finished resizing
-			setTimeout(updateAvailableHeight, 100);
-		};
+			setTimeout(updateAvailableHeight, 100)
+		}
 
-		document.addEventListener('visibilitychange', handleVisibilityChange);
+		document.addEventListener('visibilitychange', handleVisibilityChange)
 
 		return () => {
-			window.removeEventListener('resize', handleResize);
-			document.removeEventListener('visibilitychange', handleVisibilityChange);
-		};
-	}, [updateAvailableHeight]);
+			window.removeEventListener('resize', handleResize)
+			document.removeEventListener('visibilitychange', handleVisibilityChange)
+		}
+	}, [updateAvailableHeight])
 
-	return availableHeight;
-};
+	return availableHeight
+}

@@ -3,24 +3,21 @@
  * Direct function implementation for adding or removing rules
  */
 
+import fs from 'fs'
+import path from 'path'
+import { disableSilentMode, enableSilentMode } from '../../../../scripts/modules/utils.js'
+import { RULE_PROFILES } from '../../../../src/constants/profiles.js'
+import { RULES_ACTIONS } from '../../../../src/constants/rules-actions.js'
 import {
-	enableSilentMode,
-	disableSilentMode
-} from '../../../../scripts/modules/utils.js';
+	getInstalledProfiles,
+	wouldRemovalLeaveNoProfiles
+} from '../../../../src/utils/profiles.js'
 import {
 	convertAllRulesToProfileRules,
-	removeProfileRules,
 	getRulesProfile,
-	isValidProfile
-} from '../../../../src/utils/rule-transformer.js';
-import { RULE_PROFILES } from '../../../../src/constants/profiles.js';
-import { RULES_ACTIONS } from '../../../../src/constants/rules-actions.js';
-import {
-	wouldRemovalLeaveNoProfiles,
-	getInstalledProfiles
-} from '../../../../src/utils/profiles.js';
-import path from 'path';
-import fs from 'fs';
+	isValidProfile,
+	removeProfileRules
+} from '../../../../src/utils/rule-transformer.js'
 
 /**
  * Direct function wrapper for adding or removing rules.
@@ -34,41 +31,34 @@ import fs from 'fs';
  * @returns {Promise<Object>} - Result object { success: boolean, data?: any, error?: { code: string, message: string } }
  */
 export async function rulesDirect(args, log, context = {}) {
-	enableSilentMode();
+	enableSilentMode()
 	try {
-		const { action, profiles, projectRoot, yes, force } = args;
-		if (
-			!action ||
-			!Array.isArray(profiles) ||
-			profiles.length === 0 ||
-			!projectRoot
-		) {
+		const { action, profiles, projectRoot, yes, force } = args
+		if (!action || !Array.isArray(profiles) || profiles.length === 0 || !projectRoot) {
 			return {
 				success: false,
 				error: {
 					code: 'MISSING_ARGUMENT',
 					message: 'action, profiles, and projectRoot are required.'
 				}
-			};
+			}
 		}
 
-		const removalResults = [];
-		const addResults = [];
+		const removalResults = []
+		const addResults = []
 
 		if (action === RULES_ACTIONS.REMOVE) {
 			// Safety check: Ensure this won't remove all rule profiles (unless forced)
 			if (!force && wouldRemovalLeaveNoProfiles(projectRoot, profiles)) {
-				const installedProfiles = getInstalledProfiles(projectRoot);
-				const remainingProfiles = installedProfiles.filter(
-					(profile) => !profiles.includes(profile)
-				);
+				const installedProfiles = getInstalledProfiles(projectRoot)
+				const remainingProfiles = installedProfiles.filter((profile) => !profiles.includes(profile))
 				return {
 					success: false,
 					error: {
 						code: 'CRITICAL_REMOVAL_BLOCKED',
 						message: `CRITICAL: This operation would remove ALL remaining rule profiles (${profiles.join(', ')}), leaving your project with no rules configurations. This could significantly impact functionality. Currently installed profiles: ${installedProfiles.join(', ')}. If you're certain you want to proceed, set force: true or use the CLI with --force flag.`
 					}
-				};
+				}
 			}
 
 			for (const profile of profiles) {
@@ -77,44 +67,36 @@ export async function rulesDirect(args, log, context = {}) {
 						profileName: profile,
 						success: false,
 						error: `The requested rule profile for '${profile}' is unavailable. Supported profiles are: ${RULE_PROFILES.join(', ')}.`
-					});
-					continue;
+					})
+					continue
 				}
-				const profileConfig = getRulesProfile(profile);
-				const result = removeProfileRules(projectRoot, profileConfig);
-				removalResults.push(result);
+				const profileConfig = getRulesProfile(profile)
+				const result = removeProfileRules(projectRoot, profileConfig)
+				removalResults.push(result)
 			}
-			const successes = removalResults
-				.filter((r) => r.success)
-				.map((r) => r.profileName);
-			const skipped = removalResults
-				.filter((r) => r.skipped)
-				.map((r) => r.profileName);
-			const errors = removalResults.filter(
-				(r) => r.error && !r.success && !r.skipped
-			);
-			const withNotices = removalResults.filter((r) => r.notice);
+			const successes = removalResults.filter((r) => r.success).map((r) => r.profileName)
+			const skipped = removalResults.filter((r) => r.skipped).map((r) => r.profileName)
+			const errors = removalResults.filter((r) => r.error && !r.success && !r.skipped)
+			const withNotices = removalResults.filter((r) => r.notice)
 
-			let summary = '';
+			let summary = ''
 			if (successes.length > 0) {
-				summary += `Successfully removed Task Master rules: ${successes.join(', ')}.`;
+				summary += `Successfully removed Task Master rules: ${successes.join(', ')}.`
 			}
 			if (skipped.length > 0) {
-				summary += `Skipped (default or protected): ${skipped.join(', ')}.`;
+				summary += `Skipped (default or protected): ${skipped.join(', ')}.`
 			}
 			if (errors.length > 0) {
-				summary += errors
-					.map((r) => `Error removing ${r.profileName}: ${r.error}`)
-					.join(' ');
+				summary += errors.map((r) => `Error removing ${r.profileName}: ${r.error}`).join(' ')
 			}
 			if (withNotices.length > 0) {
-				summary += ` Notices: ${withNotices.map((r) => `${r.profileName} - ${r.notice}`).join('; ')}.`;
+				summary += ` Notices: ${withNotices.map((r) => `${r.profileName} - ${r.notice}`).join('; ')}.`
 			}
-			disableSilentMode();
+			disableSilentMode()
 			return {
 				success: errors.length === 0,
 				data: { summary, results: removalResults }
-			};
+			}
 		} else if (action === RULES_ACTIONS.ADD) {
 			for (const profile of profiles) {
 				if (!isValidProfile(profile)) {
@@ -122,35 +104,28 @@ export async function rulesDirect(args, log, context = {}) {
 						profileName: profile,
 						success: false,
 						error: `Profile not found: static import missing for '${profile}'. Valid profiles: ${RULE_PROFILES.join(', ')}`
-					});
-					continue;
+					})
+					continue
 				}
-				const profileConfig = getRulesProfile(profile);
-				const { success, failed } = convertAllRulesToProfileRules(
-					projectRoot,
-					profileConfig
-				);
+				const profileConfig = getRulesProfile(profile)
+				const { success, failed } = convertAllRulesToProfileRules(projectRoot, profileConfig)
 
 				// Determine paths
-				const rulesDir = profileConfig.rulesDir;
-				const profileRulesDir = path.join(projectRoot, rulesDir);
-				const profileDir = profileConfig.profileDir;
-				const mcpConfig = profileConfig.mcpConfig !== false;
+				const rulesDir = profileConfig.rulesDir
+				const profileRulesDir = path.join(projectRoot, rulesDir)
+				const profileDir = profileConfig.profileDir
+				const mcpConfig = profileConfig.mcpConfig !== false
 				const mcpPath =
 					mcpConfig && profileConfig.mcpConfigPath
 						? path.join(projectRoot, profileConfig.mcpConfigPath)
-						: null;
+						: null
 
 				// Check what was created
-				const mcpConfigCreated =
-					mcpConfig && mcpPath ? fs.existsSync(mcpPath) : undefined;
-				const rulesDirCreated = fs.existsSync(profileRulesDir);
-				const profileFolderCreated = fs.existsSync(
-					path.join(projectRoot, profileDir)
-				);
+				const mcpConfigCreated = mcpConfig && mcpPath ? fs.existsSync(mcpPath) : undefined
+				const rulesDirCreated = fs.existsSync(profileRulesDir)
+				const profileFolderCreated = fs.existsSync(path.join(projectRoot, profileDir))
 
-				const error =
-					failed > 0 ? `${failed} rule files failed to convert.` : null;
+				const error = failed > 0 ? `${failed} rule files failed to convert.` : null
 				const resultObj = {
 					profileName: profile,
 					mcpConfigCreated,
@@ -158,53 +133,45 @@ export async function rulesDirect(args, log, context = {}) {
 					profileFolderCreated,
 					skipped: false,
 					error,
-					success:
-						(mcpConfig ? mcpConfigCreated : true) &&
-						rulesDirCreated &&
-						success > 0 &&
-						!error
-				};
-				addResults.push(resultObj);
+					success: (mcpConfig ? mcpConfigCreated : true) && rulesDirCreated && success > 0 && !error
+				}
+				addResults.push(resultObj)
 			}
 
-			const successes = addResults
-				.filter((r) => r.success)
-				.map((r) => r.profileName);
-			const errors = addResults.filter((r) => r.error && !r.success);
+			const successes = addResults.filter((r) => r.success).map((r) => r.profileName)
+			const errors = addResults.filter((r) => r.error && !r.success)
 
-			let summary = '';
+			let summary = ''
 			if (successes.length > 0) {
-				summary += `Successfully added rules: ${successes.join(', ')}.`;
+				summary += `Successfully added rules: ${successes.join(', ')}.`
 			}
 			if (errors.length > 0) {
-				summary += errors
-					.map((r) => ` Error adding ${r.profileName}: ${r.error}`)
-					.join(' ');
+				summary += errors.map((r) => ` Error adding ${r.profileName}: ${r.error}`).join(' ')
 			}
-			disableSilentMode();
+			disableSilentMode()
 			return {
 				success: errors.length === 0,
 				data: { summary, results: addResults }
-			};
+			}
 		} else {
-			disableSilentMode();
+			disableSilentMode()
 			return {
 				success: false,
 				error: {
 					code: 'INVALID_ACTION',
 					message: `Unknown action. Use "${RULES_ACTIONS.ADD}" or "${RULES_ACTIONS.REMOVE}".`
 				}
-			};
+			}
 		}
 	} catch (error) {
-		disableSilentMode();
-		log.error(`[rulesDirect] Error: ${error.message}`);
+		disableSilentMode()
+		log.error(`[rulesDirect] Error: ${error.message}`)
 		return {
 			success: false,
 			error: {
 				code: error.code || 'RULES_ERROR',
 				message: error.message
 			}
-		};
+		}
 	}
 }

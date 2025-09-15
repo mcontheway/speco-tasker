@@ -3,13 +3,13 @@
  * AI provider implementation for Perplexity models using Vercel AI SDK.
  */
 
-import { createPerplexity } from '@ai-sdk/perplexity';
-import { BaseAIProvider } from './base-provider.js';
+import { createPerplexity } from '@ai-sdk/perplexity'
+import { BaseAIProvider } from './base-provider.js'
 
 export class PerplexityAIProvider extends BaseAIProvider {
 	constructor() {
-		super();
-		this.name = 'Perplexity';
+		super()
+		this.name = 'Perplexity'
 	}
 
 	/**
@@ -17,7 +17,7 @@ export class PerplexityAIProvider extends BaseAIProvider {
 	 * @returns {string} The environment variable name for the Perplexity API key
 	 */
 	getRequiredApiKeyName() {
-		return 'PERPLEXITY_API_KEY';
+		return 'PERPLEXITY_API_KEY'
 	}
 
 	/**
@@ -30,18 +30,18 @@ export class PerplexityAIProvider extends BaseAIProvider {
 	 */
 	getClient(params) {
 		try {
-			const { apiKey, baseURL } = params;
+			const { apiKey, baseURL } = params
 
 			if (!apiKey) {
-				throw new Error('Perplexity API key is required.');
+				throw new Error('Perplexity API key is required.')
 			}
 
 			return createPerplexity({
 				apiKey,
 				baseURL: baseURL || 'https://api.perplexity.ai'
-			});
+			})
 		} catch (error) {
-			this.handleError('client initialization', error);
+			this.handleError('client initialization', error)
 		}
 	}
 
@@ -59,6 +59,6 @@ export class PerplexityAIProvider extends BaseAIProvider {
 		return super.generateObject({
 			...params,
 			mode: 'json'
-		});
+		})
 	}
 }

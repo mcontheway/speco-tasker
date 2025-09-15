@@ -1,5 +1,5 @@
 // Codex profile for rule-transformer
-import { createProfile } from './base-profile.js';
+import { createProfile } from './base-profile.js'
 
 // Create and export codex profile using the base factory
 export const codexProfile = createProfile({
@@ -15,4 +15,4 @@ export const codexProfile = createProfile({
 	fileMap: {
 		'AGENTS.md': 'AGENTS.md'
 	}
-});
+})

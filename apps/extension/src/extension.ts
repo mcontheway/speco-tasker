@@ -3,156 +3,151 @@
  * Only using patterns where they add real value
  */
 
-import * as vscode from 'vscode';
-import { ConfigService } from './services/config-service';
-import { PollingService } from './services/polling-service';
-import { createPollingStrategy } from './services/polling-strategies';
-import { TaskRepository } from './services/task-repository';
-import { WebviewManager } from './services/webview-manager';
-import { EventEmitter } from './utils/event-emitter';
-import { ExtensionLogger } from './utils/logger';
-import {
-	MCPClientManager,
-	createMCPConfigFromSettings
-} from './utils/mcpClient';
-import { TaskMasterApi } from './utils/task-master-api';
-import { SidebarWebviewManager } from './services/sidebar-webview-manager';
+import * as vscode from 'vscode'
+import { ConfigService } from './services/config-service'
+import { PollingService } from './services/polling-service'
+import { createPollingStrategy } from './services/polling-strategies'
+import { SidebarWebviewManager } from './services/sidebar-webview-manager'
+import { TaskRepository } from './services/task-repository'
+import { WebviewManager } from './services/webview-manager'
+import { EventEmitter } from './utils/event-emitter'
+import { ExtensionLogger } from './utils/logger'
+import { MCPClientManager, createMCPConfigFromSettings } from './utils/mcpClient'
+import { TaskMasterApi } from './utils/task-master-api'
 
-let logger: ExtensionLogger;
-let mcpClient: MCPClientManager;
-let api: TaskMasterApi;
-let repository: TaskRepository;
-let pollingService: PollingService;
-let webviewManager: WebviewManager;
-let events: EventEmitter;
-let configService: ConfigService;
-let sidebarManager: SidebarWebviewManager;
+let logger: ExtensionLogger
+let mcpClient: MCPClientManager
+let api: TaskMasterApi
+let repository: TaskRepository
+let pollingService: PollingService
+let webviewManager: WebviewManager
+let events: EventEmitter
+let configService: ConfigService
+let sidebarManager: SidebarWebviewManager
 
 export async function activate(context: vscode.ExtensionContext) {
 	try {
 		// Initialize logger (needed to prevent MCP stdio issues)
-		logger = ExtensionLogger.getInstance();
-		logger.log('🎉 TaskMaster Extension activating...');
+		logger = ExtensionLogger.getInstance()
+		logger.log('🎉 TaskMaster Extension activating...')
 
 		// Simple event emitter for webview communication
-		events = new EventEmitter();
+		events = new EventEmitter()
 
 		// Initialize MCP client
-		mcpClient = new MCPClientManager(createMCPConfigFromSettings());
+		mcpClient = new MCPClientManager(createMCPConfigFromSettings())
 
 		// Initialize API
-		api = new TaskMasterApi(mcpClient);
+		api = new TaskMasterApi(mcpClient)
 
 		// Repository with caching (actually useful for performance)
-		repository = new TaskRepository(api, logger);
+		repository = new TaskRepository(api, logger)
 
 		// Config service for TaskMaster config.json
-		configService = new ConfigService(logger);
+		configService = new ConfigService(logger)
 
 		// Polling service with strategy pattern (makes sense for different polling behaviors)
-		const strategy = createPollingStrategy(
-			vscode.workspace.getConfiguration('taskmaster')
-		);
-		pollingService = new PollingService(repository, strategy, logger);
+		const strategy = createPollingStrategy(vscode.workspace.getConfiguration('taskmaster'))
+		pollingService = new PollingService(repository, strategy, logger)
 
 		// Webview manager (cleaner than global panel array) - create before connection
-		webviewManager = new WebviewManager(context, repository, events, logger);
-		webviewManager.setConfigService(configService);
+		webviewManager = new WebviewManager(context, repository, events, logger)
+		webviewManager.setConfigService(configService)
 
 		// Sidebar webview manager
-		sidebarManager = new SidebarWebviewManager(context.extensionUri);
+		sidebarManager = new SidebarWebviewManager(context.extensionUri)
 
 		// Initialize connection
-		await initializeConnection();
+		await initializeConnection()
 
 		// Set MCP client and API after connection
-		webviewManager.setMCPClient(mcpClient);
-		webviewManager.setApi(api);
-		sidebarManager.setApi(api);
+		webviewManager.setMCPClient(mcpClient)
+		webviewManager.setApi(api)
+		sidebarManager.setApi(api)
 
 		// Register commands
-		registerCommands(context);
+		registerCommands(context)
 
 		// Handle polling lifecycle
 		events.on('webview:opened', () => {
 			if (webviewManager.getPanelCount() === 1) {
-				pollingService.start();
+				pollingService.start()
 			}
-		});
+		})
 
 		events.on('webview:closed', () => {
 			if (webviewManager.getPanelCount() === 0) {
-				pollingService.stop();
+				pollingService.stop()
 			}
-		});
+		})
 
 		// Forward repository updates to webviews
 		repository.on('tasks:updated', (tasks) => {
-			webviewManager.broadcast('tasksUpdated', { tasks, source: 'polling' });
-		});
+			webviewManager.broadcast('tasksUpdated', { tasks, source: 'polling' })
+		})
 
-		logger.log('✅ TaskMaster Extension activated');
+		logger.log('✅ TaskMaster Extension activated')
 	} catch (error) {
-		logger?.error('Failed to activate', error);
+		logger?.error('Failed to activate', error)
 		vscode.window.showErrorMessage(
 			`Failed to activate TaskMaster: ${error instanceof Error ? error.message : 'Unknown error'}`
-		);
+		)
 	}
 }
 
 async function initializeConnection() {
 	try {
-		logger.log('🔗 Connecting to TaskMaster...');
+		logger.log('🔗 Connecting to TaskMaster...')
 
 		// Notify webviews that we're connecting
 		if (webviewManager) {
 			webviewManager.broadcast('connectionStatus', {
 				isConnected: false,
 				status: 'Connecting...'
-			});
+			})
 		}
 
-		await mcpClient.connect();
+		await mcpClient.connect()
 
-		const testResult = await api.testConnection();
+		const testResult = await api.testConnection()
 
 		if (testResult.success) {
-			logger.log('✅ Connected to TaskMaster');
-			vscode.window.showInformationMessage('TaskMaster connected!');
+			logger.log('✅ Connected to TaskMaster')
+			vscode.window.showInformationMessage('TaskMaster connected!')
 
 			// Notify webviews that we're connected
 			if (webviewManager) {
 				webviewManager.broadcast('connectionStatus', {
 					isConnected: true,
 					status: 'Connected'
-				});
+				})
 			}
 			if (sidebarManager) {
-				sidebarManager.updateConnectionStatus();
+				sidebarManager.updateConnectionStatus()
 			}
 		} else {
-			throw new Error(testResult.error || 'Connection test failed');
+			throw new Error(testResult.error || 'Connection test failed')
 		}
 	} catch (error) {
-		logger.error('Connection failed', error);
+		logger.error('Connection failed', error)
 
 		// Notify webviews that connection failed
 		if (webviewManager) {
 			webviewManager.broadcast('connectionStatus', {
 				isConnected: false,
 				status: 'Disconnected'
-			});
+			})
 		}
 		if (sidebarManager) {
-			sidebarManager.updateConnectionStatus();
+			sidebarManager.updateConnectionStatus()
 		}
 
-		handleConnectionError(error);
+		handleConnectionError(error)
 	}
 }
 
 function handleConnectionError(error: any) {
-	const message = error instanceof Error ? error.message : 'Unknown error';
+	const message = error instanceof Error ? error.message : 'Unknown error'
 
 	if (message.includes('ENOENT') && message.includes('npx')) {
 		vscode.window
@@ -165,13 +160,11 @@ function handleConnectionError(error: any) {
 					vscode.commands.executeCommand(
 						'workbench.action.openSettings',
 						'@ext:Hamster.task-master-hamster taskmaster'
-					);
+					)
 				}
-			});
+			})
 	} else {
-		vscode.window.showWarningMessage(
-			`TaskMaster connection failed: ${message}`
-		);
+		vscode.window.showWarningMessage(`TaskMaster connection failed: ${message}`)
 	}
 }
 
@@ -179,41 +172,38 @@ function registerCommands(context: vscode.ExtensionContext) {
 	// Main command
 	context.subscriptions.push(
 		vscode.commands.registerCommand('tm.showKanbanBoard', async () => {
-			await webviewManager.createOrShowPanel();
+			await webviewManager.createOrShowPanel()
 		})
-	);
+	)
 
 	// Utility commands
 	context.subscriptions.push(
 		vscode.commands.registerCommand('tm.refreshTasks', async () => {
-			await repository.refresh();
-			vscode.window.showInformationMessage('Tasks refreshed!');
+			await repository.refresh()
+			vscode.window.showInformationMessage('Tasks refreshed!')
 		})
-	);
+	)
 
 	context.subscriptions.push(
 		vscode.commands.registerCommand('tm.openSettings', () => {
 			vscode.commands.executeCommand(
 				'workbench.action.openSettings',
 				'@ext:Hamster.task-master-hamster taskmaster'
-			);
+			)
 		})
-	);
+	)
 
 	// Register sidebar view provider
 
 	context.subscriptions.push(
-		vscode.window.registerWebviewViewProvider(
-			'taskmaster.welcome',
-			sidebarManager
-		)
-	);
+		vscode.window.registerWebviewViewProvider('taskmaster.welcome', sidebarManager)
+	)
 }
 
 export function deactivate() {
-	logger?.log('👋 TaskMaster Extension deactivating...');
-	pollingService?.stop();
-	webviewManager?.dispose();
-	api?.destroy();
-	mcpClient?.disconnect();
+	logger?.log('👋 TaskMaster Extension deactivating...')
+	pollingService?.stop()
+	webviewManager?.dispose()
+	api?.destroy()
+	mcpClient?.disconnect()
 }

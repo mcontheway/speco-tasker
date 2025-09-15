@@ -1,20 +1,20 @@
-import type React from 'react';
-import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
-import { PriorityBadge } from './PriorityBadge';
-import type { TaskMasterTask } from '../../webview/types';
+import { Button } from '@/components/ui/button'
+import { Loader2 } from 'lucide-react'
+import type React from 'react'
+import { useEffect, useState } from 'react'
+import type { TaskMasterTask } from '../../webview/types'
+import { PriorityBadge } from './PriorityBadge'
 
 interface TaskMetadataSidebarProps {
-	currentTask: TaskMasterTask;
-	tasks: TaskMasterTask[];
-	complexity: any;
-	isSubtask: boolean;
-	sendMessage: (message: any) => Promise<any>;
-	onStatusChange: (status: TaskMasterTask['status']) => void;
-	onDependencyClick: (depId: string) => void;
-	isRegenerating?: boolean;
-	isAppending?: boolean;
+	currentTask: TaskMasterTask
+	tasks: TaskMasterTask[]
+	complexity: any
+	isSubtask: boolean
+	sendMessage: (message: any) => Promise<any>
+	onStatusChange: (status: TaskMasterTask['status']) => void
+	onDependencyClick: (depId: string) => void
+	isRegenerating?: boolean
+	isAppending?: boolean
 }
 
 export const TaskMetadataSidebar: React.FC<TaskMetadataSidebarProps> = ({
@@ -28,54 +28,49 @@ export const TaskMetadataSidebar: React.FC<TaskMetadataSidebarProps> = ({
 	isRegenerating = false,
 	isAppending = false
 }) => {
-	const [isLoadingComplexity, setIsLoadingComplexity] = useState(false);
-	const [mcpComplexityScore, setMcpComplexityScore] = useState<
-		number | undefined
-	>(undefined);
+	const [isLoadingComplexity, setIsLoadingComplexity] = useState(false)
+	const [mcpComplexityScore, setMcpComplexityScore] = useState<number | undefined>(undefined)
 
 	// Get complexity score from task
-	const currentComplexityScore = complexity?.score;
+	const currentComplexityScore = complexity?.score
 
 	// Display logic - use MCP score if available, otherwise use current score
 	const displayComplexityScore =
-		mcpComplexityScore !== undefined
-			? mcpComplexityScore
-			: currentComplexityScore;
+		mcpComplexityScore !== undefined ? mcpComplexityScore : currentComplexityScore
 
 	// Fetch complexity from MCP when needed
 	const fetchComplexityFromMCP = async (force = false) => {
 		if (!currentTask || (!force && currentComplexityScore !== undefined)) {
-			return;
+			return
 		}
-		setIsLoadingComplexity(true);
+		setIsLoadingComplexity(true)
 		try {
 			const complexityResult = await sendMessage({
 				type: 'mcpRequest',
 				tool: 'complexity_report',
 				params: {}
-			});
+			})
 			if (complexityResult?.data?.report?.complexityAnalysis) {
-				const taskComplexity =
-					complexityResult.data.report.complexityAnalysis.tasks?.find(
-						(t: any) => t.id === currentTask.id
-					);
+				const taskComplexity = complexityResult.data.report.complexityAnalysis.tasks?.find(
+					(t: any) => t.id === currentTask.id
+				)
 				if (taskComplexity) {
-					setMcpComplexityScore(taskComplexity.complexityScore);
+					setMcpComplexityScore(taskComplexity.complexityScore)
 				}
 			}
 		} catch (error) {
-			console.error('Failed to fetch complexity from MCP:', error);
+			console.error('Failed to fetch complexity from MCP:', error)
 		} finally {
-			setIsLoadingComplexity(false);
+			setIsLoadingComplexity(false)
 		}
-	};
+	}
 
 	// Handle running complexity analysis for a task
 	const handleRunComplexityAnalysis = async () => {
 		if (!currentTask) {
-			return;
+			return
 		}
-		setIsLoadingComplexity(true);
+		setIsLoadingComplexity(true)
 		try {
 			// Run complexity analysis on this specific task
 			await sendMessage({
@@ -85,36 +80,34 @@ export const TaskMetadataSidebar: React.FC<TaskMetadataSidebarProps> = ({
 					ids: currentTask.id.toString(),
 					research: false
 				}
-			});
+			})
 			// After analysis, fetch the updated complexity report
 			setTimeout(() => {
-				fetchComplexityFromMCP(true);
-			}, 1000);
+				fetchComplexityFromMCP(true)
+			}, 1000)
 		} catch (error) {
-			console.error('Failed to run complexity analysis:', error);
+			console.error('Failed to run complexity analysis:', error)
 		} finally {
-			setIsLoadingComplexity(false);
+			setIsLoadingComplexity(false)
 		}
-	};
+	}
 
 	// Effect to handle complexity on task change
 	useEffect(() => {
 		if (currentTask?.id) {
-			setMcpComplexityScore(undefined);
+			setMcpComplexityScore(undefined)
 			if (currentComplexityScore === undefined) {
-				fetchComplexityFromMCP();
+				fetchComplexityFromMCP()
 			}
 		}
-	}, [currentTask?.id, currentComplexityScore]);
+	}, [currentTask?.id, currentComplexityScore])
 
 	return (
 		<div className="md:col-span-1 border-l border-textSeparator-foreground">
 			<div className="p-6">
 				<div className="space-y-6">
 					<div>
-						<h3 className="text-sm font-medium text-vscode-foreground/70 mb-3">
-							Properties
-						</h3>
+						<h3 className="text-sm font-medium text-vscode-foreground/70 mb-3">Properties</h3>
 					</div>
 
 					<div className="space-y-4">
@@ -123,9 +116,7 @@ export const TaskMetadataSidebar: React.FC<TaskMetadataSidebarProps> = ({
 							<span className="text-sm text-vscode-foreground/70">Status</span>
 							<select
 								value={currentTask.status}
-								onChange={(e) =>
-									onStatusChange(e.target.value as TaskMasterTask['status'])
-								}
+								onChange={(e) => onStatusChange(e.target.value as TaskMasterTask['status'])}
 								className="border rounded-md px-3 py-1 text-sm font-medium focus:ring-1 focus:border-vscode-focusBorder focus:ring-vscode-focusBorder"
 								style={{
 									backgroundColor:
@@ -223,9 +214,7 @@ export const TaskMetadataSidebar: React.FC<TaskMetadataSidebarProps> = ({
 							) : currentTask?.status === 'done' ||
 								currentTask?.status === 'deferred' ||
 								currentTask?.status === 'review' ? (
-								<div className="text-sm text-[var(--vscode-descriptionForeground)]">
-									N/A
-								</div>
+								<div className="text-sm text-[var(--vscode-descriptionForeground)]">N/A</div>
 							) : (
 								<>
 									<div className="text-sm text-[var(--vscode-descriptionForeground)]">
@@ -251,20 +240,14 @@ export const TaskMetadataSidebar: React.FC<TaskMetadataSidebarProps> = ({
 					{/* Dependencies */}
 					{currentTask.dependencies && currentTask.dependencies.length > 0 && (
 						<div>
-							<h4 className="text-sm font-medium text-vscode-foreground/70 mb-3">
-								Dependencies
-							</h4>
+							<h4 className="text-sm font-medium text-vscode-foreground/70 mb-3">Dependencies</h4>
 							<div className="space-y-2">
 								{currentTask.dependencies.map((depId) => {
 									// Convert both to string for comparison since depId might be string or number
-									const depTask = tasks.find(
-										(t) => String(t.id) === String(depId)
-									);
-									const fullTitle = `Task ${depId}: ${depTask?.title || 'Unknown Task'}`;
+									const depTask = tasks.find((t) => String(t.id) === String(depId))
+									const fullTitle = `Task ${depId}: ${depTask?.title || 'Unknown Task'}`
 									const truncatedTitle =
-										fullTitle.length > 40
-											? fullTitle.substring(0, 37) + '...'
-											: fullTitle;
+										fullTitle.length > 40 ? fullTitle.substring(0, 37) + '...' : fullTitle
 									return (
 										<div
 											key={depId}
@@ -274,7 +257,7 @@ export const TaskMetadataSidebar: React.FC<TaskMetadataSidebarProps> = ({
 										>
 											{truncatedTitle}
 										</div>
-									);
+									)
 								})}
 							</div>
 						</div>
@@ -287,5 +270,5 @@ export const TaskMetadataSidebar: React.FC<TaskMetadataSidebarProps> = ({
 				</div>
 			</div>
 		</div>
-	);
-};
+	)
+}

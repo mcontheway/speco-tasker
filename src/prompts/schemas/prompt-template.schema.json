@@ -121,14 +121,7 @@
 				},
 				"category": {
 					"type": "string",
-					"enum": [
-						"task",
-						"analysis",
-						"research",
-						"parsing",
-						"update",
-						"expansion"
-					]
+					"enum": ["task", "analysis", "research", "parsing", "update", "expansion"]
 				}
 			}
 		}

@@ -3,21 +3,21 @@
  * Utility functions for the Task Master CLI
  */
 
-import fs from 'fs';
-import path from 'path';
-import chalk from 'chalk';
-import dotenv from 'dotenv';
-// Import specific config getters needed here
-import { getLogLevel, getDebugFlag } from './config-manager.js';
-import * as gitUtils from './utils/git-utils.js';
+import fs from 'fs'
+import path from 'path'
+import chalk from 'chalk'
+import dotenv from 'dotenv'
 import {
 	COMPLEXITY_REPORT_FILE,
 	LEGACY_COMPLEXITY_REPORT_FILE,
 	LEGACY_CONFIG_FILE
-} from '../../src/constants/paths.js';
+} from '../../src/constants/paths.js'
+// Import specific config getters needed here
+import { getDebugFlag, getLogLevel } from './config-manager.js'
+import * as gitUtils from './utils/git-utils.js'
 
 // Global silent mode flag
-let silentMode = false;
+let silentMode = false
 
 // --- Environment Variable Resolution Utility ---
 /**
@@ -34,34 +34,34 @@ let silentMode = false;
 function resolveEnvVariable(key, session = null, projectRoot = null) {
 	// 1. Check session.env
 	if (session?.env?.[key]) {
-		return session.env[key];
+		return session.env[key]
 	}
 
 	// 2. Read .env file at projectRoot
 	if (projectRoot) {
-		const envPath = path.join(projectRoot, '.env');
+		const envPath = path.join(projectRoot, '.env')
 		if (fs.existsSync(envPath)) {
 			try {
-				const envFileContent = fs.readFileSync(envPath, 'utf-8');
-				const parsedEnv = dotenv.parse(envFileContent); // Use dotenv to parse
+				const envFileContent = fs.readFileSync(envPath, 'utf-8')
+				const parsedEnv = dotenv.parse(envFileContent) // Use dotenv to parse
 				if (parsedEnv && parsedEnv[key]) {
 					// console.log(`DEBUG: Found key ${key} in ${envPath}`); // Optional debug log
-					return parsedEnv[key];
+					return parsedEnv[key]
 				}
 			} catch (error) {
 				// Log error but don't crash, just proceed as if key wasn't found in file
-				log('warn', `Could not read or parse ${envPath}: ${error.message}`);
+				log('warn', `Could not read or parse ${envPath}: ${error.message}`)
 			}
 		}
 	}
 
 	// 3. Fallback: Check process.env
 	if (process.env[key]) {
-		return process.env[key];
+		return process.env[key]
 	}
 
 	// Not found anywhere
-	return undefined;
+	return undefined
 }
 
 // --- Tag-Aware Path Resolution Utility ---
@@ -73,7 +73,7 @@ function resolveEnvVariable(key, session = null, projectRoot = null) {
  */
 function slugifyTagForFilePath(tagName) {
 	if (!tagName || typeof tagName !== 'string') {
-		return 'unknown-tag';
+		return 'unknown-tag'
 	}
 
 	// Replace invalid filesystem characters with hyphens and clean up
@@ -82,7 +82,7 @@ function slugifyTagForFilePath(tagName) {
 		.replace(/^-+|-+$/g, '') // Remove leading/trailing hyphens
 		.replace(/-+/g, '-') // Collapse multiple hyphens
 		.toLowerCase() // Convert to lowercase
-		.substring(0, 50); // Limit length to prevent overly long filenames
+		.substring(0, 50) // Limit length to prevent overly long filenames
 }
 
 /**
@@ -95,18 +95,18 @@ function slugifyTagForFilePath(tagName) {
  */
 function getTagAwareFilePath(basePath, tag, projectRoot = '.') {
 	// Use path.parse and format for clean tag insertion
-	const parsedPath = path.parse(basePath);
+	const parsedPath = path.parse(basePath)
 	if (!tag || tag === 'master') {
-		return path.join(projectRoot, basePath);
+		return path.join(projectRoot, basePath)
 	}
 
 	// Slugify the tag for filesystem safety
-	const slugifiedTag = slugifyTagForFilePath(tag);
+	const slugifiedTag = slugifyTagForFilePath(tag)
 
 	// Append slugified tag before file extension
-	parsedPath.base = `${parsedPath.name}_${slugifiedTag}${parsedPath.ext}`;
-	const relativePath = path.format(parsedPath);
-	return path.join(projectRoot, relativePath);
+	parsedPath.base = `${parsedPath.name}_${slugifiedTag}${parsedPath.ext}`
+	const relativePath = path.format(parsedPath)
+	return path.join(projectRoot, relativePath)
 }
 
 // --- Project Root Finding Utility ---
@@ -120,31 +120,31 @@ function findProjectRoot(
 	startDir = process.cwd(),
 	markers = ['package.json', 'pyproject.toml', '.git', LEGACY_CONFIG_FILE]
 ) {
-	let currentPath = path.resolve(startDir);
-	const rootPath = path.parse(currentPath).root;
+	let currentPath = path.resolve(startDir)
+	const rootPath = path.parse(currentPath).root
 
 	while (currentPath !== rootPath) {
 		// Check if any marker exists in the current directory
 		const hasMarker = markers.some((marker) => {
-			const markerPath = path.join(currentPath, marker);
-			return fs.existsSync(markerPath);
-		});
+			const markerPath = path.join(currentPath, marker)
+			return fs.existsSync(markerPath)
+		})
 
 		if (hasMarker) {
-			return currentPath;
+			return currentPath
 		}
 
 		// Move up one directory
-		currentPath = path.dirname(currentPath);
+		currentPath = path.dirname(currentPath)
 	}
 
 	// Check the root directory as well
 	const hasMarkerInRoot = markers.some((marker) => {
-		const markerPath = path.join(rootPath, marker);
-		return fs.existsSync(markerPath);
-	});
+		const markerPath = path.join(rootPath, marker)
+		return fs.existsSync(markerPath)
+	})
 
-	return hasMarkerInRoot ? rootPath : null;
+	return hasMarkerInRoot ? rootPath : null
 }
 
 // --- Dynamic Configuration Function --- (REMOVED)
@@ -158,28 +158,28 @@ const LOG_LEVELS = {
 	warn: 2,
 	error: 3,
 	success: 1 // Treat success like info level
-};
+}
 
 /**
  * Returns the task manager module
  * @returns {Promise<Object>} The task manager module object
  */
 async function getTaskManager() {
-	return import('./task-manager.js');
+	return import('./task-manager.js')
 }
 
 /**
  * Enable silent logging mode
  */
 function enableSilentMode() {
-	silentMode = true;
+	silentMode = true
 }
 
 /**
  * Disable silent logging mode
  */
 function disableSilentMode() {
-	silentMode = false;
+	silentMode = false
 }
 
 /**
@@ -187,7 +187,7 @@ function disableSilentMode() {
  * @returns {boolean} True if silent mode is enabled
  */
 function isSilentMode() {
-	return silentMode;
+	return silentMode
 }
 
 /**
@@ -198,19 +198,19 @@ function isSilentMode() {
 function log(level, ...args) {
 	// Immediately return if silentMode is enabled
 	if (isSilentMode()) {
-		return;
+		return
 	}
 
 	// GUARD: Prevent circular dependency during config loading
 	// Use a simple fallback log level instead of calling getLogLevel()
-	let configLevel = 'info'; // Default fallback
+	let configLevel = 'info' // Default fallback
 	try {
 		// Only try to get config level if we're not in the middle of config loading
-		configLevel = getLogLevel() || 'info';
+		configLevel = getLogLevel() || 'info'
 	} catch (error) {
 		// If getLogLevel() fails (likely due to circular dependency),
 		// use default 'info' level and continue
-		configLevel = 'info';
+		configLevel = 'info'
 	}
 
 	// Use text prefixes instead of emojis
@@ -220,22 +220,20 @@ function log(level, ...args) {
 		warn: chalk.yellow('[WARN]'),
 		error: chalk.red('[ERROR]'),
 		success: chalk.green('[SUCCESS]')
-	};
+	}
 
 	// Ensure level exists, default to info if not
-	const currentLevel = LOG_LEVELS.hasOwnProperty(level) ? level : 'info';
+	const currentLevel = LOG_LEVELS.hasOwnProperty(level) ? level : 'info'
 
 	// Check log level configuration
-	if (
-		LOG_LEVELS[currentLevel] >= (LOG_LEVELS[configLevel] ?? LOG_LEVELS.info)
-	) {
-		const prefix = prefixes[currentLevel] || '';
+	if (LOG_LEVELS[currentLevel] >= (LOG_LEVELS[configLevel] ?? LOG_LEVELS.info)) {
+		const prefix = prefixes[currentLevel] || ''
 		// Use console.log for all levels, let chalk handle coloring
 		// Construct the message properly
 		const message = args
 			.map((arg) => (typeof arg === 'object' ? JSON.stringify(arg) : arg))
-			.join(' ');
-		console.log(`${prefix} ${message}`);
+			.join(' ')
+		console.log(`${prefix} ${message}`)
 	}
 }
 
@@ -246,7 +244,7 @@ function log(level, ...args) {
  */
 function hasTaggedStructure(data) {
 	if (!data || typeof data !== 'object') {
-		return false;
+		return false
 	}
 
 	// Check if any top-level properties are objects with tasks arrays
@@ -256,10 +254,10 @@ function hasTaggedStructure(data) {
 			typeof data[key] === 'object' &&
 			Array.isArray(data[key].tasks)
 		) {
-			return true;
+			return true
 		}
 	}
-	return false;
+	return false
 }
 
 /**
@@ -267,14 +265,14 @@ function hasTaggedStructure(data) {
  * @param {Array} tasks - Array of tasks to normalize
  */
 function normalizeTaskIds(tasks) {
-	if (!Array.isArray(tasks)) return;
+	if (!Array.isArray(tasks)) return
 
 	tasks.forEach((task) => {
 		// Convert task ID to number with validation
 		if (task.id !== undefined) {
-			const parsedId = parseInt(task.id, 10);
+			const parsedId = parseInt(task.id, 10)
 			if (!isNaN(parsedId) && parsedId > 0) {
-				task.id = parsedId;
+				task.id = parsedId
 			}
 		}
 
@@ -285,18 +283,18 @@ function normalizeTaskIds(tasks) {
 					// Check for dot notation (which shouldn't exist in storage)
 					if (typeof subtask.id === 'string' && subtask.id.includes('.')) {
 						// Extract the subtask part after the dot
-						const parts = subtask.id.split('.');
-						subtask.id = parseInt(parts[parts.length - 1], 10);
+						const parts = subtask.id.split('.')
+						subtask.id = parseInt(parts[parts.length - 1], 10)
 					} else {
-						const parsedSubtaskId = parseInt(subtask.id, 10);
+						const parsedSubtaskId = parseInt(subtask.id, 10)
 						if (!isNaN(parsedSubtaskId) && parsedSubtaskId > 0) {
-							subtask.id = parsedSubtaskId;
+							subtask.id = parsedSubtaskId
 						}
 					}
 				}
-			});
+			})
 		}
-	});
+	})
 }
 
 /**
@@ -308,58 +306,52 @@ function normalizeTaskIds(tasks) {
  */
 function readJSON(filepath, projectRoot = null, tag = null) {
 	// GUARD: Prevent circular dependency during config loading
-	let isDebug = false; // Default fallback
+	let isDebug = false // Default fallback
 	try {
 		// Only try to get debug flag if we're not in the middle of config loading
-		isDebug = getDebugFlag();
+		isDebug = getDebugFlag()
 	} catch (error) {
 		// If getDebugFlag() fails (likely due to circular dependency),
 		// use default false and continue
 	}
 
 	if (isDebug) {
-		console.log(
-			`readJSON called with: ${filepath}, projectRoot: ${projectRoot}, tag: ${tag}`
-		);
+		console.log(`readJSON called with: ${filepath}, projectRoot: ${projectRoot}, tag: ${tag}`)
 	}
 
 	if (!filepath) {
-		return null;
+		return null
 	}
 
-	let data;
+	let data
 	try {
-		data = JSON.parse(fs.readFileSync(filepath, 'utf8'));
+		data = JSON.parse(fs.readFileSync(filepath, 'utf8'))
 		if (isDebug) {
-			console.log(`Successfully read JSON from ${filepath}`);
+			console.log(`Successfully read JSON from ${filepath}`)
 		}
 	} catch (err) {
 		if (isDebug) {
-			console.log(`Failed to read JSON from ${filepath}: ${err.message}`);
+			console.log(`Failed to read JSON from ${filepath}: ${err.message}`)
 		}
-		return null;
+		return null
 	}
 
 	// If it's not a tasks.json file, return as-is
 	if (!filepath.includes('tasks.json') || !data) {
 		if (isDebug) {
-			console.log(`File is not tasks.json or data is null, returning as-is`);
+			console.log(`File is not tasks.json or data is null, returning as-is`)
 		}
-		return data;
+		return data
 	}
 
 	// Check if this is legacy format that needs migration
 	// Only migrate if we have tasks at the ROOT level AND no tag-like structure
-	if (
-		Array.isArray(data.tasks) &&
-		!data._rawTaggedData &&
-		!hasTaggedStructure(data)
-	) {
+	if (Array.isArray(data.tasks) && !data._rawTaggedData && !hasTaggedStructure(data)) {
 		if (isDebug) {
-			console.log(`File is in legacy format, performing migration...`);
+			console.log(`File is in legacy format, performing migration...`)
 		}
 
-		normalizeTaskIds(data.tasks);
+		normalizeTaskIds(data.tasks)
 
 		// This is legacy format - migrate it to tagged format
 		const migratedData = {
@@ -371,47 +363,47 @@ function readJSON(filepath, projectRoot = null, tag = null) {
 					description: 'Tasks for master context'
 				}
 			}
-		};
+		}
 
 		// Write the migrated data back to the file
 		try {
-			writeJSON(filepath, migratedData);
+			writeJSON(filepath, migratedData)
 			if (isDebug) {
-				console.log(`Successfully migrated legacy format to tagged format`);
+				console.log(`Successfully migrated legacy format to tagged format`)
 			}
 
 			// Perform complete migration (config.json, state.json)
-			performCompleteTagMigration(filepath);
+			performCompleteTagMigration(filepath)
 
 			// Check and auto-switch git tags if enabled (after migration)
 			// This needs to run synchronously BEFORE tag resolution
 			if (projectRoot) {
 				try {
 					// Run git integration synchronously
-					gitUtils.checkAndAutoSwitchGitTagSync(projectRoot, filepath);
+					gitUtils.checkAndAutoSwitchGitTagSync(projectRoot, filepath)
 				} catch (error) {
 					// Silent fail - don't break normal operations
 				}
 			}
 
 			// Mark for migration notice
-			markMigrationForNotice(filepath);
+			markMigrationForNotice(filepath)
 		} catch (writeError) {
 			if (isDebug) {
-				console.log(`Error writing migrated data: ${writeError.message}`);
+				console.log(`Error writing migrated data: ${writeError.message}`)
 			}
 			// If write fails, continue with the original data
 		}
 
 		// Continue processing with the migrated data structure
-		data = migratedData;
+		data = migratedData
 	}
 
 	// If we have tagged data, we need to resolve which tag to use
 	if (typeof data === 'object' && !data.tasks) {
 		// This is tagged format
 		if (isDebug) {
-			console.log(`File is in tagged format, resolving tag...`);
+			console.log(`File is in tagged format, resolving tag...`)
 		}
 
 		// Ensure all tags have proper metadata before proceeding
@@ -425,28 +417,23 @@ function readJSON(filepath, projectRoot = null, tag = null) {
 					ensureTagMetadata(data[tagName], {
 						description: `Tasks for ${tagName} context`,
 						skipUpdate: true // Don't update timestamp during read operations
-					});
+					})
 				} catch (error) {
 					// If ensureTagMetadata fails, continue without metadata
 					if (isDebug) {
-						console.log(
-							`Failed to ensure metadata for tag ${tagName}: ${error.message}`
-						);
+						console.log(`Failed to ensure metadata for tag ${tagName}: ${error.message}`)
 					}
 				}
 			}
 		}
 
 		// Store reference to the raw tagged data for functions that need it
-		const originalTaggedData = JSON.parse(JSON.stringify(data));
+		const originalTaggedData = JSON.parse(JSON.stringify(data))
 
 		// Normalize IDs in all tags before storing as originalTaggedData
 		for (const tagName in originalTaggedData) {
-			if (
-				originalTaggedData[tagName] &&
-				Array.isArray(originalTaggedData[tagName].tasks)
-			) {
-				normalizeTaskIds(originalTaggedData[tagName].tasks);
+			if (originalTaggedData[tagName] && Array.isArray(originalTaggedData[tagName].tasks)) {
+				normalizeTaskIds(originalTaggedData[tagName].tasks)
 			}
 		}
 
@@ -455,7 +442,7 @@ function readJSON(filepath, projectRoot = null, tag = null) {
 		if (projectRoot) {
 			try {
 				// Run git integration synchronously
-				gitUtils.checkAndAutoSwitchGitTagSync(projectRoot, filepath);
+				gitUtils.checkAndAutoSwitchGitTagSync(projectRoot, filepath)
 			} catch (error) {
 				// Silent fail - don't break normal operations
 			}
@@ -463,107 +450,103 @@ function readJSON(filepath, projectRoot = null, tag = null) {
 
 		try {
 			// Default to master tag if anything goes wrong
-			let resolvedTag = 'master';
+			let resolvedTag = 'master'
 
 			// Try to resolve the correct tag, but don't fail if it doesn't work
 			try {
 				// If tag is provided, use it directly
 				if (tag) {
-					resolvedTag = tag;
+					resolvedTag = tag
 				} else if (projectRoot) {
 					// Use provided projectRoot
-					resolvedTag = resolveTag({ projectRoot });
+					resolvedTag = resolveTag({ projectRoot })
 				} else {
 					// Try to derive projectRoot from filepath
-					const derivedProjectRoot = findProjectRoot(path.dirname(filepath));
+					const derivedProjectRoot = findProjectRoot(path.dirname(filepath))
 					if (derivedProjectRoot) {
-						resolvedTag = resolveTag({ projectRoot: derivedProjectRoot });
+						resolvedTag = resolveTag({ projectRoot: derivedProjectRoot })
 					}
 					// If derivedProjectRoot is null, stick with 'master'
 				}
 			} catch (tagResolveError) {
 				if (isDebug) {
-					console.log(
-						`Tag resolution failed, using master: ${tagResolveError.message}`
-					);
+					console.log(`Tag resolution failed, using master: ${tagResolveError.message}`)
 				}
 				// resolvedTag stays as 'master'
 			}
 
 			if (isDebug) {
-				console.log(`Resolved tag: ${resolvedTag}`);
+				console.log(`Resolved tag: ${resolvedTag}`)
 			}
 
 			// Get the data for the resolved tag
-			const tagData = data[resolvedTag];
+			const tagData = data[resolvedTag]
 			if (tagData && tagData.tasks) {
-				normalizeTaskIds(tagData.tasks);
+				normalizeTaskIds(tagData.tasks)
 
 				// Add the _rawTaggedData property and the resolved tag to the returned data
 				const result = {
 					...tagData,
 					tag: resolvedTag,
 					_rawTaggedData: originalTaggedData
-				};
-				if (isDebug) {
-					console.log(
-						`Returning data for tag '${resolvedTag}' with ${tagData.tasks.length} tasks`
-					);
 				}
-				return result;
+				if (isDebug) {
+					console.log(`Returning data for tag '${resolvedTag}' with ${tagData.tasks.length} tasks`)
+				}
+				return result
 			} else {
 				// If the resolved tag doesn't exist, fall back to master
-				const masterData = data.master;
+				const masterData = data.master
 				if (masterData && masterData.tasks) {
-					normalizeTaskIds(masterData.tasks);
+					normalizeTaskIds(masterData.tasks)
 
 					if (isDebug) {
 						console.log(
 							`Tag '${resolvedTag}' not found, falling back to master with ${masterData.tasks.length} tasks`
-						);
+						)
 					}
 					return {
 						...masterData,
 						tag: 'master',
 						_rawTaggedData: originalTaggedData
-					};
+					}
 				} else {
 					if (isDebug) {
-						console.log(`No valid tag data found, returning empty structure`);
+						console.log(`No valid tag data found, returning empty structure`)
 					}
 					// Return empty structure if no valid data
 					return {
 						tasks: [],
 						tag: 'master',
 						_rawTaggedData: originalTaggedData
-					};
+					}
 				}
 			}
 		} catch (error) {
 			if (isDebug) {
-				console.log(`Error during tag resolution: ${error.message}`);
+				console.log(`Error during tag resolution: ${error.message}`)
 			}
 			// If anything goes wrong, try to return master or empty
-			const masterData = data.master;
+			const masterData = data.master
 			if (masterData && masterData.tasks) {
-				normalizeTaskIds(masterData.tasks);
+				normalizeTaskIds(masterData.tasks)
 				return {
 					...masterData,
 					_rawTaggedData: originalTaggedData
-				};
+				}
 			}
 			return {
 				tasks: [],
 				_rawTaggedData: originalTaggedData
-			};
+			}
 		}
 	}
 
 	// If we reach here, it's some other format
 	if (isDebug) {
-		console.log(`File format not recognized, returning as-is`);
+		console.log(`File format not recognized, returning as-is`)
 	}
-	return data;
+	return data
 }
 
 /**
@@ -573,31 +556,26 @@ function readJSON(filepath, projectRoot = null, tag = null) {
 function performCompleteTagMigration(tasksJsonPath) {
 	try {
 		// Derive project root from tasks.json path
-		const projectRoot =
-			findProjectRoot(path.dirname(tasksJsonPath)) ||
-			path.dirname(tasksJsonPath);
+		const projectRoot = findProjectRoot(path.dirname(tasksJsonPath)) || path.dirname(tasksJsonPath)
 
 		// 1. Migrate config.json - add defaultTag and tags section
-		const configPath = path.join(projectRoot, '.taskmaster', 'config.json');
+		const configPath = path.join(projectRoot, '.taskmaster', 'config.json')
 		if (fs.existsSync(configPath)) {
-			migrateConfigJson(configPath);
+			migrateConfigJson(configPath)
 		}
 
 		// 2. Create state.json if it doesn't exist
-		const statePath = path.join(projectRoot, '.taskmaster', 'state.json');
+		const statePath = path.join(projectRoot, '.taskmaster', 'state.json')
 		if (!fs.existsSync(statePath)) {
-			createStateJson(statePath);
+			createStateJson(statePath)
 		}
 
 		if (getDebugFlag()) {
-			log(
-				'debug',
-				`Complete tag migration performed for project: ${projectRoot}`
-			);
+			log('debug', `Complete tag migration performed for project: ${projectRoot}`)
 		}
 	} catch (error) {
 		if (getDebugFlag()) {
-			log('warn', `Error during complete tag migration: ${error.message}`);
+			log('warn', `Error during complete tag migration: ${error.message}`)
 		}
 	}
 }
@@ -608,32 +586,30 @@ function performCompleteTagMigration(tasksJsonPath) {
  */
 function migrateConfigJson(configPath) {
 	try {
-		const rawConfig = fs.readFileSync(configPath, 'utf8');
-		const config = JSON.parse(rawConfig);
-		if (!config) return;
+		const rawConfig = fs.readFileSync(configPath, 'utf8')
+		const config = JSON.parse(rawConfig)
+		if (!config) return
 
-		let modified = false;
+		let modified = false
 
 		// Add global.defaultTag if missing
 		if (!config.global) {
-			config.global = {};
+			config.global = {}
 		}
 		if (!config.global.defaultTag) {
-			config.global.defaultTag = 'master';
-			modified = true;
+			config.global.defaultTag = 'master'
+			modified = true
 		}
 
 		if (modified) {
-			fs.writeFileSync(configPath, JSON.stringify(config, null, 2), 'utf8');
+			fs.writeFileSync(configPath, JSON.stringify(config, null, 2), 'utf8')
 			if (process.env.TASKMASTER_DEBUG === 'true') {
-				console.log(
-					'[DEBUG] Updated config.json with tagged task system settings'
-				);
+				console.log('[DEBUG] Updated config.json with tagged task system settings')
 			}
 		}
 	} catch (error) {
 		if (process.env.TASKMASTER_DEBUG === 'true') {
-			console.warn(`[WARN] Error migrating config.json: ${error.message}`);
+			console.warn(`[WARN] Error migrating config.json: ${error.message}`)
 		}
 	}
 }
@@ -649,15 +625,15 @@ function createStateJson(statePath) {
 			lastSwitched: new Date().toISOString(),
 			branchTagMapping: {},
 			migrationNoticeShown: false
-		};
+		}
 
-		fs.writeFileSync(statePath, JSON.stringify(initialState, null, 2), 'utf8');
+		fs.writeFileSync(statePath, JSON.stringify(initialState, null, 2), 'utf8')
 		if (process.env.TASKMASTER_DEBUG === 'true') {
-			console.log('[DEBUG] Created initial state.json for tagged task system');
+			console.log('[DEBUG] Created initial state.json for tagged task system')
 		}
 	} catch (error) {
 		if (process.env.TASKMASTER_DEBUG === 'true') {
-			console.warn(`[WARN] Error creating state.json: ${error.message}`);
+			console.warn(`[WARN] Error creating state.json: ${error.message}`)
 		}
 	}
 }
@@ -668,35 +644,31 @@ function createStateJson(statePath) {
  */
 function markMigrationForNotice(tasksJsonPath) {
 	try {
-		const projectRoot = path.dirname(path.dirname(tasksJsonPath));
-		const statePath = path.join(projectRoot, '.taskmaster', 'state.json');
+		const projectRoot = path.dirname(path.dirname(tasksJsonPath))
+		const statePath = path.join(projectRoot, '.taskmaster', 'state.json')
 
 		// Ensure state.json exists
 		if (!fs.existsSync(statePath)) {
-			createStateJson(statePath);
+			createStateJson(statePath)
 		}
 
 		// Read and update state to mark migration occurred using fs directly
 		try {
-			const rawState = fs.readFileSync(statePath, 'utf8');
-			const stateData = JSON.parse(rawState) || {};
+			const rawState = fs.readFileSync(statePath, 'utf8')
+			const stateData = JSON.parse(rawState) || {}
 			// Only set to false if it's not already set (i.e., first time migration)
 			if (stateData.migrationNoticeShown === undefined) {
-				stateData.migrationNoticeShown = false;
-				fs.writeFileSync(statePath, JSON.stringify(stateData, null, 2), 'utf8');
+				stateData.migrationNoticeShown = false
+				fs.writeFileSync(statePath, JSON.stringify(stateData, null, 2), 'utf8')
 			}
 		} catch (stateError) {
 			if (process.env.TASKMASTER_DEBUG === 'true') {
-				console.warn(
-					`[WARN] Error updating state for migration notice: ${stateError.message}`
-				);
+				console.warn(`[WARN] Error updating state for migration notice: ${stateError.message}`)
 			}
 		}
 	} catch (error) {
 		if (process.env.TASKMASTER_DEBUG === 'true') {
-			console.warn(
-				`[WARN] Error marking migration for notice: ${error.message}`
-			);
+			console.warn(`[WARN] Error marking migration for notice: ${error.message}`)
 		}
 	}
 }
@@ -709,10 +681,10 @@ function markMigrationForNotice(tasksJsonPath) {
  * @param {string} tag - Optional tag for tag context
  */
 function writeJSON(filepath, data, projectRoot = null, tag = null) {
-	const isDebug = process.env.TASKMASTER_DEBUG === 'true';
+	const isDebug = process.env.TASKMASTER_DEBUG === 'true'
 
 	try {
-		let finalData = data;
+		let finalData = data
 
 		// If data represents resolved tag data but lost _rawTaggedData (edge-case observed in MCP path)
 		if (
@@ -721,16 +693,16 @@ function writeJSON(filepath, data, projectRoot = null, tag = null) {
 			Array.isArray(data.tasks) &&
 			!hasTaggedStructure(data)
 		) {
-			const resolvedTag = tag || getCurrentTag(projectRoot);
+			const resolvedTag = tag || getCurrentTag(projectRoot)
 
 			if (isDebug) {
 				console.log(
 					`writeJSON: Detected resolved tag data missing _rawTaggedData. Re-reading raw data to prevent data loss for tag '${resolvedTag}'.`
-				);
+				)
 			}
 
 			// Re-read the full file to get the complete tagged structure
-			const rawFullData = JSON.parse(fs.readFileSync(filepath, 'utf8'));
+			const rawFullData = JSON.parse(fs.readFileSync(filepath, 'utf8'))
 
 			// Merge the updated data into the full structure
 			finalData = {
@@ -741,77 +713,68 @@ function writeJSON(filepath, data, projectRoot = null, tag = null) {
 					...(data.metadata ? { metadata: data.metadata } : {}),
 					tasks: data.tasks // The updated tasks array is the source of truth here
 				}
-			};
+			}
 		}
 		// If we have _rawTaggedData, this means we're working with resolved tag data
 		// and need to merge it back into the full tagged structure
 		else if (data && data._rawTaggedData && projectRoot) {
-			const resolvedTag = tag || getCurrentTag(projectRoot);
+			const resolvedTag = tag || getCurrentTag(projectRoot)
 
 			// Get the original tagged data
-			const originalTaggedData = data._rawTaggedData;
+			const originalTaggedData = data._rawTaggedData
 
 			// Create a clean copy of the current resolved data (without internal properties)
-			const { _rawTaggedData, tag: _, ...cleanResolvedData } = data;
+			const { _rawTaggedData, tag: _, ...cleanResolvedData } = data
 
 			// Update the specific tag with the resolved data
 			finalData = {
 				...originalTaggedData,
 				[resolvedTag]: cleanResolvedData
-			};
+			}
 
 			if (isDebug) {
-				console.log(
-					`writeJSON: Merging resolved data back into tag '${resolvedTag}'`
-				);
+				console.log(`writeJSON: Merging resolved data back into tag '${resolvedTag}'`)
 			}
 		}
 
 		// Clean up any internal properties that shouldn't be persisted
-		let cleanData = finalData;
+		let cleanData = finalData
 		if (cleanData && typeof cleanData === 'object') {
 			// Remove any _rawTaggedData or tag properties from root level
-			const { _rawTaggedData, tag: tagProp, ...rootCleanData } = cleanData;
-			cleanData = rootCleanData;
+			const { _rawTaggedData, tag: tagProp, ...rootCleanData } = cleanData
+			cleanData = rootCleanData
 
 			// Additional cleanup for tag objects
 			if (typeof cleanData === 'object' && !Array.isArray(cleanData)) {
-				const finalCleanData = {};
+				const finalCleanData = {}
 				for (const [key, value] of Object.entries(cleanData)) {
-					if (
-						value &&
-						typeof value === 'object' &&
-						Array.isArray(value.tasks)
-					) {
+					if (value && typeof value === 'object' && Array.isArray(value.tasks)) {
 						// This is a tag object - clean up any rogue root-level properties
-						const { created, description, ...cleanTagData } = value;
+						const { created, description, ...cleanTagData } = value
 
 						// Only keep the description if there's no metadata.description
-						if (
-							description &&
-							(!cleanTagData.metadata || !cleanTagData.metadata.description)
-						) {
-							cleanTagData.description = description;
+						if (description && (!cleanTagData.metadata || !cleanTagData.metadata.description)) {
+							cleanTagData.description = description
 						}
 
-						finalCleanData[key] = cleanTagData;
+						finalCleanData[key] = cleanTagData
 					} else {
-						finalCleanData[key] = value;
+						finalCleanData[key] = value
 					}
 				}
-				cleanData = finalCleanData;
+				cleanData = finalCleanData
 			}
 		}
 
-		fs.writeFileSync(filepath, JSON.stringify(cleanData, null, 2), 'utf8');
+		fs.writeFileSync(filepath, JSON.stringify(cleanData, null, 2), 'utf8')
 
 		if (isDebug) {
-			console.log(`writeJSON: Successfully wrote to ${filepath}`);
+			console.log(`writeJSON: Successfully wrote to ${filepath}`)
 		}
 	} catch (error) {
-		log('error', `Error writing JSON file ${filepath}:`, error.message);
+		log('error', `Error writing JSON file ${filepath}:`, error.message)
 		if (isDebug) {
-			log('error', 'Full error details:', error);
+			log('error', 'Full error details:', error)
 		}
 	}
 }
@@ -823,7 +786,7 @@ function writeJSON(filepath, data, projectRoot = null, tag = null) {
  */
 function sanitizePrompt(prompt) {
 	// Replace double quotes with escaped double quotes
-	return prompt.replace(/"/g, '\\"');
+	return prompt.replace(/"/g, '\\"')
 }
 
 /**
@@ -833,48 +796,45 @@ function sanitizePrompt(prompt) {
  */
 function readComplexityReport(customPath = null) {
 	// GUARD: Prevent circular dependency during config loading
-	let isDebug = false; // Default fallback
+	let isDebug = false // Default fallback
 	try {
 		// Only try to get debug flag if we're not in the middle of config loading
-		isDebug = getDebugFlag();
+		isDebug = getDebugFlag()
 	} catch (error) {
 		// If getDebugFlag() fails (likely due to circular dependency),
 		// use default false and continue
-		isDebug = false;
+		isDebug = false
 	}
 
 	try {
-		let reportPath;
+		let reportPath
 		if (customPath) {
-			reportPath = customPath;
+			reportPath = customPath
 		} else {
 			// Try new location first, then fall back to legacy
-			const newPath = path.join(process.cwd(), COMPLEXITY_REPORT_FILE);
-			const legacyPath = path.join(
-				process.cwd(),
-				LEGACY_COMPLEXITY_REPORT_FILE
-			);
+			const newPath = path.join(process.cwd(), COMPLEXITY_REPORT_FILE)
+			const legacyPath = path.join(process.cwd(), LEGACY_COMPLEXITY_REPORT_FILE)
 
-			reportPath = fs.existsSync(newPath) ? newPath : legacyPath;
+			reportPath = fs.existsSync(newPath) ? newPath : legacyPath
 		}
 
 		if (!fs.existsSync(reportPath)) {
 			if (isDebug) {
-				log('debug', `Complexity report not found at ${reportPath}`);
+				log('debug', `Complexity report not found at ${reportPath}`)
 			}
-			return null;
+			return null
 		}
 
-		const reportData = readJSON(reportPath);
+		const reportData = readJSON(reportPath)
 		if (isDebug) {
-			log('debug', `Successfully read complexity report from ${reportPath}`);
+			log('debug', `Successfully read complexity report from ${reportPath}`)
 		}
-		return reportData;
+		return reportData
 	} catch (error) {
 		if (isDebug) {
-			log('error', `Error reading complexity report: ${error.message}`);
+			log('error', `Error reading complexity report: ${error.message}`)
 		}
-		return null;
+		return null
 	}
 }
 
@@ -885,30 +845,26 @@ function readComplexityReport(customPath = null) {
  * @returns {Object|null} The task analysis or null if not found
  */
 function findTaskInComplexityReport(report, taskId) {
-	if (
-		!report ||
-		!report.complexityAnalysis ||
-		!Array.isArray(report.complexityAnalysis)
-	) {
-		return null;
+	if (!report || !report.complexityAnalysis || !Array.isArray(report.complexityAnalysis)) {
+		return null
 	}
 
-	return report.complexityAnalysis.find((task) => task.taskId === taskId);
+	return report.complexityAnalysis.find((task) => task.taskId === taskId)
 }
 
 function addComplexityToTask(task, complexityReport) {
-	let taskId;
+	let taskId
 	if (task.isSubtask) {
-		taskId = task.parentTask.id;
+		taskId = task.parentTask.id
 	} else if (task.parentId) {
-		taskId = task.parentId;
+		taskId = task.parentId
 	} else {
-		taskId = task.id;
+		taskId = task.id
 	}
 
-	const taskAnalysis = findTaskInComplexityReport(complexityReport, taskId);
+	const taskAnalysis = findTaskInComplexityReport(complexityReport, taskId)
 	if (taskAnalysis) {
-		task.complexityScore = taskAnalysis.complexityScore;
+		task.complexityScore = taskAnalysis.complexityScore
 	}
 }
 
@@ -920,25 +876,23 @@ function addComplexityToTask(task, complexityReport) {
  */
 function taskExists(tasks, taskId) {
 	if (!taskId || !tasks || !Array.isArray(tasks)) {
-		return false;
+		return false
 	}
 
 	// Handle both regular task IDs and subtask IDs (e.g., "1.2")
 	if (typeof taskId === 'string' && taskId.includes('.')) {
-		const [parentId, subtaskId] = taskId
-			.split('.')
-			.map((id) => parseInt(id, 10));
-		const parentTask = tasks.find((t) => t.id === parentId);
+		const [parentId, subtaskId] = taskId.split('.').map((id) => parseInt(id, 10))
+		const parentTask = tasks.find((t) => t.id === parentId)
 
 		if (!parentTask || !parentTask.subtasks) {
-			return false;
+			return false
 		}
 
-		return parentTask.subtasks.some((st) => st.id === subtaskId);
+		return parentTask.subtasks.some((st) => st.id === subtaskId)
 	}
 
-	const id = parseInt(taskId, 10);
-	return tasks.some((t) => t.id === id);
+	const id = parseInt(taskId, 10)
+	return tasks.some((t) => t.id === id)
 }
 
 /**
@@ -948,14 +902,14 @@ function taskExists(tasks, taskId) {
  */
 function formatTaskId(id) {
 	if (typeof id === 'string' && id.includes('.')) {
-		return id; // Already formatted as a string with a dot (e.g., "1.2")
+		return id // Already formatted as a string with a dot (e.g., "1.2")
 	}
 
 	if (typeof id === 'number') {
-		return id.toString();
+		return id.toString()
 	}
 
-	return id;
+	return id
 }
 
 /**
@@ -966,90 +920,81 @@ function formatTaskId(id) {
  * @param {string} [statusFilter] - Optional status to filter subtasks by
  * @returns {{task: Object|null, originalSubtaskCount: number|null, originalSubtasks: Array|null}} The task object (potentially with filtered subtasks), the original subtask count, and original subtasks array if filtered, or nulls if not found.
  */
-function findTaskById(
-	tasks,
-	taskId,
-	complexityReport = null,
-	statusFilter = null
-) {
+function findTaskById(tasks, taskId, complexityReport = null, statusFilter = null) {
 	if (!taskId || !tasks || !Array.isArray(tasks)) {
-		return { task: null, originalSubtaskCount: null };
+		return { task: null, originalSubtaskCount: null }
 	}
 
 	// Check if it's a subtask ID (e.g., "1.2")
 	if (typeof taskId === 'string' && taskId.includes('.')) {
 		// If looking for a subtask, statusFilter doesn't apply directly here.
-		const [parentId, subtaskId] = taskId
-			.split('.')
-			.map((id) => parseInt(id, 10));
-		const parentTask = tasks.find((t) => t.id === parentId);
+		const [parentId, subtaskId] = taskId.split('.').map((id) => parseInt(id, 10))
+		const parentTask = tasks.find((t) => t.id === parentId)
 
 		if (!parentTask || !parentTask.subtasks) {
-			return { task: null, originalSubtaskCount: null, originalSubtasks: null };
+			return { task: null, originalSubtaskCount: null, originalSubtasks: null }
 		}
 
-		const subtask = parentTask.subtasks.find((st) => st.id === subtaskId);
+		const subtask = parentTask.subtasks.find((st) => st.id === subtaskId)
 		if (subtask) {
 			// Add reference to parent task for context
 			subtask.parentTask = {
 				id: parentTask.id,
 				title: parentTask.title,
 				status: parentTask.status
-			};
-			subtask.isSubtask = true;
+			}
+			subtask.isSubtask = true
 		}
 
 		// If we found a task, check for complexity data
 		if (subtask && complexityReport) {
-			addComplexityToTask(subtask, complexityReport);
+			addComplexityToTask(subtask, complexityReport)
 		}
 
 		return {
 			task: subtask || null,
 			originalSubtaskCount: null,
 			originalSubtasks: null
-		};
+		}
 	}
 
-	let taskResult = null;
-	let originalSubtaskCount = null;
-	let originalSubtasks = null;
+	let taskResult = null
+	let originalSubtaskCount = null
+	let originalSubtasks = null
 
 	// Find the main task
-	const id = parseInt(taskId, 10);
-	const task = tasks.find((t) => t.id === id) || null;
+	const id = parseInt(taskId, 10)
+	const task = tasks.find((t) => t.id === id) || null
 
 	// If task not found, return nulls
 	if (!task) {
-		return { task: null, originalSubtaskCount: null, originalSubtasks: null };
+		return { task: null, originalSubtaskCount: null, originalSubtasks: null }
 	}
 
-	taskResult = task;
+	taskResult = task
 
 	// If task found and statusFilter provided, filter its subtasks
 	if (statusFilter && task.subtasks && Array.isArray(task.subtasks)) {
 		// Store original subtasks and count before filtering
-		originalSubtasks = [...task.subtasks]; // Clone the original subtasks array
-		originalSubtaskCount = task.subtasks.length;
+		originalSubtasks = [...task.subtasks] // Clone the original subtasks array
+		originalSubtaskCount = task.subtasks.length
 
 		// Clone the task to avoid modifying the original array
-		const filteredTask = { ...task };
+		const filteredTask = { ...task }
 		filteredTask.subtasks = task.subtasks.filter(
-			(subtask) =>
-				subtask.status &&
-				subtask.status.toLowerCase() === statusFilter.toLowerCase()
-		);
+			(subtask) => subtask.status && subtask.status.toLowerCase() === statusFilter.toLowerCase()
+		)
 
-		taskResult = filteredTask;
+		taskResult = filteredTask
 	}
 
 	// If task found and complexityReport provided, add complexity data
 	if (taskResult && complexityReport) {
-		addComplexityToTask(taskResult, complexityReport);
+		addComplexityToTask(taskResult, complexityReport)
 	}
 
 	// Return the found task, original subtask count, and original subtasks
-	return { task: taskResult, originalSubtaskCount, originalSubtasks };
+	return { task: taskResult, originalSubtaskCount, originalSubtasks }
 }
 
 /**
@@ -1060,10 +1005,10 @@ function findTaskById(
  */
 function truncate(text, maxLength) {
 	if (!text || text.length <= maxLength) {
-		return text;
+		return text
 	}
 
-	return `${text.slice(0, maxLength - 3)}...`;
+	return `${text.slice(0, maxLength - 3)}...`
 }
 
 /**
@@ -1073,12 +1018,12 @@ function truncate(text, maxLength) {
  */
 function isEmpty(value) {
 	if (Array.isArray(value)) {
-		return value.length === 0;
+		return value.length === 0
 	} else if (typeof value === 'object' && value !== null) {
-		return Object.keys(value).length === 0;
+		return Object.keys(value).length === 0
 	}
 
-	return false; // Not an array or object, or is null
+	return false // Not an array or object, or is null
 }
 
 /**
@@ -1097,39 +1042,37 @@ function findCycles(
 	path = []
 ) {
 	// Mark the current node as visited and part of recursion stack
-	visited.add(subtaskId);
-	recursionStack.add(subtaskId);
-	path.push(subtaskId);
+	visited.add(subtaskId)
+	recursionStack.add(subtaskId)
+	path.push(subtaskId)
 
-	const cyclesToBreak = [];
+	const cyclesToBreak = []
 
 	// Get all dependencies of the current subtask
-	const dependencies = dependencyMap.get(subtaskId) || [];
+	const dependencies = dependencyMap.get(subtaskId) || []
 
 	// For each dependency
 	for (const depId of dependencies) {
 		// If not visited, recursively check for cycles
 		if (!visited.has(depId)) {
-			const cycles = findCycles(depId, dependencyMap, visited, recursionStack, [
-				...path
-			]);
-			cyclesToBreak.push(...cycles);
+			const cycles = findCycles(depId, dependencyMap, visited, recursionStack, [...path])
+			cyclesToBreak.push(...cycles)
 		}
 		// If the dependency is in the recursion stack, we found a cycle
 		else if (recursionStack.has(depId)) {
 			// Find the position of the dependency in the path
-			const cycleStartIndex = path.indexOf(depId);
+			const cycleStartIndex = path.indexOf(depId)
 			// The last edge in the cycle is what we want to remove
-			const cycleEdges = path.slice(cycleStartIndex);
+			const cycleEdges = path.slice(cycleStartIndex)
 			// We'll remove the last edge in the cycle (the one that points back)
-			cyclesToBreak.push(depId);
+			cyclesToBreak.push(depId)
 		}
 	}
 
 	// Remove the node from recursion stack before returning
-	recursionStack.delete(subtaskId);
+	recursionStack.delete(subtaskId)
 
-	return cyclesToBreak;
+	return cyclesToBreak
 }
 
 /**
@@ -1144,125 +1087,116 @@ function findCycles(
  * @returns {Array} Array of all dependency task IDs found through traversal
  */
 function traverseDependencies(sourceTasks, allTasks, options = {}) {
-	const {
-		maxDepth = 50,
-		includeSelf = false,
-		direction = 'forward',
-		logger = null
-	} = options;
+	const { maxDepth = 50, includeSelf = false, direction = 'forward', logger = null } = options
 
-	const dependentTaskIds = new Set();
-	const processedIds = new Set();
+	const dependentTaskIds = new Set()
+	const processedIds = new Set()
 
 	// Helper function to normalize dependency IDs while preserving subtask format
 	function normalizeDependencyId(depId) {
 		if (typeof depId === 'string') {
 			// Preserve string format for subtask IDs like "1.2"
 			if (depId.includes('.')) {
-				return depId;
+				return depId
 			}
 			// Convert simple string numbers to numbers for consistency
-			const parsed = parseInt(depId, 10);
-			return isNaN(parsed) ? depId : parsed;
+			const parsed = parseInt(depId, 10)
+			return isNaN(parsed) ? depId : parsed
 		}
-		return depId;
+		return depId
 	}
 
 	// Helper function for forward dependency traversal
 	function findForwardDependencies(taskId, currentDepth = 0) {
 		// Check depth limit
 		if (currentDepth >= maxDepth) {
-			const warnMsg = `Maximum recursion depth (${maxDepth}) reached for task ${taskId}`;
+			const warnMsg = `Maximum recursion depth (${maxDepth}) reached for task ${taskId}`
 			if (logger && typeof logger.warn === 'function') {
-				logger.warn(warnMsg);
+				logger.warn(warnMsg)
 			} else if (typeof log !== 'undefined' && log.warn) {
-				log.warn(warnMsg);
+				log.warn(warnMsg)
 			} else {
-				console.warn(warnMsg);
+				console.warn(warnMsg)
 			}
-			return;
+			return
 		}
 
 		if (processedIds.has(taskId)) {
-			return; // Avoid infinite loops
+			return // Avoid infinite loops
 		}
-		processedIds.add(taskId);
+		processedIds.add(taskId)
 
-		const task = allTasks.find((t) => t.id === taskId);
+		const task = allTasks.find((t) => t.id === taskId)
 		if (!task || !Array.isArray(task.dependencies)) {
-			return;
+			return
 		}
 
 		task.dependencies.forEach((depId) => {
-			const normalizedDepId = normalizeDependencyId(depId);
+			const normalizedDepId = normalizeDependencyId(depId)
 
 			// Skip invalid dependencies and optionally skip self-references
-			if (
-				normalizedDepId == null ||
-				(!includeSelf && normalizedDepId === taskId)
-			) {
-				return;
+			if (normalizedDepId == null || (!includeSelf && normalizedDepId === taskId)) {
+				return
 			}
 
-			dependentTaskIds.add(normalizedDepId);
+			dependentTaskIds.add(normalizedDepId)
 			// Recursively find dependencies of this dependency
-			findForwardDependencies(normalizedDepId, currentDepth + 1);
-		});
+			findForwardDependencies(normalizedDepId, currentDepth + 1)
+		})
 	}
 
 	// Helper function for reverse dependency traversal
 	function findReverseDependencies(taskId, currentDepth = 0) {
 		// Check depth limit
 		if (currentDepth >= maxDepth) {
-			const warnMsg = `Maximum recursion depth (${maxDepth}) reached for task ${taskId}`;
+			const warnMsg = `Maximum recursion depth (${maxDepth}) reached for task ${taskId}`
 			if (logger && typeof logger.warn === 'function') {
-				logger.warn(warnMsg);
+				logger.warn(warnMsg)
 			} else if (typeof log !== 'undefined' && log.warn) {
-				log.warn(warnMsg);
+				log.warn(warnMsg)
 			} else {
-				console.warn(warnMsg);
+				console.warn(warnMsg)
 			}
-			return;
+			return
 		}
 
 		if (processedIds.has(taskId)) {
-			return; // Avoid infinite loops
+			return // Avoid infinite loops
 		}
-		processedIds.add(taskId);
+		processedIds.add(taskId)
 
 		allTasks.forEach((task) => {
 			if (task.dependencies && Array.isArray(task.dependencies)) {
 				const dependsOnTaskId = task.dependencies.some((depId) => {
-					const normalizedDepId = normalizeDependencyId(depId);
-					return normalizedDepId === taskId;
-				});
+					const normalizedDepId = normalizeDependencyId(depId)
+					return normalizedDepId === taskId
+				})
 
 				if (dependsOnTaskId) {
 					// Skip invalid dependencies and optionally skip self-references
 					if (task.id == null || (!includeSelf && task.id === taskId)) {
-						return;
+						return
 					}
 
-					dependentTaskIds.add(task.id);
+					dependentTaskIds.add(task.id)
 					// Recursively find tasks that depend on this task
-					findReverseDependencies(task.id, currentDepth + 1);
+					findReverseDependencies(task.id, currentDepth + 1)
 				}
 			}
-		});
+		})
 	}
 
 	// Choose traversal function based on direction
-	const traversalFunc =
-		direction === 'reverse' ? findReverseDependencies : findForwardDependencies;
+	const traversalFunc = direction === 'reverse' ? findReverseDependencies : findForwardDependencies
 
 	// Start traversal from each source task
 	sourceTasks.forEach((sourceTask) => {
 		if (sourceTask && sourceTask.id) {
-			traversalFunc(sourceTask.id);
+			traversalFunc(sourceTask.id)
 		}
-	});
+	})
 
-	return Array.from(dependentTaskIds);
+	return Array.from(dependentTaskIds)
 }
 
 /**
@@ -1281,14 +1215,14 @@ const toKebabCase = (str) => {
 		.replace(/JSON/g, 'Json')
 		.replace(/XML/g, 'Xml')
 		.replace(/HTML/g, 'Html')
-		.replace(/CSS/g, 'Css');
+		.replace(/CSS/g, 'Css')
 
 	// Insert hyphens before capital letters and convert to lowercase
 	return withReplacedAcronyms
 		.replace(/([A-Z])/g, '-$1')
 		.toLowerCase()
-		.replace(/^-/, ''); // Remove leading hyphen if present
-};
+		.replace(/^-/, '') // Remove leading hyphen if present
+}
 
 /**
  * Detect camelCase flags in command arguments
@@ -1296,29 +1230,29 @@ const toKebabCase = (str) => {
  * @returns {Array<{original: string, kebabCase: string}>} - List of flags that should be converted
  */
 function detectCamelCaseFlags(args) {
-	const camelCaseFlags = [];
+	const camelCaseFlags = []
 	for (const arg of args) {
 		if (arg.startsWith('--')) {
-			const flagName = arg.split('=')[0].slice(2); // Remove -- and anything after =
+			const flagName = arg.split('=')[0].slice(2) // Remove -- and anything after =
 
 			// Skip single-word flags - they can't be camelCase
 			if (!flagName.includes('-') && !/[A-Z]/.test(flagName)) {
-				continue;
+				continue
 			}
 
 			// Check for camelCase pattern (lowercase followed by uppercase)
 			if (/[a-z][A-Z]/.test(flagName)) {
-				const kebabVersion = toKebabCase(flagName);
+				const kebabVersion = toKebabCase(flagName)
 				if (kebabVersion !== flagName) {
 					camelCaseFlags.push({
 						original: flagName,
 						kebabCase: kebabVersion
-					});
+					})
 				}
 			}
 		}
 	}
-	return camelCaseFlags;
+	return camelCaseFlags
 }
 
 /**
@@ -1329,7 +1263,7 @@ function detectCamelCaseFlags(args) {
  */
 function aggregateTelemetry(telemetryArray, overallCommandName) {
 	if (!telemetryArray || telemetryArray.length === 0) {
-		return null;
+		return null
 	}
 
 	const aggregated = {
@@ -1343,37 +1277,37 @@ function aggregateTelemetry(telemetryArray, overallCommandName) {
 		totalTokens: 0,
 		totalCost: 0,
 		currency: telemetryArray[0].currency || 'USD' // Assume consistent currency or default
-	};
+	}
 
-	const uniqueModels = new Set();
-	const uniqueProviders = new Set();
-	const uniqueCurrencies = new Set();
+	const uniqueModels = new Set()
+	const uniqueProviders = new Set()
+	const uniqueCurrencies = new Set()
 
 	telemetryArray.forEach((item) => {
-		aggregated.inputTokens += item.inputTokens || 0;
-		aggregated.outputTokens += item.outputTokens || 0;
-		aggregated.totalCost += item.totalCost || 0;
-		uniqueModels.add(item.modelUsed);
-		uniqueProviders.add(item.providerName);
-		uniqueCurrencies.add(item.currency || 'USD');
-	});
+		aggregated.inputTokens += item.inputTokens || 0
+		aggregated.outputTokens += item.outputTokens || 0
+		aggregated.totalCost += item.totalCost || 0
+		uniqueModels.add(item.modelUsed)
+		uniqueProviders.add(item.providerName)
+		uniqueCurrencies.add(item.currency || 'USD')
+	})
 
-	aggregated.totalTokens = aggregated.inputTokens + aggregated.outputTokens;
-	aggregated.totalCost = parseFloat(aggregated.totalCost.toFixed(6)); // Fix precision
+	aggregated.totalTokens = aggregated.inputTokens + aggregated.outputTokens
+	aggregated.totalCost = parseFloat(aggregated.totalCost.toFixed(6)) // Fix precision
 
 	if (uniqueModels.size === 1) {
-		aggregated.modelUsed = [...uniqueModels][0];
+		aggregated.modelUsed = [...uniqueModels][0]
 	}
 	if (uniqueProviders.size === 1) {
-		aggregated.providerName = [...uniqueProviders][0];
+		aggregated.providerName = [...uniqueProviders][0]
 	}
 	if (uniqueCurrencies.size > 1) {
-		aggregated.currency = 'Multiple'; // Mark if currencies actually differ
+		aggregated.currency = 'Multiple' // Mark if currencies actually differ
 	} else if (uniqueCurrencies.size === 1) {
-		aggregated.currency = [...uniqueCurrencies][0];
+		aggregated.currency = [...uniqueCurrencies][0]
 	}
 
-	return aggregated;
+	return aggregated
 }
 
 /**
@@ -1384,17 +1318,17 @@ function aggregateTelemetry(telemetryArray, overallCommandName) {
  */
 function getCurrentTag(projectRoot) {
 	if (!projectRoot) {
-		throw new Error('projectRoot is required for getCurrentTag');
+		throw new Error('projectRoot is required for getCurrentTag')
 	}
 
 	try {
 		// Try to read current tag from state.json using fs directly
-		const statePath = path.join(projectRoot, '.taskmaster', 'state.json');
+		const statePath = path.join(projectRoot, '.taskmaster', 'state.json')
 		if (fs.existsSync(statePath)) {
-			const rawState = fs.readFileSync(statePath, 'utf8');
-			const stateData = JSON.parse(rawState);
+			const rawState = fs.readFileSync(statePath, 'utf8')
+			const stateData = JSON.parse(rawState)
 			if (stateData && stateData.currentTag) {
-				return stateData.currentTag;
+				return stateData.currentTag
 			}
 		}
 	} catch (error) {
@@ -1403,12 +1337,12 @@ function getCurrentTag(projectRoot) {
 
 	// Fall back to defaultTag from config using fs directly
 	try {
-		const configPath = path.join(projectRoot, '.taskmaster', 'config.json');
+		const configPath = path.join(projectRoot, '.taskmaster', 'config.json')
 		if (fs.existsSync(configPath)) {
-			const rawConfig = fs.readFileSync(configPath, 'utf8');
-			const configData = JSON.parse(rawConfig);
+			const rawConfig = fs.readFileSync(configPath, 'utf8')
+			const configData = JSON.parse(rawConfig)
 			if (configData && configData.global && configData.global.defaultTag) {
-				return configData.global.defaultTag;
+				return configData.global.defaultTag
 			}
 		}
 	} catch (error) {
@@ -1416,7 +1350,7 @@ function getCurrentTag(projectRoot) {
 	}
 
 	// Final fallback
-	return 'master';
+	return 'master'
 }
 
 /**
@@ -1427,19 +1361,19 @@ function getCurrentTag(projectRoot) {
  * @returns {string} The resolved tag name
  */
 function resolveTag(options = {}) {
-	const { projectRoot, tag } = options;
+	const { projectRoot, tag } = options
 
 	if (!projectRoot) {
-		throw new Error('projectRoot is required for resolveTag');
+		throw new Error('projectRoot is required for resolveTag')
 	}
 
 	// If explicit tag provided, use it
 	if (tag) {
-		return tag;
+		return tag
 	}
 
 	// Otherwise get current tag from state/config
-	return getCurrentTag(projectRoot);
+	return getCurrentTag(projectRoot)
 }
 
 /**
@@ -1450,19 +1384,15 @@ function resolveTag(options = {}) {
  */
 function getTasksForTag(data, tagName) {
 	if (!data || !tagName) {
-		return [];
+		return []
 	}
 
 	// Handle migrated format: { "master": { "tasks": [...] }, "otherTag": { "tasks": [...] } }
-	if (
-		data[tagName] &&
-		data[tagName].tasks &&
-		Array.isArray(data[tagName].tasks)
-	) {
-		return data[tagName].tasks;
+	if (data[tagName] && data[tagName].tasks && Array.isArray(data[tagName].tasks)) {
+		return data[tagName].tasks
 	}
 
-	return [];
+	return []
 }
 
 /**
@@ -1474,15 +1404,15 @@ function getTasksForTag(data, tagName) {
  */
 function setTasksForTag(data, tagName, tasks) {
 	if (!data) {
-		data = {};
+		data = {}
 	}
 
 	if (!data[tagName]) {
-		data[tagName] = {};
+		data[tagName] = {}
 	}
 
-	data[tagName].tasks = tasks || [];
-	return data;
+	data[tagName].tasks = tasks || []
+	return data
 }
 
 /**
@@ -1491,7 +1421,7 @@ function setTasksForTag(data, tagName, tasks) {
  * @returns {Array} Flattened array including both tasks and subtasks
  */
 function flattenTasksWithSubtasks(tasks) {
-	const flattened = [];
+	const flattened = []
 
 	for (const task of tasks) {
 		// Add the main task
@@ -1499,7 +1429,7 @@ function flattenTasksWithSubtasks(tasks) {
 			...task,
 			searchableId: task.id.toString(), // For consistent ID handling
 			isSubtask: false
-		});
+		})
 
 		// Add subtasks if they exist
 		if (task.subtasks && task.subtasks.length > 0) {
@@ -1513,12 +1443,12 @@ function flattenTasksWithSubtasks(tasks) {
 					// Enhance subtask context with parent information
 					title: `${subtask.title} (subtask of: ${task.title})`,
 					description: `${subtask.description} [Parent: ${task.description}]`
-				});
+				})
 			}
 		}
 	}
 
-	return flattened;
+	return flattened
 }
 
 /**
@@ -1531,10 +1461,10 @@ function flattenTasksWithSubtasks(tasks) {
  */
 function ensureTagMetadata(tagObj, opts = {}) {
 	if (!tagObj || typeof tagObj !== 'object') {
-		throw new Error('tagObj must be a valid object');
+		throw new Error('tagObj must be a valid object')
 	}
 
-	const now = new Date().toISOString();
+	const now = new Date().toISOString()
 
 	if (!tagObj.metadata) {
 		// Create new metadata object
@@ -1542,25 +1472,25 @@ function ensureTagMetadata(tagObj, opts = {}) {
 			created: now,
 			updated: now,
 			...(opts.description ? { description: opts.description } : {})
-		};
+		}
 	} else {
 		// Ensure existing metadata has required fields
 		if (!tagObj.metadata.created) {
-			tagObj.metadata.created = now;
+			tagObj.metadata.created = now
 		}
 
 		// Update timestamp unless explicitly skipped
 		if (!opts.skipUpdate) {
-			tagObj.metadata.updated = now;
+			tagObj.metadata.updated = now
 		}
 
 		// Add description if provided and not already present
 		if (opts.description && !tagObj.metadata.description) {
-			tagObj.metadata.description = opts.description;
+			tagObj.metadata.description = opts.description
 		}
 	}
 
-	return tagObj;
+	return tagObj
 }
 
 /**
@@ -1571,10 +1501,10 @@ function ensureTagMetadata(tagObj, opts = {}) {
  */
 function stripAnsiCodes(text) {
 	if (typeof text !== 'string') {
-		return text;
+		return text
 	}
 	// Remove ANSI escape sequences (color codes, cursor movements, etc.)
-	return text.replace(/\x1b\[[0-9;]*m/g, '');
+	return text.replace(/\x1b\[[0-9;]*m/g, '')
 }
 
 // Export all utility functions and configuration
@@ -1617,4 +1547,4 @@ export {
 	ensureTagMetadata,
 	stripAnsiCodes,
 	normalizeTaskIds
-};
+}

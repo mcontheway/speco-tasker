@@ -3,18 +3,11 @@
  * Tool to expand a task into subtasks
  */
 
-import { z } from 'zod';
-import {
-	handleApiResult,
-	createErrorResponse,
-	withNormalizedProjectRoot
-} from './utils.js';
-import { expandTaskDirect } from '../core/task-master-core.js';
-import {
-	findTasksPath,
-	findComplexityReportPath
-} from '../core/utils/path-utils.js';
-import { resolveTag } from '../../../scripts/modules/utils.js';
+import { z } from 'zod'
+import { resolveTag } from '../../../scripts/modules/utils.js'
+import { expandTaskDirect } from '../core/task-master-core.js'
+import { findComplexityReportPath, findTasksPath } from '../core/utils/path-utils.js'
+import { createErrorResponse, handleApiResult, withNormalizedProjectRoot } from './utils.js'
 
 /**
  * Register the expand-task tool with the MCP server
@@ -27,24 +20,13 @@ export function registerExpandTaskTool(server) {
 		parameters: z.object({
 			id: z.string().describe('ID of task to expand'),
 			num: z.string().optional().describe('Number of subtasks to generate'),
-			research: z
-				.boolean()
-				.optional()
-				.default(false)
-				.describe('Use research role for generation'),
-			prompt: z
-				.string()
-				.optional()
-				.describe('Additional context for subtask generation'),
+			research: z.boolean().optional().default(false).describe('Use research role for generation'),
+			prompt: z.string().optional().describe('Additional context for subtask generation'),
 			file: z
 				.string()
 				.optional()
-				.describe(
-					'Path to the tasks file relative to project root (e.g., tasks/tasks.json)'
-				),
-			projectRoot: z
-				.string()
-				.describe('The directory of the project. Must be an absolute path.'),
+				.describe('Path to the tasks file relative to project root (e.g., tasks/tasks.json)'),
+			projectRoot: z.string().describe('The directory of the project. Must be an absolute path.'),
 			force: z
 				.boolean()
 				.optional()
@@ -54,29 +36,21 @@ export function registerExpandTaskTool(server) {
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
 			try {
-				log.info(`Starting expand-task with args: ${JSON.stringify(args)}`);
+				log.info(`Starting expand-task with args: ${JSON.stringify(args)}`)
 				const resolvedTag = resolveTag({
 					projectRoot: args.projectRoot,
 					tag: args.tag
-				});
+				})
 				// Use args.projectRoot directly (guaranteed by withNormalizedProjectRoot)
-				let tasksJsonPath;
+				let tasksJsonPath
 				try {
-					tasksJsonPath = findTasksPath(
-						{ projectRoot: args.projectRoot, file: args.file },
-						log
-					);
+					tasksJsonPath = findTasksPath({ projectRoot: args.projectRoot, file: args.file }, log)
 				} catch (error) {
-					log.error(`Error finding tasks.json: ${error.message}`);
-					return createErrorResponse(
-						`Failed to find tasks.json: ${error.message}`
-					);
+					log.error(`Error finding tasks.json: ${error.message}`)
+					return createErrorResponse(`Failed to find tasks.json: ${error.message}`)
 				}
 
-				const complexityReportPath = findComplexityReportPath(
-					{ ...args, tag: resolvedTag },
-					log
-				);
+				const complexityReportPath = findComplexityReportPath({ ...args, tag: resolvedTag }, log)
 
 				const result = await expandTaskDirect(
 					{
@@ -92,19 +66,13 @@ export function registerExpandTaskTool(server) {
 					},
 					log,
 					{ session }
-				);
+				)
 
-				return handleApiResult(
-					result,
-					log,
-					'Error expanding task',
-					undefined,
-					args.projectRoot
-				);
+				return handleApiResult(result, log, 'Error expanding task', undefined, args.projectRoot)
 			} catch (error) {
-				log.error(`Error in expand-task tool: ${error.message}`);
-				return createErrorResponse(error.message);
+				log.error(`Error in expand-task tool: ${error.message}`)
+				return createErrorResponse(error.message)
 			}
 		})
-	});
+	})
 }

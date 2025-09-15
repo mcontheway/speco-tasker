@@ -1,7 +1,7 @@
 /**
  * Tests for the update-tasks.js module
  */
-import { jest } from '@jest/globals';
+import { jest } from '@jest/globals'
 
 // Mock the dependencies before importing the module under test
 jest.unstable_mockModule('../../../../../scripts/modules/utils.js', () => ({
@@ -22,87 +22,73 @@ jest.unstable_mockModule('../../../../../scripts/modules/utils.js', () => ({
 	ensureTagMetadata: jest.fn((tagObj) => tagObj),
 	flattenTasksWithSubtasks: jest.fn((tasks) => tasks),
 	findProjectRoot: jest.fn(() => '/mock/project/root')
-}));
+}))
 
-jest.unstable_mockModule(
-	'../../../../../scripts/modules/ai-services-unified.js',
-	() => ({
-		generateTextService: jest.fn().mockResolvedValue({
-			mainResult: '[]', // mainResult is the text string directly
-			telemetryData: {}
-		})
+jest.unstable_mockModule('../../../../../scripts/modules/ai-services-unified.js', () => ({
+	generateTextService: jest.fn().mockResolvedValue({
+		mainResult: '[]', // mainResult is the text string directly
+		telemetryData: {}
 	})
-);
+}))
 
 jest.unstable_mockModule('../../../../../scripts/modules/ui.js', () => ({
 	getStatusWithColor: jest.fn((status) => status),
 	startLoadingIndicator: jest.fn(),
 	stopLoadingIndicator: jest.fn(),
 	displayAiUsageSummary: jest.fn()
-}));
+}))
 
-jest.unstable_mockModule(
-	'../../../../../scripts/modules/config-manager.js',
-	() => ({
-		getDebugFlag: jest.fn(() => false),
-		hasCodebaseAnalysis: jest.fn(() => false)
-	})
-);
+jest.unstable_mockModule('../../../../../scripts/modules/config-manager.js', () => ({
+	getDebugFlag: jest.fn(() => false),
+	hasCodebaseAnalysis: jest.fn(() => false)
+}))
 
 jest.unstable_mockModule(
 	'../../../../../scripts/modules/task-manager/generate-task-files.js',
 	() => ({
 		default: jest.fn().mockResolvedValue()
 	})
-);
+)
 
-jest.unstable_mockModule(
-	'../../../../../scripts/modules/prompt-manager.js',
-	() => ({
-		getPromptManager: jest.fn().mockReturnValue({
-			loadPrompt: jest.fn().mockResolvedValue({
-				systemPrompt: 'Mocked system prompt',
-				userPrompt: 'Mocked user prompt'
-			})
+jest.unstable_mockModule('../../../../../scripts/modules/prompt-manager.js', () => ({
+	getPromptManager: jest.fn().mockReturnValue({
+		loadPrompt: jest.fn().mockResolvedValue({
+			systemPrompt: 'Mocked system prompt',
+			userPrompt: 'Mocked user prompt'
 		})
 	})
-);
+}))
 
-jest.unstable_mockModule(
-	'../../../../../scripts/modules/task-manager/models.js',
-	() => ({
-		getModelConfiguration: jest.fn(() => ({
-			model: 'mock-model',
-			maxTokens: 4000,
-			temperature: 0.7
-		}))
-	})
-);
+jest.unstable_mockModule('../../../../../scripts/modules/task-manager/models.js', () => ({
+	getModelConfiguration: jest.fn(() => ({
+		model: 'mock-model',
+		maxTokens: 4000,
+		temperature: 0.7
+	}))
+}))
 
 // Import the mocked modules
-const { readJSON, writeJSON, log } = await import(
-	'../../../../../scripts/modules/utils.js'
-);
+const { readJSON, writeJSON, log } = await import('../../../../../scripts/modules/utils.js')
 
 const { generateTextService } = await import(
 	'../../../../../scripts/modules/ai-services-unified.js'
-);
+)
 
 // Import the module under test
 const { default: updateTasks } = await import(
 	'../../../../../scripts/modules/task-manager/update-tasks.js'
-);
+)
 
 describe('updateTasks', () => {
 	beforeEach(() => {
-		jest.clearAllMocks();
-	});
+		jest.clearAllMocks()
+	})
 
 	test('should update tasks based on new context', async () => {
 		// Arrange
-		const mockTasksPath = '/mock/path/tasks.json';
-		const mockFromId = 2;
-		const mockPrompt = 'New project direction';
+		const mockTasksPath = '/mock/path/tasks.json'
+		const mockFromId = 2
+		const mockPrompt = 'New project direction'
 		const mockInitialTasks = {
 			master: {
 				tasks: [
@@ -126,7 +112,7 @@ describe('updateTasks', () => {
 					}
 				]
 			}
-		};
+		}
 
 		const mockUpdatedTasks = [
 			{
@@ -151,20 +137,20 @@ describe('updateTasks', () => {
 				testStrategy: 'Integration test the updated features',
 				subtasks: []
 			}
-		];
+		]
 
 		const mockApiResponse = {
 			mainResult: JSON.stringify(mockUpdatedTasks), // mainResult is the JSON string directly
 			telemetryData: {}
-		};
+		}
 
 		// Configure mocks - readJSON should return the resolved view with tasks at top level
 		readJSON.mockReturnValue({
 			...mockInitialTasks.master,
 			tag: 'master',
 			_rawTaggedData: mockInitialTasks
-		});
-		generateTextService.mockResolvedValue(mockApiResponse);
+		})
+		generateTextService.mockResolvedValue(mockApiResponse)
 
 		// Act
 		const result = await updateTasks(
@@ -174,18 +160,14 @@ describe('updateTasks', () => {
 			false, // research
 			{ projectRoot: '/mock/path', tag: 'master' }, // context
 			'json' // output format
-		);
+		)
 
 		// Assert
 		// 1. Read JSON called
-		expect(readJSON).toHaveBeenCalledWith(
-			mockTasksPath,
-			'/mock/path',
-			'master'
-		);
+		expect(readJSON).toHaveBeenCalledWith(mockTasksPath, '/mock/path', 'master')
 
 		// 2. AI Service called with correct args
-		expect(generateTextService).toHaveBeenCalledWith(expect.any(Object));
+		expect(generateTextService).toHaveBeenCalledWith(expect.any(Object))
 
 		// 3. Write JSON called with correctly merged tasks
 		expect(writeJSON).toHaveBeenCalledWith(
@@ -203,7 +185,7 @@ describe('updateTasks', () => {
 			}),
 			'/mock/path',
 			'master'
-		);
+		)
 
 		// 4. Check return value
 		expect(result).toEqual(
@@ -212,14 +194,14 @@ describe('updateTasks', () => {
 				updatedTasks: mockUpdatedTasks,
 				telemetryData: {}
 			})
-		);
-	});
+		)
+	})
 
 	test('should handle no tasks to update', async () => {
 		// Arrange
-		const mockTasksPath = '/mock/path/tasks.json';
-		const mockFromId = 99; // Non-existent ID
-		const mockPrompt = 'Update non-existent tasks';
+		const mockTasksPath = '/mock/path/tasks.json'
+		const mockFromId = 99 // Non-existent ID
+		const mockPrompt = 'Update non-existent tasks'
 		const mockInitialTasks = {
 			master: {
 				tasks: [
@@ -227,14 +209,14 @@ describe('updateTasks', () => {
 					{ id: 2, status: 'done' }
 				]
 			}
-		};
+		}
 
 		// Configure mocks - readJSON should return the resolved view with tasks at top level
 		readJSON.mockReturnValue({
 			...mockInitialTasks.master,
 			tag: 'master',
 			_rawTaggedData: mockInitialTasks
-		});
+		})
 
 		// Act
 		const result = await updateTasks(
@@ -244,30 +226,23 @@ describe('updateTasks', () => {
 			false,
 			{ projectRoot: '/mock/path', tag: 'master' },
 			'json'
-		);
+		)
 
 		// Assert
-		expect(readJSON).toHaveBeenCalledWith(
-			mockTasksPath,
-			'/mock/path',
-			'master'
-		);
-		expect(generateTextService).not.toHaveBeenCalled();
-		expect(writeJSON).not.toHaveBeenCalled();
-		expect(log).toHaveBeenCalledWith(
-			'info',
-			expect.stringContaining('No tasks to update')
-		);
+		expect(readJSON).toHaveBeenCalledWith(mockTasksPath, '/mock/path', 'master')
+		expect(generateTextService).not.toHaveBeenCalled()
+		expect(writeJSON).not.toHaveBeenCalled()
+		expect(log).toHaveBeenCalledWith('info', expect.stringContaining('No tasks to update'))
 
 		// Should return early with no updates
-		expect(result).toBeUndefined();
-	});
+		expect(result).toBeUndefined()
+	})
 
 	test('should preserve all tags when updating tasks in tagged context', async () => {
 		// Arrange - Simple 2-tag structure to test tag corruption fix
-		const mockTasksPath = '/mock/path/tasks.json';
-		const mockFromId = 1;
-		const mockPrompt = 'Update master tag tasks';
+		const mockTasksPath = '/mock/path/tasks.json'
+		const mockFromId = 1
+		const mockPrompt = 'Update master tag tasks'
 
 		const mockTaggedData = {
 			master: {
@@ -304,7 +279,7 @@ describe('updateTasks', () => {
 					description: 'Feature branch tasks'
 				}
 			}
-		};
+		}
 
 		const mockUpdatedTasks = [
 			{
@@ -318,19 +293,19 @@ describe('updateTasks', () => {
 				testStrategy: 'Test the updated functionality',
 				subtasks: []
 			}
-		];
+		]
 
 		// Configure mocks - readJSON returns resolved view for master tag
 		readJSON.mockReturnValue({
 			...mockTaggedData.master,
 			tag: 'master',
 			_rawTaggedData: mockTaggedData
-		});
+		})
 
 		generateTextService.mockResolvedValue({
 			mainResult: JSON.stringify(mockUpdatedTasks),
 			telemetryData: { commandName: 'update-tasks', totalCost: 0.05 }
-		});
+		})
 
 		// Act
 		const result = await updateTasks(
@@ -340,7 +315,7 @@ describe('updateTasks', () => {
 			false, // research
 			{ projectRoot: '/mock/project/root', tag: 'master' },
 			'json'
-		);
+		)
 
 		// Assert - CRITICAL: Both tags must be preserved (this would fail before the fix)
 		expect(writeJSON).toHaveBeenCalledWith(
@@ -366,9 +341,9 @@ describe('updateTasks', () => {
 			}),
 			'/mock/project/root',
 			'master'
-		);
+		)
 
-		expect(result.success).toBe(true);
-		expect(result.updatedTasks).toEqual(mockUpdatedTasks);
-	});
-});
+		expect(result.success).toBe(true)
+		expect(result.updatedTasks).toEqual(mockUpdatedTasks)
+	})
+})

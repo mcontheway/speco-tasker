@@ -149,7 +149,7 @@ export function createProfile(editorConfig) {
 		// Documentation URL replacements
 		docUrls: [
 			{
-				from: new RegExp(`https:\\/\\/docs\\.cursor\\.com\\/[^\\s)'\"]+`, 'g'),
+				from: /https:\\/\\/docs\.cursor\.com\\/[^\s)'\"]+/g,
 				to: (match) => match.replace('docs.cursor.com', docsUrl)
 			},
 			{

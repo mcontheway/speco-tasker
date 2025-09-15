@@ -1,32 +1,26 @@
-import type React from 'react';
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { CollapsibleSection } from '@/components/ui/CollapsibleSection';
+import { CollapsibleSection } from '@/components/ui/CollapsibleSection'
+import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { Loader2, PlusCircle, TrendingDown, TrendingUp, Wand2 } from 'lucide-react'
+import type React from 'react'
+import { useState } from 'react'
 import {
-	Wand2,
-	Loader2,
-	PlusCircle,
-	TrendingUp,
-	TrendingDown
-} from 'lucide-react';
-import {
-	useUpdateTask,
-	useUpdateSubtask,
+	useScopeDownTask,
 	useScopeUpTask,
-	useScopeDownTask
-} from '../../webview/hooks/useTaskQueries';
-import type { TaskMasterTask } from '../../webview/types';
+	useUpdateSubtask,
+	useUpdateTask
+} from '../../webview/hooks/useTaskQueries'
+import type { TaskMasterTask } from '../../webview/types'
 
 interface AIActionsSectionProps {
-	currentTask: TaskMasterTask;
-	isSubtask: boolean;
-	parentTask?: TaskMasterTask | null;
-	sendMessage: (message: any) => Promise<any>;
-	refreshComplexityAfterAI: () => void;
-	onRegeneratingChange?: (isRegenerating: boolean) => void;
-	onAppendingChange?: (isAppending: boolean) => void;
+	currentTask: TaskMasterTask
+	isSubtask: boolean
+	parentTask?: TaskMasterTask | null
+	sendMessage: (message: any) => Promise<any>
+	refreshComplexityAfterAI: () => void
+	onRegeneratingChange?: (isRegenerating: boolean) => void
+	onAppendingChange?: (isAppending: boolean) => void
 }
 
 export const AIActionsSection: React.FC<AIActionsSectionProps> = ({
@@ -38,26 +32,24 @@ export const AIActionsSection: React.FC<AIActionsSectionProps> = ({
 	onRegeneratingChange,
 	onAppendingChange
 }) => {
-	const [prompt, setPrompt] = useState('');
-	const [scopePrompt, setScopePrompt] = useState('');
-	const [scopeStrength, setScopeStrength] = useState<
-		'light' | 'regular' | 'heavy'
-	>('regular');
+	const [prompt, setPrompt] = useState('')
+	const [scopePrompt, setScopePrompt] = useState('')
+	const [scopeStrength, setScopeStrength] = useState<'light' | 'regular' | 'heavy'>('regular')
 	const [lastAction, setLastAction] = useState<
 		'regenerate' | 'append' | 'scope-up' | 'scope-down' | null
-	>(null);
-	const updateTask = useUpdateTask();
-	const updateSubtask = useUpdateSubtask();
-	const scopeUpTask = useScopeUpTask();
-	const scopeDownTask = useScopeDownTask();
+	>(null)
+	const updateTask = useUpdateTask()
+	const updateSubtask = useUpdateSubtask()
+	const scopeUpTask = useScopeUpTask()
+	const scopeDownTask = useScopeDownTask()
 
 	const handleRegenerate = async () => {
 		if (!currentTask || !prompt.trim()) {
-			return;
+			return
 		}
 
-		setLastAction('regenerate');
-		onRegeneratingChange?.(true);
+		setLastAction('regenerate')
+		onRegeneratingChange?.(true)
 
 		try {
 			if (isSubtask && parentTask) {
@@ -65,32 +57,32 @@ export const AIActionsSection: React.FC<AIActionsSectionProps> = ({
 					taskId: `${parentTask.id}.${currentTask.id}`,
 					prompt: prompt,
 					options: { research: false }
-				});
+				})
 			} else {
 				await updateTask.mutateAsync({
 					taskId: currentTask.id,
 					updates: { description: prompt },
 					options: { append: false, research: false }
-				});
+				})
 			}
 
-			setPrompt('');
-			refreshComplexityAfterAI();
+			setPrompt('')
+			refreshComplexityAfterAI()
 		} catch (error) {
-			console.error('❌ TaskDetailsView: Failed to regenerate task:', error);
+			console.error('❌ TaskDetailsView: Failed to regenerate task:', error)
 		} finally {
-			setLastAction(null);
-			onRegeneratingChange?.(false);
+			setLastAction(null)
+			onRegeneratingChange?.(false)
 		}
-	};
+	}
 
 	const handleAppend = async () => {
 		if (!currentTask || !prompt.trim()) {
-			return;
+			return
 		}
 
-		setLastAction('append');
-		onAppendingChange?.(true);
+		setLastAction('append')
+		onAppendingChange?.(true)
 
 		try {
 			if (isSubtask && parentTask) {
@@ -98,93 +90,87 @@ export const AIActionsSection: React.FC<AIActionsSectionProps> = ({
 					taskId: `${parentTask.id}.${currentTask.id}`,
 					prompt: prompt,
 					options: { research: false }
-				});
+				})
 			} else {
 				await updateTask.mutateAsync({
 					taskId: currentTask.id,
 					updates: { description: prompt },
 					options: { append: true, research: false }
-				});
+				})
 			}
 
-			setPrompt('');
-			refreshComplexityAfterAI();
+			setPrompt('')
+			refreshComplexityAfterAI()
 		} catch (error) {
-			console.error('❌ TaskDetailsView: Failed to append to task:', error);
+			console.error('❌ TaskDetailsView: Failed to append to task:', error)
 		} finally {
-			setLastAction(null);
-			onAppendingChange?.(false);
+			setLastAction(null)
+			onAppendingChange?.(false)
 		}
-	};
+	}
 
 	const handleScopeUp = async () => {
 		if (!currentTask) {
-			return;
+			return
 		}
 
-		setLastAction('scope-up');
+		setLastAction('scope-up')
 
 		try {
-			const taskId =
-				isSubtask && parentTask
-					? `${parentTask.id}.${currentTask.id}`
-					: currentTask.id;
+			const taskId = isSubtask && parentTask ? `${parentTask.id}.${currentTask.id}` : currentTask.id
 
 			await scopeUpTask.mutateAsync({
 				taskId,
 				strength: scopeStrength,
 				prompt: scopePrompt.trim() || undefined,
 				options: { research: false }
-			});
+			})
 
-			setScopePrompt('');
-			refreshComplexityAfterAI();
+			setScopePrompt('')
+			refreshComplexityAfterAI()
 		} catch (error) {
-			console.error('❌ AIActionsSection: Failed to scope up task:', error);
+			console.error('❌ AIActionsSection: Failed to scope up task:', error)
 		} finally {
-			setLastAction(null);
+			setLastAction(null)
 		}
-	};
+	}
 
 	const handleScopeDown = async () => {
 		if (!currentTask) {
-			return;
+			return
 		}
 
-		setLastAction('scope-down');
+		setLastAction('scope-down')
 
 		try {
-			const taskId =
-				isSubtask && parentTask
-					? `${parentTask.id}.${currentTask.id}`
-					: currentTask.id;
+			const taskId = isSubtask && parentTask ? `${parentTask.id}.${currentTask.id}` : currentTask.id
 
 			await scopeDownTask.mutateAsync({
 				taskId,
 				strength: scopeStrength,
 				prompt: scopePrompt.trim() || undefined,
 				options: { research: false }
-			});
+			})
 
-			setScopePrompt('');
-			refreshComplexityAfterAI();
+			setScopePrompt('')
+			refreshComplexityAfterAI()
 		} catch (error) {
-			console.error('❌ AIActionsSection: Failed to scope down task:', error);
+			console.error('❌ AIActionsSection: Failed to scope down task:', error)
 		} finally {
-			setLastAction(null);
+			setLastAction(null)
 		}
-	};
+	}
 
 	// Track loading states based on the last action
 	const isLoading =
 		updateTask.isPending ||
 		updateSubtask.isPending ||
 		scopeUpTask.isPending ||
-		scopeDownTask.isPending;
-	const isRegenerating = isLoading && lastAction === 'regenerate';
-	const isAppending = isLoading && lastAction === 'append';
-	const isScopingUp = isLoading && lastAction === 'scope-up';
-	const isScopingDown = isLoading && lastAction === 'scope-down';
+		scopeDownTask.isPending
+	const isRegenerating = isLoading && lastAction === 'regenerate'
+	const isAppending = isLoading && lastAction === 'append'
+	const isScopingUp = isLoading && lastAction === 'scope-up'
+	const isScopingDown = isLoading && lastAction === 'scope-down'
 
 	return (
 		<CollapsibleSection
@@ -350,31 +336,31 @@ export const AIActionsSection: React.FC<AIActionsSectionProps> = ({
 				<div className="text-xs text-vscode-foreground/60 space-y-1">
 					{isSubtask ? (
 						<p>
-							<strong>Add Notes:</strong> Appends timestamped implementation
-							notes, progress updates, or findings to this subtask's details
+							<strong>Add Notes:</strong> Appends timestamped implementation notes, progress
+							updates, or findings to this subtask's details
 						</p>
 					) : (
 						<>
 							<p>
-								<strong>Regenerate:</strong> Completely rewrites the task
-								description and subtasks based on your prompt
+								<strong>Regenerate:</strong> Completely rewrites the task description and subtasks
+								based on your prompt
 							</p>
 							<p>
-								<strong>Append:</strong> Adds new content to the existing task
-								implementation details based on your prompt
+								<strong>Append:</strong> Adds new content to the existing task implementation
+								details based on your prompt
 							</p>
 						</>
 					)}
 					<p>
-						<strong>Scope Up:</strong> Increases task complexity with more
-						details, requirements, or implementation steps
+						<strong>Scope Up:</strong> Increases task complexity with more details, requirements, or
+						implementation steps
 					</p>
 					<p>
-						<strong>Scope Down:</strong> Decreases task complexity by
-						simplifying or removing unnecessary details
+						<strong>Scope Down:</strong> Decreases task complexity by simplifying or removing
+						unnecessary details
 					</p>
 				</div>
 			</div>
 		</CollapsibleSection>
-	);
-};
+	)
+}

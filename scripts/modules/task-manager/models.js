@@ -3,31 +3,31 @@
  * Core functionality for managing AI model configurations
  */
 
-import https from 'https';
-import http from 'http';
+import http from 'http'
+import https from 'https'
+import { CUSTOM_PROVIDERS } from '../../../src/constants/providers.js'
+import { findConfigPath } from '../../../src/utils/path-utils.js'
 import {
-	getMainModelId,
-	getResearchModelId,
-	getFallbackModelId,
-	getAvailableModels,
-	getMainProvider,
-	getResearchProvider,
-	getFallbackProvider,
-	isApiKeySet,
-	getMcpApiKeyStatus,
-	getConfig,
-	writeConfig,
-	isConfigFilePresent,
 	getAllProviders,
-	getBaseUrlForRole
-} from '../config-manager.js';
-import { findConfigPath } from '../../../src/utils/path-utils.js';
-import { log } from '../utils.js';
-import { CUSTOM_PROVIDERS } from '../../../src/constants/providers.js';
+	getAvailableModels,
+	getBaseUrlForRole,
+	getConfig,
+	getFallbackModelId,
+	getFallbackProvider,
+	getMainModelId,
+	getMainProvider,
+	getMcpApiKeyStatus,
+	getResearchModelId,
+	getResearchProvider,
+	isApiKeySet,
+	isConfigFilePresent,
+	writeConfig
+} from '../config-manager.js'
+import { log } from '../utils.js'
 
 // Constants
 const CONFIG_MISSING_ERROR =
-	'The configuration file is missing. Run "task-master init" to create it.';
+	'The configuration file is missing. Run "task-master init" to create it.'
 
 /**
  * Fetches the list of models from OpenRouter API.
@@ -42,37 +42,35 @@ function fetchOpenRouterModels() {
 			headers: {
 				Accept: 'application/json'
 			}
-		};
+		}
 
 		const req = https.request(options, (res) => {
-			let data = '';
+			let data = ''
 			res.on('data', (chunk) => {
-				data += chunk;
-			});
+				data += chunk
+			})
 			res.on('end', () => {
 				if (res.statusCode === 200) {
 					try {
-						const parsedData = JSON.parse(data);
-						resolve(parsedData.data || []); // Return the array of models
+						const parsedData = JSON.parse(data)
+						resolve(parsedData.data || []) // Return the array of models
 					} catch (e) {
-						console.error('Error parsing OpenRouter response:', e);
-						resolve(null); // Indicate failure
+						console.error('Error parsing OpenRouter response:', e)
+						resolve(null) // Indicate failure
 					}
 				} else {
-					console.error(
-						`OpenRouter API request failed with status code: ${res.statusCode}`
-					);
-					resolve(null); // Indicate failure
+					console.error(`OpenRouter API request failed with status code: ${res.statusCode}`)
+					resolve(null) // Indicate failure
 				}
-			});
-		});
+			})
+		})
 
 		req.on('error', (e) => {
-			console.error('Error fetching OpenRouter models:', e);
-			resolve(null); // Indicate failure
-		});
-		req.end();
-	});
+			console.error('Error fetching OpenRouter models:', e)
+			resolve(null) // Indicate failure
+		})
+		req.end()
+	})
 }
 
 /**
@@ -84,12 +82,10 @@ function fetchOllamaModels(baseURL = 'http://localhost:11434/api') {
 	return new Promise((resolve) => {
 		try {
 			// Parse the base URL to extract hostname, port, and base path
-			const url = new URL(baseURL);
-			const isHttps = url.protocol === 'https:';
-			const port = url.port || (isHttps ? 443 : 80);
-			const basePath = url.pathname.endsWith('/')
-				? url.pathname.slice(0, -1)
-				: url.pathname;
+			const url = new URL(baseURL)
+			const isHttps = url.protocol === 'https:'
+			const port = url.port || (isHttps ? 443 : 80)
+			const basePath = url.pathname.endsWith('/') ? url.pathname.slice(0, -1) : url.pathname
 
 			const options = {
 				hostname: url.hostname,
@@ -99,42 +95,40 @@ function fetchOllamaModels(baseURL = 'http://localhost:11434/api') {
 				headers: {
 					Accept: 'application/json'
 				}
-			};
+			}
 
-			const requestLib = isHttps ? https : http;
+			const requestLib = isHttps ? https : http
 			const req = requestLib.request(options, (res) => {
-				let data = '';
+				let data = ''
 				res.on('data', (chunk) => {
-					data += chunk;
-				});
+					data += chunk
+				})
 				res.on('end', () => {
 					if (res.statusCode === 200) {
 						try {
-							const parsedData = JSON.parse(data);
-							resolve(parsedData.models || []); // Return the array of models
+							const parsedData = JSON.parse(data)
+							resolve(parsedData.models || []) // Return the array of models
 						} catch (e) {
-							console.error('Error parsing Ollama response:', e);
-							resolve(null); // Indicate failure
+							console.error('Error parsing Ollama response:', e)
+							resolve(null) // Indicate failure
 						}
 					} else {
-						console.error(
-							`Ollama API request failed with status code: ${res.statusCode}`
-						);
-						resolve(null); // Indicate failure
+						console.error(`Ollama API request failed with status code: ${res.statusCode}`)
+						resolve(null) // Indicate failure
 					}
-				});
-			});
+				})
+			})
 
 			req.on('error', (e) => {
-				console.error('Error fetching Ollama models:', e);
-				resolve(null); // Indicate failure
-			});
-			req.end();
+				console.error('Error fetching Ollama models:', e)
+				resolve(null) // Indicate failure
+			})
+			req.end()
 		} catch (e) {
-			console.error('Error parsing Ollama base URL:', e);
-			resolve(null); // Indicate failure
+			console.error('Error parsing Ollama base URL:', e)
+			resolve(null) // Indicate failure
 		}
-	});
+	})
 }
 
 /**
@@ -146,71 +140,59 @@ function fetchOllamaModels(baseURL = 'http://localhost:11434/api') {
  * @returns {Object} RESTful response with current model configuration
  */
 async function getModelConfiguration(options = {}) {
-	const { mcpLog, projectRoot, session } = options;
+	const { mcpLog, projectRoot, session } = options
 
 	const report = (level, ...args) => {
 		if (mcpLog && typeof mcpLog[level] === 'function') {
-			mcpLog[level](...args);
+			mcpLog[level](...args)
 		}
-	};
+	}
 
 	if (!projectRoot) {
-		throw new Error('Project root is required but not found.');
+		throw new Error('Project root is required but not found.')
 	}
 
 	// Use centralized config path finding instead of hardcoded path
-	const configPath = findConfigPath(null, { projectRoot });
-	const configExists = isConfigFilePresent(projectRoot);
+	const configPath = findConfigPath(null, { projectRoot })
+	const configExists = isConfigFilePresent(projectRoot)
 
-	log(
-		'debug',
-		`Checking for config file using findConfigPath, found: ${configPath}`
-	);
-	log(
-		'debug',
-		`Checking config file using isConfigFilePresent(), exists: ${configExists}`
-	);
+	log('debug', `Checking for config file using findConfigPath, found: ${configPath}`)
+	log('debug', `Checking config file using isConfigFilePresent(), exists: ${configExists}`)
 
 	if (!configExists) {
-		throw new Error(CONFIG_MISSING_ERROR);
+		throw new Error(CONFIG_MISSING_ERROR)
 	}
 
 	try {
 		// Get current settings - these should use the config from the found path automatically
-		const mainProvider = getMainProvider(projectRoot);
-		const mainModelId = getMainModelId(projectRoot);
-		const researchProvider = getResearchProvider(projectRoot);
-		const researchModelId = getResearchModelId(projectRoot);
-		const fallbackProvider = getFallbackProvider(projectRoot);
-		const fallbackModelId = getFallbackModelId(projectRoot);
+		const mainProvider = getMainProvider(projectRoot)
+		const mainModelId = getMainModelId(projectRoot)
+		const researchProvider = getResearchProvider(projectRoot)
+		const researchModelId = getResearchModelId(projectRoot)
+		const fallbackProvider = getFallbackProvider(projectRoot)
+		const fallbackModelId = getFallbackModelId(projectRoot)
 
 		// Check API keys
-		const mainCliKeyOk = isApiKeySet(mainProvider, session, projectRoot);
-		const mainMcpKeyOk = getMcpApiKeyStatus(mainProvider, projectRoot);
-		const researchCliKeyOk = isApiKeySet(
-			researchProvider,
-			session,
-			projectRoot
-		);
-		const researchMcpKeyOk = getMcpApiKeyStatus(researchProvider, projectRoot);
+		const mainCliKeyOk = isApiKeySet(mainProvider, session, projectRoot)
+		const mainMcpKeyOk = getMcpApiKeyStatus(mainProvider, projectRoot)
+		const researchCliKeyOk = isApiKeySet(researchProvider, session, projectRoot)
+		const researchMcpKeyOk = getMcpApiKeyStatus(researchProvider, projectRoot)
 		const fallbackCliKeyOk = fallbackProvider
 			? isApiKeySet(fallbackProvider, session, projectRoot)
-			: true;
+			: true
 		const fallbackMcpKeyOk = fallbackProvider
 			? getMcpApiKeyStatus(fallbackProvider, projectRoot)
-			: true;
+			: true
 
 		// Get available models to find detailed info
-		const availableModels = getAvailableModels(projectRoot);
+		const availableModels = getAvailableModels(projectRoot)
 
 		// Find model details
-		const mainModelData = availableModels.find((m) => m.id === mainModelId);
-		const researchModelData = availableModels.find(
-			(m) => m.id === researchModelId
-		);
+		const mainModelData = availableModels.find((m) => m.id === mainModelId)
+		const researchModelData = availableModels.find((m) => m.id === researchModelId)
 		const fallbackModelData = fallbackModelId
 			? availableModels.find((m) => m.id === fallbackModelId)
-			: null;
+			: null
 
 		// Return structured configuration data
 		return {
@@ -252,16 +234,16 @@ async function getModelConfiguration(options = {}) {
 				},
 				message: 'Successfully retrieved current model configuration'
 			}
-		};
+		}
 	} catch (error) {
-		report('error', `Error getting model configuration: ${error.message}`);
+		report('error', `Error getting model configuration: ${error.message}`)
 		return {
 			success: false,
 			error: {
 				code: 'CONFIG_ERROR',
 				message: error.message
 			}
-		};
+		}
 	}
 }
 
@@ -274,38 +256,32 @@ async function getModelConfiguration(options = {}) {
  * @returns {Object} RESTful response with available models
  */
 async function getAvailableModelsList(options = {}) {
-	const { mcpLog, projectRoot } = options;
+	const { mcpLog, projectRoot } = options
 
 	const report = (level, ...args) => {
 		if (mcpLog && typeof mcpLog[level] === 'function') {
-			mcpLog[level](...args);
+			mcpLog[level](...args)
 		}
-	};
+	}
 
 	if (!projectRoot) {
-		throw new Error('Project root is required but not found.');
+		throw new Error('Project root is required but not found.')
 	}
 
 	// Use centralized config path finding instead of hardcoded path
-	const configPath = findConfigPath(null, { projectRoot });
-	const configExists = isConfigFilePresent(projectRoot);
+	const configPath = findConfigPath(null, { projectRoot })
+	const configExists = isConfigFilePresent(projectRoot)
 
-	log(
-		'debug',
-		`Checking for config file using findConfigPath, found: ${configPath}`
-	);
-	log(
-		'debug',
-		`Checking config file using isConfigFilePresent(), exists: ${configExists}`
-	);
+	log('debug', `Checking for config file using findConfigPath, found: ${configPath}`)
+	log('debug', `Checking config file using isConfigFilePresent(), exists: ${configExists}`)
 
 	if (!configExists) {
-		throw new Error(CONFIG_MISSING_ERROR);
+		throw new Error(CONFIG_MISSING_ERROR)
 	}
 
 	try {
 		// Get all available models
-		const allAvailableModels = getAvailableModels(projectRoot);
+		const allAvailableModels = getAvailableModels(projectRoot)
 
 		if (!allAvailableModels || allAvailableModels.length === 0) {
 			return {
@@ -314,25 +290,23 @@ async function getAvailableModelsList(options = {}) {
 					models: [],
 					message: 'No available models found'
 				}
-			};
+			}
 		}
 
 		// Get currently used model IDs
-		const mainModelId = getMainModelId(projectRoot);
-		const researchModelId = getResearchModelId(projectRoot);
-		const fallbackModelId = getFallbackModelId(projectRoot);
+		const mainModelId = getMainModelId(projectRoot)
+		const researchModelId = getResearchModelId(projectRoot)
+		const fallbackModelId = getFallbackModelId(projectRoot)
 
 		// Filter out placeholder models and active models
-		const activeIds = [mainModelId, researchModelId, fallbackModelId].filter(
-			Boolean
-		);
+		const activeIds = [mainModelId, researchModelId, fallbackModelId].filter(Boolean)
 		const otherAvailableModels = allAvailableModels.map((model) => ({
 			provider: model.provider || 'N/A',
 			modelId: model.id,
 			sweScore: model.swe_score || null,
 			cost: model.cost_per_1m_tokens || null,
 			allowedRoles: model.allowed_roles || []
-		}));
+		}))
 
 		return {
 			success: true,
@@ -340,16 +314,16 @@ async function getAvailableModelsList(options = {}) {
 				models: otherAvailableModels,
 				message: `Successfully retrieved ${otherAvailableModels.length} available models`
 			}
-		};
+		}
 	} catch (error) {
-		report('error', `Error getting available models: ${error.message}`);
+		report('error', `Error getting available models: ${error.message}`)
 		return {
 			success: false,
 			error: {
 				code: 'MODELS_LIST_ERROR',
 				message: error.message
 			}
-		};
+		}
 	}
 }
 
@@ -365,33 +339,27 @@ async function getAvailableModelsList(options = {}) {
  * @returns {Object} RESTful response with result of update operation
  */
 async function setModel(role, modelId, options = {}) {
-	const { mcpLog, projectRoot, providerHint } = options;
+	const { mcpLog, projectRoot, providerHint } = options
 
 	const report = (level, ...args) => {
 		if (mcpLog && typeof mcpLog[level] === 'function') {
-			mcpLog[level](...args);
+			mcpLog[level](...args)
 		}
-	};
+	}
 
 	if (!projectRoot) {
-		throw new Error('Project root is required but not found.');
+		throw new Error('Project root is required but not found.')
 	}
 
 	// Use centralized config path finding instead of hardcoded path
-	const configPath = findConfigPath(null, { projectRoot });
-	const configExists = isConfigFilePresent(projectRoot);
+	const configPath = findConfigPath(null, { projectRoot })
+	const configExists = isConfigFilePresent(projectRoot)
 
-	log(
-		'debug',
-		`Checking for config file using findConfigPath, found: ${configPath}`
-	);
-	log(
-		'debug',
-		`Checking config file using isConfigFilePresent(), exists: ${configExists}`
-	);
+	log('debug', `Checking for config file using findConfigPath, found: ${configPath}`)
+	log('debug', `Checking config file using isConfigFilePresent(), exists: ${configExists}`)
 
 	if (!configExists) {
-		throw new Error(CONFIG_MISSING_ERROR);
+		throw new Error(CONFIG_MISSING_ERROR)
 	}
 
 	// Validate role
@@ -402,7 +370,7 @@ async function setModel(role, modelId, options = {}) {
 				code: 'INVALID_ROLE',
 				message: `Invalid role: ${role}. Must be one of: main, research, fallback.`
 			}
-		};
+		}
 	}
 
 	// Validate model ID
@@ -413,17 +381,17 @@ async function setModel(role, modelId, options = {}) {
 				code: 'INVALID_MODEL_ID',
 				message: `Invalid model ID: ${modelId}. Must be a non-empty string.`
 			}
-		};
+		}
 	}
 
 	try {
-		const availableModels = getAvailableModels(projectRoot);
-		const currentConfig = getConfig(projectRoot);
-		let determinedProvider = null; // Initialize provider
-		let warningMessage = null;
+		const availableModels = getAvailableModels(projectRoot)
+		const currentConfig = getConfig(projectRoot)
+		let determinedProvider = null // Initialize provider
+		let warningMessage = null
 
 		// Find the model data in internal list initially to see if it exists at all
-		let modelData = availableModels.find((m) => m.id === modelId);
+		let modelData = availableModels.find((m) => m.id === modelId)
 
 		// --- Revised Logic: Prioritize providerHint --- //
 
@@ -431,128 +399,114 @@ async function setModel(role, modelId, options = {}) {
 			// Hint provided (--ollama or --openrouter flag used)
 			if (modelData && modelData.provider === providerHint) {
 				// Found internally AND provider matches the hint
-				determinedProvider = providerHint;
+				determinedProvider = providerHint
 				report(
 					'info',
 					`Model ${modelId} found internally with matching provider hint ${determinedProvider}.`
-				);
+				)
 			} else {
 				// Either not found internally, OR found but under a DIFFERENT provider than hinted.
 				// Proceed with custom logic based ONLY on the hint.
 				if (providerHint === CUSTOM_PROVIDERS.OPENROUTER) {
 					// Check OpenRouter ONLY because hint was openrouter
-					report('info', `Checking OpenRouter for ${modelId} (as hinted)...`);
-					const openRouterModels = await fetchOpenRouterModels();
+					report('info', `Checking OpenRouter for ${modelId} (as hinted)...`)
+					const openRouterModels = await fetchOpenRouterModels()
 
-					if (
-						openRouterModels &&
-						openRouterModels.some((m) => m.id === modelId)
-					) {
-						determinedProvider = CUSTOM_PROVIDERS.OPENROUTER;
+					if (openRouterModels && openRouterModels.some((m) => m.id === modelId)) {
+						determinedProvider = CUSTOM_PROVIDERS.OPENROUTER
 
 						// Check if this is a free model (ends with :free)
 						if (modelId.endsWith(':free')) {
-							warningMessage = `Warning: OpenRouter free model '${modelId}' selected. Free models have significant limitations including lower context windows, reduced rate limits, and may not support advanced features like tool_use. Consider using the paid version '${modelId.replace(':free', '')}' for full functionality.`;
+							warningMessage = `Warning: OpenRouter free model '${modelId}' selected. Free models have significant limitations including lower context windows, reduced rate limits, and may not support advanced features like tool_use. Consider using the paid version '${modelId.replace(':free', '')}' for full functionality.`
 						} else {
-							warningMessage = `Warning: Custom OpenRouter model '${modelId}' set. This model is not officially validated by Taskmaster and may not function as expected.`;
+							warningMessage = `Warning: Custom OpenRouter model '${modelId}' set. This model is not officially validated by Taskmaster and may not function as expected.`
 						}
 
-						report('warn', warningMessage);
+						report('warn', warningMessage)
 					} else {
 						// Hinted as OpenRouter but not found in live check
 						throw new Error(
 							`Model ID "${modelId}" not found in the live OpenRouter model list. Please verify the ID and ensure it's available on OpenRouter.`
-						);
+						)
 					}
 				} else if (providerHint === CUSTOM_PROVIDERS.OLLAMA) {
 					// Check Ollama ONLY because hint was ollama
-					report('info', `Checking Ollama for ${modelId} (as hinted)...`);
+					report('info', `Checking Ollama for ${modelId} (as hinted)...`)
 
 					// Get the Ollama base URL from config
-					const ollamaBaseURL = getBaseUrlForRole(role, projectRoot);
-					const ollamaModels = await fetchOllamaModels(ollamaBaseURL);
+					const ollamaBaseURL = getBaseUrlForRole(role, projectRoot)
+					const ollamaModels = await fetchOllamaModels(ollamaBaseURL)
 
 					if (ollamaModels === null) {
 						// Connection failed - server probably not running
 						throw new Error(
 							`Unable to connect to Ollama server at ${ollamaBaseURL}. Please ensure Ollama is running and try again.`
-						);
+						)
 					} else if (ollamaModels.some((m) => m.model === modelId)) {
-						determinedProvider = CUSTOM_PROVIDERS.OLLAMA;
-						warningMessage = `Warning: Custom Ollama model '${modelId}' set. Ensure your Ollama server is running and has pulled this model. Taskmaster cannot guarantee compatibility.`;
-						report('warn', warningMessage);
+						determinedProvider = CUSTOM_PROVIDERS.OLLAMA
+						warningMessage = `Warning: Custom Ollama model '${modelId}' set. Ensure your Ollama server is running and has pulled this model. Taskmaster cannot guarantee compatibility.`
+						report('warn', warningMessage)
 					} else {
 						// Server is running but model not found
-						const tagsUrl = `${ollamaBaseURL}/tags`;
+						const tagsUrl = `${ollamaBaseURL}/tags`
 						throw new Error(
 							`Model ID "${modelId}" not found in the Ollama instance. Please verify the model is pulled and available. You can check available models with: curl ${tagsUrl}`
-						);
+						)
 					}
 				} else if (providerHint === CUSTOM_PROVIDERS.BEDROCK) {
 					// Set provider without model validation since Bedrock models are managed by AWS
-					determinedProvider = CUSTOM_PROVIDERS.BEDROCK;
-					warningMessage = `Warning: Custom Bedrock model '${modelId}' set. Please ensure the model ID is valid and accessible in your AWS account.`;
-					report('warn', warningMessage);
+					determinedProvider = CUSTOM_PROVIDERS.BEDROCK
+					warningMessage = `Warning: Custom Bedrock model '${modelId}' set. Please ensure the model ID is valid and accessible in your AWS account.`
+					report('warn', warningMessage)
 				} else if (providerHint === CUSTOM_PROVIDERS.CLAUDE_CODE) {
 					// Claude Code provider - check if model exists in our list
-					determinedProvider = CUSTOM_PROVIDERS.CLAUDE_CODE;
+					determinedProvider = CUSTOM_PROVIDERS.CLAUDE_CODE
 					// Re-find modelData specifically for claude-code provider
-					const claudeCodeModels = availableModels.filter(
-						(m) => m.provider === 'claude-code'
-					);
-					const claudeCodeModelData = claudeCodeModels.find(
-						(m) => m.id === modelId
-					);
+					const claudeCodeModels = availableModels.filter((m) => m.provider === 'claude-code')
+					const claudeCodeModelData = claudeCodeModels.find((m) => m.id === modelId)
 					if (claudeCodeModelData) {
 						// Update modelData to the found claude-code model
-						modelData = claudeCodeModelData;
-						report('info', `Setting Claude Code model '${modelId}'.`);
+						modelData = claudeCodeModelData
+						report('info', `Setting Claude Code model '${modelId}'.`)
 					} else {
-						warningMessage = `Warning: Claude Code model '${modelId}' not found in supported models. Setting without validation.`;
-						report('warn', warningMessage);
+						warningMessage = `Warning: Claude Code model '${modelId}' not found in supported models. Setting without validation.`
+						report('warn', warningMessage)
 					}
 				} else if (providerHint === CUSTOM_PROVIDERS.AZURE) {
 					// Set provider without model validation since Azure models are managed by Azure
-					determinedProvider = CUSTOM_PROVIDERS.AZURE;
-					warningMessage = `Warning: Custom Azure model '${modelId}' set. Please ensure the model deployment is valid and accessible in your Azure account.`;
-					report('warn', warningMessage);
+					determinedProvider = CUSTOM_PROVIDERS.AZURE
+					warningMessage = `Warning: Custom Azure model '${modelId}' set. Please ensure the model deployment is valid and accessible in your Azure account.`
+					report('warn', warningMessage)
 				} else if (providerHint === CUSTOM_PROVIDERS.VERTEX) {
 					// Set provider without model validation since Vertex models are managed by Google Cloud
-					determinedProvider = CUSTOM_PROVIDERS.VERTEX;
-					warningMessage = `Warning: Custom Vertex AI model '${modelId}' set. Please ensure the model is valid and accessible in your Google Cloud project.`;
-					report('warn', warningMessage);
+					determinedProvider = CUSTOM_PROVIDERS.VERTEX
+					warningMessage = `Warning: Custom Vertex AI model '${modelId}' set. Please ensure the model is valid and accessible in your Google Cloud project.`
+					report('warn', warningMessage)
 				} else if (providerHint === CUSTOM_PROVIDERS.GEMINI_CLI) {
 					// Gemini CLI provider - check if model exists in our list
-					determinedProvider = CUSTOM_PROVIDERS.GEMINI_CLI;
+					determinedProvider = CUSTOM_PROVIDERS.GEMINI_CLI
 					// Re-find modelData specifically for gemini-cli provider
-					const geminiCliModels = availableModels.filter(
-						(m) => m.provider === 'gemini-cli'
-					);
-					const geminiCliModelData = geminiCliModels.find(
-						(m) => m.id === modelId
-					);
+					const geminiCliModels = availableModels.filter((m) => m.provider === 'gemini-cli')
+					const geminiCliModelData = geminiCliModels.find((m) => m.id === modelId)
 					if (geminiCliModelData) {
 						// Update modelData to the found gemini-cli model
-						modelData = geminiCliModelData;
-						report('info', `Setting Gemini CLI model '${modelId}'.`);
+						modelData = geminiCliModelData
+						report('info', `Setting Gemini CLI model '${modelId}'.`)
 					} else {
-						warningMessage = `Warning: Gemini CLI model '${modelId}' not found in supported models. Setting without validation.`;
-						report('warn', warningMessage);
+						warningMessage = `Warning: Gemini CLI model '${modelId}' not found in supported models. Setting without validation.`
+						report('warn', warningMessage)
 					}
 				} else {
 					// Invalid provider hint - should not happen with our constants
-					throw new Error(`Invalid provider hint received: ${providerHint}`);
+					throw new Error(`Invalid provider hint received: ${providerHint}`)
 				}
 			}
 		} else {
 			// No hint provided (flags not used)
 			if (modelData) {
 				// Found internally, use the provider from the internal list
-				determinedProvider = modelData.provider;
-				report(
-					'info',
-					`Model ${modelId} found internally with provider ${determinedProvider}.`
-				);
+				determinedProvider = modelData.provider
+				report('info', `Model ${modelId} found internally with provider ${determinedProvider}.`)
 			} else {
 				// Model not found and no provider hint was given
 				return {
@@ -561,7 +515,7 @@ async function setModel(role, modelId, options = {}) {
 						code: 'MODEL_NOT_FOUND_NO_HINT',
 						message: `Model ID "${modelId}" not found in Taskmaster's supported models. If this is a custom model, please specify the provider using --openrouter, --ollama, --bedrock, --azure, or --vertex.`
 					}
-				};
+				}
 			}
 		}
 
@@ -576,7 +530,7 @@ async function setModel(role, modelId, options = {}) {
 					code: 'PROVIDER_UNDETERMINED',
 					message: `Could not determine the provider for model ID "${modelId}".`
 				}
-			};
+			}
 		}
 
 		// Update configuration
@@ -584,15 +538,15 @@ async function setModel(role, modelId, options = {}) {
 			...currentConfig.models[role], // Keep existing params like temperature
 			provider: determinedProvider,
 			modelId: modelId
-		};
+		}
 
 		// If model data is available, update maxTokens from supported-models.json
 		if (modelData && modelData.max_tokens) {
-			currentConfig.models[role].maxTokens = modelData.max_tokens;
+			currentConfig.models[role].maxTokens = modelData.max_tokens
 		}
 
 		// Write updated configuration
-		const writeResult = writeConfig(currentConfig, projectRoot);
+		const writeResult = writeConfig(currentConfig, projectRoot)
 		if (!writeResult) {
 			return {
 				success: false,
@@ -600,11 +554,11 @@ async function setModel(role, modelId, options = {}) {
 					code: 'CONFIG_WRITE_ERROR',
 					message: 'Error writing updated configuration to configuration file'
 				}
-			};
+			}
 		}
 
-		const successMessage = `Successfully set ${role} model to ${modelId} (Provider: ${determinedProvider})`;
-		report('info', successMessage);
+		const successMessage = `Successfully set ${role} model to ${modelId} (Provider: ${determinedProvider})`
+		report('info', successMessage)
 
 		return {
 			success: true,
@@ -615,16 +569,16 @@ async function setModel(role, modelId, options = {}) {
 				message: successMessage,
 				warning: warningMessage // Include warning in the response data
 			}
-		};
+		}
 	} catch (error) {
-		report('error', `Error setting ${role} model: ${error.message}`);
+		report('error', `Error setting ${role} model: ${error.message}`)
 		return {
 			success: false,
 			error: {
 				code: 'SET_MODEL_ERROR',
 				message: error.message
 			}
-		};
+		}
 	}
 }
 
@@ -637,52 +591,45 @@ async function setModel(role, modelId, options = {}) {
  * @returns {Object} RESTful response with API key status report
  */
 async function getApiKeyStatusReport(options = {}) {
-	const { mcpLog, projectRoot, session } = options;
+	const { mcpLog, projectRoot, session } = options
 	const report = (level, ...args) => {
 		if (mcpLog && typeof mcpLog[level] === 'function') {
-			mcpLog[level](...args);
+			mcpLog[level](...args)
 		}
-	};
+	}
 
 	try {
-		const providers = getAllProviders();
-		const providersToCheck = providers.filter(
-			(p) => p.toLowerCase() !== 'ollama'
-		); // Ollama is not a provider, it's a service, doesn't need an api key usually
+		const providers = getAllProviders()
+		const providersToCheck = providers.filter((p) => p.toLowerCase() !== 'ollama') // Ollama is not a provider, it's a service, doesn't need an api key usually
 		const statusReport = providersToCheck.map((provider) => {
 			// Use provided projectRoot for MCP status check
-			const cliOk = isApiKeySet(provider, session, projectRoot); // Pass session and projectRoot for CLI check
-			const mcpOk = getMcpApiKeyStatus(provider, projectRoot);
+			const cliOk = isApiKeySet(provider, session, projectRoot) // Pass session and projectRoot for CLI check
+			const mcpOk = getMcpApiKeyStatus(provider, projectRoot)
 			return {
 				provider,
 				cli: cliOk,
 				mcp: mcpOk
-			};
-		});
+			}
+		})
 
-		report('info', 'Successfully generated API key status report.');
+		report('info', 'Successfully generated API key status report.')
 		return {
 			success: true,
 			data: {
 				report: statusReport,
 				message: 'API key status report generated.'
 			}
-		};
+		}
 	} catch (error) {
-		report('error', `Error generating API key status report: ${error.message}`);
+		report('error', `Error generating API key status report: ${error.message}`)
 		return {
 			success: false,
 			error: {
 				code: 'API_KEY_STATUS_ERROR',
 				message: error.message
 			}
-		};
+		}
 	}
 }
 
-export {
-	getModelConfiguration,
-	getAvailableModelsList,
-	setModel,
-	getApiKeyStatusReport
-};
+export { getModelConfiguration, getAvailableModelsList, setModel, getApiKeyStatusReport }

@@ -1,10 +1,10 @@
-import { jest } from '@jest/globals';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import fs from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url'
+import { jest } from '@jest/globals'
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 // Mock dependencies before importing
 const mockUtils = {
@@ -15,116 +15,105 @@ const mockUtils = {
 	setTasksForTag: jest.fn(),
 	traverseDependencies: jest.fn((sourceTasks, allTasks, options = {}) => {
 		// Mock realistic dependency behavior for testing
-		const { direction = 'forward' } = options;
+		const { direction = 'forward' } = options
 
 		if (direction === 'forward') {
 			// Return dependencies that tasks have
-			const result = [];
+			const result = []
 			sourceTasks.forEach((task) => {
 				if (task.dependencies && Array.isArray(task.dependencies)) {
-					result.push(...task.dependencies);
+					result.push(...task.dependencies)
 				}
-			});
-			return result;
+			})
+			return result
 		} else if (direction === 'reverse') {
 			// Return tasks that depend on the source tasks
-			const sourceIds = sourceTasks.map((t) => t.id);
-			const normalizedSourceIds = sourceIds.map((id) => String(id));
-			const result = [];
+			const sourceIds = sourceTasks.map((t) => t.id)
+			const normalizedSourceIds = sourceIds.map((id) => String(id))
+			const result = []
 			allTasks.forEach((task) => {
 				if (task.dependencies && Array.isArray(task.dependencies)) {
 					const hasDependency = task.dependencies.some((depId) =>
 						normalizedSourceIds.includes(String(depId))
-					);
+					)
 					if (hasDependency) {
-						result.push(task.id);
+						result.push(task.id)
 					}
 				}
-			});
-			return result;
+			})
+			return result
 		}
-		return [];
+		return []
 	})
-};
+}
 
 // Mock the utils module
-jest.unstable_mockModule('../../scripts/modules/utils.js', () => mockUtils);
+jest.unstable_mockModule('../../scripts/modules/utils.js', () => mockUtils)
 
 // Mock other dependencies
-jest.unstable_mockModule(
-	'../../scripts/modules/task-manager/is-task-dependent.js',
-	() => ({
-		default: jest.fn(() => false)
-	})
-);
+jest.unstable_mockModule('../../scripts/modules/task-manager/is-task-dependent.js', () => ({
+	default: jest.fn(() => false)
+}))
 
 jest.unstable_mockModule('../../scripts/modules/dependency-manager.js', () => ({
 	findCrossTagDependencies: jest.fn(() => {
 		// Since dependencies can only exist within the same tag,
 		// this function should never find any cross-tag conflicts
-		return [];
+		return []
 	}),
-	getDependentTaskIds: jest.fn(
-		(sourceTasks, crossTagDependencies, allTasks) => {
-			// Since we now use findAllDependenciesRecursively in the actual implementation,
-			// this mock simulates finding all dependencies recursively within the same tag
-			const dependentIds = new Set();
-			const processedIds = new Set();
+	getDependentTaskIds: jest.fn((sourceTasks, crossTagDependencies, allTasks) => {
+		// Since we now use findAllDependenciesRecursively in the actual implementation,
+		// this mock simulates finding all dependencies recursively within the same tag
+		const dependentIds = new Set()
+		const processedIds = new Set()
 
-			function findAllDependencies(taskId) {
-				if (processedIds.has(taskId)) return;
-				processedIds.add(taskId);
+		function findAllDependencies(taskId) {
+			if (processedIds.has(taskId)) return
+			processedIds.add(taskId)
 
-				const task = allTasks.find((t) => t.id === taskId);
-				if (!task || !Array.isArray(task.dependencies)) return;
+			const task = allTasks.find((t) => t.id === taskId)
+			if (!task || !Array.isArray(task.dependencies)) return
 
-				task.dependencies.forEach((depId) => {
-					const normalizedDepId =
-						typeof depId === 'string' ? parseInt(depId, 10) : depId;
-					if (!isNaN(normalizedDepId) && normalizedDepId !== taskId) {
-						dependentIds.add(normalizedDepId);
-						findAllDependencies(normalizedDepId);
-					}
-				});
-			}
-
-			sourceTasks.forEach((sourceTask) => {
-				if (sourceTask && sourceTask.id) {
-					findAllDependencies(sourceTask.id);
+			task.dependencies.forEach((depId) => {
+				const normalizedDepId = typeof depId === 'string' ? parseInt(depId, 10) : depId
+				if (!isNaN(normalizedDepId) && normalizedDepId !== taskId) {
+					dependentIds.add(normalizedDepId)
+					findAllDependencies(normalizedDepId)
 				}
-			});
-
-			return Array.from(dependentIds);
+			})
 		}
-	),
+
+		sourceTasks.forEach((sourceTask) => {
+			if (sourceTask && sourceTask.id) {
+				findAllDependencies(sourceTask.id)
+			}
+		})
+
+		return Array.from(dependentIds)
+	}),
 	validateSubtaskMove: jest.fn((taskId, sourceTag, targetTag) => {
 		// Throw error for subtask IDs
-		const taskIdStr = String(taskId);
+		const taskIdStr = String(taskId)
 		if (taskIdStr.includes('.')) {
-			throw new Error('Cannot move subtasks directly between tags');
+			throw new Error('Cannot move subtasks directly between tags')
 		}
 	})
-}));
+}))
 
-jest.unstable_mockModule(
-	'../../scripts/modules/task-manager/generate-task-files.js',
-	() => ({
-		default: jest.fn().mockResolvedValue()
-	})
-);
+jest.unstable_mockModule('../../scripts/modules/task-manager/generate-task-files.js', () => ({
+	default: jest.fn().mockResolvedValue()
+}))
 
 // Import the modules we'll be testing after mocking
-const { moveTasksBetweenTags } = await import(
-	'../../scripts/modules/task-manager/move-task.js'
-);
+const { moveTasksBetweenTags } = await import('../../scripts/modules/task-manager/move-task.js')
 
 describe('Cross-Tag Task Movement Integration Tests', () => {
-	let testDataPath;
-	let mockTasksData;
+	let testDataPath
+	let mockTasksData
 
 	beforeEach(() => {
 		// Setup test data path
-		testDataPath = path.join(__dirname, 'temp-test-tasks.json');
+		testDataPath = path.join(__dirname, 'temp-test-tasks.json')
 
 		// Initialize mock data with multiple tags
 		mockTasksData = {
@@ -185,29 +174,29 @@ describe('Cross-Tag Task Movement Integration Tests', () => {
 					}
 				]
 			}
-		};
+		}
 
 		// Setup mock utils
-		mockUtils.readJSON.mockReturnValue(mockTasksData);
+		mockUtils.readJSON.mockReturnValue(mockTasksData)
 		mockUtils.writeJSON.mockImplementation((path, data, projectRoot, tag) => {
 			// Simulate writing to file
-			return Promise.resolve();
-		});
-	});
+			return Promise.resolve()
+		})
+	})
 
 	afterEach(() => {
-		jest.clearAllMocks();
+		jest.clearAllMocks()
 		// Clean up temp file if it exists
 		if (fs.existsSync(testDataPath)) {
-			fs.unlinkSync(testDataPath);
+			fs.unlinkSync(testDataPath)
 		}
-	});
+	})
 
 	describe('Basic Cross-Tag Movement', () => {
 		it('should move a single task between tags successfully', async () => {
-			const taskIds = [1];
-			const sourceTag = 'backlog';
-			const targetTag = 'in-progress';
+			const taskIds = [1]
+			const sourceTag = 'backlog'
+			const targetTag = 'in-progress'
 
 			const result = await moveTasksBetweenTags(
 				testDataPath,
@@ -216,14 +205,10 @@ describe('Cross-Tag Task Movement Integration Tests', () => {
 				targetTag,
 				{},
 				{ projectRoot: '/test/project' }
-			);
+			)
 
 			// Verify readJSON was called with correct parameters
-			expect(mockUtils.readJSON).toHaveBeenCalledWith(
-				testDataPath,
-				'/test/project',
-				sourceTag
-			);
+			expect(mockUtils.readJSON).toHaveBeenCalledWith(testDataPath, '/test/project', sourceTag)
 
 			// Verify writeJSON was called with updated data
 			expect(mockUtils.writeJSON).toHaveBeenCalledWith(
@@ -247,7 +232,7 @@ describe('Cross-Tag Task Movement Integration Tests', () => {
 				}),
 				'/test/project',
 				null
-			);
+			)
 
 			// Verify result structure
 			expect(result).toEqual({
@@ -259,13 +244,13 @@ describe('Cross-Tag Task Movement Integration Tests', () => {
 						toTag: 'in-progress'
 					}
 				]
-			});
-		});
+			})
+		})
 
 		it('should move multiple tasks between tags', async () => {
-			const taskIds = [1, 3];
-			const sourceTag = 'backlog';
-			const targetTag = 'done';
+			const taskIds = [1, 3]
+			const sourceTag = 'backlog'
+			const targetTag = 'done'
 
 			const result = await moveTasksBetweenTags(
 				testDataPath,
@@ -274,7 +259,7 @@ describe('Cross-Tag Task Movement Integration Tests', () => {
 				targetTag,
 				{},
 				{ projectRoot: '/test/project' }
-			);
+			)
 
 			// Verify the moved tasks are in the target tag
 			expect(mockUtils.writeJSON).toHaveBeenCalledWith(
@@ -299,22 +284,22 @@ describe('Cross-Tag Task Movement Integration Tests', () => {
 				}),
 				'/test/project',
 				null
-			);
+			)
 
 			// Verify result structure
-			expect(result.movedTasks).toHaveLength(2);
+			expect(result.movedTasks).toHaveLength(2)
 			expect(result.movedTasks).toEqual(
 				expect.arrayContaining([
 					{ id: 1, fromTag: 'backlog', toTag: 'done' },
 					{ id: 3, fromTag: 'backlog', toTag: 'done' }
 				])
-			);
-		});
+			)
+		})
 
 		it('should create target tag if it does not exist', async () => {
-			const taskIds = [1];
-			const sourceTag = 'backlog';
-			const targetTag = 'new-tag';
+			const taskIds = [1]
+			const sourceTag = 'backlog'
+			const targetTag = 'new-tag'
 
 			const result = await moveTasksBetweenTags(
 				testDataPath,
@@ -323,7 +308,7 @@ describe('Cross-Tag Task Movement Integration Tests', () => {
 				targetTag,
 				{},
 				{ projectRoot: '/test/project' }
-			);
+			)
 
 			// Verify new tag was created
 			expect(mockUtils.writeJSON).toHaveBeenCalledWith(
@@ -340,15 +325,15 @@ describe('Cross-Tag Task Movement Integration Tests', () => {
 				}),
 				'/test/project',
 				null
-			);
-		});
-	});
+			)
+		})
+	})
 
 	describe('Dependency Handling', () => {
 		it('should move task with dependencies when withDependencies is true', async () => {
-			const taskIds = [2]; // Task 2 depends on Task 1
-			const sourceTag = 'backlog';
-			const targetTag = 'in-progress';
+			const taskIds = [2] // Task 2 depends on Task 1
+			const sourceTag = 'backlog'
+			const targetTag = 'in-progress'
 
 			const result = await moveTasksBetweenTags(
 				testDataPath,
@@ -357,7 +342,7 @@ describe('Cross-Tag Task Movement Integration Tests', () => {
 				targetTag,
 				{ withDependencies: true },
 				{ projectRoot: '/test/project' }
-			);
+			)
 
 			// Verify both task 2 and its dependency (task 1) were moved
 			expect(mockUtils.writeJSON).toHaveBeenCalledWith(
@@ -382,13 +367,13 @@ describe('Cross-Tag Task Movement Integration Tests', () => {
 				}),
 				'/test/project',
 				null
-			);
-		});
+			)
+		})
 
 		it('should move task normally when ignoreDependencies is true (no cross-tag conflicts to ignore)', async () => {
-			const taskIds = [2]; // Task 2 depends on Task 1
-			const sourceTag = 'backlog';
-			const targetTag = 'in-progress';
+			const taskIds = [2] // Task 2 depends on Task 1
+			const sourceTag = 'backlog'
+			const targetTag = 'in-progress'
 
 			const result = await moveTasksBetweenTags(
 				testDataPath,
@@ -397,7 +382,7 @@ describe('Cross-Tag Task Movement Integration Tests', () => {
 				targetTag,
 				{ ignoreDependencies: true },
 				{ projectRoot: '/test/project' }
-			);
+			)
 
 			// Since dependencies only exist within tags, there are no cross-tag conflicts to ignore
 			// Task 2 moves with its dependencies intact
@@ -423,22 +408,20 @@ describe('Cross-Tag Task Movement Integration Tests', () => {
 				}),
 				'/test/project',
 				null
-			);
-		});
+			)
+		})
 
 		it('should provide advisory tips when ignoreDependencies breaks deps', async () => {
 			// Move a task that has dependencies so cross-tag conflicts would be broken
-			const taskIds = [2]; // backlog:2 depends on 1
-			const sourceTag = 'backlog';
-			const targetTag = 'in-progress';
+			const taskIds = [2] // backlog:2 depends on 1
+			const sourceTag = 'backlog'
+			const targetTag = 'in-progress'
 
 			// Override cross-tag detection to simulate conflicts for this case
-			const depManager = await import(
-				'../../scripts/modules/dependency-manager.js'
-			);
+			const depManager = await import('../../scripts/modules/dependency-manager.js')
 			depManager.findCrossTagDependencies.mockReturnValueOnce([
 				{ taskId: 2, dependencyId: 1, dependencyTag: sourceTag }
-			]);
+			])
 
 			const result = await moveTasksBetweenTags(
 				testDataPath,
@@ -447,21 +430,21 @@ describe('Cross-Tag Task Movement Integration Tests', () => {
 				targetTag,
 				{ ignoreDependencies: true },
 				{ projectRoot: '/test/project' }
-			);
+			)
 
-			expect(Array.isArray(result.tips)).toBe(true);
+			expect(Array.isArray(result.tips)).toBe(true)
 			const expectedTips = [
 				'Run "task-master validate-dependencies" to check for dependency issues.',
 				'Run "task-master fix-dependencies" to automatically repair dangling dependencies.'
-			];
-			expect(result.tips).toHaveLength(expectedTips.length);
-			expect(result.tips).toEqual(expect.arrayContaining(expectedTips));
-		});
+			]
+			expect(result.tips).toHaveLength(expectedTips.length)
+			expect(result.tips).toEqual(expect.arrayContaining(expectedTips))
+		})
 
 		it('should move task without cross-tag dependency conflicts (since dependencies only exist within tags)', async () => {
-			const taskIds = [2]; // Task 2 depends on Task 1 (both in same tag)
-			const sourceTag = 'backlog';
-			const targetTag = 'in-progress';
+			const taskIds = [2] // Task 2 depends on Task 1 (both in same tag)
+			const sourceTag = 'backlog'
+			const targetTag = 'in-progress'
 
 			// Since dependencies can only exist within the same tag,
 			// there should be no cross-tag conflicts
@@ -472,7 +455,7 @@ describe('Cross-Tag Task Movement Integration Tests', () => {
 				targetTag,
 				{},
 				{ projectRoot: '/test/project' }
-			);
+			)
 
 			// Verify task was moved successfully (without dependencies)
 			expect(mockUtils.writeJSON).toHaveBeenCalledWith(
@@ -496,20 +479,20 @@ describe('Cross-Tag Task Movement Integration Tests', () => {
 				}),
 				'/test/project',
 				null
-			);
-		});
-	});
+			)
+		})
+	})
 
 	describe('Error Handling', () => {
 		it('should throw error for invalid source tag', async () => {
-			const taskIds = [1];
-			const sourceTag = 'nonexistent-tag';
-			const targetTag = 'in-progress';
+			const taskIds = [1]
+			const sourceTag = 'nonexistent-tag'
+			const targetTag = 'in-progress'
 
 			// Mock readJSON to return data without the source tag
 			mockUtils.readJSON.mockReturnValue({
 				'in-progress': { tasks: [] }
-			});
+			})
 
 			await expect(
 				moveTasksBetweenTags(
@@ -520,13 +503,13 @@ describe('Cross-Tag Task Movement Integration Tests', () => {
 					{},
 					{ projectRoot: '/test/project' }
 				)
-			).rejects.toThrow('Source tag "nonexistent-tag" not found or invalid');
-		});
+			).rejects.toThrow('Source tag "nonexistent-tag" not found or invalid')
+		})
 
 		it('should throw error for invalid task IDs', async () => {
-			const taskIds = [999]; // Non-existent task ID
-			const sourceTag = 'backlog';
-			const targetTag = 'in-progress';
+			const taskIds = [999] // Non-existent task ID
+			const sourceTag = 'backlog'
+			const targetTag = 'in-progress'
 
 			await expect(
 				moveTasksBetweenTags(
@@ -537,13 +520,13 @@ describe('Cross-Tag Task Movement Integration Tests', () => {
 					{},
 					{ projectRoot: '/test/project' }
 				)
-			).rejects.toThrow('Task 999 not found in source tag "backlog"');
-		});
+			).rejects.toThrow('Task 999 not found in source tag "backlog"')
+		})
 
 		it('should throw error for subtask movement', async () => {
-			const taskIds = ['1.1']; // Subtask ID
-			const sourceTag = 'backlog';
-			const targetTag = 'in-progress';
+			const taskIds = ['1.1'] // Subtask ID
+			const sourceTag = 'backlog'
+			const targetTag = 'in-progress'
 
 			await expect(
 				moveTasksBetweenTags(
@@ -554,8 +537,8 @@ describe('Cross-Tag Task Movement Integration Tests', () => {
 					{},
 					{ projectRoot: '/test/project' }
 				)
-			).rejects.toThrow('Cannot move subtasks directly between tags');
-		});
+			).rejects.toThrow('Cannot move subtasks directly between tags')
+		})
 
 		it('should handle ID conflicts in target tag', async () => {
 			// Setup data with conflicting IDs
@@ -578,13 +561,13 @@ describe('Cross-Tag Task Movement Integration Tests', () => {
 						}
 					]
 				}
-			};
+			}
 
-			mockUtils.readJSON.mockReturnValue(conflictingData);
+			mockUtils.readJSON.mockReturnValue(conflictingData)
 
-			const taskIds = [1];
-			const sourceTag = 'backlog';
-			const targetTag = 'in-progress';
+			const taskIds = [1]
+			const sourceTag = 'backlog'
+			const targetTag = 'in-progress'
 
 			await expect(
 				moveTasksBetweenTags(
@@ -595,7 +578,7 @@ describe('Cross-Tag Task Movement Integration Tests', () => {
 					{},
 					{ projectRoot: '/test/project' }
 				)
-			).rejects.toThrow('Task 1 already exists in target tag "in-progress"');
+			).rejects.toThrow('Task 1 already exists in target tag "in-progress"')
 
 			// Validate suggestions on the error payload
 			try {
@@ -606,30 +589,30 @@ describe('Cross-Tag Task Movement Integration Tests', () => {
 					targetTag,
 					{},
 					{ projectRoot: '/test/project' }
-				);
+				)
 			} catch (err) {
-				expect(err.code).toBe('TASK_ALREADY_EXISTS');
-				expect(Array.isArray(err.data?.suggestions)).toBe(true);
-				const s = (err.data?.suggestions || []).join(' ');
-				expect(s).toContain('different target tag');
-				expect(s).toContain('different set of IDs');
-				expect(s).toContain('within-tag');
+				expect(err.code).toBe('TASK_ALREADY_EXISTS')
+				expect(Array.isArray(err.data?.suggestions)).toBe(true)
+				const s = (err.data?.suggestions || []).join(' ')
+				expect(s).toContain('different target tag')
+				expect(s).toContain('different set of IDs')
+				expect(s).toContain('within-tag')
 			}
-		});
-	});
+		})
+	})
 
 	describe('Edge Cases', () => {
 		it('should handle empty task list in source tag', async () => {
 			const emptyData = {
 				backlog: { tasks: [] },
 				'in-progress': { tasks: [] }
-			};
+			}
 
-			mockUtils.readJSON.mockReturnValue(emptyData);
+			mockUtils.readJSON.mockReturnValue(emptyData)
 
-			const taskIds = [1];
-			const sourceTag = 'backlog';
-			const targetTag = 'in-progress';
+			const taskIds = [1]
+			const sourceTag = 'backlog'
+			const targetTag = 'in-progress'
 
 			await expect(
 				moveTasksBetweenTags(
@@ -640,13 +623,13 @@ describe('Cross-Tag Task Movement Integration Tests', () => {
 					{},
 					{ projectRoot: '/test/project' }
 				)
-			).rejects.toThrow('Task 1 not found in source tag "backlog"');
-		});
+			).rejects.toThrow('Task 1 not found in source tag "backlog"')
+		})
 
 		it('should preserve task metadata during move', async () => {
-			const taskIds = [1];
-			const sourceTag = 'backlog';
-			const targetTag = 'in-progress';
+			const taskIds = [1]
+			const sourceTag = 'backlog'
+			const targetTag = 'in-progress'
 
 			const result = await moveTasksBetweenTags(
 				testDataPath,
@@ -655,7 +638,7 @@ describe('Cross-Tag Task Movement Integration Tests', () => {
 				targetTag,
 				{},
 				{ projectRoot: '/test/project' }
-			);
+			)
 
 			// Verify task metadata is preserved
 			expect(mockUtils.writeJSON).toHaveBeenCalledWith(
@@ -685,11 +668,11 @@ describe('Cross-Tag Task Movement Integration Tests', () => {
 				}),
 				'/test/project',
 				null
-			);
-		});
+			)
+		})
 
 		// Note: force flag deprecated for cross-tag moves; covered by with/ignore dependencies tests
-	});
+	})
 
 	describe('Complex Scenarios', () => {
 		it('should handle complex moves without cross-tag conflicts (dependencies only within tags)', async () => {
@@ -721,13 +704,13 @@ describe('Cross-Tag Task Movement Integration Tests', () => {
 						}
 					]
 				}
-			};
+			}
 
-			mockUtils.readJSON.mockReturnValue(validData);
+			mockUtils.readJSON.mockReturnValue(validData)
 
-			const taskIds = [3];
-			const sourceTag = 'backlog';
-			const targetTag = 'in-progress';
+			const taskIds = [3]
+			const sourceTag = 'backlog'
+			const targetTag = 'in-progress'
 
 			// Should succeed since there are no cross-tag conflicts
 			const result = await moveTasksBetweenTags(
@@ -737,18 +720,18 @@ describe('Cross-Tag Task Movement Integration Tests', () => {
 				targetTag,
 				{},
 				{ projectRoot: '/test/project' }
-			);
+			)
 
 			expect(result).toEqual({
 				message: 'Successfully moved 1 tasks from "backlog" to "in-progress"',
 				movedTasks: [{ id: 3, fromTag: 'backlog', toTag: 'in-progress' }]
-			});
-		});
+			})
+		})
 
 		it('should handle bulk move with mixed dependency scenarios', async () => {
-			const taskIds = [1, 2, 3]; // Multiple tasks with dependencies
-			const sourceTag = 'backlog';
-			const targetTag = 'in-progress';
+			const taskIds = [1, 2, 3] // Multiple tasks with dependencies
+			const sourceTag = 'backlog'
+			const targetTag = 'in-progress'
 
 			const result = await moveTasksBetweenTags(
 				testDataPath,
@@ -757,7 +740,7 @@ describe('Cross-Tag Task Movement Integration Tests', () => {
 				targetTag,
 				{ withDependencies: true },
 				{ projectRoot: '/test/project' }
-			);
+			)
 
 			// Verify all tasks were moved
 			expect(mockUtils.writeJSON).toHaveBeenCalledWith(
@@ -777,17 +760,17 @@ describe('Cross-Tag Task Movement Integration Tests', () => {
 				}),
 				'/test/project',
 				null
-			);
+			)
 
 			// Verify result structure
-			expect(result.movedTasks).toHaveLength(3);
+			expect(result.movedTasks).toHaveLength(3)
 			expect(result.movedTasks).toEqual(
 				expect.arrayContaining([
 					{ id: 1, fromTag: 'backlog', toTag: 'in-progress' },
 					{ id: 2, fromTag: 'backlog', toTag: 'in-progress' },
 					{ id: 3, fromTag: 'backlog', toTag: 'in-progress' }
 				])
-			);
-		});
-	});
-});
+			)
+		})
+	})
+})

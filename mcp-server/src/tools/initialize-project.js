@@ -1,11 +1,7 @@
-import { z } from 'zod';
-import {
-	createErrorResponse,
-	handleApiResult,
-	withNormalizedProjectRoot
-} from './utils.js';
-import { initializeProjectDirect } from '../core/task-master-core.js';
-import { RULE_PROFILES } from '../../../src/constants/profiles.js';
+import { z } from 'zod'
+import { RULE_PROFILES } from '../../../src/constants/profiles.js'
+import { initializeProjectDirect } from '../core/task-master-core.js'
+import { createErrorResponse, handleApiResult, withNormalizedProjectRoot } from './utils.js'
 
 export function registerInitializeProjectTool(server) {
 	server.addTool({
@@ -39,9 +35,7 @@ export function registerInitializeProjectTool(server) {
 				.boolean()
 				.optional()
 				.default(true)
-				.describe(
-					'Skip prompts and use default values. Always set to true for MCP tools.'
-				),
+				.describe('Skip prompts and use default values. Always set to true for MCP tools.'),
 			projectRoot: z
 				.string()
 				.describe(
@@ -55,28 +49,20 @@ export function registerInitializeProjectTool(server) {
 				)
 		}),
 		execute: withNormalizedProjectRoot(async (args, context) => {
-			const { log } = context;
-			const session = context.session;
+			const { log } = context
+			const session = context.session
 
 			try {
-				log.info(
-					`Executing initialize_project tool with args: ${JSON.stringify(args)}`
-				);
+				log.info(`Executing initialize_project tool with args: ${JSON.stringify(args)}`)
 
-				const result = await initializeProjectDirect(args, log, { session });
+				const result = await initializeProjectDirect(args, log, { session })
 
-				return handleApiResult(
-					result,
-					log,
-					'Initialization failed',
-					undefined,
-					args.projectRoot
-				);
+				return handleApiResult(result, log, 'Initialization failed', undefined, args.projectRoot)
 			} catch (error) {
-				const errorMessage = `Project initialization tool failed: ${error.message || 'Unknown error'}`;
-				log.error(errorMessage, error);
-				return createErrorResponse(errorMessage, { details: error.stack });
+				const errorMessage = `Project initialization tool failed: ${error.message || 'Unknown error'}`
+				log.error(errorMessage, error)
+				return createErrorResponse(errorMessage, { details: error.stack })
 			}
 		})
-	});
+	})
 }

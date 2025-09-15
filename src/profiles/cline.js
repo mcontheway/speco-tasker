@@ -1,5 +1,5 @@
 // Cline conversion profile for rule-transformer
-import { createProfile, COMMON_TOOL_MAPPINGS } from './base-profile.js';
+import { COMMON_TOOL_MAPPINGS, createProfile } from './base-profile.js'
 
 // Create and export cline profile using the base factory
 export const clineProfile = createProfile({
@@ -10,4 +10,4 @@ export const clineProfile = createProfile({
 	profileDir: '.clinerules',
 	rulesDir: '.clinerules',
 	mcpConfig: false
-});
+})

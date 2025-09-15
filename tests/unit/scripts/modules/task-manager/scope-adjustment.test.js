@@ -1,7 +1,7 @@
 /**
  * Tests for scope-adjustment.js module
  */
-import { jest } from '@jest/globals';
+import { jest } from '@jest/globals'
 
 // Mock dependencies using unstable_mockModule for ES modules
 jest.unstable_mockModule('../../../../../scripts/modules/utils.js', () => ({
@@ -12,57 +12,45 @@ jest.unstable_mockModule('../../../../../scripts/modules/utils.js', () => ({
 	readComplexityReport: jest.fn(),
 	findTaskInComplexityReport: jest.fn(),
 	findProjectRoot: jest.fn()
-}));
+}))
 
-jest.unstable_mockModule(
-	'../../../../../scripts/modules/ai-services-unified.js',
-	() => ({
-		generateObjectService: jest.fn(),
-		generateTextService: jest.fn()
-	})
-);
+jest.unstable_mockModule('../../../../../scripts/modules/ai-services-unified.js', () => ({
+	generateObjectService: jest.fn(),
+	generateTextService: jest.fn()
+}))
 
-jest.unstable_mockModule(
-	'../../../../../scripts/modules/task-manager.js',
-	() => ({
-		findTaskById: jest.fn(),
-		taskExists: jest.fn()
-	})
-);
+jest.unstable_mockModule('../../../../../scripts/modules/task-manager.js', () => ({
+	findTaskById: jest.fn(),
+	taskExists: jest.fn()
+}))
 
 jest.unstable_mockModule(
 	'../../../../../scripts/modules/task-manager/analyze-task-complexity.js',
 	() => ({
 		default: jest.fn()
 	})
-);
+)
 
 jest.unstable_mockModule('../../../../../src/utils/path-utils.js', () => ({
 	findComplexityReportPath: jest.fn()
-}));
+}))
 
 // Import modules after mocking
-const {
-	log,
-	readJSON,
-	writeJSON,
-	readComplexityReport,
-	findTaskInComplexityReport
-} = await import('../../../../../scripts/modules/utils.js');
+const { log, readJSON, writeJSON, readComplexityReport, findTaskInComplexityReport } = await import(
+	'../../../../../scripts/modules/utils.js'
+)
 const { generateObjectService } = await import(
 	'../../../../../scripts/modules/ai-services-unified.js'
-);
-const { findTaskById, taskExists } = await import(
-	'../../../../../scripts/modules/task-manager.js'
-);
+)
+const { findTaskById, taskExists } = await import('../../../../../scripts/modules/task-manager.js')
 const { scopeUpTask, scopeDownTask, validateStrength } = await import(
 	'../../../../../scripts/modules/task-manager/scope-adjustment.js'
-);
+)
 
 describe('Scope Adjustment Commands', () => {
 	beforeEach(() => {
-		jest.clearAllMocks();
-	});
+		jest.clearAllMocks()
+	})
 
 	describe('scopeUpTask', () => {
 		it('should increase task complexity with regular strength', async () => {
@@ -77,7 +65,7 @@ describe('Scope Adjustment Commands', () => {
 						status: 'pending'
 					}
 				]
-			};
+			}
 
 			const mockTask = {
 				id: 1,
@@ -85,29 +73,27 @@ describe('Scope Adjustment Commands', () => {
 				description: 'Basic description',
 				details: 'Basic implementation details',
 				status: 'pending'
-			};
+			}
 
-			readJSON.mockReturnValue(mockTasksData);
-			taskExists.mockReturnValue(true);
-			findTaskById.mockReturnValue({ task: mockTask });
+			readJSON.mockReturnValue(mockTasksData)
+			taskExists.mockReturnValue(true)
+			findTaskById.mockReturnValue({ task: mockTask })
 			generateObjectService.mockResolvedValue({
 				mainResult: {
 					title: 'Complex Task with Advanced Features',
 					description: 'Enhanced description with more requirements',
-					details:
-						'Detailed implementation with error handling, validation, and advanced features',
-					testStrategy:
-						'Comprehensive testing including unit, integration, and edge cases'
+					details: 'Detailed implementation with error handling, validation, and advanced features',
+					testStrategy: 'Comprehensive testing including unit, integration, and edge cases'
 				},
 				telemetryData: { tokens: 100, cost: 0.01 }
-			});
+			})
 
 			const context = {
 				projectRoot: '/test/project',
 				tag: 'master',
 				commandName: 'scope-up',
 				outputType: 'cli'
-			};
+			}
 
 			const result = await scopeUpTask(
 				'/test/tasks.json',
@@ -116,11 +102,11 @@ describe('Scope Adjustment Commands', () => {
 				null, // no custom prompt
 				context,
 				'text'
-			);
+			)
 
-			expect(result).toBeDefined();
-			expect(result.updatedTasks).toHaveLength(1);
-			expect(result.telemetryData).toBeDefined();
+			expect(result).toBeDefined()
+			expect(result.updatedTasks).toHaveLength(1)
+			expect(result.telemetryData).toBeDefined()
 			expect(writeJSON).toHaveBeenCalledWith(
 				'/test/tasks.json',
 				expect.objectContaining({
@@ -133,8 +119,8 @@ describe('Scope Adjustment Commands', () => {
 				}),
 				'/test/project',
 				'master'
-			);
-		});
+			)
+		})
 
 		it('should handle custom prompts for targeted scope adjustments', async () => {
 			const mockTasksData = {
@@ -147,7 +133,7 @@ describe('Scope Adjustment Commands', () => {
 						status: 'pending'
 					}
 				]
-			};
+			}
 
 			const mockTask = {
 				id: 1,
@@ -155,11 +141,11 @@ describe('Scope Adjustment Commands', () => {
 				description: 'Basic description',
 				details: 'Basic implementation details',
 				status: 'pending'
-			};
+			}
 
-			readJSON.mockReturnValue(mockTasksData);
-			taskExists.mockReturnValue(true);
-			findTaskById.mockReturnValue({ task: mockTask });
+			readJSON.mockReturnValue(mockTasksData)
+			taskExists.mockReturnValue(true)
+			findTaskById.mockReturnValue({ task: mockTask })
 			generateObjectService.mockResolvedValue({
 				mainResult: {
 					title: 'Task with Enhanced Security',
@@ -168,16 +154,16 @@ describe('Scope Adjustment Commands', () => {
 					testStrategy: 'Security-focused testing strategy'
 				},
 				telemetryData: { tokens: 120, cost: 0.012 }
-			});
+			})
 
 			const context = {
 				projectRoot: '/test/project',
 				tag: 'master',
 				commandName: 'scope-up',
 				outputType: 'cli'
-			};
+			}
 
-			const customPrompt = 'Focus on adding security features and validation';
+			const customPrompt = 'Focus on adding security features and validation'
 
 			const result = await scopeUpTask(
 				'/test/tasks.json',
@@ -186,18 +172,16 @@ describe('Scope Adjustment Commands', () => {
 				customPrompt,
 				context,
 				'text'
-			);
+			)
 
-			expect(result).toBeDefined();
+			expect(result).toBeDefined()
 			expect(generateObjectService).toHaveBeenCalledWith(
 				expect.objectContaining({
-					prompt: expect.stringContaining(
-						'Focus on adding security features and validation'
-					)
+					prompt: expect.stringContaining('Focus on adding security features and validation')
 				})
-			);
-		});
-	});
+			)
+		})
+	})
 
 	describe('scopeDownTask', () => {
 		it('should decrease task complexity with regular strength', async () => {
@@ -207,25 +191,23 @@ describe('Scope Adjustment Commands', () => {
 						id: 1,
 						title: 'Complex Task with Many Features',
 						description: 'Comprehensive description with multiple requirements',
-						details:
-							'Detailed implementation with advanced features, error handling, validation',
+						details: 'Detailed implementation with advanced features, error handling, validation',
 						status: 'pending'
 					}
 				]
-			};
+			}
 
 			const mockTask = {
 				id: 1,
 				title: 'Complex Task with Many Features',
 				description: 'Comprehensive description with multiple requirements',
-				details:
-					'Detailed implementation with advanced features, error handling, validation',
+				details: 'Detailed implementation with advanced features, error handling, validation',
 				status: 'pending'
-			};
+			}
 
-			readJSON.mockReturnValue(mockTasksData);
-			taskExists.mockReturnValue(true);
-			findTaskById.mockReturnValue({ task: mockTask });
+			readJSON.mockReturnValue(mockTasksData)
+			taskExists.mockReturnValue(true)
+			findTaskById.mockReturnValue({ task: mockTask })
 			generateObjectService.mockResolvedValue({
 				mainResult: {
 					title: 'Simple Task',
@@ -234,40 +216,33 @@ describe('Scope Adjustment Commands', () => {
 					testStrategy: 'Simple unit tests for core functionality'
 				},
 				telemetryData: { tokens: 80, cost: 0.008 }
-			});
+			})
 
 			const context = {
 				projectRoot: '/test/project',
 				tag: 'master',
 				commandName: 'scope-down',
 				outputType: 'cli'
-			};
+			}
 
-			const result = await scopeDownTask(
-				'/test/tasks.json',
-				[1],
-				'regular',
-				null,
-				context,
-				'text'
-			);
+			const result = await scopeDownTask('/test/tasks.json', [1], 'regular', null, context, 'text')
 
-			expect(result).toBeDefined();
-			expect(result.updatedTasks).toHaveLength(1);
-			expect(writeJSON).toHaveBeenCalled();
-		});
-	});
+			expect(result).toBeDefined()
+			expect(result.updatedTasks).toHaveLength(1)
+			expect(writeJSON).toHaveBeenCalled()
+		})
+	})
 
 	describe('strength level validation', () => {
 		it('should validate strength parameter correctly', () => {
-			expect(validateStrength('light')).toBe(true);
-			expect(validateStrength('regular')).toBe(true);
-			expect(validateStrength('heavy')).toBe(true);
-			expect(validateStrength('invalid')).toBe(false);
-			expect(validateStrength('')).toBe(false);
-			expect(validateStrength(null)).toBe(false);
-		});
-	});
+			expect(validateStrength('light')).toBe(true)
+			expect(validateStrength('regular')).toBe(true)
+			expect(validateStrength('heavy')).toBe(true)
+			expect(validateStrength('invalid')).toBe(false)
+			expect(validateStrength('')).toBe(false)
+			expect(validateStrength(null)).toBe(false)
+		})
+	})
 
 	describe('multiple task IDs handling', () => {
 		it('should handle comma-separated task IDs', async () => {
@@ -288,10 +263,10 @@ describe('Scope Adjustment Commands', () => {
 						status: 'pending'
 					}
 				]
-			};
+			}
 
-			readJSON.mockReturnValue(mockTasksData);
-			taskExists.mockReturnValue(true);
+			readJSON.mockReturnValue(mockTasksData)
+			taskExists.mockReturnValue(true)
 			findTaskById
 				.mockReturnValueOnce({
 					task: {
@@ -310,7 +285,7 @@ describe('Scope Adjustment Commands', () => {
 						details: 'Details 2',
 						status: 'pending'
 					}
-				});
+				})
 
 			generateObjectService.mockResolvedValue({
 				mainResult: {
@@ -320,26 +295,19 @@ describe('Scope Adjustment Commands', () => {
 					testStrategy: 'Enhanced testing'
 				},
 				telemetryData: { tokens: 100, cost: 0.01 }
-			});
+			})
 
 			const context = {
 				projectRoot: '/test/project',
 				tag: 'master',
 				commandName: 'scope-up',
 				outputType: 'cli'
-			};
+			}
 
-			const result = await scopeUpTask(
-				'/test/tasks.json',
-				[1, 2],
-				'regular',
-				null,
-				context,
-				'text'
-			);
+			const result = await scopeUpTask('/test/tasks.json', [1, 2], 'regular', null, context, 'text')
 
-			expect(result.updatedTasks).toHaveLength(2);
-			expect(generateObjectService).toHaveBeenCalledTimes(2);
-		});
-	});
-});
+			expect(result.updatedTasks).toHaveLength(2)
+			expect(generateObjectService).toHaveBeenCalledTimes(2)
+		})
+	})
+})

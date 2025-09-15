@@ -9,24 +9,21 @@
  * We do NOT import the real implementation - everything is mocked
  */
 
-import { jest } from '@jest/globals';
-import {
-	sampleTasks,
-	emptySampleTasks
-} from '../../../fixtures/sample-tasks.js';
+import { jest } from '@jest/globals'
+import { emptySampleTasks, sampleTasks } from '../../../fixtures/sample-tasks.js'
 
 // Mock EVERYTHING
-const mockAddTaskDirect = jest.fn();
+const mockAddTaskDirect = jest.fn()
 jest.mock('../../../../mcp-server/src/core/task-master-core.js', () => ({
 	addTaskDirect: mockAddTaskDirect
-}));
+}))
 
-const mockHandleApiResult = jest.fn((result) => result);
-const mockGetProjectRootFromSession = jest.fn(() => '/mock/project/root');
+const mockHandleApiResult = jest.fn((result) => result)
+const mockGetProjectRootFromSession = jest.fn(() => '/mock/project/root')
 const mockCreateErrorResponse = jest.fn((msg) => ({
 	success: false,
 	error: { code: 'ERROR', message: msg }
-}));
+}))
 
 jest.mock('../../../../mcp-server/src/tools/utils.js', () => ({
 	getProjectRootFromSession: mockGetProjectRootFromSession,
@@ -37,7 +34,7 @@ jest.mock('../../../../mcp-server/src/tools/utils.js', () => ({
 		data: content
 	})),
 	executeTaskMasterCommand: jest.fn()
-}));
+}))
 
 // Mock the z object from zod
 const mockZod = {
@@ -56,11 +53,11 @@ const mockZod = {
 			projectRoot: {}
 		})
 	}
-};
+}
 
 jest.mock('zod', () => ({
 	z: mockZod
-}));
+}))
 
 // DO NOT import the real module - create a fake implementation
 // This is the fake implementation of registerAddTaskTool
@@ -73,14 +70,13 @@ const registerAddTaskTool = (server) => {
 
 		// Create a simplified mock of the execute function
 		execute: (args, context) => {
-			const { log, reportProgress, session } = context;
+			const { log, reportProgress, session } = context
 
 			try {
-				log.info &&
-					log.info(`Starting add-task with args: ${JSON.stringify(args)}`);
+				log.info && log.info(`Starting add-task with args: ${JSON.stringify(args)}`)
 
 				// Get project root
-				const rootFolder = mockGetProjectRootFromSession(session, log);
+				const rootFolder = mockGetProjectRootFromSession(session, log)
 
 				// Call addTaskDirect
 				const result = mockAddTaskDirect(
@@ -90,25 +86,25 @@ const registerAddTaskTool = (server) => {
 					},
 					log,
 					{ reportProgress, session }
-				);
+				)
 
 				// Handle result
-				return mockHandleApiResult(result, log);
+				return mockHandleApiResult(result, log)
 			} catch (error) {
-				log.error && log.error(`Error in add-task tool: ${error.message}`);
-				return mockCreateErrorResponse(error.message);
+				log.error && log.error(`Error in add-task tool: ${error.message}`)
+				return mockCreateErrorResponse(error.message)
 			}
 		}
-	};
+	}
 
 	// Register the tool with the server
-	server.addTool(toolConfig);
-};
+	server.addTool(toolConfig)
+}
 
 describe('MCP Tool: add-task', () => {
 	// Create mock server
-	let mockServer;
-	let executeFunction;
+	let mockServer
+	let executeFunction
 
 	// Create mock logger
 	const mockLogger = {
@@ -116,7 +112,7 @@ describe('MCP Tool: add-task', () => {
 		info: jest.fn(),
 		warn: jest.fn(),
 		error: jest.fn()
-	};
+	}
 
 	// Test data
 	const validArgs = {
@@ -124,7 +120,7 @@ describe('MCP Tool: add-task', () => {
 		dependencies: '1,2',
 		priority: 'high',
 		research: true
-	};
+	}
 
 	// Standard responses
 	const successResponse = {
@@ -133,7 +129,7 @@ describe('MCP Tool: add-task', () => {
 			taskId: '5',
 			message: 'Successfully added new task #5'
 		}
-	};
+	}
 
 	const errorResponse = {
 		success: false,
@@ -141,25 +137,25 @@ describe('MCP Tool: add-task', () => {
 			code: 'ADD_TASK_ERROR',
 			message: 'Failed to add task'
 		}
-	};
+	}
 
 	beforeEach(() => {
 		// Reset all mocks
-		jest.clearAllMocks();
+		jest.clearAllMocks()
 
 		// Create mock server
 		mockServer = {
 			addTool: jest.fn((config) => {
-				executeFunction = config.execute;
+				executeFunction = config.execute
 			})
-		};
+		}
 
 		// Setup default successful response
-		mockAddTaskDirect.mockReturnValue(successResponse);
+		mockAddTaskDirect.mockReturnValue(successResponse)
 
 		// Register the tool
-		registerAddTaskTool(mockServer);
-	});
+		registerAddTaskTool(mockServer)
+	})
 
 	test('should register the tool correctly', () => {
 		// Verify tool was registered
@@ -170,13 +166,13 @@ describe('MCP Tool: add-task', () => {
 				parameters: expect.any(Object),
 				execute: expect.any(Function)
 			})
-		);
+		)
 
 		// Verify the tool config was passed
-		const toolConfig = mockServer.addTool.mock.calls[0][0];
-		expect(toolConfig).toHaveProperty('parameters');
-		expect(toolConfig).toHaveProperty('execute');
-	});
+		const toolConfig = mockServer.addTool.mock.calls[0][0]
+		expect(toolConfig).toHaveProperty('parameters')
+		expect(toolConfig).toHaveProperty('execute')
+	})
 
 	test('should execute the tool with valid parameters', () => {
 		// Setup context
@@ -184,16 +180,13 @@ describe('MCP Tool: add-task', () => {
 			log: mockLogger,
 			reportProgress: jest.fn(),
 			session: { workingDirectory: '/mock/dir' }
-		};
+		}
 
 		// Execute the function
-		executeFunction(validArgs, mockContext);
+		executeFunction(validArgs, mockContext)
 
 		// Verify getProjectRootFromSession was called
-		expect(mockGetProjectRootFromSession).toHaveBeenCalledWith(
-			mockContext.session,
-			mockLogger
-		);
+		expect(mockGetProjectRootFromSession).toHaveBeenCalledWith(mockContext.session, mockLogger)
 
 		// Verify addTaskDirect was called with correct arguments
 		expect(mockAddTaskDirect).toHaveBeenCalledWith(
@@ -206,61 +199,56 @@ describe('MCP Tool: add-task', () => {
 				reportProgress: mockContext.reportProgress,
 				session: mockContext.session
 			}
-		);
+		)
 
 		// Verify handleApiResult was called
-		expect(mockHandleApiResult).toHaveBeenCalledWith(
-			successResponse,
-			mockLogger
-		);
-	});
+		expect(mockHandleApiResult).toHaveBeenCalledWith(successResponse, mockLogger)
+	})
 
 	test('should handle errors from addTaskDirect', () => {
 		// Setup error response
-		mockAddTaskDirect.mockReturnValueOnce(errorResponse);
+		mockAddTaskDirect.mockReturnValueOnce(errorResponse)
 
 		// Setup context
 		const mockContext = {
 			log: mockLogger,
 			reportProgress: jest.fn(),
 			session: { workingDirectory: '/mock/dir' }
-		};
+		}
 
 		// Execute the function
-		executeFunction(validArgs, mockContext);
+		executeFunction(validArgs, mockContext)
 
 		// Verify addTaskDirect was called
-		expect(mockAddTaskDirect).toHaveBeenCalled();
+		expect(mockAddTaskDirect).toHaveBeenCalled()
 
 		// Verify handleApiResult was called with error response
-		expect(mockHandleApiResult).toHaveBeenCalledWith(errorResponse, mockLogger);
-	});
+		expect(mockHandleApiResult).toHaveBeenCalledWith(errorResponse, mockLogger)
+	})
 
 	test('should handle unexpected errors', () => {
 		// Setup error
-		const testError = new Error('Unexpected error');
+		const testError = new Error('Unexpected error')
 		mockAddTaskDirect.mockImplementationOnce(() => {
-			throw testError;
-		});
+			throw testError
+		})
 
 		// Setup context
 		const mockContext = {
 			log: mockLogger,
 			reportProgress: jest.fn(),
 			session: { workingDirectory: '/mock/dir' }
-		};
+		}
 
 		// Execute the function
-		executeFunction(validArgs, mockContext);
+		executeFunction(validArgs, mockContext)
 
 		// Verify error was logged
-		expect(mockLogger.error).toHaveBeenCalledWith(
-			'Error in add-task tool: Unexpected error'
-		);
+		expect(mockLogger.error).toHaveBeenCalledWith('Error in add-task tool: Unexpected error')
 
 		// Verify error response was created
-		expect(mockCreateErrorResponse).toHaveBeenCalledWith('Unexpected error');
-	});
+		expect(mockCreateErrorResponse).toHaveBeenCalledWith('Unexpected error')
+	})
 
 	test('should pass research parameter correctly', () => {
 		// Setup context
@@ -268,7 +256,7 @@ describe('MCP Tool: add-task', () => {
 			log: mockLogger,
 			reportProgress: jest.fn(),
 			session: { workingDirectory: '/mock/dir' }
-		};
+		}
 
 		// Test with research=true
 		executeFunction(
@@ -277,7 +265,7 @@ describe('MCP Tool: add-task', () => {
 				research: true
 			},
 			mockContext
-		);
+		)
 
 		// Verify addTaskDirect was called with research=true
 		expect(mockAddTaskDirect).toHaveBeenCalledWith(
@@ -286,10 +274,10 @@ describe('MCP Tool: add-task', () => {
 			}),
 			expect.any(Object),
 			expect.any(Object)
-		);
+		)
 
 		// Reset mocks
-		jest.clearAllMocks();
+		jest.clearAllMocks()
 
 		// Test with research=false
 		executeFunction(
@@ -298,7 +286,7 @@ describe('MCP Tool: add-task', () => {
 				research: false
 			},
 			mockContext
-		);
+		)
 
 		// Verify addTaskDirect was called with research=false
 		expect(mockAddTaskDirect).toHaveBeenCalledWith(
@@ -307,8 +295,8 @@ describe('MCP Tool: add-task', () => {
 			}),
 			expect.any(Object),
 			expect.any(Object)
-		);
-	});
+		)
+	})
 
 	test('should pass priority parameter correctly', () => {
 		// Setup context
@@ -316,12 +304,12 @@ describe('MCP Tool: add-task', () => {
 			log: mockLogger,
 			reportProgress: jest.fn(),
 			session: { workingDirectory: '/mock/dir' }
-		};
+		}
 
 		// Test different priority values
-		['high', 'medium', 'low'].forEach((priority) => {
+		;['high', 'medium', 'low'].forEach((priority) => {
 			// Reset mocks
-			jest.clearAllMocks();
+			jest.clearAllMocks()
 
 			// Execute with specific priority
 			executeFunction(
@@ -330,7 +318,7 @@ describe('MCP Tool: add-task', () => {
 					priority
 				},
 				mockContext
-			);
+			)
 
 			// Verify addTaskDirect was called with correct priority
 			expect(mockAddTaskDirect).toHaveBeenCalledWith(
@@ -339,7 +327,7 @@ describe('MCP Tool: add-task', () => {
 				}),
 				expect.any(Object),
 				expect.any(Object)
-			);
-		});
-	});
-});
+			)
+		})
+	})
+})
