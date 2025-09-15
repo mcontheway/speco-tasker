@@ -12,12 +12,17 @@ export default {
 	coverageDirectory: 'coverage',
 
 	// A list of paths to directories that Jest should use to search for files in
-	roots: ['<rootDir>/tests'],
+	roots: ['<rootDir>/tests', '<rootDir>/scripts'],
 
 	// The glob patterns Jest uses to detect test files
-	testMatch: ['**/__tests__/**/*.js', '**/?(*.)+(spec|test).js'],
+	testMatch: [
+		'**/__tests__/**/*.js',
+		'**/?(*.)+(spec|test).js',
+		'**/contract/**/*.js',
+		'**/integration/**/*.js'
+	],
 
-	// Transform files
+	// Transform files with ES modules
 	transform: {},
 
 	// Disable transformations for node_modules
@@ -48,5 +53,9 @@ export default {
 	verbose: true,
 
 	// Setup file
-	setupFilesAfterEnv: ['<rootDir>/tests/setup.js']
+	setupFilesAfterEnv: ['<rootDir>/tests/setup.js'],
+
+	// Extensions to consider
+	extensionsToTreatAsEsm: ['.ts'],
+	moduleFileExtensions: ['js', 'ts', 'json']
 }

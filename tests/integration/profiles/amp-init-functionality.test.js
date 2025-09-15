@@ -2,8 +2,8 @@ import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { jest } from '@jest/globals'
-import { getRulesProfile } from '../../../src/utils/rule-transformer.js'
-import { convertAllRulesToProfileRules } from '../../../src/utils/rule-transformer.js'
+import { getRulesProfile } from '../../src/utils/rule-transformer.js'
+import { convertAllRulesToProfileRules } from '../../src/utils/rule-transformer.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
