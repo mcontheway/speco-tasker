@@ -55,19 +55,19 @@
 **关键：这些测试必须先编写并通过，然后才能进行任何实现**
 
 ### 合同测试（基于task-management-api.yaml的7个端点）
-- [ ] T004 [P] 在 tests/contract/test_list_endpoint.js 中编写合同测试 GET /list
-- [ ] T005 [P] 在 tests/contract/test_show_endpoint.js 中编写合同测试 GET /show/{id}
-- [ ] T006 [P] 在 tests/contract/test_set_status_endpoint.js 中编写合同测试 POST /set-status
-- [ ] T007 [P] 在 tests/contract/test_move_endpoint.js 中编写合同测试 POST /move
-- [ ] T008 [P] 在 tests/contract/test_remove_task_endpoint.js 中编写合同测试 DELETE /remove-task
-- [ ] T009 [P] 在 tests/contract/test_add_subtask_endpoint.js 中编写合同测试 POST /add-subtask
-- [ ] T010 [P] 在 tests/contract/test_add_dependency_endpoint.js 中编写合同测试 POST /add-dependency
+- [x] T004 [P] 在 tests/contract/test_list_endpoint.js 中编写合同测试 GET /list
+- [x] T005 [P] 在 tests/contract/test_show_endpoint.js 中编写合同测试 GET /show/{id}
+- [x] T006 [P] 在 tests/contract/test_set_status_endpoint.js 中编写合同测试 POST /set-status
+- [x] T007 [P] 在 tests/contract/test_move_endpoint.js 中编写合同测试 POST /move
+- [x] T008 [P] 在 tests/contract/test_remove_task_endpoint.js 中编写合同测试 DELETE /remove-task
+- [x] T009 [P] 在 tests/contract/test_add_subtask_endpoint.js 中编写合同测试 POST /add-subtask
+- [x] T010 [P] 在 tests/contract/test_add_dependency_endpoint.js 中编写合同测试 POST /add-dependency
 
 ### 集成测试（基于quickstart.md的用户工作流程）
-- [ ] T011 [P] 在 tests/integration/test_manual_task_creation.js 中编写集成测试手动任务创建流程
-- [ ] T012 [P] 在 tests/integration/test_task_management_workflow.js 中编写集成测试完整任务管理流程
-- [ ] T013 [P] 在 tests/integration/test_dependency_management.js 中编写集成测试依赖关系管理
-- [ ] T014 [P] 在 tests/integration/test_tag_system.js 中编写集成测试标签系统功能
+- [x] T011 [P] 在 tests/integration/test_manual_task_creation.js 中编写集成测试手动任务创建流程
+- [x] T012 [P] 在 tests/integration/test_task_management_workflow.js 中编写集成测试完整任务管理流程
+- [x] T013 [P] 在 tests/integration/test_dependency_management.js 中编写集成测试依赖关系管理
+- [x] T014 [P] 在 tests/integration/test_tag_system.js 中编写集成测试标签系统功能
 
 ## 阶段 3.3：核心实现（仅测试失败后）
 
