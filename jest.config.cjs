@@ -23,7 +23,9 @@ const config = {
 		'**/contract/**/*.js',
 		'**/contract/**/*.cjs',
 		'**/integration/**/*.js',
-		'**/integration/**/*.cjs'
+		'**/integration/**/*.cjs',
+		'**/unit/**/*.js',
+		'**/unit/**/*.cjs'
 	],
 
 	// Transform files to handle ES modules
