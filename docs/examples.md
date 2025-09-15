@@ -1,44 +1,50 @@
-# Example Cursor AI Interactions
+# Task Master Usage Examples
 
-Here are some common interactions with Cursor AI when using Task Master:
+Here are common usage patterns and command examples for Task Master:
 
 ## Starting a new project
 
-```
-I've just initialized a new project with Claude Task Master. I have a PRD at .taskmaster/docs/prd.txt.
-Can you help me parse it and set up the initial tasks?
+```bash
+# Initialize Task Master in your project
+task-master init
+
+# Parse your PRD to create initial tasks
+task-master parse-prd .taskmaster/docs/prd.txt
 ```
 
 ## Working on tasks
 
-```
-What's the next task I should work on? Please consider dependencies and priorities.
+```bash
+# Find the next task to work on
+task-master next
 ```
 
 ## Implementing a specific task
 
-```
-I'd like to implement task 4. Can you help me understand what needs to be done and how to approach it?
+```bash
+# View details of task 4
+task-master show 4
 ```
 
 ## Viewing multiple tasks
 
-```
-Can you show me tasks 1, 3, and 5 so I can understand their relationship?
-```
+```bash
+# View multiple tasks at once
+task-master show 1,3,5
 
-```
-I need to see the status of tasks 44, 55, and their subtasks. Can you show me those?
-```
-
-```
-Show me tasks 10, 12, and 15 and give me some batch actions I can perform on them.
+# List all tasks with status overview
+task-master list
 ```
 
 ## Managing subtasks
 
-```
-I need to regenerate the subtasks for task 3 with a different approach. Can you help me clear and regenerate them?
+```bash
+# Expand task 3 into subtasks
+task-master expand --id=3
+
+# Clear existing subtasks and regenerate
+task-master clear-subtasks --id=3
+task-master expand --id=3 --force
 ```
 
 ## Handling changes

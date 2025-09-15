@@ -1,6 +1,6 @@
 # Task Master Tutorial
 
-This tutorial will guide you through setting up and using Task Master for AI-driven development.
+This tutorial will guide you through setting up and using Task Master for manual development workflows.
 
 ## Initial Setup
 
@@ -13,7 +13,7 @@ MCP (Model Control Protocol) provides the easiest way to get started with Task M
 1. **Install the package**
 
 ```bash
-npm i -g task-master-ai
+npm i -g taskmaster-no-ai
 ```
 
 2. **Add the MCP config to your IDE/MCP Client** (Cursor is recommended, but it works with other clients):
@@ -21,37 +21,22 @@ npm i -g task-master-ai
 ```json
 {
   "mcpServers": {
-    "taskmaster-ai": {
+    "taskmaster-no-ai": {
       "command": "npx",
-      "args": ["-y", "--package=task-master-ai", "task-master-ai"],
-      "env": {
-        "ANTHROPIC_API_KEY": "YOUR_ANTHROPIC_API_KEY_HERE",
-        "PERPLEXITY_API_KEY": "YOUR_PERPLEXITY_API_KEY_HERE",
-        "OPENAI_API_KEY": "YOUR_OPENAI_KEY_HERE",
-        "GOOGLE_API_KEY": "YOUR_GOOGLE_KEY_HERE",
-        "MISTRAL_API_KEY": "YOUR_MISTRAL_KEY_HERE",
-        "OPENROUTER_API_KEY": "YOUR_OPENROUTER_KEY_HERE",
-        "XAI_API_KEY": "YOUR_XAI_KEY_HERE",
-        "AZURE_OPENAI_API_KEY": "YOUR_AZURE_KEY_HERE"
-      }
+      "args": ["-y", "--package=taskmaster-no-ai", "taskmaster-no-ai"]
     }
   }
 }
 ```
 
-**IMPORTANT:** An API key is _required_ for each AI provider you plan on using. Run the `task-master models` command to see your selected models and the status of your API keys across .env and mcp.json
-
-**To use AI commands in CLI** you MUST have API keys in the .env file
-**To use AI commands in MCP** you MUST have API keys in the .mcp.json file (or MCP config equivalent)
-
-We recommend having keys in both places and adding mcp.json to your gitignore so your API keys aren't checked into git.
+**Note:** Taskmaster is a pure manual system and requires no API keys or external services.
 
 3. **Enable the MCP** in your editor settings
 
-4. **Prompt the AI** to initialize Task Master:
+4. **Initialize Task Master** in your project:
 
-```
-Can you please initialize taskmaster-ai into my project?
+```bash
+task-master init
 ```
 
 The AI will:

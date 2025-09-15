@@ -1,235 +1,240 @@
-# Migration Guide: New .taskmaster Directory Structure
+# Task Master AI Removal Migration Guide
+
+This guide helps users migrate from the AI-powered Task Master to the new pure manual version (`taskmaster-no-ai`).
 
 ## Overview
 
-Task Master v0.16.0 introduces a new `.taskmaster/` directory structure to keep your project directories clean and organized. This guide explains the benefits of the new structure and how to migrate existing projects.
+Task Master has been completely refactored to remove all AI dependencies and become a pure manual task management system. This change eliminates the need for API keys and external AI services while maintaining all core task management functionality.
 
-## What's New
+## What Changed
 
-### Before (Legacy Structure)
+### Removed Features
+- ❌ AI-powered task generation from PRDs
+- ❌ AI-assisted task expansion and breakdown
+- ❌ AI research capabilities
+- ❌ AI model configuration and management
+- ❌ All external AI provider integrations (Anthropic, OpenAI, etc.)
 
-```
-your-project/
-├── tasks/                    # Task files
-│   ├── tasks.json
-│   ├── task-1.txt
-│   └── task-2.txt
-├── scripts/                  # PRD and reports
-│   ├── prd.txt
-│   ├── example_prd.txt
-│   └── task-complexity-report.json
-├── .taskmasterconfig         # Configuration
-└── ... (your project files)
-```
+### Retained Features
+- ✅ Manual task creation and management
+- ✅ Task dependencies and status tracking
+- ✅ Subtask management
+- ✅ Tag-based task organization
+- ✅ MCP server integration (for Cursor/VS Code)
+- ✅ Command-line interface
+- ✅ All manual task operations
 
-### After (New Structure)
+## Migration Steps
 
-```
-your-project/
-├── .taskmaster/              # Consolidated Task Master files
-│   ├── config.json          # Configuration (was .taskmasterconfig)
-│   ├── tasks/               # Task files
-│   │   ├── tasks.json
-│   │   ├── task-1.txt
-│   │   └── task-2.txt
-│   ├── docs/                # Project documentation
-│   │   └── prd.txt
-│   ├── reports/             # Generated reports
-│   │   └── task-complexity-report.json
-│   └── templates/           # Example/template files
-│       └── example_prd.txt
-└── ... (your project files)
-```
-
-## Benefits of the New Structure
-
-✅ **Cleaner Project Root**: No more scattered Task Master files  
-✅ **Better Organization**: Logical separation of tasks, docs, reports, and templates  
-✅ **Hidden by Default**: `.taskmaster/` directory is hidden from most file browsers  
-✅ **Future-Proof**: Centralized location for Task Master extensions  
-✅ **Backward Compatible**: Existing projects continue to work until migrated
-
-## Migration Options
-
-### Option 1: Automatic Migration (Recommended)
-
-Task Master provides a built-in migration command that handles everything automatically:
-
-#### CLI Migration
+### 1. Backup Your Data
+Before migrating, backup your existing `.taskmaster/` directory:
 
 ```bash
-# Dry run to see what would be migrated
-task-master migrate --dry-run
-
-# Perform the migration with backup
-task-master migrate --backup
-
-# Force migration (overwrites existing files)
-task-master migrate --force
-
-# Clean up legacy files after migration
-task-master migrate --cleanup
+# Backup existing Task Master data
+cp -r .taskmaster .taskmaster-backup-ai
 ```
 
-#### MCP Migration (Cursor/AI Editors)
+### 2. Remove Old Installation
+Uninstall the AI version:
 
-Ask your AI assistant:
+```bash
+# Remove globally installed AI version
+npm uninstall -g task-master-ai
 
+# Remove locally installed AI version (if applicable)
+npm uninstall task-master-ai
 ```
-Please migrate my Task Master project to the new .taskmaster directory structure
+
+### 3. Install New Version
+Install the pure manual version:
+
+```bash
+# Install globally
+npm install -g taskmaster-no-ai
+
+# Or install locally in your project
+npm install taskmaster-no-ai
 ```
 
-### Option 2: Manual Migration
+### 4. Update MCP Configuration
+Update your MCP configuration to remove API keys:
 
-If you prefer to migrate manually:
+**Cursor (.cursor/mcp.json):**
+```json
+{
+  "mcpServers": {
+    "taskmaster-no-ai": {
+      "command": "npx",
+      "args": ["-y", "--package=taskmaster-no-ai", "taskmaster-no-ai"]
+    }
+  }
+}
+```
 
-1. **Create the new directory structure:**
+**VS Code (.vscode/mcp.json):**
+```json
+{
+  "servers": {
+    "taskmaster-no-ai": {
+      "command": "npx",
+      "args": ["-y", "--package=taskmaster-no-ai", "taskmaster-no-ai"],
+      "type": "stdio"
+    }
+  }
+}
+```
 
-   ```bash
-   mkdir -p .taskmaster/{tasks,docs,reports,templates}
-   ```
+### 5. Reinitialize Project
+Reinitialize Task Master in your project:
 
-2. **Move your files:**
+```bash
+# Initialize the new version
+task-master init
 
-   ```bash
-   # Move tasks
-   mv tasks/* .taskmaster/tasks/
+# Note: The new version does not support automatic PRD parsing
+# You will need to create tasks manually
+```
 
-   # Move configuration
-   mv .taskmasterconfig .taskmaster/config.json
+### 6. Manual Task Creation
+Since AI-powered PRD parsing is removed, create tasks manually:
 
-   # Move PRD and documentation
-   mv scripts/prd.txt .taskmaster/docs/
-   mv scripts/example_prd.txt .taskmaster/templates/
+```bash
+# Create your first task
+task-master add-task --title "Set up project structure" --description "Create basic directory structure and configuration files"
 
-   # Move reports (if they exist)
-   mv scripts/task-complexity-report.json .taskmaster/reports/ 2>/dev/null || true
-   ```
+# Create more tasks as needed
+task-master add-task --title "Implement user authentication" --description "Add user login and registration functionality"
 
-3. **Clean up empty directories:**
-   ```bash
-   rmdir tasks scripts 2>/dev/null || true
-   ```
+# View all tasks
+task-master list
+```
 
-## What Gets Migrated
+### 7. Update Workflows
+Replace AI-dependent workflows with manual processes:
 
-The migration process handles these file types:
+**Old AI Workflow:**
+```
+1. Write PRD
+2. Ask AI: "Parse my PRD at docs/prd.txt"
+3. Ask AI: "What's the next task?"
+4. Ask AI: "Help me implement task 3"
+```
 
-### Tasks Directory → `.taskmaster/tasks/`
+**New Manual Workflow:**
+```
+1. Write PRD
+2. Manually create tasks: task-master parse-prd docs/prd.txt (Note: This now only reads plain text, no AI analysis)
+3. Check next task: task-master next
+4. View task details: task-master show 3
+5. Implement manually based on task description
+```
 
-- `tasks.json`
-- Individual task text files (`.txt`)
+## Breaking Changes
 
-### Scripts Directory → Multiple Destinations
+### Command Changes
+- `task-master parse-prd` now only accepts plain text files (no AI analysis)
+- Removed all AI-related commands:
+  - `task-master models` (model configuration)
+  - `task-master research` (AI research)
+  - `task-master update` (AI-powered task updates)
+  - `task-master expand --research` (AI research expansion)
 
-- **PRD files** → `.taskmaster/docs/`
-  - `prd.txt`, `requirements.txt`, etc.
-- **Example/Template files** → `.taskmaster/templates/`
-  - `example_prd.txt`, template files
-- **Reports** → `.taskmaster/reports/`
-  - `task-complexity-report.json`
+### Configuration Changes
+- Removed `.taskmaster/config.json` AI model settings
+- No longer requires API keys in environment variables
+- Simplified MCP configuration (no environment variables needed)
 
-### Configuration
+### File Structure Changes
+- Removed `src/ai-providers/` directory
+- Removed `src/prompts/` directory
+- Removed AI-related modules from `scripts/modules/`
 
-- `.taskmasterconfig` → `.taskmaster/config.json`
+## New Capabilities
 
-## After Migration
+While AI features were removed, the new version offers:
 
-Once migrated, Task Master will:
+### Improved Performance
+- ⚡ Faster startup times (no AI initialization)
+- 💾 Lower memory usage
+- 🔒 No external API dependencies
 
-✅ **Automatically use** the new directory structure  
-✅ **Show deprecation warnings** when legacy files are detected  
-✅ **Create new files** in the proper locations  
-✅ **Fall back gracefully** to legacy locations if new ones don't exist
+### Enhanced Reliability
+- 🛠️ No API rate limits or outages
+- 🔄 Consistent behavior across environments
+- 📦 Self-contained operation
 
-### Verification
-
-After migration, verify everything works:
-
-1. **List your tasks:**
-
-   ```bash
-   task-master list
-   ```
-
-2. **Check your configuration:**
-
-   ```bash
-   task-master models
-   ```
-
-3. **Generate new task files:**
-   ```bash
-   task-master generate
-   ```
+### Simplified Setup
+- 🚀 No API key configuration required
+- 📝 Straightforward installation
+- 🧹 Minimal dependencies
 
 ## Troubleshooting
 
-### Migration Issues
+### Common Issues
 
-**Q: Migration says "no files to migrate"**  
-A: Your project may already be using the new structure or have no Task Master files to migrate.
-
-**Q: Migration fails with permission errors**  
-A: Ensure you have write permissions in your project directory.
-
-**Q: Some files weren't migrated**  
-A: Check the migration output - some files may not match the expected patterns. You can migrate these manually.
-
-### Working with Legacy Projects
-
-If you're working with an older project that hasn't been migrated:
-
-- Task Master will continue to work with the old structure
-- You'll see deprecation warnings in the output
-- New files will still be created in legacy locations
-- Use the migration command when ready to upgrade
-
-### New Project Initialization
-
-New projects automatically use the new structure:
-
+**"Command not found" after installation:**
 ```bash
-task-master init  # Creates .taskmaster/ structure
+# Try using npx
+npx taskmaster-no-ai --help
+
+# Or reinstall globally
+npm install -g taskmaster-no-ai
 ```
 
-## Path Changes for Developers
+**Old tasks not loading:**
+The new version maintains backward compatibility with existing task files. If you encounter issues:
+```bash
+# Check task file format
+cat .taskmaster/tasks/tasks.json
 
-If you're developing tools or scripts that interact with Task Master files:
+# Reinitialize if needed
+rm -rf .taskmaster/
+task-master init
+```
 
-### Configuration File
+**MCP server not connecting:**
+1. Verify MCP configuration syntax
+2. Restart your editor
+3. Check that the package is properly installed
 
-- **Old:** `.taskmasterconfig`
-- **New:** `.taskmaster/config.json`
-- **Fallback:** Task Master checks both locations
+### Getting Help
 
-### Tasks File
+- 📖 Check the updated documentation in `docs/`
+- 🐛 Report issues on GitHub
+- 💬 Community discussions (when available)
 
-- **Old:** `tasks/tasks.json`
-- **New:** `.taskmaster/tasks/tasks.json`
-- **Fallback:** Task Master checks both locations
+## Benefits of the Change
 
-### Reports
+### For Individual Developers
+- **Cost Savings**: No API key expenses
+- **Privacy**: All data stays local
+- **Reliability**: No external service dependencies
+- **Performance**: Faster operation without AI overhead
 
-- **Old:** `scripts/task-complexity-report.json`
-- **New:** `.taskmaster/reports/task-complexity-report.json`
-- **Fallback:** Task Master checks both locations
+### For Teams
+- **Consistency**: Same behavior across all environments
+- **Security**: No sensitive API keys to manage
+- **Compliance**: Better for air-gapped or restricted environments
+- **Maintenance**: Fewer moving parts to maintain
 
-### PRD Files
+### For Organizations
+- **Scalability**: No API rate limiting concerns
+- **Compliance**: Meets strict data residency requirements
+- **Cost Control**: Predictable operational costs
+- **Simplicity**: Easier deployment and management
 
-- **Old:** `scripts/prd.txt`
-- **New:** `.taskmaster/docs/prd.txt`
-- **Fallback:** Task Master checks both locations
+## Future Plans
 
-## Need Help?
+The pure manual version establishes a solid foundation for future enhancements:
 
-If you encounter issues during migration:
+- 🔧 Enhanced manual task management features
+- 📊 Improved reporting and analytics
+- 🔗 Better integration with development tools
+- 📱 Potential GUI interfaces
+- 🌐 Web-based interfaces
 
-1. **Check the logs:** Add `--debug` flag for detailed output
-2. **Backup first:** Always use `--backup` option for safety
-3. **Test with dry-run:** Use `--dry-run` to preview changes
-4. **Ask for help:** Use our Discord community or GitHub issues
+## Summary
 
----
+The migration to `taskmaster-no-ai` represents a strategic shift toward simplicity and reliability. While AI-powered features provided convenience, the manual approach offers better performance, security, and maintainability for most use cases.
 
-_This migration guide applies to Task Master v0.15.x and later. For older versions, please upgrade to the latest version first._
+The core task management functionality remains intact, ensuring that all your project planning and tracking needs are still met with a more robust and dependable solution.

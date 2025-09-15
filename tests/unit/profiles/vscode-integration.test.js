@@ -5,7 +5,15 @@ import { jest } from '@jest/globals'
 // Mock the schema integration functions to avoid chalk issues
 const mockSetupSchemaIntegration = jest.fn()
 
-import { vscodeProfile } from '../../../src/profiles/vscode.js'
+// Skip this test as vscode profile was removed during AI removal
+describe.skip('VSCode Profile Integration', () => {
+	test.skip('All tests skipped due to AI removal', () => {
+		expect(true).toBe(true)
+	})
+})
+
+// Original code commented out:
+// import { vscodeProfile } from '../../../src/profiles/vscode.js'
 
 // Mock external modules
 jest.mock('child_process', () => ({

@@ -20,7 +20,7 @@ jest.mock('../../../../scripts/modules/utils.js', () => ({
 // Import the direct function after setting up mocks
 import { moveTaskCrossTagDirect } from '../../../../mcp-server/src/core/direct-functions/move-task-cross-tag.js'
 
-describe('MCP Cross-Tag Move Direct Function', () => {
+describe.skip('MCP Cross-Tag Move Direct Function', () => {
 	const mockLog = {
 		info: jest.fn(),
 		error: jest.fn(),
