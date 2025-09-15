@@ -1,4 +1,4 @@
-import { jest } from '@jest/globals'
+const { jest } = require('@jest/globals')
 
 // Mock the base provider to avoid circular dependencies
 jest.unstable_mockModule('../../src/ai-providers/base-provider.js', () => ({

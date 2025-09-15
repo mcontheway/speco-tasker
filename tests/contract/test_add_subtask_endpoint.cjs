@@ -3,7 +3,7 @@
  * Tests the subtask creation functionality according to API contract
  */
 
-import { jest } from '@jest/globals'
+const { jest } = require('@jest/globals')
 
 // Mock CLI output capture
 const mockConsoleLog = jest.spyOn(console, 'log').mockImplementation(() => {})

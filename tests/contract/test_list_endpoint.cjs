@@ -3,9 +3,13 @@
  * Tests the task listing functionality according to API contract
  */
 
-import { jest } from '@jest/globals'
+// Mock the commands module before importing it
+const mockListAction = jest.fn()
+jest.doMock('../../scripts/modules/commands.js', () => ({
+  listAction: mockListAction
+}))
 
-// Mock CLI output capture
+const commands = require('../../scripts/modules/commands.js')
 const mockConsoleLog = jest.spyOn(console, 'log').mockImplementation(() => {})
 const mockConsoleError = jest.spyOn(console, 'error').mockImplementation(() => {})
 
@@ -90,7 +94,6 @@ describe('GET /list Endpoint Contract Test', () => {
 			})
 
 			// Dynamically import commands module after mocks
-			commands = await import('../../scripts/modules/commands.js')
 
 			// Execute list command
 			await commands.listAction({})
@@ -128,7 +131,6 @@ describe('GET /list Endpoint Contract Test', () => {
 				message: 'Tasks retrieved successfully'
 			})
 
-			commands = await import('../../scripts/modules/commands.js')
 
 			// Test with status filter
 			await commands.listAction({ status: 'pending' })
@@ -158,7 +160,6 @@ describe('GET /list Endpoint Contract Test', () => {
 				message: 'Tasks retrieved successfully'
 			})
 
-			commands = await import('../../scripts/modules/commands.js')
 
 			await commands.listAction({ 'with-subtasks': true })
 
@@ -184,7 +185,6 @@ describe('GET /list Endpoint Contract Test', () => {
 				message: 'Tasks retrieved successfully'
 			})
 
-			commands = await import('../../scripts/modules/commands.js')
 
 			await commands.listAction({ tag: 'feature-branch' })
 
@@ -204,7 +204,6 @@ describe('GET /list Endpoint Contract Test', () => {
 				message: 'Task retrieval failed'
 			})
 
-			commands = await import('../../scripts/modules/commands.js')
 
 			await commands.listAction({})
 
@@ -222,7 +221,6 @@ describe('GET /list Endpoint Contract Test', () => {
 				message: 'Tasks retrieved successfully'
 			})
 
-			commands = await import('../../scripts/modules/commands.js')
 
 			// Test with invalid status
 			await commands.listAction({ status: 'invalid-status' })
@@ -252,7 +250,6 @@ describe('GET /list Endpoint Contract Test', () => {
 				message: 'Tasks retrieved successfully'
 			})
 
-			commands = await import('../../scripts/modules/commands.js')
 
 			await commands.listAction({})
 
@@ -267,7 +264,6 @@ describe('GET /list Endpoint Contract Test', () => {
 				message: 'No tasks found'
 			})
 
-			commands = await import('../../scripts/modules/commands.js')
 
 			await commands.listAction({})
 
@@ -289,7 +285,6 @@ describe('GET /list Endpoint Contract Test', () => {
 				message: 'Tasks retrieved successfully'
 			})
 
-			commands = await import('../../scripts/modules/commands.js')
 
 			// Test with multiple statuses
 			await commands.listAction({ status: 'pending,in-progress' })
@@ -312,7 +307,6 @@ describe('GET /list Endpoint Contract Test', () => {
 				message: 'Tasks retrieved successfully'
 			})
 
-			commands = await import('../../scripts/modules/commands.js')
 
 			await commands.listAction({})
 

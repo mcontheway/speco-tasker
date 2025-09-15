@@ -1,4 +1,4 @@
-export default {
+const config = {
 	// Use Node.js environment for testing
 	testEnvironment: 'node',
 
@@ -17,16 +17,29 @@ export default {
 	// The glob patterns Jest uses to detect test files
 	testMatch: [
 		'**/__tests__/**/*.js',
+		'**/__tests__/**/*.cjs',
 		'**/?(*.)+(spec|test).js',
+		'**/?(*.)+(spec|test).cjs',
 		'**/contract/**/*.js',
-		'**/integration/**/*.js'
+		'**/contract/**/*.cjs',
+		'**/integration/**/*.js',
+		'**/integration/**/*.cjs'
 	],
 
-	// Transform files with ES modules
-	transform: {},
+	// Transform files to handle ES modules
+	transform: {
+		'^.+\\.(js|ts)$': [
+			'ts-jest',
+			{
+				useESM: true,
+			},
+		],
+	},
 
-	// Disable transformations for node_modules
-	transformIgnorePatterns: ['/node_modules/'],
+	// Transform ignore patterns - allow ES modules in node_modules
+	transformIgnorePatterns: [
+		'node_modules/(?!(supertest|chalk|boxen|@inquirer)/)',
+	],
 
 	// Set moduleNameMapper for absolute paths
 	moduleNameMapper: {
@@ -52,10 +65,11 @@ export default {
 	// Verbose output
 	verbose: true,
 
-	// Setup file
-	setupFilesAfterEnv: ['<rootDir>/tests/setup.js'],
+	// Setup file - use .cjs extension for CommonJS
+	setupFilesAfterEnv: ['<rootDir>/tests/setup.cjs'],
 
-	// Extensions to consider
-	extensionsToTreatAsEsm: ['.ts'],
-	moduleFileExtensions: ['js', 'ts', 'json']
+	// Module file extensions
+	moduleFileExtensions: ['js', 'cjs', 'mjs', 'json']
 }
+
+module.exports = config

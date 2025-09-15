@@ -3,7 +3,7 @@
  * Tests dependency creation, validation, and resolution according to quickstart.md
  */
 
-import { jest } from '@jest/globals'
+const { jest } = require('@jest/globals')
 
 // Mock CLI output capture
 const mockConsoleLog = jest.spyOn(console, 'log').mockImplementation(() => {})

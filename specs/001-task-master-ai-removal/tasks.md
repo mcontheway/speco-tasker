@@ -69,6 +69,8 @@
 - [x] T013 [P] 在 tests/integration/test_dependency_management.js 中编写集成测试依赖关系管理
 - [x] T014 [P] 在 tests/integration/test_tag_system.js 中编写集成测试标签系统功能
 
+> **📝 阶段3.2状态说明：** 所有测试文件已编写完成，但存在Jest配置问题需要解决才能真正运行测试。目前遇到ESM/CommonJS模块混合使用的问题，正在调试Jest配置以正确处理项目中的模块系统。
+
 ## 阶段 3.3：核心实现（仅测试失败后）
 
 ### AI功能移除（11个模块）

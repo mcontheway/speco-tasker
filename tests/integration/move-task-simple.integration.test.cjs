@@ -1,12 +1,12 @@
-import fs from 'fs'
-import path from 'path'
-import { fileURLToPath } from 'url'
-import { jest } from '@jest/globals'
-import mockFs from 'mock-fs'
+const fs = require('fs')
+const path = require('path')
+const { fileURLToPath } = require('url')
+const { jest } = require('@jest/globals')
+const mockFs = require('mock-fs')
 
 // Import the actual move task functionality
-import moveTask, { moveTasksBetweenTags } from '../../scripts/modules/task-manager/move-task.js'
-import { readJSON, writeJSON } from '../../scripts/modules/utils.js'
+const moveTask, { moveTasksBetweenTags } = require('../../scripts/modules/task-manager/move-task.js')
+const { readJSON, writeJSON } = require('../../scripts/modules/utils.js')
 
 // Mock console to avoid conflicts with mock-fs
 const originalConsole = { ...console }

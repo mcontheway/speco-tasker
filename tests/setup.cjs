@@ -4,15 +4,12 @@
  * This file is run before each test suite to set up the test environment.
  */
 
-import path from 'path'
-import { fileURLToPath } from 'url'
+const path = require('path')
 
 // Capture the actual original working directory before any changes
 const originalWorkingDirectory = process.cwd()
 
 // Store original working directory and project root
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
 const projectRoot = path.resolve(__dirname, '..')
 
 // Ensure we're always starting from the project root

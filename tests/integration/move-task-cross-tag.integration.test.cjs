@@ -1,7 +1,7 @@
-import fs from 'fs'
-import path from 'path'
-import { fileURLToPath } from 'url'
-import { jest } from '@jest/globals'
+const fs = require('fs')
+const path = require('path')
+const { fileURLToPath } = require('url')
+const { jest } = require('@jest/globals')
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
