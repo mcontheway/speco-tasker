@@ -92,13 +92,13 @@
 - [x] T028 [P] 在 tests/unit/test_task_update.js 中验证任务更新功能
 - [x] T029 [P] 在 tests/unit/test_task_deletion.js 中验证任务删除功能
 
-> **✅ 阶段3.3完成状态：** AI功能完全移除，核心功能验证框架建立！总计15个任务已完成（11个AI移除 + 4个功能验证），Jest测试框架配置修复，建立了完整的单元测试环境。系统现在是纯手动任务管理系统，保留了所有27个核心功能的基础架构。
+> **✅ 阶段3.3完成状态：** AI功能完全移除，核心功能验证框架建立！总计20个任务已完成（11个AI移除 + 9个功能验证），Jest测试框架配置修复，建立了完整的单元测试环境。系统现在是纯手动任务管理系统，保留了所有27个核心功能的基础架构。已完成的核心功能验证包括：任务创建/列表/更新/删除、子任务管理、依赖关系管理、状态管理、标签系统、任务移动等6大核心功能模块。
 
-- [ ] T030 [P] 在 tests/unit/test_subtask_management.js 中验证子任务管理功能
-- [ ] T031 [P] 在 tests/unit/test_dependency_management.js 中验证依赖关系管理
-- [ ] T032 [P] 在 tests/unit/test_status_management.js 中验证状态管理功能
-- [ ] T033 [P] 在 tests/unit/test_tag_system.js 中验证标签系统功能
-- [ ] T034 [P] 在 tests/unit/test_task_movement.js 中验证任务移动功能
+- [x] T030 [P] 在 tests/unit/test_subtask_management.js 中验证子任务管理功能
+- [x] T031 [P] 在 tests/unit/test_dependency_management.js 中验证依赖关系管理
+- [x] T032 [P] 在 tests/unit/test_status_management.js 中验证状态管理功能
+- [x] T033 [P] 在 tests/unit/test_tag_system.js 中验证标签系统功能
+- [x] T034 [P] 在 tests/unit/test_task_movement.js 中验证任务移动功能
 - [ ] T035 [P] 在 tests/unit/test_task_validation.js 中验证任务验证功能
 - [ ] T036 [P] 在 tests/unit/test_config_management.js 中验证配置管理功能
 - [ ] T037 [P] 在 tests/unit/test_file_operations.js 中验证文件操作功能
