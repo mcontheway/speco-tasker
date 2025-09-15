@@ -9,7 +9,7 @@ description: "将计划分解为可执行的任务。这是规范驱动开发生
 
 根据提供的上下文参数，执行以下操作：
 
-1. 从仓库根目录运行 `scripts/check-task-prerequisites.sh --json` 并解析 FEATURE_DIR 和 AVAILABLE_DOCS 列表。所有路径必须为绝对路径。
+1. 从仓库根目录运行 `specs/scripts/check-task-prerequisites.sh --json` 并解析 FEATURE_DIR 和 AVAILABLE_DOCS 列表。所有路径必须为绝对路径。
 2. 加载并分析可用的设计文档：
    - 始终读取 plan.md 以了解技术栈和库
    - 如果存在：读取 data-model.md 以了解实体
@@ -23,7 +23,7 @@ description: "将计划分解为可执行的任务。这是规范驱动开发生
    - 根据可用的文档生成任务
 
 3. 按照模板生成任务：
-   - 使用 `/templates/tasks-template.md` 作为基础
+   - 使用 `/specs/templates/tasks-template.md` 作为基础
    - 用实际任务替换示例任务，基于：
      * **设置任务**：项目初始化、依赖项、代码检查
      * **测试任务 [P]**：每个合同一个，每个集成场景一个

@@ -9,8 +9,8 @@ description: "通过创建规范文档和功能分支来启动新功能。这是
 
 根据作为参数提供的功能描述，执行以下操作：
 
-1. 从仓库根目录运行脚本 `spec/scripts/create-new-feature.sh --json "{ARGS}"` 并解析其 JSON 输出以获取 BRANCH_NAME 和 SPEC_FILE。所有文件路径必须为绝对路径。
-2. 加载 `spec/templates/spec-template.md` 以了解所需章节。
+1. 从仓库根目录运行脚本 `specs/scripts/create-new-feature.sh --json "{ARGS}"` 并解析其 JSON 输出以获取 BRANCH_NAME 和 SPEC_FILE。所有文件路径必须为绝对路径。
+2. 加载 `specs/templates/spec-template.md` 以了解所需章节。
 3. 使用模板结构将规范写入 SPEC_FILE，将占位符替换为从功能描述（参数）派生的具体细节，同时保留章节顺序和标题。
 4. 报告完成状态，包括分支名称、规范文件路径以及准备进入下一阶段。
 
