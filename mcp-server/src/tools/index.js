@@ -8,36 +8,23 @@ import { registerAddDependencyTool } from './add-dependency.js'
 import { registerAddSubtaskTool } from './add-subtask.js'
 import { registerAddTagTool } from './add-tag.js'
 import { registerAddTaskTool } from './add-task.js'
-import { registerAnalyzeProjectComplexityTool } from './analyze.js'
 import { registerClearSubtasksTool } from './clear-subtasks.js'
-import { registerComplexityReportTool } from './complexity-report.js'
 import { registerCopyTagTool } from './copy-tag.js'
 import { registerDeleteTagTool } from './delete-tag.js'
-import { registerExpandAllTool } from './expand-all.js'
-import { registerExpandTaskTool } from './expand-task.js'
 import { registerFixDependenciesTool } from './fix-dependencies.js'
 import { registerGenerateTool } from './generate.js'
 import { registerShowTaskTool } from './get-task.js'
 import { registerListTasksTool } from './get-tasks.js'
 import { registerInitializeProjectTool } from './initialize-project.js'
 import { registerListTagsTool } from './list-tags.js'
-import { registerModelsTool } from './models.js'
 import { registerMoveTaskTool } from './move-task.js'
 import { registerNextTaskTool } from './next-task.js'
-import { registerParsePRDTool } from './parse-prd.js'
 import { registerRemoveDependencyTool } from './remove-dependency.js'
 import { registerRemoveSubtaskTool } from './remove-subtask.js'
 import { registerRemoveTaskTool } from './remove-task.js'
 import { registerRenameTagTool } from './rename-tag.js'
-import { registerResearchTool } from './research.js'
-import { registerResponseLanguageTool } from './response-language.js'
 import { registerRulesTool } from './rules.js'
-import { registerScopeDownTool } from './scope-down.js'
-import { registerScopeUpTool } from './scope-up.js'
 import { registerSetTaskStatusTool } from './set-task-status.js'
-import { registerUpdateSubtaskTool } from './update-subtask.js'
-import { registerUpdateTaskTool } from './update-task.js'
-import { registerUpdateTool } from './update.js'
 import { registerUseTagTool } from './use-tag.js'
 import { registerValidateDependenciesTool } from './validate-dependencies.js'
 
@@ -51,22 +38,18 @@ export function registerTaskMasterTools(server) {
 
 		// Group 1: Initialization & Setup
 		registerInitializeProjectTool(server)
-		registerModelsTool(server)
+		// Models tool removed (AI functionality)
 		registerRulesTool(server)
-		registerParsePRDTool(server)
+		// AI-based PRD parsing tool removed in phase 3.3
 
 		// Group 2: Task Analysis & Expansion
-		registerAnalyzeProjectComplexityTool(server)
-		registerExpandTaskTool(server)
-		registerExpandAllTool(server)
-		registerScopeUpTool(server)
-		registerScopeDownTool(server)
+		// AI-based analysis and expansion tools removed in phase 3.3
 
 		// Group 3: Task Listing & Viewing
 		registerListTasksTool(server)
 		registerShowTaskTool(server)
 		registerNextTaskTool(server)
-		registerComplexityReportTool(server)
+		// Complexity report tool removed (AI functionality)
 
 		// Group 4: Task Status & Management
 		registerSetTaskStatusTool(server)
@@ -75,9 +58,7 @@ export function registerTaskMasterTools(server) {
 		// Group 5: Task Creation & Modification
 		registerAddTaskTool(server)
 		registerAddSubtaskTool(server)
-		registerUpdateTool(server)
-		registerUpdateTaskTool(server)
-		registerUpdateSubtaskTool(server)
+		// AI-based update tools removed in phase 3.3
 		registerRemoveTaskTool(server)
 		registerRemoveSubtaskTool(server)
 		registerClearSubtasksTool(server)
@@ -88,7 +69,6 @@ export function registerTaskMasterTools(server) {
 		registerRemoveDependencyTool(server)
 		registerValidateDependenciesTool(server)
 		registerFixDependenciesTool(server)
-		registerResponseLanguageTool(server)
 
 		// Group 7: Tag Management
 		registerListTagsTool(server)
@@ -99,7 +79,7 @@ export function registerTaskMasterTools(server) {
 		registerCopyTagTool(server)
 
 		// Group 8: Research Features
-		registerResearchTool(server)
+		// AI-based research tool removed in phase 3.3
 	} catch (error) {
 		logger.error(`Error registering Task Master tools: ${error.message}`)
 		throw error

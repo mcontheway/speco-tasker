@@ -2,7 +2,6 @@
  * Tests for the add-task.js module
  */
 import { jest } from '@jest/globals'
-import { hasCodebaseAnalysis } from '../../../../../scripts/modules/config-manager.js'
 
 // Mock the dependencies before importing the module under test
 jest.unstable_mockModule('../../../../../scripts/modules/utils.js', () => ({
@@ -95,7 +94,6 @@ jest.unstable_mockModule('../../../../../scripts/modules/ai-services-unified.js'
 
 jest.unstable_mockModule('../../../../../scripts/modules/config-manager.js', () => ({
 	getDefaultPriority: jest.fn(() => 'medium'),
-	hasCodebaseAnalysis: jest.fn(() => false)
 }))
 
 jest.unstable_mockModule('../../../../../scripts/modules/utils/contextGatherer.js', () => ({

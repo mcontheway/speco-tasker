@@ -11,9 +11,7 @@ import {
 	isValidTaskPriority,
 	normalizeTaskPriority
 } from '../../../src/constants/task-priority.js'
-import { generateObjectService } from '../ai-services-unified.js'
-import { getDefaultPriority, hasCodebaseAnalysis } from '../config-manager.js'
-import { getPromptManager } from '../prompt-manager.js'
+import { getDefaultPriority } from '../config-manager.js'
 import {
 	displayAiUsageSummary,
 	displayBanner,
@@ -400,7 +398,6 @@ async function addTask(
 				useResearch,
 				priority: effectivePriority,
 				dependencies: numericDependencies,
-				hasCodebaseAnalysis: hasCodebaseAnalysis(useResearch, projectRoot, session),
 				projectRoot: projectRoot
 			})
 

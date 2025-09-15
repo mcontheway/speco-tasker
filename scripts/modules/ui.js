@@ -15,7 +15,7 @@ import { TASKMASTER_CONFIG_FILE, TASKMASTER_TASKS_FILE } from '../../src/constan
 import { TASK_STATUS_OPTIONS } from '../../src/constants/task-status.js'
 import { getTaskMasterVersion } from '../../src/utils/getVersion.js'
 import { getDefaultSubtasks, getProjectName } from './config-manager.js'
-import { analyzeTaskComplexity, findNextTask, readComplexityReport } from './task-manager.js'
+import { findNextTask, readComplexityReport } from './task-manager.js'
 import { findTaskById, formatTaskId, isSilentMode, log, readJSON, truncate } from './utils.js'
 
 // Create a color gradient for the banner
@@ -1656,13 +1656,9 @@ async function displayComplexityReport(reportPath) {
 				return null
 			}
 
-			await analyzeTaskComplexity({
-				output: reportPath,
-				research: false, // Default to no research for speed
-				file: tasksPath
-			})
-			// Read the newly generated report
-			return displayComplexityReport(reportPath)
+			// Complexity analysis has been removed with AI functionality
+			console.log(chalk.yellow('Complexity analysis is no longer available as AI functionality has been removed.'))
+			return null
 		} else {
 			console.log(chalk.yellow('Report generation cancelled.'))
 			return

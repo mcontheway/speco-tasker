@@ -4,9 +4,7 @@ import boxen from 'boxen'
 import chalk from 'chalk'
 import Table from 'cli-table3'
 
-import { generateTextService } from '../ai-services-unified.js'
-import { getDebugFlag, hasCodebaseAnalysis } from '../config-manager.js'
-import { getPromptManager } from '../prompt-manager.js'
+import { getDebugFlag } from '../config-manager.js'
 import {
 	displayAiUsageSummary,
 	getStatusWithColor,
@@ -212,7 +210,6 @@ async function updateSubtaskById(
 				updatePrompt: prompt,
 				useResearch: useResearch,
 				gatheredContext: gatheredContext || '',
-				hasCodebaseAnalysis: hasCodebaseAnalysis(useResearch, projectRoot, session),
 				projectRoot: projectRoot
 			}
 

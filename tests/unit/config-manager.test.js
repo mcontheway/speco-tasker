@@ -104,63 +104,18 @@ const MOCK_CONFIG_PATH = path.join(MOCK_PROJECT_ROOT, '.taskmaster/config.json')
 
 // Updated DEFAULT_CONFIG reflecting the implementation
 const DEFAULT_CONFIG = {
-	models: {
-		main: {
-			provider: 'anthropic',
-			modelId: 'claude-3-7-sonnet-20250219',
-			maxTokens: 64000,
-			temperature: 0.2
-		},
-		research: {
-			provider: 'perplexity',
-			modelId: 'sonar-pro',
-			maxTokens: 8700,
-			temperature: 0.1
-		},
-		fallback: {
-			provider: 'anthropic',
-			modelId: 'claude-3-5-sonnet',
-			maxTokens: 8192,
-			temperature: 0.2
-		}
-	},
 	global: {
 		logLevel: 'info',
 		debug: false,
 		defaultNumTasks: 10,
 		defaultSubtasks: 5,
 		defaultPriority: 'medium',
-		projectName: 'Task Master',
-		ollamaBaseURL: 'http://localhost:11434/api',
-		bedrockBaseURL: 'https://bedrock.us-east-1.amazonaws.com',
-		enableCodebaseAnalysis: true,
-		responseLanguage: 'English'
-	},
-	claudeCode: {}
+		projectName: 'Task Master'
+	}
 }
 
 // Other test data (VALID_CUSTOM_CONFIG, PARTIAL_CONFIG, INVALID_PROVIDER_CONFIG)
 const VALID_CUSTOM_CONFIG = {
-	models: {
-		main: {
-			provider: 'openai',
-			modelId: 'gpt-4o',
-			maxTokens: 4096,
-			temperature: 0.5
-		},
-		research: {
-			provider: 'google',
-			modelId: 'gemini-1.5-pro-latest',
-			maxTokens: 8192,
-			temperature: 0.3
-		},
-		fallback: {
-			provider: 'anthropic',
-			modelId: 'claude-3-opus-20240229',
-			maxTokens: 100000,
-			temperature: 0.4
-		}
-	},
 	global: {
 		logLevel: 'debug',
 		defaultPriority: 'high',
@@ -169,81 +124,18 @@ const VALID_CUSTOM_CONFIG = {
 }
 
 const PARTIAL_CONFIG = {
-	models: {
-		main: { provider: 'openai', modelId: 'gpt-4-turbo' }
-	},
 	global: {
 		projectName: 'Partial Project'
 	}
 }
 
 const INVALID_PROVIDER_CONFIG = {
-	models: {
-		main: { provider: 'invalid-provider', modelId: 'some-model' },
-		research: {
-			provider: 'perplexity',
-			modelId: 'llama-3-sonar-large-32k-online'
-		}
-	},
 	global: {
 		logLevel: 'warn'
 	}
 }
 
-// Claude Code test data
-const VALID_CLAUDE_CODE_CONFIG = {
-	maxTurns: 5,
-	customSystemPrompt: 'You are a helpful coding assistant',
-	appendSystemPrompt: 'Always follow best practices',
-	permissionMode: 'acceptEdits',
-	allowedTools: ['Read', 'LS', 'Edit'],
-	disallowedTools: ['Write'],
-	mcpServers: {
-		'test-server': {
-			type: 'stdio',
-			command: 'node',
-			args: ['server.js'],
-			env: { NODE_ENV: 'test' }
-		}
-	},
-	commandSpecific: {
-		'add-task': {
-			maxTurns: 3,
-			permissionMode: 'plan'
-		},
-		research: {
-			customSystemPrompt: 'You are a research assistant'
-		}
-	}
-}
-
-const INVALID_CLAUDE_CODE_CONFIG = {
-	maxTurns: 'invalid', // Should be number
-	permissionMode: 'invalid-mode', // Invalid enum value
-	allowedTools: 'not-an-array', // Should be array
-	mcpServers: {
-		'invalid-server': {
-			type: 'invalid-type', // Invalid enum value
-			url: 'not-a-valid-url' // Invalid URL format
-		}
-	},
-	commandSpecific: {
-		'invalid-command': {
-			// Invalid command name
-			maxTurns: -1 // Invalid negative number
-		}
-	}
-}
-
-const PARTIAL_CLAUDE_CODE_CONFIG = {
-	maxTurns: 10,
-	permissionMode: 'default',
-	commandSpecific: {
-		'expand-task': {
-			customSystemPrompt: 'Focus on task breakdown'
-		}
-	}
-}
+// AI functionality has been removed - no Claude Code test data needed
 
 // Define spies globally to be restored in afterAll
 let consoleErrorSpy
@@ -305,203 +197,9 @@ beforeEach(() => {
 	fsWriteFileSyncSpy.mockImplementation(() => {})
 })
 
-// --- Validation Functions ---
-describe('Validation Functions', () => {
-	// Tests for validateProvider and validateProviderModelCombination
-	test('validateProvider should return true for valid providers', () => {
-		expect(configManager.validateProvider('openai')).toBe(true)
-		expect(configManager.validateProvider('anthropic')).toBe(true)
-		expect(configManager.validateProvider('google')).toBe(true)
-		expect(configManager.validateProvider('perplexity')).toBe(true)
-		expect(configManager.validateProvider('ollama')).toBe(true)
-		expect(configManager.validateProvider('openrouter')).toBe(true)
-		expect(configManager.validateProvider('bedrock')).toBe(true)
-	})
+// AI functionality has been removed - no validation function tests needed
 
-	test('validateProvider should return false for invalid providers', () => {
-		expect(configManager.validateProvider('invalid-provider')).toBe(false)
-		expect(configManager.validateProvider('grok')).toBe(false) // Not in mock map
-		expect(configManager.validateProvider('')).toBe(false)
-		expect(configManager.validateProvider(null)).toBe(false)
-	})
-
-	test('validateProviderModelCombination should validate known good combinations', () => {
-		// Re-load config to ensure MODEL_MAP is populated from mock (now real data)
-		configManager.getConfig(MOCK_PROJECT_ROOT, true)
-		expect(configManager.validateProviderModelCombination('openai', 'gpt-4o')).toBe(true)
-		expect(
-			configManager.validateProviderModelCombination('anthropic', 'claude-3-5-sonnet-20241022')
-		).toBe(true)
-	})
-
-	test('validateProviderModelCombination should return false for known bad combinations', () => {
-		// Re-load config to ensure MODEL_MAP is populated from mock (now real data)
-		configManager.getConfig(MOCK_PROJECT_ROOT, true)
-		expect(configManager.validateProviderModelCombination('openai', 'claude-3-opus-20240229')).toBe(
-			false
-		)
-	})
-
-	test('validateProviderModelCombination should return true for ollama/openrouter (empty lists in map)', () => {
-		// Re-load config to ensure MODEL_MAP is populated from mock (now real data)
-		configManager.getConfig(MOCK_PROJECT_ROOT, true)
-		expect(configManager.validateProviderModelCombination('ollama', 'any-model')).toBe(false)
-		expect(configManager.validateProviderModelCombination('openrouter', 'any/model')).toBe(false)
-	})
-
-	test('validateProviderModelCombination should return true for providers not in map', () => {
-		// Re-load config to ensure MODEL_MAP is populated from mock (now real data)
-		configManager.getConfig(MOCK_PROJECT_ROOT, true)
-		// The implementation returns true if the provider isn't in the map
-		expect(configManager.validateProviderModelCombination('unknown-provider', 'some-model')).toBe(
-			true
-		)
-	})
-})
-
-// --- Claude Code Validation Tests ---
-describe('Claude Code Validation', () => {
-	test('validateClaudeCodeSettings should return valid settings for correct input', () => {
-		const result = configManager.validateClaudeCodeSettings(VALID_CLAUDE_CODE_CONFIG)
-
-		expect(result).toEqual(VALID_CLAUDE_CODE_CONFIG)
-		expect(consoleWarnSpy).not.toHaveBeenCalled()
-	})
-
-	test('validateClaudeCodeSettings should return empty object for invalid input', () => {
-		const result = configManager.validateClaudeCodeSettings(INVALID_CLAUDE_CODE_CONFIG)
-
-		expect(result).toEqual({})
-		expect(consoleWarnSpy).toHaveBeenCalledWith(
-			expect.stringContaining('Warning: Invalid Claude Code settings in config')
-		)
-	})
-
-	test('validateClaudeCodeSettings should handle partial valid configuration', () => {
-		const result = configManager.validateClaudeCodeSettings(PARTIAL_CLAUDE_CODE_CONFIG)
-
-		expect(result).toEqual(PARTIAL_CLAUDE_CODE_CONFIG)
-		expect(consoleWarnSpy).not.toHaveBeenCalled()
-	})
-
-	test('validateClaudeCodeSettings should return empty object for empty input', () => {
-		const result = configManager.validateClaudeCodeSettings({})
-
-		expect(result).toEqual({})
-		expect(consoleWarnSpy).not.toHaveBeenCalled()
-	})
-
-	test('validateClaudeCodeSettings should handle null/undefined input', () => {
-		expect(configManager.validateClaudeCodeSettings(null)).toEqual({})
-		expect(configManager.validateClaudeCodeSettings(undefined)).toEqual({})
-		expect(consoleWarnSpy).toHaveBeenCalledTimes(2)
-	})
-})
-
-// --- Claude Code Getter Tests ---
-describe('Claude Code Getter Functions', () => {
-	test('getClaudeCodeSettings should return default empty object when no config exists', () => {
-		// No config file exists, should return empty object
-		fsExistsSyncSpy.mockReturnValue(false)
-		const settings = configManager.getClaudeCodeSettings(MOCK_PROJECT_ROOT)
-
-		expect(settings).toEqual({})
-	})
-
-	test('getClaudeCodeSettings should return merged settings from config file', () => {
-		// Config file with Claude Code settings
-		const configWithClaudeCode = {
-			...VALID_CUSTOM_CONFIG,
-			claudeCode: VALID_CLAUDE_CODE_CONFIG
-		}
-
-		// Mock findConfigPath to return the mock config path
-		mockFindConfigPath.mockReturnValue(MOCK_CONFIG_PATH)
-
-		fsReadFileSyncSpy.mockImplementation((filePath) => {
-			if (filePath === MOCK_CONFIG_PATH) return JSON.stringify(configWithClaudeCode)
-			if (path.basename(filePath) === 'supported-models.json') {
-				return JSON.stringify({
-					openai: [{ id: 'gpt-4o' }],
-					google: [{ id: 'gemini-1.5-pro-latest' }],
-					anthropic: [
-						{ id: 'claude-3-opus-20240229' },
-						{ id: 'claude-3-7-sonnet-20250219' },
-						{ id: 'claude-3-5-sonnet' }
-					],
-					perplexity: [{ id: 'sonar-pro' }],
-					ollama: [],
-					openrouter: []
-				})
-			}
-			throw new Error(`Unexpected fs.readFileSync call: ${filePath}`)
-		})
-		fsExistsSyncSpy.mockReturnValue(true)
-
-		const settings = configManager.getClaudeCodeSettings(MOCK_PROJECT_ROOT, true) // Force reload
-
-		expect(settings).toEqual(VALID_CLAUDE_CODE_CONFIG)
-	})
-
-	test('getClaudeCodeSettingsForCommand should return command-specific settings', () => {
-		// Config with command-specific settings
-		const configWithClaudeCode = {
-			...VALID_CUSTOM_CONFIG,
-			claudeCode: VALID_CLAUDE_CODE_CONFIG
-		}
-
-		// Mock findConfigPath to return the mock config path
-		mockFindConfigPath.mockReturnValue(MOCK_CONFIG_PATH)
-
-		fsReadFileSyncSpy.mockImplementation((filePath) => {
-			if (path.basename(filePath) === 'supported-models.json') return '{}'
-			if (filePath === MOCK_CONFIG_PATH) return JSON.stringify(configWithClaudeCode)
-			throw new Error(`Unexpected fs.readFileSync call: ${filePath}`)
-			throw new Error(`Unexpected fs.readFileSync call: ${filePath}`)
-		})
-		fsExistsSyncSpy.mockReturnValue(true)
-
-		const settings = configManager.getClaudeCodeSettingsForCommand(
-			'add-task',
-			MOCK_PROJECT_ROOT,
-			true
-		) // Force reload
-
-		// Should merge global settings with command-specific settings
-		const expectedSettings = {
-			...VALID_CLAUDE_CODE_CONFIG,
-			...VALID_CLAUDE_CODE_CONFIG.commandSpecific['add-task']
-		}
-		expect(settings).toEqual(expectedSettings)
-	})
-
-	test('getClaudeCodeSettingsForCommand should return global settings for unknown command', () => {
-		// Config with Claude Code settings
-		const configWithClaudeCode = {
-			...VALID_CUSTOM_CONFIG,
-			claudeCode: PARTIAL_CLAUDE_CODE_CONFIG
-		}
-
-		// Mock findConfigPath to return the mock config path
-		mockFindConfigPath.mockReturnValue(MOCK_CONFIG_PATH)
-
-		fsReadFileSyncSpy.mockImplementation((filePath) => {
-			if (path.basename(filePath) === 'supported-models.json') return '{}'
-			if (filePath === MOCK_CONFIG_PATH) return JSON.stringify(configWithClaudeCode)
-			throw new Error(`Unexpected fs.readFileSync call: ${filePath}`)
-		})
-		fsExistsSyncSpy.mockReturnValue(true)
-
-		const settings = configManager.getClaudeCodeSettingsForCommand(
-			'unknown-command',
-			MOCK_PROJECT_ROOT,
-			true
-		) // Force reload
-
-		// Should return global settings only
-		expect(settings).toEqual(PARTIAL_CLAUDE_CODE_CONFIG)
-	})
-})
+// AI functionality has been removed - no Claude Code tests needed
 
 // --- getConfig Tests ---
 describe('getConfig Tests', () => {
@@ -573,25 +271,7 @@ describe('getConfig Tests', () => {
 
 		// Assert: Construct expected merged config
 		const expectedMergedConfig = {
-			models: {
-				main: {
-					...DEFAULT_CONFIG.models.main,
-					...VALID_CUSTOM_CONFIG.models.main
-				},
-				research: {
-					...DEFAULT_CONFIG.models.research,
-					...VALID_CUSTOM_CONFIG.models.research
-				},
-				fallback: {
-					...DEFAULT_CONFIG.models.fallback,
-					...VALID_CUSTOM_CONFIG.models.fallback
-				}
-			},
-			global: { ...DEFAULT_CONFIG.global, ...VALID_CUSTOM_CONFIG.global },
-			claudeCode: {
-				...DEFAULT_CONFIG.claudeCode,
-				...VALID_CUSTOM_CONFIG.claudeCode
-			}
+			global: { ...DEFAULT_CONFIG.global, ...VALID_CUSTOM_CONFIG.global }
 		}
 		expect(config).toEqual(expectedMergedConfig)
 		expect(fsExistsSyncSpy).toHaveBeenCalledWith(MOCK_CONFIG_PATH)
@@ -621,16 +301,7 @@ describe('getConfig Tests', () => {
 
 		// Assert: Construct expected merged config
 		const expectedMergedConfig = {
-			models: {
-				main: { ...DEFAULT_CONFIG.models.main, ...PARTIAL_CONFIG.models.main },
-				research: { ...DEFAULT_CONFIG.models.research },
-				fallback: { ...DEFAULT_CONFIG.models.fallback }
-			},
-			global: { ...DEFAULT_CONFIG.global, ...PARTIAL_CONFIG.global },
-			claudeCode: {
-				...DEFAULT_CONFIG.claudeCode,
-				...VALID_CUSTOM_CONFIG.claudeCode
-			}
+			global: { ...DEFAULT_CONFIG.global, ...PARTIAL_CONFIG.global }
 		}
 		expect(config).toEqual(expectedMergedConfig)
 		expect(fsReadFileSyncSpy).toHaveBeenCalledWith(MOCK_CONFIG_PATH, 'utf-8')
@@ -695,18 +366,10 @@ describe('getConfig Tests', () => {
 		)
 	})
 
-	test('should validate provider and fallback to default if invalid', () => {
+	test('should read and merge invalid config file with defaults', () => {
 		// Arrange
 		fsReadFileSyncSpy.mockImplementation((filePath) => {
 			if (filePath === MOCK_CONFIG_PATH) return JSON.stringify(INVALID_PROVIDER_CONFIG)
-			if (path.basename(filePath) === 'supported-models.json') {
-				return JSON.stringify({
-					perplexity: [{ id: 'llama-3-sonar-large-32k-online' }],
-					anthropic: [{ id: 'claude-3-7-sonnet-20250219' }, { id: 'claude-3-5-sonnet' }],
-					ollama: [],
-					openrouter: []
-				})
-			}
 			throw new Error(`Unexpected fs.readFileSync call: ${filePath}`)
 		})
 		fsExistsSyncSpy.mockReturnValue(true)
@@ -715,26 +378,12 @@ describe('getConfig Tests', () => {
 		// Act
 		const config = configManager.getConfig(MOCK_PROJECT_ROOT, true)
 
-		// Assert
-		expect(consoleWarnSpy).toHaveBeenCalledWith(
-			expect.stringContaining('Warning: Invalid main provider "invalid-provider"')
-		)
+		// Assert: Should merge global config, no validation warnings expected
 		const expectedMergedConfig = {
-			models: {
-				main: { ...DEFAULT_CONFIG.models.main },
-				research: {
-					...DEFAULT_CONFIG.models.research,
-					...INVALID_PROVIDER_CONFIG.models.research
-				},
-				fallback: { ...DEFAULT_CONFIG.models.fallback }
-			},
-			global: { ...DEFAULT_CONFIG.global, ...INVALID_PROVIDER_CONFIG.global },
-			claudeCode: {
-				...DEFAULT_CONFIG.claudeCode,
-				...VALID_CUSTOM_CONFIG.claudeCode
-			}
+			global: { ...DEFAULT_CONFIG.global, ...INVALID_PROVIDER_CONFIG.global }
 		}
 		expect(config).toEqual(expectedMergedConfig)
+		expect(consoleWarnSpy).not.toHaveBeenCalled()
 	})
 })
 
@@ -794,35 +443,7 @@ describe('writeConfig', () => {
 
 // --- Getter Functions ---
 describe('Getter Functions', () => {
-	test('getMainProvider should return provider from config', () => {
-		// Arrange: Set up readFileSync to return VALID_CUSTOM_CONFIG
-		fsReadFileSyncSpy.mockImplementation((filePath) => {
-			if (filePath === MOCK_CONFIG_PATH) return JSON.stringify(VALID_CUSTOM_CONFIG)
-			if (path.basename(filePath) === 'supported-models.json') {
-				return JSON.stringify({
-					openai: [{ id: 'gpt-4o' }],
-					google: [{ id: 'gemini-1.5-pro-latest' }],
-					anthropic: [
-						{ id: 'claude-3-opus-20240229' },
-						{ id: 'claude-3-7-sonnet-20250219' },
-						{ id: 'claude-3-5-sonnet' }
-					],
-					perplexity: [{ id: 'sonar-pro' }],
-					ollama: [],
-					openrouter: []
-				}) // Added perplexity
-			}
-			throw new Error(`Unexpected fs.readFileSync call: ${filePath}`)
-		})
-		fsExistsSyncSpy.mockReturnValue(true)
-		// findProjectRoot mock set in beforeEach
-
-		// Act
-		const provider = configManager.getMainProvider(MOCK_PROJECT_ROOT)
-
-		// Assert
-		expect(provider).toBe(VALID_CUSTOM_CONFIG.models.main.provider)
-	})
+	// AI functionality has been removed - no getMainProvider test needed
 
 	test('getLogLevel should return logLevel from config', () => {
 		// Arrange: Set up readFileSync to return VALID_CUSTOM_CONFIG
@@ -855,79 +476,7 @@ describe('Getter Functions', () => {
 		expect(logLevel).toBe(VALID_CUSTOM_CONFIG.global.logLevel)
 	})
 
-	test('getResponseLanguage should return responseLanguage from config', () => {
-		// Arrange
-		// Prepare a config object with responseLanguage property for this test
-		const configWithLanguage = JSON.stringify({
-			models: {
-				main: { provider: 'openai', modelId: 'gpt-4-turbo' }
-			},
-			global: {
-				projectName: 'Test Project',
-				responseLanguage: '中文'
-			}
-		})
 
-		// Set up fs.readFileSync to return our test config
-		fsReadFileSyncSpy.mockImplementation((filePath) => {
-			if (filePath === MOCK_CONFIG_PATH) {
-				return configWithLanguage
-			}
-			if (path.basename(filePath) === 'supported-models.json') {
-				return JSON.stringify({
-					openai: [{ id: 'gpt-4-turbo' }]
-				})
-			}
-			throw new Error(`Unexpected fs.readFileSync call: ${filePath}`)
-		})
-
-		fsExistsSyncSpy.mockReturnValue(true)
-
-		// Ensure getConfig returns new values instead of cached ones
-		configManager.getConfig(MOCK_PROJECT_ROOT, true)
-
-		// Act
-		const responseLanguage = configManager.getResponseLanguage(MOCK_PROJECT_ROOT)
-
-		// Assert
-		expect(responseLanguage).toBe('中文')
-	})
-
-	test('getResponseLanguage should return undefined when responseLanguage is not in config', () => {
-		// Arrange
-		const configWithoutLanguage = JSON.stringify({
-			models: {
-				main: { provider: 'openai', modelId: 'gpt-4-turbo' }
-			},
-			global: {
-				projectName: 'Test Project'
-				// No responseLanguage property
-			}
-		})
-
-		fsReadFileSyncSpy.mockImplementation((filePath) => {
-			if (filePath === MOCK_CONFIG_PATH) {
-				return configWithoutLanguage
-			}
-			if (path.basename(filePath) === 'supported-models.json') {
-				return JSON.stringify({
-					openai: [{ id: 'gpt-4-turbo' }]
-				})
-			}
-			throw new Error(`Unexpected fs.readFileSync call: ${filePath}`)
-		})
-
-		fsExistsSyncSpy.mockReturnValue(true)
-
-		// Ensure getConfig returns new values instead of cached ones
-		configManager.getConfig(MOCK_PROJECT_ROOT, true)
-
-		// Act
-		const responseLanguage = configManager.getResponseLanguage(MOCK_PROJECT_ROOT)
-
-		// Assert
-		expect(responseLanguage).toBe('English')
-	})
 
 	// Add more tests for other getters (getResearchProvider, getProjectName, etc.)
 })
@@ -957,25 +506,7 @@ describe('isConfigFilePresent', () => {
 	})
 })
 
-// --- getAllProviders Tests ---
-describe('getAllProviders', () => {
-	test('should return all providers from ALL_PROVIDERS constant', () => {
-		// Arrange: Ensure config is loaded with real data
-		configManager.getConfig(null, true) // Force load using the mock that returns real data
-
-		// Act
-		const providers = configManager.getAllProviders()
-
-		// Assert
-		// getAllProviders() should return the same as the ALL_PROVIDERS constant
-		expect(providers).toEqual(configManager.ALL_PROVIDERS)
-		expect(providers.length).toBe(configManager.ALL_PROVIDERS.length)
-
-		// Verify it includes both validated and custom providers
-		expect(providers).toEqual(expect.arrayContaining(configManager.VALIDATED_PROVIDERS))
-		expect(providers).toEqual(expect.arrayContaining(Object.values(configManager.CUSTOM_PROVIDERS)))
-	})
-})
+// AI functionality has been removed - no getAllProviders test needed
 
 // Add tests for getParametersForRole if needed
 

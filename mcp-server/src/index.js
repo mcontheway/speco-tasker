@@ -3,7 +3,6 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import dotenv from 'dotenv'
 import { FastMCP } from 'fastmcp'
-import ProviderRegistry from '../../src/provider-registry/index.js'
 import logger from './logger.js'
 import { MCPProvider } from './providers/mcp-provider.js'
 import { registerTaskMasterTools } from './tools/index.js'
@@ -84,7 +83,7 @@ class TaskMasterMCPServer {
 	}
 
 	/**
-	 * Register both MCP providers with the provider registry
+	 * Register MCP provider for the session
 	 */
 	registerRemoteProvider(session) {
 		// Check if the server has at least one session
@@ -94,27 +93,21 @@ class TaskMasterMCPServer {
 				session.server.sendLoggingMessage({
 					data: {
 						context: session.context,
-						message: `MCP session missing required sampling capabilities, providers not registered`
+						message: `MCP session missing required sampling capabilities, provider not registered`
 					},
 					level: 'info'
 				})
 				return
 			}
 
-			// Register MCP provider with the Provider Registry
-
-			// Register the unified MCP provider
+			// Register the unified MCP provider (simplified after AI removal)
 			const mcpProvider = new MCPProvider()
 			mcpProvider.setSession(session)
-
-			// Register provider with the registry
-			const providerRegistry = ProviderRegistry.getInstance()
-			providerRegistry.registerProvider('mcp', mcpProvider)
 
 			session.server.sendLoggingMessage({
 				data: {
 					context: session.context,
-					message: `MCP Server connected`
+					message: `MCP Server connected - Task Master tools available`
 				},
 				level: 'info'
 			})
@@ -122,7 +115,7 @@ class TaskMasterMCPServer {
 			session.server.sendLoggingMessage({
 				data: {
 					context: session.context,
-					message: `No MCP sessions available, providers not registered`
+					message: `No MCP sessions available, provider not registered`
 				},
 				level: 'warn'
 			})

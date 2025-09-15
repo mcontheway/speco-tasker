@@ -22,11 +22,7 @@ import {
 	stopLoadingIndicator
 } from '../ui.js'
 
-import { generateTextService } from '../ai-services-unified.js'
-import { getDebugFlag, hasCodebaseAnalysis, isApiKeySet } from '../config-manager.js'
-import { getPromptManager } from '../prompt-manager.js'
-import { ContextGatherer } from '../utils/contextGatherer.js'
-import { FuzzyTaskSearch } from '../utils/fuzzyTaskSearch.js'
+import { getDebugFlag } from '../config-manager.js'
 
 // Zod schema for post-parsing validation of the updated task object
 const updatedTaskSchema = z
@@ -403,7 +399,6 @@ async function updateTaskById(
 			useResearch: useResearch,
 			currentDetails: taskToUpdate.details || '(No existing details)',
 			gatheredContext: gatheredContext || '',
-			hasCodebaseAnalysis: hasCodebaseAnalysis(useResearch, projectRoot, session),
 			projectRoot: projectRoot
 		}
 

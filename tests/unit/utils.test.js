@@ -371,13 +371,24 @@ describe('Utils Module', () => {
 		})
 
 		test('should handle missing report file', () => {
-			jest.spyOn(fs, 'existsSync').mockReturnValue(false)
-			jest.spyOn(path, 'join').mockReturnValue('/path/to/report.json')
+			// Mock fs.existsSync to return false for the report file
+			jest.spyOn(fs, 'existsSync').mockImplementation((filePath) => {
+				if (filePath.includes('report.json')) return false
+				return fs.existsSync(filePath)
+			})
+
+			// Spy on readFileSync to ensure it's not called
+			const readFileSyncSpy = jest.spyOn(fs, 'readFileSync')
 
 			const result = readComplexityReport()
 
 			expect(result).toBeNull()
-			expect(fs.readFileSync).not.toHaveBeenCalled()
+			// fs.readFileSync should not be called when file doesn't exist
+			expect(readFileSyncSpy).not.toHaveBeenCalled()
+
+			// Restore original implementations
+			readFileSyncSpy.mockRestore()
+			jest.restoreAllMocks()
 		})
 
 		test('should handle custom report path', () => {

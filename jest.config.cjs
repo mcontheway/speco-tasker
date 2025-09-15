@@ -76,10 +76,10 @@ const config = {
 	restoreMocks: true,
 
 	// Prevent memory leaks and improve test isolation
-	maxWorkers: 1,
-	
+	maxWorkers: 1
+
 	// Force sequential execution to avoid module loading conflicts
-	runInBand: true
+	// runInBand: true
 }
 
 module.exports = config

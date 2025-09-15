@@ -13,14 +13,9 @@ import {
 	stopLoadingIndicator
 } from '../ui.js'
 
-import { generateTextService } from '../ai-services-unified.js'
-import { getDebugFlag, hasCodebaseAnalysis } from '../config-manager.js'
-import { getPromptManager } from '../prompt-manager.js'
+import { getDebugFlag } from '../config-manager.js'
 import { findProjectRoot, flattenTasksWithSubtasks } from '../utils.js'
-import { ContextGatherer } from '../utils/contextGatherer.js'
-import { FuzzyTaskSearch } from '../utils/fuzzyTaskSearch.js'
 import generateTaskFiles from './generate-task-files.js'
-import { getModelConfiguration } from './models.js'
 
 // Zod schema for validating the structure of tasks AFTER parsing
 const updatedTaskSchema = z
@@ -360,25 +355,15 @@ async function updateTasks(
 		}
 		// --- End Display Tasks ---
 
-		// --- Build Prompts (Using PromptManager) ---
-		// Load prompts using PromptManager
-		const promptManager = getPromptManager()
-		const { systemPrompt, userPrompt } = await promptManager.loadPrompt('update-tasks', {
-			tasks: tasksToUpdate,
-			updatePrompt: prompt,
-			useResearch,
-			projectContext: gatheredContext,
-			hasCodebaseAnalysis: hasCodebaseAnalysis(useResearch, projectRoot, session),
-			projectRoot: projectRoot
-		})
-		// --- End Build Prompts ---
+		// AI functionality has been removed - cannot update tasks
+		consoleLog('error', 'AI functionality has been removed from Task Master. Task updates are no longer supported.')
 
-		// --- AI Call ---
-		let loadingIndicator = null
-		let aiServiceResponse = null
-
-		if (!isMCP && outputFormat === 'text') {
-			loadingIndicator = startLoadingIndicator('Updating tasks with AI...\n')
+		return {
+			success: false,
+			error: {
+				code: 'AI_FUNCTIONALITY_REMOVED',
+				message: 'Task update functionality has been removed as it depended on AI features.'
+			}
 		}
 
 		try {
