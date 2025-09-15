@@ -28,24 +28,18 @@ const config = {
 		'**/unit/**/*.cjs'
 	],
 
-	// Transform files to handle ES modules
-	transform: {
-		'^.+\\.(js|ts)$': [
-			'ts-jest',
-			{
-				useESM: true,
-			},
-		],
-	},
-
-	// Transform ignore patterns - allow ES modules in node_modules
+	// Don't transform node_modules except specific ones - fix module loading issues
 	transformIgnorePatterns: [
 		'node_modules/(?!(supertest|chalk|boxen|@inquirer)/)',
 	],
 
+	// Disable transforms for CommonJS files to avoid jest conflicts
+	transform: {},
+
 	// Set moduleNameMapper for absolute paths
 	moduleNameMapper: {
-		'^@/(.*)$': '<rootDir>/$1'
+		'^@/(.*)$': '<rootDir>/$1',
+		'^chalk$': '<rootDir>/node_modules/chalk'
 	},
 
 	// Setup module aliases
@@ -69,9 +63,23 @@ const config = {
 
 	// Setup file - use .cjs extension for CommonJS
 	setupFilesAfterEnv: ['<rootDir>/tests/setup.cjs'],
+	
+	// Properly initialize source-map-support
+	setupFiles: ['source-map-support/register'],
 
 	// Module file extensions
-	moduleFileExtensions: ['js', 'cjs', 'mjs', 'json']
+	moduleFileExtensions: ['js', 'cjs', 'mjs', 'json'],
+
+	// Isolate modules to prevent cross-test contamination
+	resetModules: true,
+	resetMocks: true,
+	restoreMocks: true,
+
+	// Prevent memory leaks and improve test isolation
+	maxWorkers: 1,
+	
+	// Force sequential execution to avoid module loading conflicts
+	runInBand: true
 }
 
 module.exports = config

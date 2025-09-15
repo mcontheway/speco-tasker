@@ -5,9 +5,8 @@
  * SCOPE: 测试任务创建的核心功能，包括手动任务创建、验证和数据结构完整性
  */
 
-import { jest } from '@jest/globals'
-import fs from 'fs'
-import path from 'path'
+const fs = require('fs')
+const path = require('path')
 
 // Mock 依赖项
 jest.mock('fs')
@@ -43,11 +42,11 @@ describe('任务创建功能验证', () => {
 	beforeEach(() => {
 		jest.clearAllMocks()
 
-		// 模拟文件系统
-		fs.existsSync.mockReturnValue(true)
-		fs.readFileSync.mockReturnValue(JSON.stringify({}))
-		path.dirname.mockReturnValue('/mock/project')
-		path.join.mockImplementation((...args) => args.join('/'))
+		// 模拟文件系统 - 使用CommonJS方式
+		fs.existsSync = jest.fn().mockReturnValue(true)
+		fs.readFileSync = jest.fn().mockReturnValue(JSON.stringify({}))
+		path.dirname = jest.fn().mockReturnValue('/mock/project')
+		path.join = jest.fn().mockImplementation((...args) => args.join('/'))
 	})
 
 	describe('任务数据结构验证', () => {
