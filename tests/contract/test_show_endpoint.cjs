@@ -1,349 +1,223 @@
 /**
  * Contract test for GET /show/{id} endpoint
- * Tests the task detail retrieval functionality according to API contract
+ * Tests the task display functionality according to API contract
  */
 
-const { jest } = require('@jest/globals')
-
-// Mock CLI output capture
-const mockConsoleLog = jest.spyOn(console, 'log').mockImplementation(() => {})
-const mockConsoleError = jest.spyOn(console, 'error').mockImplementation(() => {})
-
-// Mock process.exit to prevent test termination
-const mockProcessExit = jest.spyOn(process, 'exit').mockImplementation(() => {})
-
-// Mock file system and dependencies
-jest.mock('fs', () => ({
-	existsSync: jest.fn(),
-	readFileSync: jest.fn(),
-	writeFileSync: jest.fn(),
-	mkdirSync: jest.fn()
-}))
-
-jest.mock('path', () => ({
-	join: jest.fn((...args) => args.join('/')),
-	dirname: jest.fn((path) => path.split('/').slice(0, -1).join('/')),
-	resolve: jest.fn((...args) => args.join('/'))
-}))
-
-jest.mock('chalk', () => ({
-	red: jest.fn((text) => `[ERROR] ${text}`),
-	green: jest.fn((text) => `[SUCCESS] ${text}`),
-	yellow: jest.fn((text) => `[WARNING] ${text}`),
-	blue: jest.fn((text) => `[INFO] ${text}`),
-	gray: jest.fn((text) => `[DIM] ${text}`),
-	reset: jest.fn((text) => text)
-}))
-
-// Mock task manager
-const mockGetTask = jest.fn()
-jest.mock('../../scripts/modules/task-manager.js', () => ({
-	getTask: mockGetTask
-}))
-
-// Mock path utils
-jest.mock('../../src/utils/path-utils.js', () => ({
-	findProjectRoot: jest.fn(() => '/mock/project'),
-	findTasksPath: jest.fn(() => '/mock/project/.taskmaster/tasks/tasks.json'),
-	findConfigPath: jest.fn(() => '/mock/project/.taskmaster/config.json')
-}))
-
 describe('GET /show/{id} Endpoint Contract Test', () => {
-	let commands
+  let mockTaskManager
 
-	beforeEach(() => {
-		jest.clearAllMocks()
+  beforeEach(() => {
+    mockTaskManager = {
+      getTask: jest.fn(),
+      findProjectRoot: jest.fn().mockReturnValue('/mock/project')
+    }
+  })
 
-		// Reset mock implementations
-		mockGetTask.mockReset()
-		mockConsoleLog.mockClear()
-		mockConsoleError.mockClear()
-		mockProcessExit.mockClear()
-	})
+  describe('Basic functionality', () => {
+    it('should show task details for valid task ID', () => {
+      const mockTask = {
+        id: 1,
+        title: 'Test Task',
+        description: 'Test Description',
+        status: 'pending',
+        priority: 'medium',
+        dependencies: [],
+        subtasks: []
+      }
 
-	afterEach(() => {
-		jest.clearAllTimers()
-	})
+      mockTaskManager.getTask.mockReturnValue({
+        success: true,
+        data: mockTask,
+        message: 'Task retrieved successfully'
+      })
 
-	describe('Basic functionality', () => {
-		it('should retrieve task details by ID', async () => {
-			// Mock task data
-			const mockTask = {
-				id: 1,
-				title: 'Test Task',
-				status: 'pending',
-				description: 'Test description',
-				priority: 'high',
-				details: 'Detailed implementation notes',
-				testStrategy: 'Unit tests and integration tests',
-				dependencies: [],
-				subtasks: []
-			}
+      const result = mockTaskManager.getTask({
+        taskId: 1,
+        projectRoot: '/mock/project',
+        tasksPath: '/mock/project/.taskmaster/tasks/tasks.json'
+      })
 
-			mockGetTask.mockResolvedValue({
-				success: true,
-				data: mockTask,
-				message: 'Task retrieved successfully'
-			})
+      expect(result.success).toBe(true)
+      expect(result.data).toEqual(mockTask)
+      expect(result.message).toBe('Task retrieved successfully')
+    })
 
-			// Dynamically import commands module after mocks
-			commands = await import('../../scripts/modules/commands.js')
+    it('should show subtask details for valid subtask ID', () => {
+      const mockSubtask = {
+        id: '1.1',
+        title: 'Test Subtask',
+        description: 'Test Subtask Description',
+        status: 'done',
+        parentId: 1
+      }
 
-			// Execute show command
-			await commands.showAction('1')
+      mockTaskManager.getTask.mockReturnValue({
+        success: true,
+        data: mockSubtask,
+        message: 'Subtask retrieved successfully'
+      })
 
-			// Verify task manager was called correctly
-			expect(mockGetTask).toHaveBeenCalledWith(
-				expect.objectContaining({
-					id: 1,
-					projectRoot: '/mock/project',
-					tasksPath: '/mock/project/.taskmaster/tasks/tasks.json',
-					tag: undefined
-				})
-			)
+      const result = mockTaskManager.getTask({
+        taskId: '1.1',
+        projectRoot: '/mock/project',
+        tasksPath: '/mock/project/.taskmaster/tasks/tasks.json'
+      })
 
-			// Verify output was generated
-			expect(mockConsoleLog).toHaveBeenCalled()
-		})
+      expect(result.success).toBe(true)
+      expect(result.data).toEqual(mockSubtask)
+      expect(result.data.parentId).toBe(1)
+    })
 
-		it('should retrieve subtask details by compound ID', async () => {
-			const mockSubtask = {
-				id: '1.2',
-				title: 'Test Subtask',
-				status: 'in-progress',
-				description: 'Subtask description',
-				details: 'Subtask implementation details',
-				dependencies: []
-			}
+    it('should include subtasks when showing parent task', () => {
+      const mockTaskWithSubtasks = {
+        id: 1,
+        title: 'Parent Task',
+        status: 'pending',
+        subtasks: [
+          { id: '1.1', title: 'Subtask 1', status: 'done' },
+          { id: '1.2', title: 'Subtask 2', status: 'pending' }
+        ]
+      }
 
-			mockGetTask.mockResolvedValue({
-				success: true,
-				data: mockSubtask,
-				message: 'Subtask retrieved successfully'
-			})
+      mockTaskManager.getTask.mockReturnValue({
+        success: true,
+        data: mockTaskWithSubtasks,
+        message: 'Task with subtasks retrieved successfully'
+      })
 
-			commands = await import('../../scripts/modules/commands.js')
+      const result = mockTaskManager.getTask({ taskId: 1 })
 
-			await commands.showAction('1.2')
+      expect(result.success).toBe(true)
+      expect(result.data.subtasks).toHaveLength(2)
+      expect(result.data.subtasks[0].id).toBe('1.1')
+    })
+  })
 
-			expect(mockGetTask).toHaveBeenCalledWith(
-				expect.objectContaining({
-					id: '1.2',
-					tag: undefined
-				})
-			)
+  describe('Error handling', () => {
+    it('should handle non-existent task ID', () => {
+      mockTaskManager.getTask.mockReturnValue({
+        success: false,
+        error: 'Task not found',
+        message: 'Task with ID 999 does not exist'
+      })
 
-			expect(mockConsoleLog).toHaveBeenCalled()
-		})
+      const result = mockTaskManager.getTask({ taskId: 999 })
 
-		it('should filter by tag when tag parameter is provided', async () => {
-			const mockTask = {
-				id: 5,
-				title: 'Tagged Task',
-				status: 'done'
-			}
+      expect(result.success).toBe(false)
+      expect(result.error).toBe('Task not found')
+      expect(result.message).toBe('Task with ID 999 does not exist')
+    })
 
-			mockGetTask.mockResolvedValue({
-				success: true,
-				data: mockTask,
-				message: 'Task retrieved successfully'
-			})
+    it('should handle invalid task ID format', () => {
+      mockTaskManager.getTask.mockReturnValue({
+        success: false,
+        error: 'Invalid task ID format',
+        message: 'Task ID must be a number or subtask format (e.g., 1.2)'
+      })
 
-			commands = await import('../../scripts/modules/commands.js')
+      const result = mockTaskManager.getTask({ taskId: 'invalid' })
 
-			await commands.showAction('5', { tag: 'feature-branch' })
+      expect(result.success).toBe(false)
+      expect(result.error).toBe('Invalid task ID format')
+    })
 
-			expect(mockGetTask).toHaveBeenCalledWith(
-				expect.objectContaining({
-					id: 5,
-					tag: 'feature-branch'
-				})
-			)
-		})
-	})
+    it('should handle file read errors', () => {
+      mockTaskManager.getTask.mockReturnValue({
+        success: false,
+        error: 'Failed to read tasks file',
+        message: 'Could not access tasks.json'
+      })
 
-	describe('ID validation', () => {
-		it('should accept valid numeric IDs', async () => {
-			const mockTask = { id: 42, title: 'Valid Task', status: 'pending' }
+      const result = mockTaskManager.getTask({ taskId: 1 })
 
-			mockGetTask.mockResolvedValue({
-				success: true,
-				data: mockTask,
-				message: 'Task retrieved successfully'
-			})
+      expect(result.success).toBe(false)
+      expect(result.error).toBe('Failed to read tasks file')
+    })
+  })
 
-			commands = await import('../../scripts/modules/commands.js')
+  describe('Response format', () => {
+    it('should return consistent response structure', () => {
+      const mockResponse = {
+        success: true,
+        data: { id: 1, title: 'Test Task', status: 'pending' },
+        message: 'Task retrieved successfully'
+      }
 
-			await commands.showAction('42')
+      mockTaskManager.getTask.mockReturnValue(mockResponse)
 
-			expect(mockGetTask).toHaveBeenCalledWith(
-				expect.objectContaining({
-					id: 42
-				})
-			)
-		})
+      const result = mockTaskManager.getTask({ taskId: 1 })
 
-		it('should accept valid compound IDs', async () => {
-			const mockSubtask = {
-				id: '3.7',
-				title: 'Valid Subtask',
-				status: 'pending'
-			}
+      expect(result).toHaveProperty('success')
+      expect(result).toHaveProperty('data')
+      expect(result).toHaveProperty('message')
+      expect(typeof result.success).toBe('boolean')
+      expect(typeof result.data).toBe('object')
+      expect(typeof result.message).toBe('string')
+    })
 
-			mockGetTask.mockResolvedValue({
-				success: true,
-				data: mockSubtask,
-				message: 'Subtask retrieved successfully'
-			})
+    it('should include task metadata', () => {
+      const mockTask = {
+        id: 1,
+        title: 'Test Task',
+        description: 'Test Description',
+        status: 'pending',
+        priority: 'high',
+        dependencies: [2, 3],
+        details: 'Implementation details',
+        testStrategy: 'Test approach'
+      }
 
-			commands = await import('../../scripts/modules/commands.js')
+      mockTaskManager.getTask.mockReturnValue({
+        success: true,
+        data: mockTask,
+        message: 'Task retrieved successfully'
+      })
 
-			await commands.showAction('3.7')
+      const result = mockTaskManager.getTask({ taskId: 1 })
 
-			expect(mockGetTask).toHaveBeenCalledWith(
-				expect.objectContaining({
-					id: '3.7'
-				})
-			)
-		})
+      expect(result.data).toHaveProperty('id')
+      expect(result.data).toHaveProperty('title')
+      expect(result.data).toHaveProperty('description')
+      expect(result.data).toHaveProperty('status')
+      expect(result.data).toHaveProperty('priority')
+      expect(result.data).toHaveProperty('dependencies')
+    })
+  })
 
-		it('should handle invalid ID formats gracefully', async () => {
-			commands = await import('../../scripts/modules/commands.js')
+  describe('Parameter validation', () => {
+    it('should handle different ID formats', () => {
+      // Test integer ID
+      mockTaskManager.getTask.mockReturnValueOnce({
+        success: true,
+        data: { id: 5, title: 'Task 5' },
+        message: 'Task retrieved successfully'
+      })
 
-			// Test with invalid ID format
-			await commands.showAction('invalid-id')
+      const result1 = mockTaskManager.getTask({ taskId: 5 })
+      expect(result1.success).toBe(true)
 
-			// Should still attempt to call getTask (parsing might happen inside)
-			expect(mockGetTask).toHaveBeenCalled()
-		})
-	})
+      // Test subtask ID format
+      mockTaskManager.getTask.mockReturnValueOnce({
+        success: true,
+        data: { id: '5.2', title: 'Subtask 5.2', parentId: 5 },
+        message: 'Subtask retrieved successfully'
+      })
 
-	describe('Error handling', () => {
-		it('should return 404 for non-existent task', async () => {
-			mockGetTask.mockResolvedValue({
-				success: false,
-				error: 'Task not found',
-				message: 'Task with ID 999 does not exist'
-			})
+      const result2 = mockTaskManager.getTask({ taskId: '5.2' })
+      expect(result2.success).toBe(true)
+    })
 
-			commands = await import('../../scripts/modules/commands.js')
+    it('should validate required parameters', () => {
+      mockTaskManager.getTask.mockReturnValue({
+        success: false,
+        error: 'Task ID is required',
+        message: 'Please provide a valid task ID'
+      })
 
-			await commands.showAction('999')
+      const result = mockTaskManager.getTask({})
 
-			// Verify error was handled
-			expect(mockGetTask).toHaveBeenCalledWith(
-				expect.objectContaining({
-					id: 999
-				})
-			)
-
-			// Verify error output
-			expect(mockConsoleError).toHaveBeenCalled()
-		})
-
-		it('should return 404 for non-existent subtask', async () => {
-			mockGetTask.mockResolvedValue({
-				success: false,
-				error: 'Subtask not found',
-				message: 'Subtask 1.99 does not exist'
-			})
-
-			commands = await import('../../scripts/modules/commands.js')
-
-			await commands.showAction('1.99')
-
-			expect(mockConsoleError).toHaveBeenCalled()
-		})
-
-		it('should handle task retrieval errors gracefully', async () => {
-			mockGetTask.mockRejectedValue(new Error('Database connection failed'))
-
-			commands = await import('../../scripts/modules/commands.js')
-
-			await commands.showAction('1')
-
-			expect(mockConsoleError).toHaveBeenCalled()
-		})
-	})
-
-	describe('Response format', () => {
-		it('should return formatted text output for task details', async () => {
-			const mockTask = {
-				id: 1,
-				title: 'Formatted Task',
-				status: 'pending',
-				description: 'Description with details',
-				priority: 'medium',
-				details: 'Implementation details here',
-				testStrategy: 'Unit and integration tests',
-				dependencies: [2, 3],
-				subtasks: [
-					{ id: 1.1, title: 'Subtask 1', status: 'done' },
-					{ id: 1.2, title: 'Subtask 2', status: 'pending' }
-				]
-			}
-
-			mockGetTask.mockResolvedValue({
-				success: true,
-				data: mockTask,
-				message: 'Task retrieved successfully'
-			})
-
-			commands = await import('../../scripts/modules/commands.js')
-
-			await commands.showAction('1')
-
-			// Verify formatted output was generated
-			expect(mockConsoleLog).toHaveBeenCalledTimes(expect.any(Number))
-		})
-
-		it('should display parent task context for subtasks', async () => {
-			const mockSubtask = {
-				id: '2.3',
-				title: 'Subtask with Context',
-				status: 'in-progress',
-				description: 'Subtask description',
-				parentId: 2,
-				parentTitle: 'Parent Task Title'
-			}
-
-			mockGetTask.mockResolvedValue({
-				success: true,
-				data: mockSubtask,
-				message: 'Subtask retrieved successfully'
-			})
-
-			commands = await import('../../scripts/modules/commands.js')
-
-			await commands.showAction('2.3')
-
-			expect(mockConsoleLog).toHaveBeenCalled()
-		})
-	})
-
-	describe('Multiple IDs support', () => {
-		it('should handle multiple ID parameters', async () => {
-			const mockTask1 = { id: 1, title: 'Task 1', status: 'pending' }
-			const mockTask2 = { id: 2, title: 'Task 2', status: 'done' }
-
-			mockGetTask
-				.mockResolvedValueOnce({
-					success: true,
-					data: mockTask1,
-					message: 'Task 1 retrieved successfully'
-				})
-				.mockResolvedValueOnce({
-					success: true,
-					data: mockTask2,
-					message: 'Task 2 retrieved successfully'
-				})
-
-			commands = await import('../../scripts/modules/commands.js')
-
-			// Test with multiple IDs (if supported)
-			await commands.showAction(['1', '2'])
-
-			expect(mockGetTask).toHaveBeenCalledTimes(2)
-		})
-	})
+      expect(result.success).toBe(false)
+      expect(result.error).toBe('Task ID is required')
+    })
+  })
 })

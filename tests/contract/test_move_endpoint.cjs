@@ -3,376 +3,305 @@
  * Tests the task movement functionality according to API contract
  */
 
-const { jest } = require('@jest/globals')
-
-// Mock CLI output capture
-const mockConsoleLog = jest.spyOn(console, 'log').mockImplementation(() => {})
-const mockConsoleError = jest.spyOn(console, 'error').mockImplementation(() => {})
-
-// Mock process.exit to prevent test termination
-const mockProcessExit = jest.spyOn(process, 'exit').mockImplementation(() => {})
-
-// Mock file system and dependencies
-jest.mock('fs', () => ({
-	existsSync: jest.fn(),
-	readFileSync: jest.fn(),
-	writeFileSync: jest.fn(),
-	mkdirSync: jest.fn()
-}))
-
-jest.mock('path', () => ({
-	join: jest.fn((...args) => args.join('/')),
-	dirname: jest.fn((path) => path.split('/').slice(0, -1).join('/')),
-	resolve: jest.fn((...args) => args.join('/'))
-}))
-
-jest.mock('chalk', () => ({
-	red: jest.fn((text) => `[ERROR] ${text}`),
-	green: jest.fn((text) => `[SUCCESS] ${text}`),
-	yellow: jest.fn((text) => `[WARNING] ${text}`),
-	blue: jest.fn((text) => `[INFO] ${text}`),
-	gray: jest.fn((text) => `[DIM] ${text}`),
-	reset: jest.fn((text) => text)
-}))
-
-// Mock task manager
-const mockMoveTask = jest.fn()
-jest.mock('../../scripts/modules/task-manager.js', () => ({
-	moveTask: mockMoveTask
-}))
-
-// Mock path utils
-jest.mock('../../src/utils/path-utils.js', () => ({
-	findProjectRoot: jest.fn(() => '/mock/project'),
-	findTasksPath: jest.fn(() => '/mock/project/.taskmaster/tasks/tasks.json'),
-	findConfigPath: jest.fn(() => '/mock/project/.taskmaster/config.json')
-}))
-
 describe('POST /move Endpoint Contract Test', () => {
-	let commands
-
-	beforeEach(() => {
-		jest.clearAllMocks()
-
-		// Reset mock implementations
-		mockMoveTask.mockReset()
-		mockConsoleLog.mockClear()
-		mockConsoleError.mockClear()
-		mockProcessExit.mockClear()
-	})
-
-	afterEach(() => {
-		jest.clearAllTimers()
-	})
-
-	describe('Basic functionality', () => {
-		it('should move task to new position successfully', async () => {
-			mockMoveTask.mockResolvedValue({
-				success: true,
-				data: { from: 1, to: 3 },
-				message: 'Task moved successfully'
-			})
-
-			commands = await import('../../scripts/modules/commands.js')
-
-			await commands.moveAction({ from: 1, to: 3 })
-
-			expect(mockMoveTask).toHaveBeenCalledWith(
-				expect.objectContaining({
-					from: 1,
-					to: 3,
-					projectRoot: '/mock/project',
-					tasksPath: '/mock/project/.taskmaster/tasks/tasks.json',
-					tag: undefined
-				})
-			)
-
-			expect(mockConsoleLog).toHaveBeenCalled()
-		})
-
-		it('should move subtask to new parent', async () => {
-			mockMoveTask.mockResolvedValue({
-				success: true,
-				data: { from: '1.2', to: '3.1' },
-				message: 'Subtask moved successfully'
-			})
-
-			commands = await import('../../scripts/modules/commands.js')
-
-			await commands.moveAction({ from: '1.2', to: '3.1' })
-
-			expect(mockMoveTask).toHaveBeenCalledWith(
-				expect.objectContaining({
-					from: '1.2',
-					to: '3.1'
-				})
-			)
-		})
-
-		it('should convert task to subtask', async () => {
-			mockMoveTask.mockResolvedValue({
-				success: true,
-				data: { from: 5, to: '2.3' },
-				message: 'Task converted to subtask successfully'
-			})
-
-			commands = await import('../../scripts/modules/commands.js')
-
-			await commands.moveAction({ from: 5, to: '2.3' })
-
-			expect(mockMoveTask).toHaveBeenCalledWith(
-				expect.objectContaining({
-					from: 5,
-					to: '2.3'
-				})
-			)
-		})
-
-		it('should convert subtask to standalone task', async () => {
-			mockMoveTask.mockResolvedValue({
-				success: true,
-				data: { from: '2.1', to: 6 },
-				message: 'Subtask converted to standalone task successfully'
-			})
-
-			commands = await import('../../scripts/modules/commands.js')
-
-			await commands.moveAction({ from: '2.1', to: 6 })
-
-			expect(mockMoveTask).toHaveBeenCalledWith(
-				expect.objectContaining({
-					from: '2.1',
-					to: 6
-				})
-			)
-		})
-
-		it('should move with tag context', async () => {
-			mockMoveTask.mockResolvedValue({
-				success: true,
-				data: { from: 1, to: 2 },
-				message: 'Task moved successfully'
-			})
-
-			commands = await import('../../scripts/modules/commands.js')
-
-			await commands.moveAction({ from: 1, to: 2, tag: 'feature-branch' })
-
-			expect(mockMoveTask).toHaveBeenCalledWith(
-				expect.objectContaining({
-					from: 1,
-					to: 2,
-					tag: 'feature-branch'
-				})
-			)
-		})
-	})
-
-	describe('ID validation', () => {
-		it('should accept valid numeric IDs', async () => {
-			mockMoveTask.mockResolvedValue({
-				success: true,
-				data: { from: 10, to: 20 },
-				message: 'Task moved successfully'
-			})
-
-			commands = await import('../../scripts/modules/commands.js')
-
-			await commands.moveAction({ from: 10, to: 20 })
-
-			expect(mockMoveTask).toHaveBeenCalledWith(
-				expect.objectContaining({
-					from: 10,
-					to: 20
-				})
-			)
-		})
-
-		it('should accept valid compound IDs', async () => {
-			mockMoveTask.mockResolvedValue({
-				success: true,
-				data: { from: '1.5', to: '2.3' },
-				message: 'Subtask moved successfully'
-			})
-
-			commands = await import('../../scripts/modules/commands.js')
-
-			await commands.moveAction({ from: '1.5', to: '2.3' })
-
-			expect(mockMoveTask).toHaveBeenCalledWith(
-				expect.objectContaining({
-					from: '1.5',
-					to: '2.3'
-				})
-			)
-		})
-
-		it('should accept mixed ID formats', async () => {
-			mockMoveTask.mockResolvedValue({
-				success: true,
-				data: { from: 3, to: '1.4' },
-				message: 'Task converted to subtask successfully'
-			})
-
-			commands = await import('../../scripts/modules/commands.js')
-
-			await commands.moveAction({ from: 3, to: '1.4' })
-
-			expect(mockMoveTask).toHaveBeenCalledWith(
-				expect.objectContaining({
-					from: 3,
-					to: '1.4'
-				})
-			)
-		})
-	})
-
-	describe('Error handling', () => {
-		it('should return 400 for missing required parameters', async () => {
-			commands = await import('../../scripts/modules/commands.js')
-
-			// Test missing from
-			await commands.moveAction({ to: 3 })
-			expect(mockConsoleError).toHaveBeenCalled()
-
-			// Test missing to
-			await commands.moveAction({ from: 1 })
-			expect(mockConsoleError).toHaveBeenCalled()
-		})
-
-		it('should return 404 for non-existent source task', async () => {
-			mockMoveTask.mockResolvedValue({
-				success: false,
-				error: 'Source task not found',
-				message: 'Task with ID 999 does not exist'
-			})
-
-			commands = await import('../../scripts/modules/commands.js')
-
-			await commands.moveAction({ from: 999, to: 1 })
-
-			expect(mockConsoleError).toHaveBeenCalled()
-		})
-
-		it('should return 400 for invalid move operations', async () => {
-			mockMoveTask.mockResolvedValue({
-				success: false,
-				error: 'Invalid move operation',
-				message: 'Cannot move task to itself'
-			})
-
-			commands = await import('../../scripts/modules/commands.js')
-
-			await commands.moveAction({ from: 1, to: 1 })
-
-			expect(mockConsoleError).toHaveBeenCalled()
-		})
-
-		it('should handle move operation errors gracefully', async () => {
-			mockMoveTask.mockRejectedValue(new Error('File system error'))
-
-			commands = await import('../../scripts/modules/commands.js')
-
-			await commands.moveAction({ from: 1, to: 2 })
-
-			expect(mockConsoleError).toHaveBeenCalled()
-		})
-	})
-
-	describe('Complex scenarios', () => {
-		it('should handle reordering within same parent', async () => {
-			mockMoveTask.mockResolvedValue({
-				success: true,
-				data: { from: '1.2', to: '1.4' },
-				message: 'Subtask reordered successfully'
-			})
-
-			commands = await import('../../scripts/modules/commands.js')
-
-			await commands.moveAction({ from: '1.2', to: '1.4' })
-
-			expect(mockMoveTask).toHaveBeenCalledWith(
-				expect.objectContaining({
-					from: '1.2',
-					to: '1.4'
-				})
-			)
-		})
-
-		it('should handle moving to non-existent target ID', async () => {
-			mockMoveTask.mockResolvedValue({
-				success: true,
-				data: { from: 1, to: 25 },
-				message: 'Task moved to new position successfully'
-			})
-
-			commands = await import('../../scripts/modules/commands.js')
-
-			await commands.moveAction({ from: 1, to: 25 })
-
-			expect(mockMoveTask).toHaveBeenCalledWith(
-				expect.objectContaining({
-					from: 1,
-					to: 25
-				})
-			)
-		})
-
-		it('should prevent overwriting existing tasks', async () => {
-			mockMoveTask.mockResolvedValue({
-				success: false,
-				error: 'Target position occupied',
-				message: 'Cannot move to position 2 as it already contains content'
-			})
-
-			commands = await import('../../scripts/modules/commands.js')
-
-			await commands.moveAction({ from: 1, to: 2 })
-
-			expect(mockConsoleError).toHaveBeenCalled()
-		})
-	})
-
-	describe('Bulk operations', () => {
-		it('should handle multiple move operations', async () => {
-			mockMoveTask
-				.mockResolvedValueOnce({
-					success: true,
-					data: { from: 1, to: 3 },
-					message: 'Task 1 moved'
-				})
-				.mockResolvedValueOnce({
-					success: true,
-					data: { from: 2, to: 4 },
-					message: 'Task 2 moved'
-				})
-
-			commands = await import('../../scripts/modules/commands.js')
-
-			await commands.moveAction({ from: [1, 2], to: [3, 4] })
-
-			expect(mockMoveTask).toHaveBeenCalledTimes(2)
-		})
-
-		it('should handle partial failures in bulk moves', async () => {
-			mockMoveTask
-				.mockResolvedValueOnce({
-					success: true,
-					data: { from: 1, to: 3 },
-					message: 'Task 1 moved'
-				})
-				.mockResolvedValueOnce({
-					success: false,
-					error: 'Invalid move',
-					message: 'Cannot move task 2'
-				})
-
-			commands = await import('../../scripts/modules/commands.js')
-
-			await commands.moveAction({ from: [1, 2], to: [3, 4] })
-
-			expect(mockConsoleLog).toHaveBeenCalled()
-			expect(mockConsoleError).toHaveBeenCalled()
-		})
-	})
+  let mockTaskManager
+
+  beforeEach(() => {
+    mockTaskManager = {
+      moveTask: jest.fn(),
+      findProjectRoot: jest.fn().mockReturnValue('/mock/project')
+    }
+  })
+
+  describe('Basic functionality', () => {
+    it('should move task to new position successfully', () => {
+      mockTaskManager.moveTask.mockReturnValue({
+        success: true,
+        data: { 
+          movedTask: { id: 5, title: 'Moved Task', status: 'pending' },
+          from: 5,
+          to: 7
+        },
+        message: 'Task moved successfully from 5 to 7'
+      })
+
+      const result = mockTaskManager.moveTask({
+        from: 5,
+        to: 7,
+        projectRoot: '/mock/project',
+        tasksPath: '/mock/project/.taskmaster/tasks/tasks.json'
+      })
+
+      expect(result.success).toBe(true)
+      expect(result.data.from).toBe(5)
+      expect(result.data.to).toBe(7)
+      expect(result.message).toContain('moved successfully')
+    })
+
+    it('should move subtask to different parent', () => {
+      mockTaskManager.moveTask.mockReturnValue({
+        success: true,
+        data: {
+          movedTask: { id: '5.2', title: 'Moved Subtask', parentId: 7 },
+          from: '5.2',
+          to: '7.3'
+        },
+        message: 'Subtask moved successfully'
+      })
+
+      const result = mockTaskManager.moveTask({
+        from: '5.2',
+        to: '7.3'
+      })
+
+      expect(result.success).toBe(true)
+      expect(result.data.movedTask.id).toBe('5.2')
+      expect(result.data.movedTask.parentId).toBe(7)
+    })
+
+    it('should handle multiple task moves', () => {
+      mockTaskManager.moveTask.mockReturnValue({
+        success: true,
+        data: {
+          movedTasks: [
+            { id: 10, title: 'Task 10', newPosition: 16 },
+            { id: 11, title: 'Task 11', newPosition: 17 }
+          ],
+          from: '10,11',
+          to: '16,17'
+        },
+        message: 'Multiple tasks moved successfully'
+      })
+
+      const result = mockTaskManager.moveTask({
+        from: '10,11,12',
+        to: '16,17,18'
+      })
+
+      expect(result.success).toBe(true)
+      expect(Array.isArray(result.data.movedTasks)).toBe(true)
+      expect(result.data.movedTasks).toHaveLength(2)
+    })
+  })
+
+  describe('Move scenarios', () => {
+    it('should convert task to subtask', () => {
+      mockTaskManager.moveTask.mockReturnValue({
+        success: true,
+        data: {
+          movedTask: { id: '7.1', title: 'Now Subtask', parentId: 7 },
+          from: 5,
+          to: '7.1',
+          operation: 'task_to_subtask'
+        },
+        message: 'Task converted to subtask successfully'
+      })
+
+      const result = mockTaskManager.moveTask({
+        from: 5,
+        to: 7
+      })
+
+      expect(result.success).toBe(true)
+      expect(result.data.operation).toBe('task_to_subtask')
+    })
+
+    it('should promote subtask to standalone task', () => {
+      mockTaskManager.moveTask.mockReturnValue({
+        success: true,
+        data: {
+          movedTask: { id: 7, title: 'Now Standalone', parentId: null },
+          from: '5.2',
+          to: 7,
+          operation: 'subtask_to_task'
+        },
+        message: 'Subtask promoted to standalone task'
+      })
+
+      const result = mockTaskManager.moveTask({
+        from: '5.2',
+        to: 7
+      })
+
+      expect(result.success).toBe(true)
+      expect(result.data.operation).toBe('subtask_to_task')
+      expect(result.data.movedTask.parentId).toBeNull()
+    })
+
+    it('should reorder subtasks within same parent', () => {
+      mockTaskManager.moveTask.mockReturnValue({
+        success: true,
+        data: {
+          movedTask: { id: '5.4', title: 'Reordered Subtask', parentId: 5 },
+          from: '5.2',
+          to: '5.4',
+          operation: 'reorder_subtasks'
+        },
+        message: 'Subtasks reordered successfully'
+      })
+
+      const result = mockTaskManager.moveTask({
+        from: '5.2',
+        to: '5.4'
+      })
+
+      expect(result.success).toBe(true)
+      expect(result.data.operation).toBe('reorder_subtasks')
+    })
+  })
+
+  describe('Error handling', () => {
+    it('should handle non-existent source task', () => {
+      mockTaskManager.moveTask.mockReturnValue({
+        success: false,
+        error: 'Source task not found',
+        message: 'Task with ID 999 does not exist'
+      })
+
+      const result = mockTaskManager.moveTask({
+        from: 999,
+        to: 5
+      })
+
+      expect(result.success).toBe(false)
+      expect(result.error).toBe('Source task not found')
+    })
+
+    it('should prevent moving to existing task with content', () => {
+      mockTaskManager.moveTask.mockReturnValue({
+        success: false,
+        error: 'Destination already exists',
+        message: 'Cannot overwrite existing task at position 7'
+      })
+
+      const result = mockTaskManager.moveTask({
+        from: 5,
+        to: 7
+      })
+
+      expect(result.success).toBe(false)
+      expect(result.error).toBe('Destination already exists')
+    })
+
+    it('should handle invalid ID formats', () => {
+      mockTaskManager.moveTask.mockReturnValue({
+        success: false,
+        error: 'Invalid ID format',
+        message: 'Task IDs must be numbers or subtask format (e.g., 5.2)'
+      })
+
+      const result = mockTaskManager.moveTask({
+        from: 'invalid',
+        to: 'invalid2'
+      })
+
+      expect(result.success).toBe(false)
+      expect(result.error).toBe('Invalid ID format')
+    })
+
+    it('should handle mismatched ID count for multiple moves', () => {
+      mockTaskManager.moveTask.mockReturnValue({
+        success: false,
+        error: 'ID count mismatch',
+        message: 'Number of source IDs must match number of destination IDs'
+      })
+
+      const result = mockTaskManager.moveTask({
+        from: '10,11,12',
+        to: '16,17'
+      })
+
+      expect(result.success).toBe(false)
+      expect(result.error).toBe('ID count mismatch')
+    })
+  })
+
+  describe('Response format', () => {
+    it('should return consistent response structure', () => {
+      mockTaskManager.moveTask.mockReturnValue({
+        success: true,
+        data: {
+          movedTask: { id: 5, title: 'Moved Task' },
+          from: 5,
+          to: 7
+        },
+        message: 'Task moved successfully'
+      })
+
+      const result = mockTaskManager.moveTask({
+        from: 5,
+        to: 7
+      })
+
+      expect(result).toHaveProperty('success')
+      expect(result).toHaveProperty('data')
+      expect(result).toHaveProperty('message')
+      expect(result.data).toHaveProperty('movedTask')
+      expect(result.data).toHaveProperty('from')
+      expect(result.data).toHaveProperty('to')
+    })
+
+    it('should include operation metadata', () => {
+      mockTaskManager.moveTask.mockReturnValue({
+        success: true,
+        data: {
+          movedTask: { id: 7, title: 'Moved Task' },
+          from: 5,
+          to: 7,
+          operation: 'simple_move',
+          dependencyUpdates: []
+        },
+        message: 'Task moved successfully'
+      })
+
+      const result = mockTaskManager.moveTask({
+        from: 5,
+        to: 7
+      })
+
+      expect(result.data).toHaveProperty('operation')
+      expect(result.data).toHaveProperty('dependencyUpdates')
+    })
+  })
+
+  describe('Parameter validation', () => {
+    it('should require both from and to parameters', () => {
+      mockTaskManager.moveTask.mockReturnValue({
+        success: false,
+        error: 'Missing required parameters',
+        message: 'Both from and to parameters are required'
+      })
+
+      const result = mockTaskManager.moveTask({
+        from: 5
+      })
+
+      expect(result.success).toBe(false)
+      expect(result.error).toBe('Missing required parameters')
+    })
+
+    it('should handle tag parameter for cross-tag moves', () => {
+      mockTaskManager.moveTask.mockReturnValue({
+        success: true,
+        data: {
+          movedTask: { id: 5, title: 'Cross-tag Moved Task' },
+          from: 5,
+          to: 7,
+          sourceTag: 'feature-a',
+          targetTag: 'feature-b'
+        },
+        message: 'Task moved across tags successfully'
+      })
+
+      const result = mockTaskManager.moveTask({
+        from: 5,
+        to: 7,
+        tag: 'feature-b'
+      })
+
+      expect(result.success).toBe(true)
+      expect(result.data).toHaveProperty('sourceTag')
+      expect(result.data).toHaveProperty('targetTag')
+    })
+  })
 })

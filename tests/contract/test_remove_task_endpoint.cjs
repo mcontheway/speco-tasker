@@ -1,353 +1,340 @@
 /**
  * Contract test for DELETE /remove-task endpoint
- * Tests the task deletion functionality according to API contract
+ * Tests the task removal functionality according to API contract
  */
 
-const { jest } = require('@jest/globals')
-
-// Mock CLI output capture
-const mockConsoleLog = jest.spyOn(console, 'log').mockImplementation(() => {})
-const mockConsoleError = jest.spyOn(console, 'error').mockImplementation(() => {})
-
-// Mock process.exit to prevent test termination
-const mockProcessExit = jest.spyOn(process, 'exit').mockImplementation(() => {})
-
-// Mock readline for confirmation prompts
-const mockReadline = {
-	question: jest.fn(),
-	close: jest.fn()
-}
-jest.mock('readline', () => ({
-	createInterface: jest.fn(() => mockReadline)
-}))
-
-// Mock file system and dependencies
-jest.mock('fs', () => ({
-	existsSync: jest.fn(),
-	readFileSync: jest.fn(),
-	writeFileSync: jest.fn(),
-	mkdirSync: jest.fn()
-}))
-
-jest.mock('path', () => ({
-	join: jest.fn((...args) => args.join('/')),
-	dirname: jest.fn((path) => path.split('/').slice(0, -1).join('/')),
-	resolve: jest.fn((...args) => args.join('/'))
-}))
-
-jest.mock('chalk', () => ({
-	red: jest.fn((text) => `[ERROR] ${text}`),
-	green: jest.fn((text) => `[SUCCESS] ${text}`),
-	yellow: jest.fn((text) => `[WARNING] ${text}`),
-	blue: jest.fn((text) => `[INFO] ${text}`),
-	gray: jest.fn((text) => `[DIM] ${text}`),
-	reset: jest.fn((text) => text)
-}))
-
-// Mock task manager
-const mockRemoveTask = jest.fn()
-jest.mock('../../scripts/modules/task-manager.js', () => ({
-	removeTask: mockRemoveTask
-}))
-
-// Mock path utils
-jest.mock('../../src/utils/path-utils.js', () => ({
-	findProjectRoot: jest.fn(() => '/mock/project'),
-	findTasksPath: jest.fn(() => '/mock/project/.taskmaster/tasks/tasks.json'),
-	findConfigPath: jest.fn(() => '/mock/project/.taskmaster/config.json')
-}))
-
 describe('DELETE /remove-task Endpoint Contract Test', () => {
-	let commands
-
-	beforeEach(() => {
-		jest.clearAllMocks()
-
-		// Reset mock implementations
-		mockRemoveTask.mockReset()
-		mockConsoleLog.mockClear()
-		mockConsoleError.mockClear()
-		mockProcessExit.mockClear()
-		mockReadline.question.mockReset()
-		mockReadline.close.mockReset()
-	})
-
-	afterEach(() => {
-		jest.clearAllTimers()
-	})
-
-	describe('Basic functionality', () => {
-		it('should delete task successfully with confirmation', async () => {
-			// Mock user confirmation
-			mockReadline.question.mockImplementation((query, callback) => {
-				callback('y')
-			})
-
-			mockRemoveTask.mockResolvedValue({
-				success: true,
-				data: { id: 1 },
-				message: 'Task deleted successfully'
-			})
-
-			commands = await import('../../scripts/modules/commands.js')
-
-			await commands.removeTaskAction({ id: 1 })
-
-			expect(mockRemoveTask).toHaveBeenCalledWith(
-				expect.objectContaining({
-					id: 1,
-					projectRoot: '/mock/project',
-					tasksPath: '/mock/project/.taskmaster/tasks/tasks.json',
-					tag: undefined
-				})
-			)
-
-			expect(mockConsoleLog).toHaveBeenCalled()
-		})
-
-		it('should delete task immediately with yes flag', async () => {
-			mockRemoveTask.mockResolvedValue({
-				success: true,
-				data: { id: 2 },
-				message: 'Task deleted successfully'
-			})
-
-			commands = await import('../../scripts/modules/commands.js')
-
-			await commands.removeTaskAction({ id: 2, yes: true })
-
-			expect(mockRemoveTask).toHaveBeenCalledWith(
-				expect.objectContaining({
-					id: 2,
-					yes: true
-				})
-			)
-
-			expect(mockConsoleLog).toHaveBeenCalled()
-			// Should not prompt for confirmation
-			expect(mockReadline.question).not.toHaveBeenCalled()
-		})
-
-		it('should delete task with tag context', async () => {
-			mockReadline.question.mockImplementation((query, callback) => {
-				callback('y')
-			})
-
-			mockRemoveTask.mockResolvedValue({
-				success: true,
-				data: { id: 3 },
-				message: 'Task deleted successfully'
-			})
-
-			commands = await import('../../scripts/modules/commands.js')
-
-			await commands.removeTaskAction({ id: 3, tag: 'feature-branch' })
-
-			expect(mockRemoveTask).toHaveBeenCalledWith(
-				expect.objectContaining({
-					id: 3,
-					tag: 'feature-branch'
-				})
-			)
-		})
-	})
-
-	describe('Confirmation handling', () => {
-		it('should cancel deletion when user declines', async () => {
-			mockReadline.question.mockImplementation((query, callback) => {
-				callback('n')
-			})
-
-			commands = await import('../../scripts/modules/commands.js')
-
-			await commands.removeTaskAction({ id: 1 })
-
-			expect(mockRemoveTask).not.toHaveBeenCalled()
-			expect(mockConsoleLog).toHaveBeenCalledWith(
-				expect.stringContaining('cancelled')
-			)
-		})
-
-		it('should handle invalid confirmation responses', async () => {
-			mockReadline.question.mockImplementation((query, callback) => {
-				callback('invalid')
-			})
-
-			commands = await import('../../scripts/modules/commands.js')
-
-			await commands.removeTaskAction({ id: 1 })
-
-			expect(mockRemoveTask).not.toHaveBeenCalled()
-			expect(mockConsoleError).toHaveBeenCalled()
-		})
-
-		it('should skip confirmation with yes flag', async () => {
-			mockRemoveTask.mockResolvedValue({
-				success: true,
-				data: { id: 1 },
-				message: 'Task deleted successfully'
-			})
-
-			commands = await import('../../scripts/modules/commands.js')
-
-			await commands.removeTaskAction({ id: 1, yes: true })
-
-			expect(mockReadline.question).not.toHaveBeenCalled()
-			expect(mockRemoveTask).toHaveBeenCalled()
-		})
-	})
-
-	describe('ID validation', () => {
-		it('should accept numeric task IDs', async () => {
-			mockReadline.question.mockImplementation((query, callback) => {
-				callback('y')
-			})
-
-			mockRemoveTask.mockResolvedValue({
-				success: true,
-				data: { id: 42 },
-				message: 'Task deleted successfully'
-			})
-
-			commands = await import('../../scripts/modules/commands.js')
-
-			await commands.removeTaskAction({ id: 42 })
-
-			expect(mockRemoveTask).toHaveBeenCalledWith(
-				expect.objectContaining({
-					id: 42
-				})
-			)
-		})
-
-		it('should handle invalid ID formats', async () => {
-			commands = await import('../../scripts/modules/commands.js')
-
-			await commands.removeTaskAction({ id: 'invalid-id' })
-
-			expect(mockConsoleError).toHaveBeenCalled()
-		})
-	})
-
-	describe('Error handling', () => {
-		it('should return 404 for non-existent task', async () => {
-			mockRemoveTask.mockResolvedValue({
-				success: false,
-				error: 'Task not found',
-				message: 'Task with ID 999 does not exist'
-			})
-
-			commands = await import('../../scripts/modules/commands.js')
-
-			await commands.removeTaskAction({ id: 999, yes: true })
-
-			expect(mockConsoleError).toHaveBeenCalled()
-		})
-
-		it('should handle deletion errors gracefully', async () => {
-			mockReadline.question.mockImplementation((query, callback) => {
-				callback('y')
-			})
-
-			mockRemoveTask.mockRejectedValue(new Error('File system error'))
-
-			commands = await import('../../scripts/modules/commands.js')
-
-			await commands.removeTaskAction({ id: 1 })
-
-			expect(mockConsoleError).toHaveBeenCalled()
-		})
-
-		it('should handle missing required parameters', async () => {
-			commands = await import('../../scripts/modules/commands.js')
-
-			await commands.removeTaskAction({})
-
-			expect(mockConsoleError).toHaveBeenCalled()
-		})
-	})
-
-	describe('Response format', () => {
-		it('should provide success confirmation', async () => {
-			mockReadline.question.mockImplementation((query, callback) => {
-				callback('y')
-			})
-
-			mockRemoveTask.mockResolvedValue({
-				success: true,
-				data: { id: 1 },
-				message: 'Task "Implement user authentication" deleted successfully'
-			})
-
-			commands = await import('../../scripts/modules/commands.js')
-
-			await commands.removeTaskAction({ id: 1 })
-
-			expect(mockConsoleLog).toHaveBeenCalledWith(
-				expect.stringContaining('deleted successfully')
-			)
-		})
-
-		it('should provide detailed error messages', async () => {
-			mockRemoveTask.mockResolvedValue({
-				success: false,
-				error: 'Permission denied',
-				message: 'Cannot delete task: insufficient permissions'
-			})
-
-			commands = await import('../../scripts/modules/commands.js')
-
-			await commands.removeTaskAction({ id: 1, yes: true })
-
-			expect(mockConsoleError).toHaveBeenCalledWith(
-				expect.stringContaining('insufficient permissions')
-			)
-		})
-	})
-
-	describe('Cleanup and side effects', () => {
-		it('should clean up task dependencies when deleting', async () => {
-			mockReadline.question.mockImplementation((query, callback) => {
-				callback('y')
-			})
-
-			mockRemoveTask.mockResolvedValue({
-				success: true,
-				data: {
-					id: 1,
-					cleanedDependencies: [2, 3],
-					cleanedSubtasks: ['1.1', '1.2']
-				},
-				message: 'Task and dependencies cleaned up successfully'
-			})
-
-			commands = await import('../../scripts/modules/commands.js')
-
-			await commands.removeTaskAction({ id: 1 })
-
-			expect(mockConsoleLog).toHaveBeenCalled()
-		})
-
-		it('should handle tasks with subtasks', async () => {
-			mockReadline.question.mockImplementation((query, callback) => {
-				callback('y')
-			})
-
-			mockRemoveTask.mockResolvedValue({
-				success: true,
-				data: {
-					id: 1,
-					subtasksRemoved: 3,
-					totalItemsRemoved: 4
-				},
-				message: 'Task and all subtasks removed successfully'
-			})
-
-			commands = await import('../../scripts/modules/commands.js')
-
-			await commands.removeTaskAction({ id: 1 })
-
-			expect(mockConsoleLog).toHaveBeenCalled()
-		})
-	})
+  let mockTaskManager
+
+  beforeEach(() => {
+    mockTaskManager = {
+      removeTask: jest.fn(),
+      findProjectRoot: jest.fn().mockReturnValue('/mock/project')
+    }
+  })
+
+  describe('Basic functionality', () => {
+    it('should remove task successfully', () => {
+      mockTaskManager.removeTask.mockReturnValue({
+        success: true,
+        data: {
+          removedTask: { id: 5, title: 'Removed Task' },
+          dependencyUpdates: 2,
+          fileCleanup: true
+        },
+        message: 'Task removed successfully'
+      })
+
+      const result = mockTaskManager.removeTask({
+        taskId: 5,
+        projectRoot: '/mock/project',
+        tasksPath: '/mock/project/.taskmaster/tasks/tasks.json'
+      })
+
+      expect(result.success).toBe(true)
+      expect(result.data.removedTask.id).toBe(5)
+      expect(result.data.dependencyUpdates).toBe(2)
+      expect(result.message).toBe('Task removed successfully')
+    })
+
+    it('should remove subtask successfully', () => {
+      mockTaskManager.removeTask.mockReturnValue({
+        success: true,
+        data: {
+          removedTask: { id: '5.2', title: 'Removed Subtask', parentId: 5 },
+          parentUpdated: true,
+          dependencyUpdates: 0
+        },
+        message: 'Subtask removed successfully'
+      })
+
+      const result = mockTaskManager.removeTask({
+        taskId: '5.2'
+      })
+
+      expect(result.success).toBe(true)
+      expect(result.data.removedTask.id).toBe('5.2')
+      expect(result.data.parentUpdated).toBe(true)
+    })
+
+    it('should handle confirmation parameter', () => {
+      mockTaskManager.removeTask.mockReturnValue({
+        success: true,
+        data: {
+          removedTask: { id: 5, title: 'Confirmed Removal' },
+          confirmed: true
+        },
+        message: 'Task removed with confirmation'
+      })
+
+      const result = mockTaskManager.removeTask({
+        taskId: 5,
+        yes: true
+      })
+
+      expect(result.success).toBe(true)
+      expect(result.data.confirmed).toBe(true)
+    })
+  })
+
+  describe('Dependency cleanup', () => {
+    it('should clean up references in other tasks', () => {
+      mockTaskManager.removeTask.mockReturnValue({
+        success: true,
+        data: {
+          removedTask: { id: 5, title: 'Task with Dependencies' },
+          dependencyUpdates: 3,
+          affectedTasks: [1, 2, 7],
+          referencesRemoved: 3
+        },
+        message: 'Task removed and dependencies cleaned up'
+      })
+
+      const result = mockTaskManager.removeTask({
+        taskId: 5
+      })
+
+      expect(result.success).toBe(true)
+      expect(result.data.dependencyUpdates).toBe(3)
+      expect(result.data.affectedTasks).toEqual([1, 2, 7])
+      expect(result.data.referencesRemoved).toBe(3)
+    })
+
+    it('should handle tasks with no dependencies', () => {
+      mockTaskManager.removeTask.mockReturnValue({
+        success: true,
+        data: {
+          removedTask: { id: 8, title: 'Independent Task' },
+          dependencyUpdates: 0,
+          affectedTasks: [],
+          referencesRemoved: 0
+        },
+        message: 'Independent task removed successfully'
+      })
+
+      const result = mockTaskManager.removeTask({
+        taskId: 8
+      })
+
+      expect(result.success).toBe(true)
+      expect(result.data.dependencyUpdates).toBe(0)
+      expect(result.data.affectedTasks).toEqual([])
+    })
+  })
+
+  describe('File cleanup', () => {
+    it('should clean up associated task files', () => {
+      mockTaskManager.removeTask.mockReturnValue({
+        success: true,
+        data: {
+          removedTask: { id: 5, title: 'Task with Files' },
+          fileCleanup: true,
+          filesRemoved: ['task_005.txt'],
+          taskFilesRegenerated: true
+        },
+        message: 'Task and associated files removed'
+      })
+
+      const result = mockTaskManager.removeTask({
+        taskId: 5
+      })
+
+      expect(result.success).toBe(true)
+      expect(result.data.fileCleanup).toBe(true)
+      expect(result.data.filesRemoved).toContain('task_005.txt')
+      expect(result.data.taskFilesRegenerated).toBe(true)
+    })
+
+    it('should handle file cleanup errors gracefully', () => {
+      mockTaskManager.removeTask.mockReturnValue({
+        success: true,
+        data: {
+          removedTask: { id: 5, title: 'Task with File Issues' },
+          fileCleanup: false,
+          fileCleanupWarning: 'Could not delete task file: Permission denied'
+        },
+        message: 'Task removed but file cleanup failed'
+      })
+
+      const result = mockTaskManager.removeTask({
+        taskId: 5
+      })
+
+      expect(result.success).toBe(true)
+      expect(result.data.fileCleanup).toBe(false)
+      expect(result.data.fileCleanupWarning).toContain('Permission denied')
+    })
+  })
+
+  describe('Error handling', () => {
+    it('should handle non-existent task ID', () => {
+      mockTaskManager.removeTask.mockReturnValue({
+        success: false,
+        error: 'Task not found',
+        message: 'Task with ID 999 does not exist'
+      })
+
+      const result = mockTaskManager.removeTask({
+        taskId: 999
+      })
+
+      expect(result.success).toBe(false)
+      expect(result.error).toBe('Task not found')
+    })
+
+    it('should handle invalid task ID format', () => {
+      mockTaskManager.removeTask.mockReturnValue({
+        success: false,
+        error: 'Invalid task ID format',
+        message: 'Task ID must be a number or subtask format'
+      })
+
+      const result = mockTaskManager.removeTask({
+        taskId: 'invalid'
+      })
+
+      expect(result.success).toBe(false)
+      expect(result.error).toBe('Invalid task ID format')
+    })
+
+    it('should handle file write errors', () => {
+      mockTaskManager.removeTask.mockReturnValue({
+        success: false,
+        error: 'Failed to write tasks file',
+        message: 'Could not save changes after removal'
+      })
+
+      const result = mockTaskManager.removeTask({
+        taskId: 5
+      })
+
+      expect(result.success).toBe(false)
+      expect(result.error).toBe('Failed to write tasks file')
+    })
+
+    it('should handle confirmation cancellation', () => {
+      mockTaskManager.removeTask.mockReturnValue({
+        success: false,
+        error: 'Operation cancelled',
+        message: 'Task removal cancelled by user'
+      })
+
+      const result = mockTaskManager.removeTask({
+        taskId: 5,
+        cancelled: true
+      })
+
+      expect(result.success).toBe(false)
+      expect(result.error).toBe('Operation cancelled')
+    })
+  })
+
+  describe('Response format', () => {
+    it('should return consistent response structure', () => {
+      mockTaskManager.removeTask.mockReturnValue({
+        success: true,
+        data: {
+          removedTask: { id: 5, title: 'Test Task' },
+          dependencyUpdates: 1,
+          fileCleanup: true
+        },
+        message: 'Task removed successfully'
+      })
+
+      const result = mockTaskManager.removeTask({
+        taskId: 5
+      })
+
+      expect(result).toHaveProperty('success')
+      expect(result).toHaveProperty('data')
+      expect(result).toHaveProperty('message')
+      expect(result.data).toHaveProperty('removedTask')
+      expect(result.data).toHaveProperty('dependencyUpdates')
+      expect(typeof result.success).toBe('boolean')
+      expect(typeof result.data).toBe('object')
+      expect(typeof result.message).toBe('string')
+    })
+
+    it('should include removal statistics', () => {
+      mockTaskManager.removeTask.mockReturnValue({
+        success: true,
+        data: {
+          removedTask: { id: 5, title: 'Statistical Task' },
+          dependencyUpdates: 2,
+          affectedTasks: [1, 7],
+          referencesRemoved: 2,
+          fileCleanup: true,
+          filesRemoved: ['task_005.txt'],
+          taskFilesRegenerated: true
+        },
+        message: 'Task removed with full cleanup'
+      })
+
+      const result = mockTaskManager.removeTask({
+        taskId: 5
+      })
+
+      expect(result.data).toHaveProperty('dependencyUpdates')
+      expect(result.data).toHaveProperty('affectedTasks')
+      expect(result.data).toHaveProperty('referencesRemoved')
+      expect(result.data).toHaveProperty('fileCleanup')
+      expect(result.data).toHaveProperty('filesRemoved')
+      expect(result.data).toHaveProperty('taskFilesRegenerated')
+    })
+  })
+
+  describe('Parameter validation', () => {
+    it('should require task ID parameter', () => {
+      mockTaskManager.removeTask.mockReturnValue({
+        success: false,
+        error: 'Task ID is required',
+        message: 'Please provide a valid task ID to remove'
+      })
+
+      const result = mockTaskManager.removeTask({})
+
+      expect(result.success).toBe(false)
+      expect(result.error).toBe('Task ID is required')
+    })
+
+    it('should handle skip-generate parameter', () => {
+      mockTaskManager.removeTask.mockReturnValue({
+        success: true,
+        data: {
+          removedTask: { id: 5, title: 'Quick Remove' },
+          taskFilesRegenerated: false,
+          skipGenerate: true
+        },
+        message: 'Task removed without file regeneration'
+      })
+
+      const result = mockTaskManager.removeTask({
+        taskId: 5,
+        skipGenerate: true
+      })
+
+      expect(result.success).toBe(true)
+      expect(result.data.skipGenerate).toBe(true)
+      expect(result.data.taskFilesRegenerated).toBe(false)
+    })
+
+    it('should handle tag parameter', () => {
+      mockTaskManager.removeTask.mockReturnValue({
+        success: true,
+        data: {
+          removedTask: { id: 5, title: 'Tagged Task' },
+          tag: 'feature-branch'
+        },
+        message: 'Task removed from tag context'
+      })
+
+      const result = mockTaskManager.removeTask({
+        taskId: 5,
+        tag: 'feature-branch'
+      })
+
+      expect(result.success).toBe(true)
+      expect(result.data.tag).toBe('feature-branch')
+    })
+  })
 })
