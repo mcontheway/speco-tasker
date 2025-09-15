@@ -82,7 +82,7 @@ function displayBanner() {
 
 	// Add creator credit line below the banner
 	console.log(
-		chalk.dim('by ') + chalk.cyan.underline('https://x.com/eyaltoledano')
+		chalk.dim('by ') + chalk.cyan.underline('https://github.com/mcontheway/taskmaster-no-ai')
 	);
 
 	console.log(

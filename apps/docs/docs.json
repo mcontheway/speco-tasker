@@ -62,11 +62,7 @@
 					"href": "https://github.com/mcontheway/taskmaster-no-ai",
 					"icon": "github"
 				},
-				{
-					"anchor": "Discord",
-					"href": "https://discord.gg/fWJkU7rf",
-					"icon": "discord"
-				}
+				<!-- TODO: Add Discord link when community server is available -->
 			]
 		}
 	},
@@ -76,7 +72,7 @@
 	},
 	"footer": {
 		"socials": {
-			"x": "https://x.com/TaskmasterAI",
+			<!-- TODO: Add Twitter/X link when social media is available -->
 			"github": "https://github.com/mcontheway/taskmaster-no-ai"
 		}
 	}

@@ -2,7 +2,7 @@
 
 /**
  * Task Master
- * Copyright (c) 2025 Eyal Toledano, Ralph Khreish
+ * Copyright (c) 2025 TaskMaster Team
  *
  * This software is licensed under the MIT License with Commons Clause.
  * You may use this software for any purpose, including commercial applications,

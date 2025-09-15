@@ -37,7 +37,7 @@ To manually verify that the Roo files are properly included in the package:
 3. Install the task-master-ai package locally:
 
    ```bash
-   # From the root of the claude-task-master repository
+   # From the root of the taskmaster-no-ai repository
    cd ..
    npm pack
    # This will create a file like task-master-ai-0.12.0.tgz

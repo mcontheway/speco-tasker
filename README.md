@@ -5,7 +5,7 @@
 </div>
 
 <p align="center">
-  <a href="https://task-master.dev"><img src="./images/logo.png?raw=true" alt="Taskmaster logo"></a>
+  <img src="./images/logo.png?raw=true" alt="Taskmaster logo">
 </p>
 
 <p align="center">
@@ -13,21 +13,19 @@
 </p>
 
 <p align="center">
-  <a href="https://discord.gg/taskmasterai" target="_blank"><img src="https://dcbadge.limes.pink/api/server/https://discord.gg/taskmasterai?style=flat" alt="Discord"></a> |
-  <a href="https://docs.task-master.dev" target="_blank">Docs</a>
+  <!-- TODO: Add Discord server link when available -->
+  <!-- TODO: Add documentation site link when available -->
 </p>
 
 <p align="center">
   <a href="https://github.com/mcontheway/taskmaster-no-ai/actions/workflows/ci.yml"><img src="https://github.com/mcontheway/taskmaster-no-ai/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="https://github.com/mcontheway/taskmaster-no-ai/stargazers"><img src="https://img.shields.io/github/stars/mcontheway/taskmaster-no-ai?style=social" alt="GitHub stars"></a>
-  <a href="https://badge.fury.io/js/task-master-ai"><img src="https://badge.fury.io/js/task-master-ai.svg" alt="npm version"></a>
+  <!-- TODO: Add npm version badge when package is published -->
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT%20with%20Commons%20Clause-blue.svg" alt="License"></a>
 </p>
 
 <p align="center">
-  <a href="https://www.npmjs.com/package/task-master-ai"><img src="https://img.shields.io/npm/d18m/task-master-ai?style=flat" alt="NPM Downloads"></a>
-  <a href="https://www.npmjs.com/package/task-master-ai"><img src="https://img.shields.io/npm/dm/task-master-ai?style=flat" alt="NPM Downloads"></a>
-  <a href="https://www.npmjs.com/package/task-master-ai"><img src="https://img.shields.io/npm/dw/task-master-ai?style=flat" alt="NPM Downloads"></a>
+  <!-- TODO: Add NPM download badges when package is published -->
 </p>
 
 ## TaskMaster Project
@@ -38,9 +36,9 @@ A task management system for AI-driven development with Claude, designed to work
 
 ## Documentation
 
-📚 **[View Full Documentation](https://docs.task-master.dev)**
+📚 <!-- TODO: Add documentation site link when available -->
 
-For detailed guides, API references, and comprehensive examples, visit our documentation site.
+<!-- TODO: Add documentation site description when available -->
 
 ### Quick Reference
 
@@ -53,11 +51,12 @@ The following documentation is also available in the `docs` directory:
 - [Example Interactions](docs/examples.md) - Common Cursor AI interaction examples
 - [Migration Guide](docs/migration-guide.md) - Guide to migrating to the new project structure
 
-#### Quick Install for Cursor 1.0+ (One-Click)
+#### Manual Installation for Cursor
 
-[![Add task-master-ai MCP server to Cursor](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en/install-mcp?name=task-master-ai&config=eyJjb21tYW5kIjoibnB4IC15IC0tcGFja2FnZT10YXNrLW1hc3Rlci1haSB0YXNrLW1hc3Rlci1haSIsImVudiI6eyJBTlRIUk9QSUNfQVBJX0tFWSI6IllPVVJfQU5USFJPUElDX0FQSV9LRVlfSEVSRSIsIlBFUlBMRVhJVFlfQVBJX0tFWSI6IllPVVJfUEVSUExFWElUWV9BUElfS0VZX0hFUkUiLCJPUEVOQUlfQVBJX0tFWSI6IllPVVJfT1BFTkFJX0tFWV9IRVJFIiwiR09PR0xFX0FQSV9LRVkiOiJZT1VSX0dPT0dMRV9LRVlfSEVSRSIsIk1JU1RSQUxfQVBJX0tFWSI6IllPVVJfTUlTVFJBTF9LRVlfSEVSRSIsIkdST1FfQVBJX0tFWSI6IllPVVJfR1JPUV9LRVlfSEVSRSIsIk9QRU5ST1VURVJfQVBJX0tFWSI6IllPVVJfT1BFTlJPVVRFUl9LRVlfSEVSRSIsIlhBSV9BUElfS0VZIjoiWU9VUl9YQUlfS0VZX0hFUkUiLCJBWlVSRV9PUEVOQUlfQVBJX0tFWSI6IllPVVJfQVpVUkVfS0VZX0hFUkUiLCJPTExBTUFfQVBJX0tFWSI6IllPVVJfT0xMQU1BX0FQSV9LRVlfSEVSRSJ9fQ%3D%3D)
+<!-- TODO: Add Cursor one-click installation link when MCP server is published -->
+<!-- TODO: Add installation instructions when ready -->
 
-> **Note:** After clicking the link, you'll still need to add your API keys to the configuration. The link installs the MCP server with placeholder keys that you'll need to replace with your actual API keys.
+> **Note:** <!-- TODO: Update installation notes when MCP server is published -->
 
 ## Requirements
 
@@ -296,13 +295,12 @@ node scripts/init.js
 
 ## Contributors
 
-<a href="https://github.com/mcontheway/taskmaster-no-ai/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=mcontheway/taskmaster-no-ai" alt="TaskMaster project contributors" />
-</a>
+<!-- TODO: Add contributors section when repository has contributors -->
+<!-- TODO: Add contributors image when available -->
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=mcontheway/taskmaster-no-ai&type=Timeline)](https://www.star-history.com/#mcontheway/taskmaster-no-ai&Timeline)
+<!-- TODO: Add Star History chart when repository has sufficient activity -->
 
 ## Licensing
 

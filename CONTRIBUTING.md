@@ -320,9 +320,9 @@ Include:
 
 ## 💬 Getting Help
 
-- **Discord**: [Join our community](https://discord.gg/taskmasterai)
-- **Issues**: [GitHub Issues](https://github.com/eyaltoledano/claude-task-master/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/eyaltoledano/claude-task-master/discussions)
+- <!-- TODO: Add Discord community link when available -->
+- **Issues**: [GitHub Issues](https://github.com/mcontheway/taskmaster-no-ai/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/mcontheway/taskmaster-no-ai/discussions)
 
 ## 📄 License
 

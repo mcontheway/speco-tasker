@@ -151,10 +151,10 @@ Access settings via **File → Preferences → Settings** and search for "Taskma
 ## 🆘 Support & Resources
 
 ### **Getting Help**
-- 📖 **Documentation**: [Taskmaster AI Docs](https://github.com/eyaltoledano/claude-task-master)
-- 🐛 **Report Issues**: [GitHub Issues](https://github.com/eyaltoledano/claude-task-master/issues)
-- 💬 **Discussions**: [GitHub Discussions](https://github.com/eyaltoledano/claude-task-master/discussions)
-- 🐛 **Report Issues**: [GitHub Issues](https://github.com/eyaltoledano/claude-task-master/issues)
+- 📖 **Documentation**: [Taskmaster AI Docs](https://github.com/mcontheway/taskmaster-no-ai)
+- 🐛 **Report Issues**: [GitHub Issues](https://github.com/mcontheway/taskmaster-no-ai/issues)
+- 💬 **Discussions**: [GitHub Discussions](https://github.com/mcontheway/taskmaster-no-ai/discussions)
+- 🐛 **Report Issues**: [GitHub Issues](https://github.com/mcontheway/taskmaster-no-ai/issues)
 
 ## 🎯 Tips for Best Results
 
@@ -195,7 +195,7 @@ Access settings via **File → Preferences → Settings** and search for "Taskma
 ## Support
 
 This is an open-source project maintained in my spare time. While I strive to fix bugs and improve the extension, support is provided on a best-effort basis. Feel free to:
-- Report issues on [GitHub](https://github.com/eyaltoledano/claude-task-master/issues)
+- Report issues on [GitHub](https://github.com/mcontheway/taskmaster-no-ai/issues)
 - Submit pull requests with improvements
 - Fork the project if you need specific modifications
 
