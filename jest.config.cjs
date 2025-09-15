@@ -25,7 +25,9 @@ const config = {
 		'**/integration/**/*.js',
 		'**/integration/**/*.cjs',
 		'**/unit/**/*.js',
-		'**/unit/**/*.cjs'
+		'**/unit/**/*.cjs',
+		'**/performance/**/*.js',
+		'**/performance/**/*.cjs'
 	],
 
 	// Don't transform node_modules except specific ones - fix module loading issues

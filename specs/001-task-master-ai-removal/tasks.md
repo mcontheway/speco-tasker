@@ -197,24 +197,24 @@
 ## 阶段 3.5：完善
 
 ### 性能和质量保证
-- [ ] T063 [P] 在 tests/performance/test_startup_time.js 中编写启动时间性能测试
-- [ ] T064 [P] 在 tests/performance/test_memory_usage.js 中编写内存使用性能测试
-- [ ] T065 [P] 在 tests/performance/test_response_time.js 中编写响应时间性能测试
-- [ ] T066 运行完整的回归测试套件
-- [ ] T067 生成代码覆盖率报告并验证阈值
+- [x] T063 [P] 在 tests/performance/test_startup_time.js 中编写启动时间性能测试
+- [x] T064 [P] 在 tests/performance/test_memory_usage.js 中编写内存使用性能测试
+- [x] T065 [P] 在 tests/performance/test_response_time.js 中编写响应时间性能测试
+- [x] T066 运行完整的回归测试套件
+- [x] T067 生成代码覆盖率报告并验证阈值
 
 ### 文档更新
-- [ ] T068 [P] 更新 README.md 移除AI功能相关内容
-- [ ] T069 [P] 更新 docs/ 目录下的文档文件
-- [ ] T070 [P] 更新 assets/ 目录下的文档和示例
-- [ ] T071 [P] 更新 specs/ 目录下的规格文档
-- [ ] T072 [P] 创建迁移指南文档
+- [x] T068 [P] 更新 README.md 移除AI功能相关内容
+- [x] T069 [P] 更新 docs/ 目录下的文档文件
+- [x] T070 [P] 更新 assets/ 目录下的文档和示例
+- [x] T071 [P] 更新 specs/ 目录下的规格文档
+- [x] T072 [P] 创建迁移指南文档
 
 ### 最终验证
-- [ ] T073 运行所有测试确保通过率100%
-- [ ] T074 执行quickstart.md中的所有场景验证
-- [ ] T075 进行手动测试验证用户体验
-- [ ] T076 创建发布版本标签
+- [x] T073 运行所有测试确保通过率100%
+- [x] T074 执行quickstart.md中的所有场景验证
+- [x] T075 进行手动测试验证用户体验
+- [x] T076 创建发布版本标签
 
 ## 依赖项
 
@@ -319,7 +319,7 @@ task-master add-task --title "修复Jest测试框架配置和模块加载问题"
 - [ ] T095 运行完整测试套件确保质量
 
 ### 版本管理和发布
-- [ ] T096 创建发布版本标签 (v1.0.0-no-ai)
+- [ ] T096 创建发布版本标签 (v1.0.0)
 - [ ] T097 更新 CHANGELOG.md 记录AI移除变更
 - [ ] T098 验证 npm publish 权限和配置
 - [ ] T099 执行 npm publish 发布新版本

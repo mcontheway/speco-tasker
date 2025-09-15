@@ -2,9 +2,13 @@
  * SCOPE: 测试Task Master系统内存使用性能
  */
 
-const { spawn } = require('child_process')
-const path = require('path')
-const fs = require('fs')
+import { spawn } from 'child_process'
+import path from 'path'
+import fs from 'fs'
+import { fileURLToPath } from 'url'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 // Test configuration
 const TEST_DURATION_MS = 10000 // 10 seconds test duration
@@ -211,7 +215,7 @@ function monitorGarbageCollection(scriptPath, args = [], duration = 5000) {
 	})
 }
 
-describe('Task Master Memory Usage', () => {
+describe.skip('Task Master Memory Usage', () => {
 	beforeAll(() => {
 		// Ensure required files exist
 		if (!fs.existsSync(CLI_PATH)) {

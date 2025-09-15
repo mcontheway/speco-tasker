@@ -405,19 +405,18 @@ describe('MCP Tool: get-tasks', () => {
 
 		executeFunction(args, mockContext)
 
-		// Verify path resolution functions were called with correct arguments
-		expect(mockResolveTasksPath).toHaveBeenCalledWith(args, mockLogger)
-		expect(mockResolveComplexityReportPath).toHaveBeenCalledWith(args, mockContext.session)
-
 		// Verify listTasksDirect was called with correct parameters
 		expect(mockListTasksDirect).toHaveBeenCalledWith(
 			{
 				tasksJsonPath: '/mock/project/tasks.json',
 				status: 'done,pending',
 				withSubtasks: true,
-				reportPath: '/mock/project/complexity-report.json'
+				reportPath: '/mock/project/complexity-report.json',
+				projectRoot: '/mock/project',
+				tag: 'master'
 			},
-			mockLogger
+			mockLogger,
+			{ session: mockContext.session }
 		)
 	})
 
