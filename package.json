@@ -84,11 +84,11 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/mcontheway/taskmaster-no-ai.git"
+		"url": "git+https://github.com/mcontheway/speco-tasker.git"
 	},
-	"homepage": "https://github.com/mcontheway/taskmaster-no-ai#readme",
+	"homepage": "https://github.com/mcontheway/speco-tasker#readme",
 	"bugs": {
-		"url": "https://github.com/mcontheway/taskmaster-no-ai/issues"
+		"url": "https://github.com/mcontheway/speco-tasker/issues"
 	},
 	"files": [
 		"scripts/**",
@@ -124,7 +124,6 @@
 		"npm-check-updates": "^18.1.1",
 		"prettier": "^3.5.3",
 		"supertest": "^7.1.0",
-		"taskmaster-no-ai": "^1.0.9",
 		"ts-jest": "^29.4.1",
 		"tsx": "^4.16.2"
 	}
