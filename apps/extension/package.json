@@ -239,7 +239,7 @@
 		"check-types": "tsc --noEmit"
 	},
 	"dependencies": {
-		"taskmaster-no-ai": "1.0.0"
+		"taskmaster-no-ai": "1.0.15"
 	},
 	"devDependencies": {
 		"@dnd-kit/core": "^6.3.1",
