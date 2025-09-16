@@ -22,6 +22,7 @@
 		"release": "changeset publish",
 		"inspector": "npx @modelcontextprotocol/inspector node mcp-server/server.js",
 		"mcp-server": "node mcp-server/server.js",
+		"setup": "node setup.js",
 		"format-check": "biome format .",
 		"format": "biome format . --write",
 		"lint": "biome check .",

@@ -31,16 +31,26 @@ export async function initializeProjectDirect(args, log, context = {}) {
 	if (
 		!targetDirectory ||
 		typeof targetDirectory !== 'string' || // Ensure it's a string
+		targetDirectory.trim() === '' ||
 		targetDirectory === '/' ||
 		targetDirectory === homeDir
 	) {
-		log.error(`Invalid target directory received from tool layer: '${targetDirectory}'`)
+		log.error(`Invalid target directory received from tool layer: '${targetDirectory}' (type: ${typeof targetDirectory})`)
+		const errorDetails = {
+			receivedProjectRoot: args.projectRoot,
+			receivedProjectRootType: typeof args.projectRoot,
+			targetDirectory: targetDirectory,
+			targetDirectoryType: typeof targetDirectory,
+			homeDir: homeDir,
+			currentCwd: process.cwd()
+		}
+		log.error(`Detailed error info: ${JSON.stringify(errorDetails, null, 2)}`)
 		return {
 			success: false,
 			error: {
 				code: 'INVALID_TARGET_DIRECTORY',
-				message: `Cannot initialize project: Invalid target directory '${targetDirectory}' received. Please ensure a valid workspace/folder is open or specified.`,
-				details: `Received args.projectRoot: ${args.projectRoot}` // Show what was received
+				message: `Cannot initialize project: Invalid target directory received. Please provide a valid projectRoot argument (absolute path to your project directory).`,
+				details: JSON.stringify(errorDetails, null, 2)
 			}
 		}
 	}

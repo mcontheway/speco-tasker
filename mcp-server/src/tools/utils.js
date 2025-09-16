@@ -758,11 +758,22 @@ function withNormalizedProjectRoot(executeFn) {
 			// 3. If no args.projectRoot, try session-based resolution
 			else {
 				const sessionRoot = getProjectRootFromSession(session, log)
-				if (sessionRoot) {
+				if (sessionRoot && typeof sessionRoot === 'string' && sessionRoot.trim()) {
 					normalizedRoot = sessionRoot // getProjectRootFromSession already normalizes
 					rootSource = 'session'
 					log.info(`Using project root from ${rootSource}: ${normalizedRoot}`)
+				} else {
+					log.warn(`Session root resolution failed or returned invalid path: ${sessionRoot}`)
+					// Don't set normalizedRoot here - let it fall through to the final check
 				}
+			}
+
+			// Final fallback: use current working directory
+			if (!normalizedRoot) {
+				log.warn('All project root resolution methods failed, using current working directory as fallback')
+				normalizedRoot = process.cwd()
+				rootSource = 'current working directory (fallback)'
+				log.info(`Using fallback project root: ${normalizedRoot}`)
 			}
 
 			if (!normalizedRoot) {

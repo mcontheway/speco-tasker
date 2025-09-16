@@ -91,91 +91,26 @@ TaskMaster No-AI 是一个纯手动任务管理系统，无需任何外部API密
 - 无需外部服务
 - 完全本地化运行
 
-## 🚀 快速开始
+## 🚀 快速开始 (3步完成)
 
-### 方法一：MCP 集成 (推荐)
+### 1. 克隆和安装
 
-通过 MCP (Model Context Protocol)，您可以在编辑器中直接使用 TaskMaster No-AI。
-
-#### 1. 添加 MCP 配置
-
-根据您的编辑器，在相应路径添加配置文件：
-
-| 编辑器 | 范围 | Linux/macOS 路径 | Windows 路径 | 配置键 |
-|--------|------|------------------|--------------|--------|
-| **Cursor** | 全局 | `~/.cursor/mcp.json` | `%USERPROFILE%\.cursor\mcp.json` | `mcpServers` |
-| | 项目 | `<项目文件夹>/.cursor/mcp.json` | `<项目文件夹>\.cursor\mcp.json` | `mcpServers` |
-| **Windsurf** | 全局 | `~/.codeium/windsurf/mcp_config.json` | `%USERPROFILE%\.codeium\windsurf\mcp_config.json` | `mcpServers` |
-| **VS Code** | 项目 | `<项目文件夹>/.vscode/mcp.json` | `<项目文件夹>\.vscode\mcp.json` | `servers` |
-
-##### 手动配置
-
-###### Cursor & Windsurf (`mcpServers`)
-
-**推荐配置**：
-```json
-{
-  "mcpServers": {
-    "taskmaster-no-ai": {
-      "command": "task-master-mcp"
-    }
-  }
-}
-```
-
-**临时替代方案**：
-```json
-{
-  "mcpServers": {
-    "taskmaster-no-ai": {
-      "command": "npx",
-      "args": ["-y", "taskmaster-no-ai"]
-    }
-  }
-}
-```
-
-###### VS Code (`servers` + `type`)
-
-```json
-{
-  "servers": {
-    "taskmaster-no-ai": {
-      "command": "task-master-mcp",
-      "type": "stdio"
-    }
-  }
-}
-```
-
-**临时替代方案 (推荐)**：
-```json
-{
-  "servers": {
-    "taskmaster-no-ai": {
-      "command": "npx",
-      "args": ["-y", "taskmaster-no-ai"],
-      "type": "stdio"
-    }
-  }
-}
-```
-
-#### 2. (仅 Cursor) 启用 TaskMaster MCP
-
-打开 Cursor 设置 (Ctrl+Shift+J) ➡ 点击左侧的 MCP 标签页 ➡ 启用 taskmaster-no-ai 开关
-
-#### 2.5 临时解决方案 (如果遇到 "command not found" 错误)
-
-如果遇到 `taskmaster-no-ai: command not found` 错误，请使用以下任一临时解决方案：
-
-**方案A：使用本地安装**
 ```bash
-# 在项目根目录执行
-npm install taskmaster-no-ai
+# 克隆项目
+git clone https://github.com/mcontheway/taskmaster-no-ai.git
+cd taskmaster-no-ai
+
+# 安装依赖 (一键完成)
+npm run setup
 ```
 
-然后修改MCP配置为：
+### 2. 配置MCP (自动生成)
+
+项目已包含适合不同编辑器的MCP配置：
+
+**Cursor用户：** 使用 `.cursor/mcp.json`
+**VSCode用户：** 使用 `.vscode/mcp.json`
+
 ```json
 {
   "mcpServers": {
@@ -187,27 +122,93 @@ npm install taskmaster-no-ai
 }
 ```
 
-**方案B：使用完整路径**
+> [!NOTE]
+> 如果你想在所有项目中使用TaskMaster，可以将 `.cursor/mcp.global.json` 复制到全局配置目录 (`~/.cursor/mcp.json`)
+
+### 3. 重启编辑器并开始使用
+
+**Cursor用户：**
+1. 重启Cursor
+2. 在设置中启用MCP：`taskmaster-no-ai`
+3. 在聊天中输入：`初始化 TaskMaster 项目`
+
+**VSCode用户：**
+1. 安装MCP扩展
+2. 重启VSCode
+3. MCP服务器自动加载
+
+---
+
+### 🔧 故障排除
+
+**如果遇到问题，重新运行安装：**
+```bash
+npm run setup
+```
+
+**检查环境：**
+```bash
+node --version  # 应 >= 18.0.0
+npm --version   # 应 >= 8.0.0
+```
+
+**测试MCP服务器：**
+```bash
+npx taskmaster-no-ai --help
+```
+
+> [!SUCCESS]
+> 🎉 **配置正确！** 如果你看到 "MCP Server connected" 消息，说明配置成功。
+
+---
+
+### 方法一：MCP 集成 (推荐)
+
+通过 MCP (Model Context Protocol)，您可以在编辑器中直接使用 TaskMaster No-AI。
+
+#### 自动配置 (推荐)
+
+**让脚本自动为你生成最佳配置：**
+
+```bash
+# 在项目根目录执行
+npm run install-mcp
+```
+
+**脚本会自动检测你的编辑器并生成配置！**
+
+#### 手动配置
+
+如果需要手动配置或脚本检测失败，请根据编辑器类型选择：
+
+##### Cursor & Windsurf
 ```json
 {
   "mcpServers": {
     "taskmaster-no-ai": {
-      "command": "/opt/homebrew/lib/node_modules/taskmaster-no-ai/mcp-server/server.js"
+      "command": "npx",
+      "args": ["taskmaster-no-ai"]
     }
   }
 }
 ```
 
-**方案C：使用task-master-mcp命令**
+##### VS Code
 ```json
 {
-  "mcpServers": {
+  "servers": {
     "taskmaster-no-ai": {
-      "command": "task-master-mcp"
+      "command": "npx",
+      "args": ["taskmaster-no-ai"],
+      "type": "stdio"
     }
   }
 }
 ```
+
+#### 启用 MCP (仅 Cursor)
+
+打开 Cursor 设置 (Ctrl+Shift+P → "Preferences: Open Settings") ➡ 搜索 "mcp" ➡ 启用 taskmaster-no-ai
 
 #### 3. 初始化项目
 
