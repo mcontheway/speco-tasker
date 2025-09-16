@@ -8,14 +8,16 @@ Tasks in tasks.json have the following structure:
 
 - `id`: Unique identifier for the task (Example: `1`)
 - `title`: Brief, descriptive title of the task (Example: `"Initialize Repo"`)
-- `description`: Concise description of what the task involves (Example: `"Create a new repository, set up initial structure."`)
+- `description`: **Required** Concise description of what the task involves (Example: `"Create a new repository, set up initial structure."`)
 - `status`: Current state of the task (Example: `"pending"`, `"done"`, `"deferred"`)
 - `dependencies`: IDs of tasks that must be completed before this task (Example: `[1, 2]`)
   - Dependencies are displayed with status indicators (✅ for completed, ⏱️ for pending)
   - This helps quickly identify which prerequisite tasks are blocking work
-- `priority`: Importance level of the task (Example: `"high"`, `"medium"`, `"low"`)
-- `details`: In-depth implementation instructions (Example: `"Use GitHub client ID/secret, handle callback, set session token."`)
-- `testStrategy`: Verification approach (Example: `"Deploy and call endpoint to confirm 'Hello World' response."`)
+- `priority`: **Required** Importance level of the task. Must be one of: `"high"`, `"medium"`, `"low"` (Example: `"high"`)
+- `details`: **Required** In-depth implementation instructions (Example: `"Use GitHub client ID/secret, handle callback, set session token."`)
+- `testStrategy`: **Required** Verification approach (Example: `"Deploy and call endpoint to confirm 'Hello World' response."`)
+- `spec_files`: **Required** Associated specification documents (Example: `[{"type": "plan", "title": "Implementation Plan", "file": "specs/001-task-plan.md"}]`)
+- `logs`: Implementation process logs (Example: `"2024-01-15: Started implementation, identified key challenges..."`)
 - `subtasks`: List of smaller, more specific tasks that make up the main task (Example: `[{"id": 1, "title": "Configure OAuth", ...}]`)
 
 ## Task File Format
@@ -35,6 +37,107 @@ Individual task files follow this format:
 # Test Strategy:
 <verification approach>
 ```
+
+## New Required Fields
+
+### spec_files (Required)
+
+This field is **mandatory** for all tasks and subtasks. It establishes a clear link between implementation tasks and their specification documents.
+
+**Structure:**
+```json
+"spec_files": [
+  {
+    "type": "plan",
+    "title": "Implementation Plan",
+    "file": "specs/001-task-plan.md"
+  },
+  {
+    "type": "spec",
+    "title": "Technical Specification",
+    "file": "specs/001-technical-spec.md"
+  }
+]
+```
+
+**Common Types:**
+- `plan`: Implementation plans and roadmaps
+- `spec`: Technical specifications and requirements
+- `requirement`: Business requirements documents
+- `design`: Design documents and wireframes
+- `analysis`: Analysis reports and research findings
+
+**Validation Rules:**
+- Field is required and cannot be empty
+- Each entry must have `type`, `title`, and `file` fields
+- File paths should be relative to project root
+- System will warn if referenced files don't exist
+
+### logs (Optional)
+
+This field provides a chronological record of the implementation process, challenges encountered, and decisions made.
+
+**Example:**
+```json
+"logs": "2024-01-15 10:30: Started implementation of authentication module\n2024-01-15 14:20: Identified issue with token validation - switched to JWT\n2024-01-16 09:15: Completed basic auth flow, testing in progress"
+```
+
+**Usage Guidelines:**
+- Use timestamps for chronological tracking
+- Document important decisions and why they were made
+- Record challenges and how they were resolved
+- Include references to related code changes or commits
+
+## Required Field Validation
+
+### Validation Rules
+
+The system enforces strict validation for all required fields during task creation and updates:
+
+#### Task Required Fields:
+- **description**: Must be non-empty string
+- **priority**: Must be one of: `"high"`, `"medium"`, `"low"`
+- **details**: Must be non-empty string
+- **testStrategy**: Must be non-empty string
+- **spec_files**: Must contain at least one specification document
+
+#### Subtask Required Fields:
+- **description**: Must be non-empty string
+- **priority**: Must be one of: `"high"`, `"medium"`, `"low"`
+- **details**: Must be non-empty string
+- **testStrategy**: Must be non-empty string
+- **spec_files**: Must contain at least one specification document
+
+### Validation Behavior
+
+- **Creation**: Tasks and subtasks cannot be created without all required fields
+- **Updates**: Attempting to update tasks/subtasks with invalid required fields will be rejected
+- **Error Messages**: Clear, specific error messages guide users to complete missing information
+- **Strict Validation**: No default values are provided; users must provide meaningful content for all required fields
+
+### Best Practices for Required Fields
+
+#### Description Field:
+- Write clear, actionable descriptions
+- Focus on what the task accomplishes
+- Keep descriptions concise but informative
+
+#### Priority Field:
+- Use `"high"` for critical, time-sensitive tasks
+- Use `"medium"` for standard development tasks (default)
+- Use `"low"` for nice-to-have or deferred tasks
+
+#### Details Field:
+- Provide comprehensive implementation guidance
+- Include technical specifications and constraints
+- Reference related code, files, or external resources
+- Consider edge cases and error handling
+
+#### Test Strategy Field:
+- Define clear verification criteria
+- Include both positive and negative test cases
+- Specify expected outcomes and success metrics
+- Consider integration and regression testing needs
 
 ## Features in Detail
 
@@ -263,10 +366,14 @@ Subtasks follow a similar structure to main tasks but with some differences:
 
 - **`id`** (number): Unique identifier within the parent task
 - **`title`** (string): Brief, descriptive title
-- **`description`** (string): Concise summary of the subtask
+- **`description`** (string): **Required** Concise summary of the subtask
 - **`status`** (string): Current state (same values as main tasks)
 - **`dependencies`** (array): Can reference other subtasks or main task IDs
-- **`details`** (string): Implementation instructions and notes
+- **`priority`** (string): **Required** Importance level. Must be one of: `"high"`, `"medium"`, `"low"`
+- **`details`** (string): **Required** Implementation instructions and notes
+- **`testStrategy`** (string): **Required** Verification approach for the subtask
+- **`spec_files`** (array): **Required** Associated specification documents (same structure as main tasks)
+- **`logs`** (string): **Optional** Implementation process logs
 
 ### Subtask Example
 
@@ -277,7 +384,17 @@ Subtasks follow a similar structure to main tasks but with some differences:
   "description": "Process the OAuth callback and extract user data",
   "status": "pending",
   "dependencies": [1],
-  "details": "Parse callback parameters, exchange code for token, fetch user profile"
+  "priority": "high",
+  "details": "Parse callback parameters, exchange code for token, fetch user profile",
+  "testStrategy": "Test OAuth callback with valid and invalid parameters",
+  "spec_files": [
+    {
+      "type": "spec",
+      "title": "OAuth Implementation Specification",
+      "file": "specs/oauth-callback-spec.md"
+    }
+  ],
+  "logs": "2024-01-15: Started OAuth callback implementation\n2024-01-15: Completed parameter parsing logic"
 }
 ```
 
@@ -298,6 +415,19 @@ Here's a complete example showing the tagged task structure:
         "priority": "high",
         "details": "Create Express app with CORS, body parser, and error handling",
         "testStrategy": "Start server and verify health check endpoint responds",
+        "spec_files": [
+          {
+            "type": "plan",
+            "title": "Express Server Setup Plan",
+            "file": "specs/001-express-setup-plan.md"
+          },
+          {
+            "type": "spec",
+            "title": "Express Server Technical Specification",
+            "file": "specs/001-express-server-spec.md"
+          }
+        ],
+        "logs": "2024-01-15: Started Express server setup\n2024-01-15: Configured middleware and basic routes",
         "subtasks": [
           {
             "id": 1,
@@ -305,7 +435,17 @@ Here's a complete example showing the tagged task structure:
             "description": "Set up package.json and install dependencies",
             "status": "done",
             "dependencies": [],
-            "details": "Run npm init, install express, cors, body-parser"
+            "priority": "high",
+            "details": "Run npm init, install express, cors, body-parser",
+            "testStrategy": "Verify package.json is created and dependencies are installed",
+            "spec_files": [
+              {
+                "type": "spec",
+                "title": "NPM Project Setup Specification",
+                "file": "specs/001-npm-setup-spec.md"
+              }
+            ],
+            "logs": "2024-01-15: Ran npm init and installed core dependencies"
           },
           {
             "id": 2,
@@ -313,7 +453,17 @@ Here's a complete example showing the tagged task structure:
             "description": "Set up CORS and body parsing middleware",
             "status": "done",
             "dependencies": [1],
-            "details": "Add app.use() calls for cors() and express.json()"
+            "priority": "medium",
+            "details": "Add app.use() calls for cors() and express.json()",
+            "testStrategy": "Test middleware configuration with sample requests",
+            "spec_files": [
+              {
+                "type": "spec",
+                "title": "Middleware Configuration Specification",
+                "file": "specs/001-middleware-config-spec.md"
+              }
+            ],
+            "logs": "2024-01-15: Added CORS and body parsing middleware\n2024-01-15: Verified middleware configuration"
           }
         ]
       },
@@ -326,6 +476,19 @@ Here's a complete example showing the tagged task structure:
         "priority": "high",
         "details": "Use JWT tokens for session management",
         "testStrategy": "Test login/logout flow with valid and invalid credentials",
+        "spec_files": [
+          {
+            "type": "spec",
+            "title": "Authentication System Specification",
+            "file": "specs/002-auth-system-spec.md"
+          },
+          {
+            "type": "design",
+            "title": "Authentication Flow Design",
+            "file": "specs/002-auth-flow-design.md"
+          }
+        ],
+        "logs": "2024-01-16: Started authentication system design\n2024-01-16: Chose JWT over session-based auth",
         "subtasks": []
       }
     ]
@@ -341,6 +504,19 @@ Here's a complete example showing the tagged task structure:
         "priority": "medium",
         "details": "Integrate with GitHub OAuth for user authentication",
         "testStrategy": "Test OAuth flow with GitHub account",
+        "spec_files": [
+          {
+            "type": "spec",
+            "title": "OAuth Integration Specification",
+            "file": "specs/feature-auth-oauth-spec.md"
+          },
+          {
+            "type": "requirement",
+            "title": "OAuth Integration Requirements",
+            "file": "specs/feature-auth-requirements.md"
+          }
+        ],
+        "logs": "2024-01-17: Started OAuth integration analysis\n2024-01-17: Selected GitHub OAuth as primary provider",
         "subtasks": []
       }
     ]
@@ -410,6 +586,20 @@ When Task Master encounters a legacy format `tasks.json` file:
 - **Clear Titles**: Use descriptive titles that explain the task's purpose
 - **Proper Dependencies**: Define dependencies to ensure correct execution order
 - **Detailed Instructions**: Include sufficient detail in the `details` field for implementation
+
+### Specification Documents Management
+
+- **Complete Documentation**: Always ensure `spec_files` field is populated before task implementation
+- **File Organization**: Keep specification documents in a consistent location (e.g., `specs/` directory)
+- **Version Control**: Include specification documents in version control
+- **Cross-References**: Use consistent file naming patterns for easy reference
+
+### Implementation Logging
+
+- **Regular Updates**: Update `logs` field regularly during implementation
+- **Timestamps**: Include timestamps for chronological tracking
+- **Decision Records**: Document important architectural and implementation decisions
+- **Problem-Solution Pairs**: Record challenges encountered and how they were resolved
 
 ### Tag Management
 

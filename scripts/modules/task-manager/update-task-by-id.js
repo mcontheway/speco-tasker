@@ -23,32 +23,52 @@ import {
 } from '../ui.js'
 
 import { getDebugFlag } from '../config-manager.js'
+import { validateTaskData, formatValidationError } from '../utils/task-validation.js'
 
 // Zod schema for post-parsing validation of the updated task object
 const updatedTaskSchema = z
 	.object({
 		id: z.number().int(),
 		title: z.string(), // Title should be preserved, but check it exists
-		description: z.string(),
+		description: z.string().min(1, 'Description is required and cannot be empty'),
 		status: z.string(),
 		dependencies: z.array(z.union([z.number().int(), z.string()])),
-		priority: z.string().nullable().default('medium'),
-		details: z.string().nullable().default(''),
-		testStrategy: z.string().nullable().default(''),
+		priority: z.enum(['high', 'medium', 'low'], {
+			required_error: 'Priority is required',
+			invalid_type_error: 'Priority must be one of: high, medium, low'
+		}),
+		details: z.string().min(1, 'Details are required and cannot be empty'),
+		testStrategy: z.string().min(1, 'Test strategy is required and cannot be empty'),
 		subtasks: z
 			.array(
 				z.object({
 					id: z.number().int().positive().describe('Sequential subtask ID starting from 1'),
 					title: z.string(),
-					description: z.string(),
+					description: z.string().min(1, 'Description is required and cannot be empty'),
 					status: z.string(),
 					dependencies: z.array(z.number().int()).nullable().default([]),
-					details: z.string().nullable().default(''),
-					testStrategy: z.string().nullable().default('')
+					details: z.string().min(1, 'Details are required and cannot be empty'),
+					testStrategy: z.string().min(1, 'Test strategy is required and cannot be empty'),
+					priority: z.enum(['high', 'medium', 'low'], {
+						required_error: 'Priority is required',
+						invalid_type_error: 'Priority must be one of: high, medium, low'
+					}).optional().default('medium'),
+					spec_files: z.array(z.object({
+						type: z.string().describe('Document type, e.g., "plan", "spec", "requirement"'),
+						title: z.string().describe('Document title'),
+						file: z.string().describe('Relative file path to the specification document')
+					})).min(1, 'At least one specification document is required').describe('Associated specification documents'),
+					logs: z.string().optional().describe('Implementation process logs')
 				})
 			)
 			.nullable()
-			.default([])
+			.default([]),
+		spec_files: z.array(z.object({
+			type: z.string().describe('Document type, e.g., "plan", "spec", "requirement"'),
+			title: z.string().describe('Document title'),
+			file: z.string().describe('Relative file path to the specification document')
+		})).min(1, 'At least one specification document is required').describe('Associated specification documents'),
+		logs: z.string().optional().describe('Implementation process logs')
 	})
 	.strip() // Allows parsing even if AI adds extra fields, but validation focuses on schema
 
@@ -182,15 +202,14 @@ function parseUpdatedTaskFromText(text, expectedTaskId, logFn, isMCP) {
 			? parsedTask.subtasks.map((subtask) => ({
 					...subtask,
 					title: subtask.title || '',
-					description: subtask.description || '',
+					description: subtask.description,
 					status: subtask.status || 'pending',
 					dependencies: Array.isArray(subtask.dependencies) ? subtask.dependencies : [],
-					details:
-						typeof subtask.details === 'string' ? subtask.details : String(subtask.details || ''),
-					testStrategy:
-						typeof subtask.testStrategy === 'string'
-							? subtask.testStrategy
-							: String(subtask.testStrategy || '')
+					details: subtask.details,
+					testStrategy: subtask.testStrategy,
+					priority: subtask.priority,
+					spec_files: Array.isArray(subtask.spec_files) ? subtask.spec_files : [],
+					logs: typeof subtask.logs === 'string' ? subtask.logs : ''
 				}))
 			: []
 	}
@@ -499,6 +518,14 @@ ${gatheredContext ? `Context: ${gatheredContext}` : ''}`
 			// --- Update Task Data (Keep existing) ---
 			data.tasks[taskIndex] = updatedTask
 			// --- End Update Task Data ---
+
+			// Validate updated task data
+			const validationResult = validateTaskData(updatedTask, false, projectRoot, report)
+			if (!validationResult.isValid) {
+				const errorMessage = formatValidationError(validationResult, false, taskId)
+				report('error', errorMessage)
+				throw new Error(errorMessage)
+			}
 
 			// --- Write File and Generate (Unchanged) ---
 			writeJSON(tasksPath, data, projectRoot, tag)

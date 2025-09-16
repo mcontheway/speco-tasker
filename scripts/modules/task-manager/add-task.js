@@ -32,20 +32,31 @@ import {
 	writeJSON
 } from '../utils.js'
 import ContextGatherer from '../utils/contextGatherer.js'
+import { validateTaskData, formatValidationError } from '../utils/task-validation.js'
 import generateTaskFiles from './generate-task-files.js'
 
 // Define Zod schema for the expected AI output object
 const AiTaskDataSchema = z.object({
 	title: z.string().describe('Clear, concise title for the task'),
-	description: z.string().describe('A one or two sentence description of the task'),
-	details: z.string().describe('In-depth implementation details, considerations, and guidance'),
-	testStrategy: z.string().describe('Detailed approach for verifying task completion'),
+	description: z.string().min(1, 'Description is required and cannot be empty').describe('A one or two sentence description of the task'),
+	details: z.string().min(1, 'Details are required and cannot be empty').describe('In-depth implementation details, considerations, and guidance'),
+	testStrategy: z.string().min(1, 'Test strategy is required and cannot be empty').describe('Detailed approach for verifying task completion'),
 	dependencies: z
 		.array(z.number())
 		.nullable()
 		.describe(
 			'Array of task IDs that this task depends on (must be completed before this task can start)'
-		)
+		),
+	priority: z.enum(['high', 'medium', 'low'], {
+		required_error: 'Priority is required',
+		invalid_type_error: 'Priority must be one of: high, medium, low'
+	}).describe('Task priority level'),
+	spec_files: z.array(z.object({
+		type: z.string().describe('Document type, e.g., "plan", "spec", "requirement"'),
+		title: z.string().describe('Document title'),
+		file: z.string().describe('Relative file path to the specification document')
+	})).min(1, 'At least one specification document is required').describe('Associated specification documents'),
+	logs: z.string().optional().describe('Implementation process logs')
 })
 
 /**
@@ -393,14 +404,15 @@ async function addTask(
 			try {
 				report('DEBUG: Creating task data manually...', 'debug')
 
-				// Use provided field values directly (no AI processing)
-				taskData = {
-					title: manualTaskData?.title || 'New Task',
-					description: manualTaskData?.description || 'Task created manually without prompt',
-					details: manualTaskData?.details || 'Task created without AI assistance',
-					testStrategy: manualTaskData?.testStrategy || 'Manual verification required',
-					dependencies: [] // Required array for dependencies
-				}
+			// Use provided field values directly (no AI processing)
+			taskData = {
+				title: manualTaskData?.title,
+				description: manualTaskData?.description,
+				details: manualTaskData?.details,
+				testStrategy: manualTaskData?.testStrategy,
+				dependencies: [], // Required array for dependencies
+				priority: manualTaskData?.priority || effectivePriority
+			}
 
 				// Validate the task data structure
 				const validationResult = AiTaskDataSchema.safeParse(taskData)
@@ -443,7 +455,17 @@ async function addTask(
 			status: 'pending',
 			dependencies: taskData.dependencies?.length ? taskData.dependencies : numericDependencies, // Use provided dependencies if available, fallback to manually specified
 			priority: effectivePriority,
+			spec_files: taskData.spec_files || [], // Initialize with empty array or provided spec files
+			logs: taskData.logs || '', // Initialize with empty string or provided logs
 			subtasks: [] // Initialize with empty subtasks array
+		}
+
+		// Validate the new task data
+		const validationResult = validateTaskData(newTask, false, projectRoot, report)
+		if (!validationResult.isValid) {
+			const errorMessage = formatValidationError(validationResult, false, newTaskId)
+			report('error', errorMessage)
+			throw new Error(errorMessage)
 		}
 
 		// Additional check: validate all dependencies

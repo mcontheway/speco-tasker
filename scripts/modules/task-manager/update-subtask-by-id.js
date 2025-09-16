@@ -22,6 +22,7 @@ import {
 } from '../utils.js'
 import { ContextGatherer } from '../utils/contextGatherer.js'
 import { FuzzyTaskSearch } from '../utils/fuzzyTaskSearch.js'
+import { validateTaskData, formatValidationError } from '../utils/task-validation.js'
 import generateTaskFiles from './generate-task-files.js'
 
 /**
@@ -239,6 +240,14 @@ ${gatheredContext ? `Context: ${gatheredContext}` : ''}`
 		}
 
 		const updatedSubtask = parentTask.subtasks[subtaskIndex]
+
+		// Validate updated subtask data
+		const validationResult = validateTaskData(updatedSubtask, true, projectRoot, report)
+		if (!validationResult.isValid) {
+			const errorMessage = formatValidationError(validationResult, true, subtaskId)
+			report('error', errorMessage)
+			throw new Error(errorMessage)
+		}
 
 		if (outputFormat === 'text' && getDebugFlag(session)) {
 			console.log('>>> DEBUG: Subtask details AFTER AI update:', updatedSubtask.details)
