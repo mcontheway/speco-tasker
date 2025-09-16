@@ -1,6 +1,6 @@
 {
 	"name": "speco-tasker",
-	"version": "1.0.15",
+	"version": "1.1.0",
 	"description": "A pure manual task management system for efficient development workflows, designed to work seamlessly with any development environment.",
 	"main": "index.js",
 	"type": "module",
