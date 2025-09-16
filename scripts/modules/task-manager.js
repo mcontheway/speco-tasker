@@ -14,7 +14,6 @@ import { migrateProject } from './task-manager/migrate.js'
 import moveTask from './task-manager/move-task.js'
 import removeSubtask from './task-manager/remove-subtask.js'
 import removeTask from './task-manager/remove-task.js'
-import setResponseLanguage from './task-manager/response-language.js'
 import setTaskStatus from './task-manager/set-task-status.js'
 import taskExists from './task-manager/task-exists.js'
 import updateSingleTaskStatus from './task-manager/update-single-task-status.js'
@@ -45,7 +44,6 @@ export {
 	removeTask,
 	findTaskById,
 	isTaskDependentOn,
-	setResponseLanguage,
 	taskExists,
 	moveTask,
 	readComplexityReport,

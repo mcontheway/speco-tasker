@@ -431,21 +431,6 @@ task-master rules setup
 }
 ```
 
-#### 6.5 lang / response-language - 响应语言设置
-```bash
-# 设置响应语言为中文
-task-master lang zh
-
-# 设置响应语言为英文
-task-master lang en
-
-# MCP 使用
-{
-  "language": "zh",
-  "projectRoot": "/path/to/project"
-}
-```
-
 ---
 
 ## 🤖 集成 AI 功能（使用 AI 模型）

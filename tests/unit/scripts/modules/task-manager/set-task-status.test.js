@@ -80,7 +80,7 @@ const { default: setTaskStatus } = await import(
 
 // Sample data for tests (from main test file) - TAGGED FORMAT
 const sampleTasks = {
-	master: {
+	main: {
 		tasks: [
 			{
 				id: 1,

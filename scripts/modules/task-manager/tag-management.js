@@ -76,10 +76,10 @@ async function createTag(tasksPath, tagName, options = {}, context = {}, outputF
 		if (data._rawTaggedData) {
 			// If we have _rawTaggedData, use it (this is the clean tagged structure)
 			rawData = data._rawTaggedData
-		} else if (data.tasks && !data.master) {
+		} else if (data.tasks && !data.main) {
 			// This is legacy format - create a main tag structure
 			rawData = {
-				master: {
+				main: {
 					tasks: data.tasks,
 					metadata: data.metadata || {
 						created: new Date().toISOString(),
@@ -236,10 +236,10 @@ async function deleteTag(tasksPath, tagName, options = {}, context = {}, outputF
 		if (data._rawTaggedData) {
 			// If we have _rawTaggedData, use it (this is the clean tagged structure)
 			rawData = data._rawTaggedData
-		} else if (data.tasks && !data.master) {
+		} else if (data.tasks && !data.main) {
 			// This is legacy format - create a main tag structure
 			rawData = {
-				master: {
+				main: {
 					tasks: data.tasks,
 					metadata: data.metadata || {
 						created: new Date().toISOString(),
@@ -329,7 +329,7 @@ async function deleteTag(tasksPath, tagName, options = {}, context = {}, outputF
 		// Delete the tag
 		delete rawData[tagName]
 
-		// If we're deleting the current tag, switch to master
+		// If we're deleting the current tag, switch to main
 		if (isCurrentTag) {
 			await switchCurrentTag(projectRoot, 'main')
 			logFn.info('Switched current tag to "main"')

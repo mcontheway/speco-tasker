@@ -165,7 +165,7 @@ const { default: addTask } = await import('../../../../../scripts/modules/task-m
 
 describe('addTask', () => {
 	const sampleTasks = {
-		master: {
+		main: {
 			tasks: [
 				{
 					id: 1,
@@ -231,7 +231,7 @@ describe('addTask', () => {
 		expect(writeJSON).toHaveBeenCalledWith(
 			'tasks/tasks.json',
 			expect.objectContaining({
-				master: expect.objectContaining({
+				main: expect.objectContaining({
 					tasks: expect.arrayContaining([
 						expect.objectContaining({
 							id: 4, // Next ID after existing tasks
@@ -276,7 +276,7 @@ describe('addTask', () => {
 		expect(writeJSON).toHaveBeenCalledWith(
 			'tasks/tasks.json',
 			expect.objectContaining({
-				master: expect.objectContaining({
+				main: expect.objectContaining({
 					tasks: expect.arrayContaining([
 						expect.objectContaining({
 							id: 4,
@@ -314,7 +314,7 @@ describe('addTask', () => {
 		expect(writeJSON).toHaveBeenCalledWith(
 			'tasks/tasks.json',
 			expect.objectContaining({
-				master: expect.objectContaining({
+				main: expect.objectContaining({
 					tasks: expect.arrayContaining([
 						expect.objectContaining({
 							id: 4,
@@ -348,7 +348,7 @@ describe('addTask', () => {
 		expect(writeJSON).toHaveBeenCalledWith(
 			'tasks/tasks.json',
 			expect.objectContaining({
-				master: expect.objectContaining({
+				main: expect.objectContaining({
 					tasks: expect.arrayContaining([
 						expect.objectContaining({
 							priority: priority
@@ -379,7 +379,7 @@ describe('addTask', () => {
 		expect(writeJSON).toHaveBeenCalledWith(
 			'tasks/tasks.json',
 			expect.objectContaining({
-				master: expect.objectContaining({
+				main: expect.objectContaining({
 					tasks: expect.arrayContaining([
 						expect.objectContaining({
 							id: 1

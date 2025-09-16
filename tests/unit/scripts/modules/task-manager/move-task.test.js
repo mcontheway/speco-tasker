@@ -40,7 +40,7 @@ const { default: moveTask } = await import(
 )
 
 const sampleTagged = () => ({
-	master: {
+	main: {
 		tasks: [
 			{ id: 1, title: 'A' },
 			{ id: 2, title: 'B', subtasks: [{ id: 1, title: 'B.1' }] }

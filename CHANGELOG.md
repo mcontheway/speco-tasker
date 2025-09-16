@@ -1,5 +1,63 @@
 # speco-tasker
 
+## 1.1.4
+
+### Patch Changes
+
+- **Fix MCP server startup issue after language management removal**
+  - Fixed MCP server startup failure due to missing response-language.js module
+  - Ensured all module imports are valid and existing
+  - Verified clean removal of language management feature
+
+  This resolves the ERR_MODULE_NOT_FOUND error when starting MCP server after the language management feature was removed.
+
+## 1.1.3
+
+### Patch Changes
+
+- **Complete removal of response language management feature**
+  - Fixed inconsistency between initialization code and tag management logic
+  - Unified all references to use "main" as the default tag instead of "master"
+  - Updated `scripts/init.js` to create initial tasks structure with "main" tag
+  - Updated `scripts/modules/task-manager/tag-management.js` to check for "main" tag existence
+  - **Completely removed response language management feature**:
+    - Removed non-existent `response-language.js` module imports
+    - Removed `lang` CLI command and all related functionality
+    - Removed language configuration from initialization process
+    - Cleaned up documentation and configuration examples
+  - Updated test files to reflect correct tag structure
+  - Updated comments to reflect correct default tag behavior
+
+  This resolves the issue where newly initialized projects showed current tag as "main" but available tags as "master", preventing task creation. Also fixes MCP server startup failure due to missing module and completely removes the non-functional language management feature.
+
+## 1.1.3
+
+### Patch Changes
+
+- **Fix default tag inconsistency and missing module**
+  - Fixed inconsistency between initialization code and tag management logic
+  - Unified all references to use "main" as the default tag instead of "master"
+  - Updated `scripts/init.js` to create initial tasks structure with "main" tag
+  - Updated `scripts/modules/task-manager/tag-management.js` to check for "main" tag existence
+  - Removed non-existent `response-language.js` module imports and related CLI command
+  - Updated test files to reflect correct tag structure
+  - Updated comments to reflect correct default tag behavior
+
+  This resolves the issue where newly initialized projects showed current tag as "main" but available tags as "master", preventing task creation. Also fixes MCP server startup failure due to missing module.
+
+## 1.1.2
+
+### Patch Changes
+
+- **Fix default tag inconsistency**
+  - Fixed inconsistency between initialization code and tag management logic
+  - Unified all references to use "main" as the default tag instead of "master"
+  - Updated `scripts/init.js` to create initial tasks structure with "main" tag
+  - Updated `scripts/modules/task-manager/tag-management.js` to check for "main" tag existence
+  - Updated comments to reflect correct default tag behavior
+
+  This resolves the issue where newly initialized projects showed current tag as "main" but available tags as "master", preventing task creation.
+
 ## 1.0.15 (2025-09-16)
 
 ### 🐛 修复

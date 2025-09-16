@@ -25,7 +25,6 @@ import {
 	moveTask,
 	removeSubtask,
 	removeTask,
-	setResponseLanguage,
 	setTaskStatus,
 	taskExists,
 	updateSubtaskById,
@@ -1582,47 +1581,6 @@ function registerCommands(programInstance) {
 			}
 		})
 
-	// response-language command
-	programInstance
-		.command('lang')
-		.description('管理响应语言设置')
-		.option('--response <response_language>', '设置响应语言')
-		.option('--setup', '运行交互式设置来配置响应语言')
-		.action(async (options) => {
-			const taskMaster = initTaskMaster({})
-			const projectRoot = taskMaster.getProjectRoot() // Find project root for context
-			const { response, setup } = options
-			let responseLanguage = response !== undefined ? response : 'English'
-			if (setup) {
-				console.log(chalk.blue('Starting interactive response language setup...'))
-				try {
-					const userResponse = await inquirer.prompt([
-						{
-							type: 'input',
-							name: 'responseLanguage',
-							message: 'Input your preferred response language',
-							default: 'English'
-						}
-					])
-
-					console.log(chalk.blue('Response language set to:', userResponse.responseLanguage))
-					responseLanguage = userResponse.responseLanguage
-				} catch (setupError) {
-					console.error(chalk.red('\\nInteractive setup failed unexpectedly:'), setupError.message)
-				}
-			}
-
-			const result = setResponseLanguage(responseLanguage, {
-				projectRoot
-			})
-
-			if (result.success) {
-				console.log(chalk.green(`✅ ${result.data.message}`))
-			} else {
-				console.error(chalk.red(`❌ Error setting response language: ${result.error.message}`))
-				process.exit(1)
-			}
-		})
 
 	// move-task command
 	programInstance
