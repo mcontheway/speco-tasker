@@ -8,7 +8,13 @@ import { resolveTag } from '../../../scripts/modules/utils.js'
 import { TASK_STATUS_OPTIONS } from '../../../src/constants/task-status.js'
 import { nextTaskDirect, setTaskStatusDirect } from '../core/task-master-core.js'
 import { findComplexityReportPath, findTasksPath } from '../core/utils/path-utils.js'
-import { createErrorResponse, handleApiResult, withNormalizedProjectRoot, getTagInfo, generateParameterHelp } from './utils.js'
+import {
+	createErrorResponse,
+	generateParameterHelp,
+	getTagInfo,
+	handleApiResult,
+	withNormalizedProjectRoot
+} from './utils.js'
 
 /**
  * Register the setTaskStatus tool with the MCP server
@@ -21,7 +27,10 @@ const setTaskStatusParameterHelp = generateParameterHelp(
 	[
 		{ name: 'projectRoot', description: '项目根目录的绝对路径' },
 		{ name: 'id', description: '任务ID或子任务ID（例如：15, 15.2），多个ID用逗号分隔' },
-		{ name: 'status', description: '新状态（pending, done, in-progress, review, deferred, cancelled）' }
+		{
+			name: 'status',
+			description: '新状态（pending, done, in-progress, review, deferred, cancelled）'
+		}
 	],
 	[
 		{ name: 'file', description: '任务文件路径（默认：tasks/tasks.json）' },

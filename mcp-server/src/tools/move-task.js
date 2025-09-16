@@ -7,7 +7,12 @@ import { z } from 'zod'
 import { resolveTag } from '../../../scripts/modules/utils.js'
 import { moveTaskCrossTagDirect, moveTaskDirect } from '../core/task-master-core.js'
 import { findTasksPath } from '../core/utils/path-utils.js'
-import { createErrorResponse, handleApiResult, withNormalizedProjectRoot, getTagInfo } from './utils.js'
+import {
+	createErrorResponse,
+	getTagInfo,
+	handleApiResult,
+	withNormalizedProjectRoot
+} from './utils.js'
 
 /**
  * Register the moveTask tool with the MCP server

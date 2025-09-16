@@ -7,7 +7,13 @@ import { z } from 'zod'
 import { resolveTag } from '../../../scripts/modules/utils.js'
 import { addTaskDirect } from '../core/task-master-core.js'
 import { findTasksPath } from '../core/utils/path-utils.js'
-import { createErrorResponse, handleApiResult, withNormalizedProjectRoot, getTagInfo, generateParameterHelp } from './utils.js'
+import {
+	createErrorResponse,
+	generateParameterHelp,
+	getTagInfo,
+	handleApiResult,
+	withNormalizedProjectRoot
+} from './utils.js'
 
 /**
  * Register the addTask tool with the MCP server
@@ -38,17 +44,14 @@ const addTaskParameterHelp = generateParameterHelp(
 export function registerAddTaskTool(server) {
 	server.addTool({
 		name: 'add_task',
-		description: '手动添加一个新任务'
+		description: '手动添加一个新任务',
 		parameters: z.object({
 			projectRoot: z.string().describe('项目根目录的绝对路径'),
 			title: z.string().describe('任务标题'),
 			description: z.string().describe('任务描述'),
 			details: z.string().optional().describe('实现细节'),
 			testStrategy: z.string().optional().describe('测试策略'),
-			dependencies: z
-				.string()
-				.optional()
-				.describe('依赖的任务ID列表，用逗号分隔'),
+			dependencies: z.string().optional().describe('依赖的任务ID列表，用逗号分隔'),
 			priority: z.string().optional().describe('任务优先级（high, medium, low）'),
 			file: z.string().optional().describe('任务文件路径（默认：tasks/tasks.json）'),
 			tag: z.string().optional().describe('要操作的标签上下文')
@@ -101,7 +104,13 @@ export function registerAddTaskTool(server) {
 				// Get tag info for better error context
 				const tagInfo = args.projectRoot ? getTagInfo(args.projectRoot, log) : null
 
-				return createErrorResponse(errorMessage, undefined, tagInfo, 'ADD_TASK_FAILED', addTaskParameterHelp)
+				return createErrorResponse(
+					errorMessage,
+					undefined,
+					tagInfo,
+					'ADD_TASK_FAILED',
+					addTaskParameterHelp
+				)
 			}
 		})
 	})

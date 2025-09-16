@@ -25,12 +25,9 @@ jest.mock('../../../../../scripts/modules/ui.js', () => ({
 	displayAiUsageSummary: jest.fn()
 }))
 
-jest.mock(
-	'../../../../../scripts/modules/task-manager/generate-task-files.js',
-	() => ({
-		default: jest.fn().mockResolvedValue()
-	})
-)
+jest.mock('../../../../../scripts/modules/task-manager/generate-task-files.js', () => ({
+	default: jest.fn().mockResolvedValue()
+}))
 
 jest.mock('../../../../../scripts/modules/ai-services-unified.js', () => ({
 	generateTextService: jest

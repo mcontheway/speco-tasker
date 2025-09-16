@@ -3,8 +3,8 @@
  */
 
 import { spawn } from 'child_process'
-import path from 'path'
 import fs from 'fs'
+import path from 'path'
 import { fileURLToPath } from 'url'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -24,27 +24,36 @@ const MCP_SERVER_PATH = path.resolve(__dirname, '../../mcp-server/server.js')
  * @param {number} interval - Sampling interval (ms)
  * @returns {Promise<{samples: number[], average: number, peak: number, growth: number}>}
  */
-function monitorMemoryUsage(scriptPath, args = [], duration = TEST_DURATION_MS, interval = SAMPLING_INTERVAL_MS) {
+function monitorMemoryUsage(
+	scriptPath,
+	args = [],
+	duration = TEST_DURATION_MS,
+	interval = SAMPLING_INTERVAL_MS
+) {
 	return new Promise((resolve, reject) => {
 		const samples = []
 		let monitoring = false
 
-		const child = spawn('node', [
-			'--expose-gc', // Enable garbage collection
-			'--max-old-space-size=512', // Limit heap to detect memory issues
-			scriptPath,
-			...args
-		], {
-			stdio: ['pipe', 'pipe', 'pipe'],
-			cwd: path.resolve(__dirname, '../..'),
-			env: {
-				...process.env,
-				NODE_ENV: 'test',
-				PATH: process.env.PATH,
-				HOME: process.env.HOME,
-				USER: process.env.USER
+		const child = spawn(
+			'node',
+			[
+				'--expose-gc', // Enable garbage collection
+				'--max-old-space-size=512', // Limit heap to detect memory issues
+				scriptPath,
+				...args
+			],
+			{
+				stdio: ['pipe', 'pipe', 'pipe'],
+				cwd: path.resolve(__dirname, '../..'),
+				env: {
+					...process.env,
+					NODE_ENV: 'test',
+					PATH: process.env.PATH,
+					HOME: process.env.HOME,
+					USER: process.env.USER
+				}
 			}
-		})
+		)
 
 		// Send periodic memory inspection commands
 		const inspector = setInterval(() => {
@@ -74,7 +83,10 @@ function monitorMemoryUsage(scriptPath, args = [], duration = TEST_DURATION_MS, 
 			}
 
 			// Start monitoring once we see the process has started
-			if (!monitoring && (output.includes('task-master') || output.includes('TaskMasterMCPServer'))) {
+			if (
+				!monitoring &&
+				(output.includes('task-master') || output.includes('TaskMasterMCPServer'))
+			) {
 				monitoring = true
 				startTime = Date.now()
 			}
@@ -120,7 +132,7 @@ function monitorMemoryUsage(scriptPath, args = [], duration = TEST_DURATION_MS, 
 			}
 
 			// Calculate statistics
-			const heapUsages = samples.map(s => s.heapUsed)
+			const heapUsages = samples.map((s) => s.heapUsed)
 			const average = heapUsages.reduce((sum, usage) => sum + usage, 0) / heapUsages.length
 			const peak = Math.max(...heapUsages)
 
@@ -160,12 +172,7 @@ function monitorGarbageCollection(scriptPath, args = [], duration = 5000) {
 		let beforeGC = 0
 		let afterGC = 0
 
-		const child = spawn('node', [
-			'--expose-gc',
-			'--max-old-space-size=512',
-			scriptPath,
-			...args
-		], {
+		const child = spawn('node', ['--expose-gc', '--max-old-space-size=512', scriptPath, ...args], {
 			stdio: ['pipe', 'pipe', 'pipe'],
 			cwd: path.resolve(__dirname, '../..'),
 			env: {
@@ -307,9 +314,10 @@ describe.skip('Task Master Memory Usage', () => {
 			const memoryStats = await monitorMemoryUsage(CLI_PATH, ['--version'])
 
 			// Calculate memory stability (coefficient of variation of memory samples)
-			const heapUsages = memoryStats.samples.map(s => s.heapUsed)
+			const heapUsages = memoryStats.samples.map((s) => s.heapUsed)
 			const mean = heapUsages.reduce((sum, usage) => sum + usage, 0) / heapUsages.length
-			const variance = heapUsages.reduce((sum, usage) => sum + Math.pow(usage - mean, 2), 0) / heapUsages.length
+			const variance =
+				heapUsages.reduce((sum, usage) => sum + Math.pow(usage - mean, 2), 0) / heapUsages.length
 			const stdDev = Math.sqrt(variance)
 			const coefficientOfVariation = stdDev / mean
 

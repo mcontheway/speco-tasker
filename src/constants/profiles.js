@@ -8,4 +8,4 @@ export const RULE_PROFILES = [
 	'roo',
 	'windsurf'
 	// AI-specific profiles removed: claude, cline, codex, trae, vscode
-];
+]

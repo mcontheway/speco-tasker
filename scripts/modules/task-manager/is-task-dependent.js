@@ -7,9 +7,9 @@
  */
 export function isTaskDependentOn(tasks, taskId, dependencyId) {
 	// Placeholder implementation - simple check for direct dependencies
-	const task = tasks.find(t => t.id === taskId);
+	const task = tasks.find((t) => t.id === taskId)
 	if (!task || !task.dependencies) {
-		return false;
+		return false
 	}
-	return task.dependencies.includes(dependencyId);
+	return task.dependencies.includes(dependencyId)
 }

@@ -555,10 +555,10 @@ function createErrorResponse(errorMessage, versionInfo, tagInfo, errorCode, para
 ${parameterHelp.description}
 
 必需参数:
-${parameterHelp.required.map(param => `• ${param.name}: ${param.description}`).join('\n')}
+${parameterHelp.required.map((param) => `• ${param.name}: ${param.description}`).join('\n')}
 
 可选参数:
-${parameterHelp.optional.map(param => `• ${param.name}: ${param.description}`).join('\n')}
+${parameterHelp.optional.map((param) => `• ${param.name}: ${param.description}`).join('\n')}
 
 使用示例:
 ${parameterHelp.examples.join('\n')}`
@@ -748,7 +748,9 @@ function withNormalizedProjectRoot(executeFn) {
 			}
 			// 2.5. Additional check: if args.projectRoot is a string but normalizeProjectRoot returned null
 			else if (typeof args.projectRoot === 'string' && args.projectRoot.trim()) {
-				log.warn(`args.projectRoot provided but normalizeProjectRoot returned null. Using raw path: ${args.projectRoot}`)
+				log.warn(
+					`args.projectRoot provided but normalizeProjectRoot returned null. Using raw path: ${args.projectRoot}`
+				)
 				normalizedRoot = path.resolve(args.projectRoot)
 				rootSource = 'args.projectRoot (fallback)'
 				log.info(`Using fallback project root: ${normalizedRoot}`)
@@ -764,7 +766,9 @@ function withNormalizedProjectRoot(executeFn) {
 			}
 
 			if (!normalizedRoot) {
-				log.error(`Could not determine project root. Args: ${JSON.stringify({ hasProjectRoot: !!args.projectRoot, projectRootType: typeof args.projectRoot, projectRootValue: args.projectRoot })}`)
+				log.error(
+					`Could not determine project root. Args: ${JSON.stringify({ hasProjectRoot: !!args.projectRoot, projectRootType: typeof args.projectRoot, projectRootValue: args.projectRoot })}`
+				)
 				return createErrorResponse(
 					'Could not determine project root. Please provide a valid projectRoot argument (absolute path) or ensure TASK_MASTER_PROJECT_ROOT environment variable is set.'
 				)

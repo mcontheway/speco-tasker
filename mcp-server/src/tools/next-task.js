@@ -7,7 +7,13 @@ import { z } from 'zod'
 import { resolveTag } from '../../../scripts/modules/utils.js'
 import { nextTaskDirect } from '../core/task-master-core.js'
 import { resolveComplexityReportPath, resolveTasksPath } from '../core/utils/path-utils.js'
-import { createErrorResponse, handleApiResult, withNormalizedProjectRoot, getTagInfo, generateParameterHelp } from './utils.js'
+import {
+	createErrorResponse,
+	generateParameterHelp,
+	getTagInfo,
+	handleApiResult,
+	withNormalizedProjectRoot
+} from './utils.js'
 
 /**
  * Register the nextTask tool with the MCP server
@@ -17,9 +23,7 @@ import { createErrorResponse, handleApiResult, withNormalizedProjectRoot, getTag
 // Generate parameter help for next_task tool
 const nextTaskParameterHelp = generateParameterHelp(
 	'next_task',
-	[
-		{ name: 'projectRoot', description: '项目根目录的绝对路径' }
-	],
+	[{ name: 'projectRoot', description: '项目根目录的绝对路径' }],
 	[
 		{ name: 'file', description: '任务文件路径（默认：tasks/tasks.json）' },
 		{ name: 'complexityReport', description: '复杂度报告文件路径' },
@@ -91,7 +95,13 @@ export function registerNextTaskTool(server) {
 				// Get tag info for better error context
 				const tagInfo = args.projectRoot ? getTagInfo(args.projectRoot, log) : null
 
-				return createErrorResponse(errorMessage, undefined, tagInfo, 'NEXT_TASK_FAILED', nextTaskParameterHelp)
+				return createErrorResponse(
+					errorMessage,
+					undefined,
+					tagInfo,
+					'NEXT_TASK_FAILED',
+					nextTaskParameterHelp
+				)
 			}
 		})
 	})

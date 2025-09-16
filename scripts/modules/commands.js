@@ -30,7 +30,7 @@ import {
 	taskExists,
 	updateSubtaskById,
 	updateTaskById,
-	updateTasks,
+	updateTasks
 } from './task-manager.js'
 import {
 	detectCamelCaseFlags,
@@ -70,7 +70,6 @@ import {
 	isConfigFilePresent,
 	writeConfig
 } from './config-manager.js'
-
 
 import {
 	COMPLEXITY_REPORT_FILE,
@@ -696,9 +695,7 @@ function registerCommands(programInstance) {
 				if (!options.id) {
 					console.error(chalk.red('Error: --id parameter is required'))
 					console.log(
-						chalk.yellow(
-							'Usage example: task-master update-task --id=23 --title="New title"'
-						)
+						chalk.yellow('Usage example: task-master update-task --id=23 --title="New title"')
 					)
 					process.exit(1)
 				}
@@ -710,9 +707,7 @@ function registerCommands(programInstance) {
 						chalk.red(`Error: Invalid task ID: ${options.id}. Task ID must be a positive integer.`)
 					)
 					console.log(
-						chalk.yellow(
-							'Usage example: task-master update-task --id=23 --title="New title"'
-						)
+						chalk.yellow('Usage example: task-master update-task --id=23 --title="New title"')
 					)
 					process.exit(1)
 				}
@@ -727,11 +722,9 @@ function registerCommands(programInstance) {
 					testStrategy: options.testStrategy
 				}
 
-				const hasUpdates = Object.values(fieldsToUpdate).some(value => value !== undefined)
+				const hasUpdates = Object.values(fieldsToUpdate).some((value) => value !== undefined)
 				if (!hasUpdates) {
-					console.error(
-						chalk.red('Error: At least one field to update must be provided.')
-					)
+					console.error(chalk.red('Error: At least one field to update must be provided.'))
 					console.log(
 						chalk.yellow(
 							'Usage example: task-master update-task --id=23 --title="New title" --status="in-progress"'
@@ -743,7 +736,9 @@ function registerCommands(programInstance) {
 				// Validate status if provided
 				if (options.status && !isValidTaskStatus(options.status)) {
 					console.error(
-						chalk.red(`Error: Invalid status: ${options.status}. Valid statuses are: ${TASK_STATUS_OPTIONS.join(', ')}`)
+						chalk.red(
+							`Error: Invalid status: ${options.status}. Valid statuses are: ${TASK_STATUS_OPTIONS.join(', ')}`
+						)
 					)
 					process.exit(1)
 				}
@@ -751,7 +746,9 @@ function registerCommands(programInstance) {
 				// Validate priority if provided
 				if (options.priority && !['high', 'medium', 'low'].includes(options.priority)) {
 					console.error(
-						chalk.red(`Error: Invalid priority: ${options.priority}. Valid priorities are: high, medium, low`)
+						chalk.red(
+							`Error: Invalid priority: ${options.priority}. Valid priorities are: high, medium, low`
+						)
 					)
 					process.exit(1)
 				}
@@ -760,12 +757,10 @@ function registerCommands(programInstance) {
 
 				// Import and call the manual update function
 				const { updateTaskManually } = await import('./task-manager/update-task-manually.js')
-				const result = await updateTaskManually(
-					tasksPath,
-					taskId,
-					fieldsToUpdate,
-					{ projectRoot: taskMaster.getProjectRoot(), tag }
-				)
+				const result = await updateTaskManually(tasksPath, taskId, fieldsToUpdate, {
+					projectRoot: taskMaster.getProjectRoot(),
+					tag
+				})
 
 				if (result.success) {
 					console.log(chalk.green(`✓ Task ${taskId} updated successfully`))
@@ -773,7 +768,9 @@ function registerCommands(programInstance) {
 						console.log(chalk.blue(`Updated fields: ${result.updatedFields.join(', ')}`))
 					}
 				} else {
-					console.error(chalk.red(`Error updating task: ${result.error?.message || 'Unknown error'}`))
+					console.error(
+						chalk.red(`Error updating task: ${result.error?.message || 'Unknown error'}`)
+					)
 					process.exit(1)
 				}
 			} catch (error) {
@@ -822,7 +819,9 @@ function registerCommands(programInstance) {
 				// Parse the subtask ID
 				if (!options.id.includes('.')) {
 					console.error(
-						chalk.red(`Error: Subtask ID must be in format "parentId.subtaskId", got: ${options.id}`)
+						chalk.red(
+							`Error: Subtask ID must be in format "parentId.subtaskId", got: ${options.id}`
+						)
 					)
 					console.log(
 						chalk.yellow(
@@ -838,7 +837,9 @@ function registerCommands(programInstance) {
 
 				if (Number.isNaN(parentId) || Number.isNaN(subtaskId) || parentId <= 0 || subtaskId <= 0) {
 					console.error(
-						chalk.red(`Error: Invalid subtask ID: ${options.id}. Must be in format "parentId.subtaskId" with positive integers.`)
+						chalk.red(
+							`Error: Invalid subtask ID: ${options.id}. Must be in format "parentId.subtaskId" with positive integers.`
+						)
 					)
 					console.log(
 						chalk.yellow(
@@ -856,11 +857,9 @@ function registerCommands(programInstance) {
 					details: options.details
 				}
 
-				const hasUpdates = Object.values(fieldsToUpdate).some(value => value !== undefined)
+				const hasUpdates = Object.values(fieldsToUpdate).some((value) => value !== undefined)
 				if (!hasUpdates) {
-					console.error(
-						chalk.red('Error: At least one field to update must be provided.')
-					)
+					console.error(chalk.red('Error: At least one field to update must be provided.'))
 					console.log(
 						chalk.yellow(
 							'Usage example: task-master update-subtask --id=5.2 --title="New title" --status="in-progress"'
@@ -872,7 +871,9 @@ function registerCommands(programInstance) {
 				// Validate status if provided
 				if (options.status && !isValidTaskStatus(options.status)) {
 					console.error(
-						chalk.red(`Error: Invalid status: ${options.status}. Valid statuses are: ${TASK_STATUS_OPTIONS.join(', ')}`)
+						chalk.red(
+							`Error: Invalid status: ${options.status}. Valid statuses are: ${TASK_STATUS_OPTIONS.join(', ')}`
+						)
 					)
 					process.exit(1)
 				}
@@ -881,13 +882,10 @@ function registerCommands(programInstance) {
 
 				// Import and call the manual update function
 				const { updateSubtaskManually } = await import('./task-manager/update-subtask-manually.js')
-				const result = await updateSubtaskManually(
-					tasksPath,
-					parentId,
-					subtaskId,
-					fieldsToUpdate,
-					{ projectRoot: taskMaster.getProjectRoot(), tag }
-				)
+				const result = await updateSubtaskManually(tasksPath, parentId, subtaskId, fieldsToUpdate, {
+					projectRoot: taskMaster.getProjectRoot(),
+					tag
+				})
 
 				if (result.success) {
 					console.log(chalk.green(`✓ Subtask ${options.id} updated successfully`))
@@ -895,7 +893,9 @@ function registerCommands(programInstance) {
 						console.log(chalk.blue(`Updated fields: ${result.updatedFields.join(', ')}`))
 					}
 				} else {
-					console.error(chalk.red(`Error updating subtask: ${result.error?.message || 'Unknown error'}`))
+					console.error(
+						chalk.red(`Error updating subtask: ${result.error?.message || 'Unknown error'}`)
+					)
 					process.exit(1)
 				}
 			} catch (error) {
@@ -1322,7 +1322,6 @@ function registerCommands(programInstance) {
 			)
 		)
 	}
-
 
 	// remove-task command
 	programInstance
@@ -2291,11 +2290,7 @@ function registerCommands(programInstance) {
 				// Validate tasks file exists
 				if (!fs.existsSync(tasksPath)) {
 					console.error(chalk.red(`Error: Tasks file not found at path: ${tasksPath}`))
-					console.log(
-						chalk.yellow(
-							'Hint: Run task-master init to create tasks.json first'
-						)
-					)
+					console.log(chalk.yellow('Hint: Run task-master init to create tasks.json first'))
 					process.exit(1)
 				}
 

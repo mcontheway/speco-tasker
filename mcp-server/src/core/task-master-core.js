@@ -64,7 +64,7 @@ export const directFunctions = new Map([
 	['listTagsDirect', listTagsDirect],
 	['useTagDirect', useTagDirect],
 	['renameTagDirect', renameTagDirect],
-	['copyTagDirect', copyTagDirect],
+	['copyTagDirect', copyTagDirect]
 ])
 
 // Re-export all direct function implementations

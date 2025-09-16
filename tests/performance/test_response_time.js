@@ -3,8 +3,8 @@
  */
 
 import { spawn } from 'child_process'
-import path from 'path'
 import fs from 'fs'
+import path from 'path'
 import { fileURLToPath } from 'url'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -174,7 +174,8 @@ function setupTestData() {
 						status: 'done',
 						dependencies: [],
 						priority: 'high',
-						details: 'Create directory structure, initialize package.json, and install dependencies',
+						details:
+							'Create directory structure, initialize package.json, and install dependencies',
 						testStrategy: 'Verify all directories and files are created correctly'
 					},
 					{
@@ -363,11 +364,7 @@ describe('Task Master Command Response Time', () => {
 	describe('Response Time Stability', () => {
 		it('should maintain consistent response times across runs', async () => {
 			// Run multiple commands and check consistency
-			const commands = [
-				['list'],
-				['show', '1'],
-				['next']
-			]
+			const commands = [['list'], ['show', '1'], ['next']]
 
 			const results = []
 			for (const cmd of commands) {
@@ -381,7 +378,7 @@ describe('Task Master Command Response Time', () => {
 			}
 
 			console.log('\n=== Response Time Stability Analysis ===')
-			results.forEach(result => {
+			results.forEach((result) => {
 				console.log(`${result.command}:`)
 				console.log(`  Average: ${result.average.toFixed(2)}ms`)
 				console.log(`  Std Dev: ${result.stdDev.toFixed(2)}ms`)
@@ -389,7 +386,7 @@ describe('Task Master Command Response Time', () => {
 			})
 
 			// Stability assertions - all commands should have reasonable consistency
-			results.forEach(result => {
+			results.forEach((result) => {
 				expect(result.cv).toBeLessThan(0.3) // Coefficient of variation should be less than 30%
 			})
 		}, 60000)
@@ -418,7 +415,7 @@ describe('Task Master Command Response Time', () => {
 			}
 
 			console.log('\n=== Performance Baselines ===')
-			baselines.forEach(baseline => {
+			baselines.forEach((baseline) => {
 				console.log(`${baseline.command}:`)
 				console.log(`  Baseline: ${baseline.baseline.toFixed(2)}ms`)
 				console.log(`  Expected Max: ${baseline.expectedMax}ms`)
@@ -426,7 +423,7 @@ describe('Task Master Command Response Time', () => {
 			})
 
 			// All commands should be within expected performance limits
-			const allWithinLimits = baselines.every(b => b.withinLimit)
+			const allWithinLimits = baselines.every((b) => b.withinLimit)
 			expect(allWithinLimits).toBe(true)
 		}, 90000)
 	})

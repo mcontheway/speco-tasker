@@ -6,5 +6,5 @@
  */
 export default function taskExists(tasksPath, taskId) {
 	// Placeholder implementation - always return true for compatibility
-	return true;
+	return true
 }

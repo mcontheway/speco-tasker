@@ -227,9 +227,6 @@ function hasCodebaseAnalysis(useResearch = false, projectRoot = null, session = 
 	)
 }
 
-
-
-
 // --- Global Settings Getters ---
 
 function getGlobalConfig(explicitRoot = null) {
@@ -271,9 +268,6 @@ function getProjectName(explicitRoot = null) {
 	return getGlobalConfig(explicitRoot).projectName
 }
 
-
-
-
 /**
  * Gets the Google Cloud project ID for Vertex AI from configuration
  * @param {string|null} explicitRoot - Optional explicit path to the project root.
@@ -294,13 +288,10 @@ function getVertexLocation(explicitRoot = null) {
 	return getGlobalConfig(explicitRoot).vertexLocation || 'us-central1'
 }
 
-
 function getCodebaseAnalysisEnabled(explicitRoot = null) {
 	// Directly return value from config
 	return getGlobalConfig(explicitRoot).enableCodebaseAnalysis
 }
-
-
 
 /**
  * Writes the configuration object to the file.

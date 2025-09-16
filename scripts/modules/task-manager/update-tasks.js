@@ -356,7 +356,10 @@ async function updateTasks(
 		// --- End Display Tasks ---
 
 		// AI functionality has been removed - cannot update tasks
-		consoleLog('error', 'AI functionality has been removed from Task Master. Task updates are no longer supported.')
+		consoleLog(
+			'error',
+			'AI functionality has been removed from Task Master. Task updates are no longer supported.'
+		)
 
 		return {
 			success: false,

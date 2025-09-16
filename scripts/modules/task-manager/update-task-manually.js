@@ -1,12 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 
-import {
-	log as consoleLog,
-	findProjectRoot,
-	readJSON,
-	writeJSON
-} from '../utils.js'
+import { log as consoleLog, findProjectRoot, readJSON, writeJSON } from '../utils.js'
 
 /**
  * Manually update a task's fields without AI involvement
@@ -25,7 +20,7 @@ async function updateTaskManually(tasksPath, taskId, fieldsToUpdate, context = {
 
 		// Find the task to update
 		const tasks = tasksData.tasks || []
-		const taskIndex = tasks.findIndex(task => task.id === taskId)
+		const taskIndex = tasks.findIndex((task) => task.id === taskId)
 
 		if (taskIndex === -1) {
 			return {
@@ -38,7 +33,7 @@ async function updateTaskManually(tasksPath, taskId, fieldsToUpdate, context = {
 		const updatedFields = []
 
 		// Update the fields that were provided
-		Object.keys(fieldsToUpdate).forEach(field => {
+		Object.keys(fieldsToUpdate).forEach((field) => {
 			const newValue = fieldsToUpdate[field]
 			if (newValue !== undefined && newValue !== task[field]) {
 				task[field] = newValue

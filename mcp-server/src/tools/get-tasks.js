@@ -6,7 +6,13 @@
 import { z } from 'zod'
 import { listTasksDirect } from '../core/task-master-core.js'
 import { resolveComplexityReportPath, resolveTasksPath } from '../core/utils/path-utils.js'
-import { createErrorResponse, handleApiResult, withNormalizedProjectRoot, getTagInfo, generateParameterHelp } from './utils.js'
+import {
+	createErrorResponse,
+	generateParameterHelp,
+	getTagInfo,
+	handleApiResult,
+	withNormalizedProjectRoot
+} from './utils.js'
 
 import { resolveTag } from '../../../scripts/modules/utils.js'
 
@@ -18,11 +24,12 @@ import { resolveTag } from '../../../scripts/modules/utils.js'
 // Generate parameter help for get_tasks tool
 const getTasksParameterHelp = generateParameterHelp(
 	'get_tasks',
+	[{ name: 'projectRoot', description: '项目根目录的绝对路径' }],
 	[
-		{ name: 'projectRoot', description: '项目根目录的绝对路径' }
-	],
-	[
-		{ name: 'status', description: '按状态过滤任务（pending, done, in-progress等），多个状态用逗号分隔' },
+		{
+			name: 'status',
+			description: '按状态过滤任务（pending, done, in-progress等），多个状态用逗号分隔'
+		},
 		{ name: 'withSubtasks', description: '是否包含子任务信息' },
 		{ name: 'file', description: '任务文件路径（默认：tasks/tasks.json）' },
 		{ name: 'complexityReport', description: '复杂度报告文件路径' },
@@ -116,7 +123,13 @@ export function registerListTasksTool(server) {
 				// Get tag info for better error context
 				const tagInfo = args.projectRoot ? getTagInfo(args.projectRoot, log) : null
 
-				return createErrorResponse(errorMessage, undefined, tagInfo, 'GET_TASKS_FAILED', getTasksParameterHelp)
+				return createErrorResponse(
+					errorMessage,
+					undefined,
+					tagInfo,
+					'GET_TASKS_FAILED',
+					getTasksParameterHelp
+				)
 			}
 		})
 	})

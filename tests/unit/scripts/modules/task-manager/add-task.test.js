@@ -93,7 +93,7 @@ jest.unstable_mockModule('../../../../../scripts/modules/ai-services-unified.js'
 }))
 
 jest.unstable_mockModule('../../../../../scripts/modules/config-manager.js', () => ({
-	getDefaultPriority: jest.fn(() => 'medium'),
+	getDefaultPriority: jest.fn(() => 'medium')
 }))
 
 jest.unstable_mockModule('../../../../../scripts/modules/utils/contextGatherer.js', () => ({

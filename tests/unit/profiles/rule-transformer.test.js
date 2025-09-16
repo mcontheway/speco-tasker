@@ -10,11 +10,7 @@ describe('Rule Transformer - General', () => {
 			expect(RULE_PROFILES.length).toBeGreaterThan(0)
 
 			// Verify expected profiles are present (after AI removal)
-			const expectedProfiles = [
-				'cursor',
-				'roo',
-				'windsurf'
-			]
+			const expectedProfiles = ['cursor', 'roo', 'windsurf']
 			expectedProfiles.forEach((profile) => {
 				expect(RULE_PROFILES).toContain(profile)
 			})

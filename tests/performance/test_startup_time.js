@@ -3,8 +3,8 @@
  */
 
 import { spawn } from 'child_process'
-import path from 'path'
 import fs from 'fs'
+import path from 'path'
 import { fileURLToPath } from 'url'
 
 const __filename = fileURLToPath(import.meta.url)

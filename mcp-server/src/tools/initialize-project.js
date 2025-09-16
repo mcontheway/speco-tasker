@@ -1,14 +1,18 @@
 import { z } from 'zod'
 import { RULE_PROFILES } from '../../../src/constants/profiles.js'
 import { initializeProjectDirect } from '../core/task-master-core.js'
-import { createErrorResponse, handleApiResult, withNormalizedProjectRoot, getTagInfo, generateParameterHelp } from './utils.js'
+import {
+	createErrorResponse,
+	generateParameterHelp,
+	getTagInfo,
+	handleApiResult,
+	withNormalizedProjectRoot
+} from './utils.js'
 
 // Generate parameter help for initialize_project tool
 const initializeProjectParameterHelp = generateParameterHelp(
 	'initialize_project',
-	[
-		{ name: 'projectRoot', description: '项目根目录的绝对路径' }
-	],
+	[{ name: 'projectRoot', description: '项目根目录的绝对路径' }],
 	[
 		{ name: 'skipInstall', description: '是否跳过依赖安装' },
 		{ name: 'addAliases', description: '是否添加shell别名' },
@@ -86,7 +90,13 @@ export function registerInitializeProjectTool(server) {
 				// Get tag info for better error context
 				const tagInfo = args.projectRoot ? getTagInfo(args.projectRoot, log) : null
 
-				return createErrorResponse(errorMessage, undefined, tagInfo, 'INITIALIZE_PROJECT_FAILED', initializeProjectParameterHelp)
+				return createErrorResponse(
+					errorMessage,
+					undefined,
+					tagInfo,
+					'INITIALIZE_PROJECT_FAILED',
+					initializeProjectParameterHelp
+				)
 			}
 		})
 	})

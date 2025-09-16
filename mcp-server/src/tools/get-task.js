@@ -7,7 +7,7 @@ import { z } from 'zod'
 import { resolveTag } from '../../../scripts/modules/utils.js'
 import { showTaskDirect } from '../core/task-master-core.js'
 import { findComplexityReportPath, findTasksPath } from '../core/utils/path-utils.js'
-import { createErrorResponse, handleApiResult, withNormalizedProjectRoot, getTagInfo, generateParameterHelp } from './utils.js'
+import { createErrorResponse, generateParameterHelp, getTagInfo, handleApiResult, withNormalizedProjectRoot } from './utils.js'
 
 /**
  * Custom processor function that removes allTasks from the response

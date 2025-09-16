@@ -476,8 +476,6 @@ describe('Getter Functions', () => {
 		expect(logLevel).toBe(VALID_CUSTOM_CONFIG.global.logLevel)
 	})
 
-
-
 	// Add more tests for other getters (getResearchProvider, getProjectName, etc.)
 })
 

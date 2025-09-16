@@ -134,7 +134,7 @@ describe('任务创建功能验证', () => {
 			const newTaskId = 3
 
 			// 检查新ID是否与现有任务冲突
-			const isIdUnique = !existingTasks.some(task => task.id === newTaskId)
+			const isIdUnique = !existingTasks.some((task) => task.id === newTaskId)
 			expect(isIdUnique).toBe(true)
 		})
 
@@ -152,7 +152,7 @@ describe('任务创建功能验证', () => {
 			const validPriorities = ['high', 'medium', 'low']
 			const invalidPriority = 'urgent'
 
-			validPriorities.forEach(priority => {
+			validPriorities.forEach((priority) => {
 				expect(TASK_PRIORITY_OPTIONS).toContain(priority)
 			})
 
@@ -272,7 +272,7 @@ describe('任务创建功能验证', () => {
 				{ id: 1, title: '重复ID任务' }
 			]
 
-			const ids = tasks.map(task => task.id)
+			const ids = tasks.map((task) => task.id)
 			const uniqueIds = [...new Set(ids)]
 
 			expect(uniqueIds).toHaveLength(1) // 应该只有一个唯一ID
