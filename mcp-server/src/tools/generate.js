@@ -17,7 +17,7 @@ import { createErrorResponse, handleApiResult, withNormalizedProjectRoot } from 
 export function registerGenerateTool(server) {
 	server.addTool({
 		name: 'generate',
-		description: 'Generates individual task files in tasks/ directory based on tasks.json',
+		description: '基于tasks.json在tasks目录中生成单独的任务文件',
 		parameters: z.object({
 			file: z.string().optional().describe('Absolute path to the tasks file'),
 			output: z
@@ -25,7 +25,7 @@ export function registerGenerateTool(server) {
 				.optional()
 				.describe('Output directory (default: same directory as tasks file)'),
 			projectRoot: z.string().describe('The directory of the project. Must be an absolute path.'),
-			tag: z.string().optional().describe('Tag context to operate on')
+			tag: z.string().optional().describe('选择要处理的任务分组')
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
 			try {

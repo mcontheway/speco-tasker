@@ -31,7 +31,7 @@ export function registerUpdateTool(server) {
 				.string()
 				.optional()
 				.describe('The directory of the project. (Optional, usually from session)'),
-			tag: z.string().optional().describe('Tag context to operate on')
+			tag: z.string().optional().describe('选择要处理的任务分组')
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
 			const toolName = 'update'

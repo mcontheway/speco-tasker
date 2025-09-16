@@ -10,7 +10,7 @@ import { createContentResponse, createErrorResponse } from './utils.js' // Assum
 export function registerGetOperationStatusTool(server, asyncManager) {
 	server.addTool({
 		name: 'get_operation_status',
-		description: 'Retrieves the status and result/error of a background operation.',
+		description: '获取后台操作的状态和结果或错误信息',
 		parameters: z.object({
 			operationId: z.string().describe('The ID of the operation to check.')
 		}),

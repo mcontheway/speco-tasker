@@ -25,18 +25,18 @@ export function registerUpdateSubtaskTool(server) {
 					'ID of the subtask to update in format "parentId.subtaskId" (e.g., "5.2"). Parent ID is the ID of the task that contains the subtask.'
 				),
 			// Manual field update parameters
-			title: z.string().optional().describe('Update subtask title'),
-			description: z.string().optional().describe('Update subtask description (supports append mode)'),
-			status: z.string().optional().describe('Update subtask status (pending, in-progress, done)'),
-			details: z.string().optional().describe('Update subtask implementation details (supports append mode)'),
+			title: z.string().optional().describe('更新子任务标题'),
+			description: z.string().optional().describe('更新子任务描述，支持追加模式'),
+			status: z.string().optional().describe('更新子任务状态，支持pending, in-progress, done'),
+			details: z.string().optional().describe('更新子任务实现细节，支持追加模式'),
 			// Update mode
 			append: z
 				.boolean()
 				.optional()
-				.describe('Append to description/details fields instead of replacing (default: false)'),
-			file: z.string().optional().describe('Absolute path to the tasks file'),
-			projectRoot: z.string().describe('The directory of the project. Must be an absolute path.'),
-			tag: z.string().optional().describe('Tag context to operate on')
+				.describe('追加到描述/细节字段而不是替换，默认为false'),
+			file: z.string().optional().describe('任务文件的绝对路径'),
+			projectRoot: z.string().describe('项目目录，必须是绝对路径'),
+			tag: z.string().optional().describe('选择要处理的任务分组')
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
 			const toolName = 'update_subtask'

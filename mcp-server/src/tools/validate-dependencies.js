@@ -21,7 +21,7 @@ export function registerValidateDependenciesTool(server) {
 		parameters: z.object({
 			file: z.string().optional().describe('Absolute path to the tasks file'),
 			projectRoot: z.string().describe('The directory of the project. Must be an absolute path.'),
-			tag: z.string().optional().describe('Tag context to operate on')
+			tag: z.string().optional().describe('选择要处理的任务分组')
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
 			try {

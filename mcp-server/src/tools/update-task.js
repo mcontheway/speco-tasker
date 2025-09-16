@@ -17,28 +17,28 @@ export function registerUpdateTaskTool(server) {
 	server.addTool({
 		name: 'update_task',
 		description:
-			'Updates a single task by ID with manual field changes. Supports both full replacement and incremental append modes.',
+			'通过ID更新单个任务的手动字段更改。支持完整替换和增量追加模式。',
 		parameters: z.object({
 			id: z
 				.string() // ID can be number or string like "1.2"
 				.describe(
-					"ID of the task (e.g., '15') to update. Subtasks are supported using the update-subtask tool."
+					"要更新的任务ID，支持格式如'15'，子任务请使用update-subtask工具"
 				),
 			// Manual field update parameters
-			title: z.string().optional().describe('Update task title'),
-			description: z.string().optional().describe('Update task description (supports append mode)'),
-			status: z.string().optional().describe('Update task status (pending, in-progress, done)'),
-			priority: z.string().optional().describe('Update task priority (high, medium, low)'),
-			details: z.string().optional().describe('Update task implementation details (supports append mode)'),
-			testStrategy: z.string().optional().describe('Update task test strategy (supports append mode)'),
+			title: z.string().optional().describe('更新任务标题'),
+			description: z.string().optional().describe('更新任务描述，支持追加模式'),
+			status: z.string().optional().describe('更新任务状态，支持pending, in-progress, done'),
+			priority: z.string().optional().describe('更新任务优先级，支持high, medium, low'),
+			details: z.string().optional().describe('更新任务实现细节，支持追加模式'),
+			testStrategy: z.string().optional().describe('更新任务测试策略，支持追加模式'),
 			// Update mode
 			append: z
 				.boolean()
 				.optional()
-				.describe('Append to description/details/test-strategy fields instead of replacing (default: false)'),
-			file: z.string().optional().describe('Absolute path to the tasks file'),
-			projectRoot: z.string().describe('The directory of the project. Must be an absolute path.'),
-			tag: z.string().optional().describe('Tag context to operate on')
+				.describe('追加到描述/细节/测试策略字段而不是替换，默认为false'),
+			file: z.string().optional().describe('任务文件的绝对路径'),
+			projectRoot: z.string().describe('项目目录，必须是绝对路径'),
+			tag: z.string().optional().describe('选择要处理的任务分组')
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
 			const toolName = 'update_task'

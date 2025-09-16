@@ -33,7 +33,7 @@ const addTaskParameterHelp = generateParameterHelp(
 		{ name: 'dependencies', description: '依赖的任务ID列表，用逗号分隔' },
 		{ name: 'priority', description: '任务优先级（high, medium, low）' },
 		{ name: 'file', description: '任务文件路径（默认：tasks/tasks.json）' },
-		{ name: 'tag', description: '要操作的标签上下文' }
+		{ name: 'tag', description: '选择要处理的任务分组' }
 	],
 	[
 		'{"projectRoot": "/path/to/project", "title": "用户认证", "description": "实现JWT用户认证", "priority": "high"}',
@@ -44,7 +44,7 @@ const addTaskParameterHelp = generateParameterHelp(
 export function registerAddTaskTool(server) {
 	server.addTool({
 		name: 'add_task',
-		description: '手动添加一个新任务',
+		description: '手动添加新任务',
 		parameters: z.object({
 			projectRoot: z.string().describe('项目根目录的绝对路径'),
 			title: z.string().describe('任务标题'),
@@ -52,9 +52,9 @@ export function registerAddTaskTool(server) {
 			details: z.string().optional().describe('实现细节'),
 			testStrategy: z.string().optional().describe('测试策略'),
 			dependencies: z.string().optional().describe('依赖的任务ID列表，用逗号分隔'),
-			priority: z.string().optional().describe('任务优先级（high, medium, low）'),
-			file: z.string().optional().describe('任务文件路径（默认：tasks/tasks.json）'),
-			tag: z.string().optional().describe('要操作的标签上下文')
+			priority: z.string().optional().describe('任务优先级，支持high, medium, low'),
+			file: z.string().optional().describe('任务文件路径，默认为tasks/tasks.json'),
+			tag: z.string().optional().describe('选择要处理的任务分组')
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
 			try {

@@ -35,7 +35,7 @@ const setTaskStatusParameterHelp = generateParameterHelp(
 	[
 		{ name: 'file', description: '任务文件路径（默认：tasks/tasks.json）' },
 		{ name: 'complexityReport', description: '复杂度报告文件路径' },
-		{ name: 'tag', description: '要操作的标签上下文' }
+		{ name: 'tag', description: '选择要处理的任务分组' }
 	],
 	[
 		'{"projectRoot": "/path/to/project", "id": "1", "status": "done"}',
@@ -47,25 +47,25 @@ const setTaskStatusParameterHelp = generateParameterHelp(
 export function registerSetTaskStatusTool(server) {
 	server.addTool({
 		name: 'set_task_status',
-		description: '设置一个或多个任务/子任务的状态',
+		description: '设置一个或多个任务或子任务的状态',
 		parameters: z.object({
 			id: z
 				.string()
 				.describe(
-					"Task ID or subtask ID (e.g., '15', '15.2'). Can be comma-separated to update multiple tasks/subtasks at once."
+					"任务ID或子任务ID，支持格式如'15', '15.2'，可逗号分隔同时更新多个任务"
 				),
 			status: z
 				.enum(TASK_STATUS_OPTIONS)
 				.describe(
-					"New status to set (e.g., 'pending', 'done', 'in-progress', 'review', 'deferred', 'cancelled'."
+					"新状态，支持'pending', 'done', 'in-progress', 'review', 'deferred', 'cancelled'"
 				),
-			file: z.string().optional().describe('Absolute path to the tasks file'),
+			file: z.string().optional().describe('任务文件的绝对路径'),
 			complexityReport: z
 				.string()
 				.optional()
-				.describe('Path to the complexity report file (relative to project root or absolute)'),
-			projectRoot: z.string().describe('The directory of the project. Must be an absolute path.'),
-			tag: z.string().optional().describe('Optional tag context to operate on')
+				.describe('复杂度报告文件路径，相对于项目根目录或绝对路径'),
+			projectRoot: z.string().describe('项目目录，必须是绝对路径'),
+			tag: z.string().optional().describe('可选的标签上下文')
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
 			try {

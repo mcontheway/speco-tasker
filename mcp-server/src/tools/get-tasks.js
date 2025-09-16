@@ -33,7 +33,7 @@ const getTasksParameterHelp = generateParameterHelp(
 		{ name: 'withSubtasks', description: '是否包含子任务信息' },
 		{ name: 'file', description: '任务文件路径（默认：tasks/tasks.json）' },
 		{ name: 'complexityReport', description: '复杂度报告文件路径' },
-		{ name: 'tag', description: '要操作的标签上下文' }
+		{ name: 'tag', description: '选择要处理的任务分组' }
 	],
 	[
 		'{"projectRoot": "/path/to/project"}',
@@ -46,28 +46,28 @@ export function registerListTasksTool(server) {
 	server.addTool({
 		name: 'get_tasks',
 		description:
-			'Get all tasks from Task Master, optionally filtering by status and including subtasks.',
+			'获取Task Master中的所有任务，可选按状态过滤和包含子任务。',
 		parameters: z.object({
 			status: z
 				.string()
 				.optional()
 				.describe(
-					"Filter tasks by status (e.g., 'pending', 'done') or multiple statuses separated by commas (e.g., 'blocked,deferred')"
+					"按状态过滤任务，支持格式如'pending', 'done'或用逗号分隔多个状态"
 				),
 			withSubtasks: z
 				.boolean()
 				.optional()
-				.describe('Include subtasks nested within their parent tasks in the response'),
+				.describe('在响应中包含嵌套在父任务中的子任务'),
 			file: z
 				.string()
 				.optional()
-				.describe('Path to the tasks file (relative to project root or absolute)'),
+				.describe('任务文件路径（相对于项目根目录或绝对路径）'),
 			complexityReport: z
 				.string()
 				.optional()
-				.describe('Path to the complexity report file (relative to project root or absolute)'),
-			projectRoot: z.string().describe('The directory of the project. Must be an absolute path.'),
-			tag: z.string().optional().describe('Tag context to operate on')
+				.describe('复杂度报告文件路径（相对于项目根目录或绝对路径）'),
+			projectRoot: z.string().describe('项目目录，必须是绝对路径'),
+			tag: z.string().optional().describe('选择要处理的任务分组')
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
 			try {

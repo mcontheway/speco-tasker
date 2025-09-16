@@ -29,7 +29,7 @@ export function registerInitializeProjectTool(server) {
 	server.addTool({
 		name: 'initialize_project',
 		description:
-			'Initializes a new Task Master project structure by calling the core initialization logic. Creates necessary folders and configuration files for Task Master in the current directory.',
+			'初始化新的Task Master项目结构，调用核心初始化逻辑，在当前目录创建必要的文件夹和配置文件。',
 		parameters: z.object({
 			skipInstall: z
 				.boolean()

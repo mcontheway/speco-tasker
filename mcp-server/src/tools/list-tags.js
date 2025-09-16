@@ -15,14 +15,14 @@ import { createErrorResponse, handleApiResult, withNormalizedProjectRoot } from 
 export function registerListTagsTool(server) {
 	server.addTool({
 		name: 'list_tags',
-		description: 'List all available tags with task counts and metadata',
+		description: '列出所有可用标签及其任务数量和元数据',
 		parameters: z.object({
 			showMetadata: z
 				.boolean()
 				.optional()
-				.describe('Whether to include metadata in the output (default: false)'),
-			file: z.string().optional().describe('Path to the tasks file (default: tasks/tasks.json)'),
-			projectRoot: z.string().describe('The directory of the project. Must be an absolute path.')
+				.describe('是否在输出中包含元数据，默认为false'),
+			file: z.string().optional().describe('任务文件路径，默认为tasks/tasks.json'),
+			projectRoot: z.string().describe('项目目录，必须是绝对路径')
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
 			try {

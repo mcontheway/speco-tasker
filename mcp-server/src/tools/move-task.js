@@ -21,7 +21,7 @@ import {
 export function registerMoveTaskTool(server) {
 	server.addTool({
 		name: 'move_task',
-		description: 'Move a task or subtask to a new position',
+		description: '将任务或子任务移动到新位置',
 		parameters: z.object({
 			from: z
 				.string()
@@ -34,21 +34,21 @@ export function registerMoveTaskTool(server) {
 				.describe(
 					'ID of the destination (e.g., "7" or "7.3"). Required for within-tag moves. For cross-tag moves, if omitted, task will be moved to the target tag maintaining its ID'
 				),
-			file: z.string().optional().describe('Custom path to tasks.json file'),
+			file: z.string().optional().describe('自定义tasks.json文件路径'),
 			projectRoot: z
 				.string()
-				.describe('Root directory of the project (typically derived from session)'),
-			tag: z.string().optional().describe('Tag context to operate on'),
-			fromTag: z.string().optional().describe('Source tag for cross-tag moves'),
-			toTag: z.string().optional().describe('Target tag for cross-tag moves'),
+				.describe('项目根目录，通常从会话中获取'),
+			tag: z.string().optional().describe('选择要处理的任务分组'),
+			fromTag: z.string().optional().describe('跨标签移动的源标签'),
+			toTag: z.string().optional().describe('跨标签移动的目标标签'),
 			withDependencies: z
 				.boolean()
 				.optional()
-				.describe('Move dependent tasks along with main task'),
+				.describe('同时移动主任务的依赖任务'),
 			ignoreDependencies: z
 				.boolean()
 				.optional()
-				.describe('Break cross-tag dependencies during move')
+				.describe('在跨标签移动期间断开依赖关系')
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
 			try {

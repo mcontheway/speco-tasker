@@ -36,7 +36,7 @@ const useTagParameterHelp = generateParameterHelp(
 export function registerUseTagTool(server) {
 	server.addTool({
 		name: 'use_tag',
-		description: 'Switch to a different tag context for task operations',
+		description: '切换到不同的标签上下文进行任务操作',
 		parameters: z.object({
 			name: z.string().describe('Name of the tag to switch to'),
 			file: z.string().optional().describe('Path to the tasks file (default: tasks/tasks.json)'),

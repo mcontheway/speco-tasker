@@ -15,7 +15,7 @@ import { createErrorResponse, handleApiResult, withNormalizedProjectRoot } from 
 export function registerDeleteTagTool(server) {
 	server.addTool({
 		name: 'delete_tag',
-		description: 'Delete an existing tag and all its tasks',
+		description: '删除现有标签及其所有任务',
 		parameters: z.object({
 			name: z.string().describe('Name of the tag to delete'),
 			yes: z.boolean().optional().describe('Skip confirmation prompts (default: true for MCP)'),

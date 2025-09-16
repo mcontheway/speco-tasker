@@ -15,21 +15,21 @@ import { createErrorResponse, handleApiResult, withNormalizedProjectRoot } from 
 export function registerAddTagTool(server) {
 	server.addTool({
 		name: 'add_tag',
-		description: 'Create a new tag for organizing tasks in different contexts',
+		description: '创建新标签来组织不同上下文的任务',
 		parameters: z.object({
-			name: z.string().describe('Name of the new tag to create'),
+			name: z.string().describe('要创建的新标签名称'),
 			copyFromCurrent: z
 				.boolean()
 				.optional()
-				.describe('Whether to copy tasks from the current tag (default: false)'),
-			copyFromTag: z.string().optional().describe('Specific tag to copy tasks from'),
+				.describe('是否从当前标签复制任务到新标签，默认为false'),
+			copyFromTag: z.string().optional().describe('要复制任务的特定标签'),
 			fromBranch: z
 				.boolean()
 				.optional()
-				.describe('Create tag name from current git branch (ignores name parameter)'),
-			description: z.string().optional().describe('Optional description for the tag'),
-			file: z.string().optional().describe('Path to the tasks file (default: tasks/tasks.json)'),
-			projectRoot: z.string().describe('The directory of the project. Must be an absolute path.')
+				.describe('从当前git分支创建标签名称，忽略name参数'),
+			description: z.string().optional().describe('标签的可选描述'),
+			file: z.string().optional().describe('任务文件路径，默认为tasks/tasks.json'),
+			projectRoot: z.string().describe('项目目录，必须是绝对路径')
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
 			try {

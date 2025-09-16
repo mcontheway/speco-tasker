@@ -31,7 +31,7 @@ const getTaskParameterHelp = generateParameterHelp(
 	[
 		{ name: 'file', description: '任务文件路径（默认：tasks/tasks.json）' },
 		{ name: 'complexityReport', description: '复杂度报告文件路径' },
-		{ name: 'tag', description: '要操作的标签上下文' }
+		{ name: 'tag', description: '选择要处理的任务分组' }
 	],
 	[
 		'{"projectRoot": "/path/to/project", "id": "1"}',
@@ -61,19 +61,19 @@ function processTaskResponse(data) {
 export function registerShowTaskTool(server) {
 	server.addTool({
 		name: 'get_task',
-		description: 'Get detailed information about a specific task',
+		description: '获取特定任务的详细信息',
 		parameters: z.object({
-			id: z.string().describe('Task ID(s) to get (can be comma-separated for multiple tasks)'),
-			status: z.string().optional().describe("Filter subtasks by status (e.g., 'pending', 'done')"),
-			file: z.string().optional().describe('Path to the tasks file relative to project root'),
+			id: z.string().describe('要获取的任务ID，支持逗号分隔多个任务'),
+			status: z.string().optional().describe("按状态过滤子任务，支持'pending', 'done'等"),
+			file: z.string().optional().describe('相对于项目根目录的任务文件路径'),
 			complexityReport: z
 				.string()
 				.optional()
-				.describe('Path to the complexity report file (relative to project root or absolute)'),
+				.describe('复杂度报告文件路径，相对于项目根目录或绝对路径'),
 			projectRoot: z
 				.string()
-				.describe('Absolute path to the project root directory (Optional, usually from session)'),
-			tag: z.string().optional().describe('Tag context to operate on')
+				.describe('项目根目录的绝对路径，可选，通常从会话获取'),
+			tag: z.string().optional().describe('选择要处理的任务分组')
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
 			const { id, file, status, projectRoot } = args

@@ -16,7 +16,7 @@ import { createErrorResponse, handleApiResult, withNormalizedProjectRoot } from 
 export function registerRemoveDependencyTool(server) {
 	server.addTool({
 		name: 'remove_dependency',
-		description: 'Remove a dependency from a task',
+		description: '从任务中移除依赖关系',
 		parameters: z.object({
 			id: z.string().describe('Task ID to remove dependency from'),
 			dependsOn: z.string().describe('Task ID to remove as a dependency'),
@@ -25,7 +25,7 @@ export function registerRemoveDependencyTool(server) {
 				.optional()
 				.describe('Absolute path to the tasks file (default: tasks/tasks.json)'),
 			projectRoot: z.string().describe('The directory of the project. Must be an absolute path.'),
-			tag: z.string().optional().describe('Tag context to operate on')
+			tag: z.string().optional().describe('选择要处理的任务分组')
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
 			try {

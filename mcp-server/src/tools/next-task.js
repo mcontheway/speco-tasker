@@ -27,7 +27,7 @@ const nextTaskParameterHelp = generateParameterHelp(
 	[
 		{ name: 'file', description: '任务文件路径（默认：tasks/tasks.json）' },
 		{ name: 'complexityReport', description: '复杂度报告文件路径' },
-		{ name: 'tag', description: '要操作的标签上下文' }
+		{ name: 'tag', description: '选择要处理的任务分组' }
 	],
 	[
 		'{"projectRoot": "/path/to/project"}',
@@ -38,15 +38,15 @@ const nextTaskParameterHelp = generateParameterHelp(
 export function registerNextTaskTool(server) {
 	server.addTool({
 		name: 'next_task',
-		description: 'Find the next task to work on based on dependencies and status',
+		description: '基于依赖关系和状态查找下一个可处理的任务',
 		parameters: z.object({
-			file: z.string().optional().describe('Absolute path to the tasks file'),
+			file: z.string().optional().describe('任务文件的绝对路径'),
 			complexityReport: z
 				.string()
 				.optional()
-				.describe('Path to the complexity report file (relative to project root or absolute)'),
-			projectRoot: z.string().describe('The directory of the project. Must be an absolute path.'),
-			tag: z.string().optional().describe('Tag context to operate on')
+				.describe('复杂度报告文件路径，相对于项目根目录或绝对路径'),
+			projectRoot: z.string().describe('项目目录，必须是绝对路径'),
+			tag: z.string().optional().describe('选择要处理的任务分组')
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
 			try {

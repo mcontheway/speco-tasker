@@ -119,10 +119,10 @@ function registerCommands(programInstance) {
 	// generate command
 	programInstance
 		.command('generate')
-		.description('Generate task files from tasks.json')
-		.option('-f, --file <file>', 'Path to the tasks file', TASKMASTER_TASKS_FILE)
-		.option('-o, --output <dir>', 'Output directory', path.dirname(TASKMASTER_TASKS_FILE))
-		.option('--tag <tag>', 'Specify tag context for task operations')
+		.description('从tasks.json生成任务文件')
+		.option('-f, --file <file>', '任务文件路径', TASKMASTER_TASKS_FILE)
+		.option('-o, --output <dir>', '输出目录', path.dirname(TASKMASTER_TASKS_FILE))
+		.option('--tag <tag>', '选择要处理的任务分组')
 		.action(async (options) => {
 			// Initialize TaskMaster
 			const taskMaster = initTaskMaster({
@@ -147,11 +147,11 @@ function registerCommands(programInstance) {
 		.command('set-status')
 		.alias('mark')
 		.alias('set')
-		.description('Set the status of a task')
-		.option('-i, --id <id>', 'Task ID (can be comma-separated for multiple tasks)')
-		.option('-s, --status <status>', `New status (one of: ${TASK_STATUS_OPTIONS.join(', ')})`)
-		.option('-f, --file <file>', 'Path to the tasks file', TASKMASTER_TASKS_FILE)
-		.option('--tag <tag>', 'Specify tag context for task operations')
+		.description('设置任务状态')
+		.option('-i, --id <id>', '任务ID，支持逗号分隔多个任务')
+		.option('-s, --status <status>', `新状态，可选值：${TASK_STATUS_OPTIONS.join(', ')}`)
+		.option('-f, --file <file>', '任务文件路径', TASKMASTER_TASKS_FILE)
+		.option('--tag <tag>', '选择要处理的任务分组')
 		.action(async (options) => {
 			// Initialize TaskMaster
 			const taskMaster = initTaskMaster({
@@ -191,13 +191,13 @@ function registerCommands(programInstance) {
 	// list command
 	programInstance
 		.command('list')
-		.description('List all tasks')
-		.option('-f, --file <file>', 'Path to the tasks file', TASKMASTER_TASKS_FILE)
-		.option('-r, --report <report>', 'Path to the complexity report file', COMPLEXITY_REPORT_FILE)
-		.option('-s, --status <status>', 'Filter by status')
-		.option('--with-subtasks', 'Show subtasks for each task')
-		.option('-c, --compact', 'Display tasks in compact one-line format')
-		.option('--tag <tag>', 'Specify tag context for task operations')
+		.description('列出所有任务')
+		.option('-f, --file <file>', '任务文件路径', TASKMASTER_TASKS_FILE)
+		.option('-r, --report <report>', '复杂度报告文件路径', COMPLEXITY_REPORT_FILE)
+		.option('-s, --status <status>', '按状态过滤任务')
+		.option('--with-subtasks', '显示每个任务的子任务')
+		.option('-c, --compact', '使用紧凑的一行格式显示任务')
+		.option('--tag <tag>', '选择要处理的任务分组')
 		.action(async (options) => {
 			// Initialize TaskMaster
 			const initOptions = {
@@ -242,11 +242,11 @@ function registerCommands(programInstance) {
 	// clear-subtasks command
 	programInstance
 		.command('clear-subtasks')
-		.description('Clear subtasks from specified tasks')
-		.option('-f, --file <file>', 'Path to the tasks file', TASKMASTER_TASKS_FILE)
-		.option('-i, --id <ids>', 'Task IDs (comma-separated) to clear subtasks from')
-		.option('--all', 'Clear subtasks from all tasks')
-		.option('--tag <tag>', 'Specify tag context for task operations')
+		.description('清除指定任务的子任务')
+		.option('-f, --file <file>', '任务文件路径', TASKMASTER_TASKS_FILE)
+		.option('-i, --id <ids>', '要清除子任务的任务ID，支持逗号分隔')
+		.option('--all', '清除所有任务的子任务')
+		.option('--tag <tag>', '选择要处理的任务分组')
 		.action(async (options) => {
 			const taskIds = options.id
 			const all = options.all
@@ -294,22 +294,22 @@ function registerCommands(programInstance) {
 	// add-task command
 	programInstance
 		.command('add-task')
-		.description('Add a new task')
-		.option('-f, --file <file>', 'Path to the tasks file', TASKMASTER_TASKS_FILE)
+		.description('添加新任务')
+		.option('-f, --file <file>', '任务文件路径', TASKMASTER_TASKS_FILE)
 		.option(
 			'-p, --prompt <prompt>',
-			'Description of the task to add (required if not using manual fields)'
+			'要添加任务的描述，不使用手动字段时必需'
 		)
-		.option('-t, --title <title>', 'Task title (for manual task creation)')
-		.option('-d, --description <description>', 'Task description (for manual task creation)')
-		.option('--details <details>', 'Implementation details (for manual task creation)')
+		.option('-t, --title <title>', '任务标题，用于手动创建任务')
+		.option('-d, --description <description>', '任务描述，用于手动创建任务')
+		.option('--details <details>', '实现细节，用于手动创建任务')
 		.option(
 			'--dependencies <dependencies>',
-			'Comma-separated list of task IDs this task depends on'
+			'此任务依赖的任务ID列表，用逗号分隔'
 		)
-		.option('--priority <priority>', 'Task priority (high, medium, low)', 'medium')
+		.option('--priority <priority>', '任务优先级（high, medium, low）', 'medium')
 		// Research option removed - functionality no longer available
-		.option('--tag <tag>', 'Specify tag context for task operations')
+		.option('--tag <tag>', '选择要处理的任务分组')
 		.action(async (options) => {
 			const isManualCreation = options.title && options.description
 
@@ -402,10 +402,10 @@ function registerCommands(programInstance) {
 	// next command
 	programInstance
 		.command('next')
-		.description(`Show the next task to work on based on dependencies and status${chalk.reset('')}`)
-		.option('-f, --file <file>', 'Path to the tasks file', TASKMASTER_TASKS_FILE)
-		.option('-r, --report <report>', 'Path to the complexity report file', COMPLEXITY_REPORT_FILE)
-		.option('--tag <tag>', 'Specify tag context for task operations')
+		.description('显示基于依赖关系和状态的下一个可处理任务')
+		.option('-f, --file <file>', '任务文件路径', TASKMASTER_TASKS_FILE)
+		.option('-r, --report <report>', '复杂度报告文件路径', COMPLEXITY_REPORT_FILE)
+		.option('--tag <tag>', '选择要处理的任务分组')
 		.action(async (options) => {
 			const initOptions = {
 				tasksPath: options.file || true,
@@ -443,13 +443,13 @@ function registerCommands(programInstance) {
 	// show command
 	programInstance
 		.command('show')
-		.description(`Display detailed information about one or more tasks${chalk.reset('')}`)
-		.argument('[id]', 'Task ID(s) to show (comma-separated for multiple)')
-		.option('-i, --id <id>', 'Task ID(s) to show (comma-separated for multiple)')
-		.option('-s, --status <status>', 'Filter subtasks by status')
-		.option('-f, --file <file>', 'Path to the tasks file', TASKMASTER_TASKS_FILE)
-		.option('-r, --report <report>', 'Path to the complexity report file', COMPLEXITY_REPORT_FILE)
-		.option('--tag <tag>', 'Specify tag context for task operations')
+		.description('显示一个或多个任务的详细信息')
+		.argument('[id]', '要显示的任务ID，支持逗号分隔多个')
+		.option('-i, --id <id>', '要显示的任务ID，支持逗号分隔多个')
+		.option('-s, --status <status>', '按状态过滤子任务')
+		.option('-f, --file <file>', '任务文件路径', TASKMASTER_TASKS_FILE)
+		.option('-r, --report <report>', '复杂度报告文件路径', COMPLEXITY_REPORT_FILE)
+		.option('--tag <tag>', '选择要处理的任务分组')
 		.action(async (taskId, options) => {
 			// Initialize TaskMaster
 			const initOptions = {
@@ -504,11 +504,11 @@ function registerCommands(programInstance) {
 	// add-dependency command
 	programInstance
 		.command('add-dependency')
-		.description('Add a dependency to a task')
-		.option('-i, --id <id>', 'Task ID to add dependency to')
-		.option('-d, --depends-on <id>', 'Task ID that will become a dependency')
-		.option('-f, --file <file>', 'Path to the tasks file', TASKMASTER_TASKS_FILE)
-		.option('--tag <tag>', 'Specify tag context for task operations')
+		.description('为任务添加依赖关系')
+		.option('-i, --id <id>', '要添加依赖关系的目标任务ID')
+		.option('-d, --depends-on <id>', '将成为依赖项的任务ID')
+		.option('-f, --file <file>', '任务文件路径', TASKMASTER_TASKS_FILE)
+		.option('--tag <tag>', '选择要处理的任务分组')
 		.action(async (options) => {
 			const initOptions = {
 				tasksPath: options.file || true,
@@ -548,11 +548,11 @@ function registerCommands(programInstance) {
 	// remove-dependency command
 	programInstance
 		.command('remove-dependency')
-		.description('Remove a dependency from a task')
-		.option('-i, --id <id>', 'Task ID to remove dependency from')
-		.option('-d, --depends-on <id>', 'Task ID to remove as a dependency')
-		.option('-f, --file <file>', 'Path to the tasks file', TASKMASTER_TASKS_FILE)
-		.option('--tag <tag>', 'Specify tag context for task operations')
+		.description('从任务中移除依赖关系')
+		.option('-i, --id <id>', '要移除依赖关系的目标任务ID')
+		.option('-d, --depends-on <id>', '要移除为依赖项的任务ID')
+		.option('-f, --file <file>', '任务文件路径', TASKMASTER_TASKS_FILE)
+		.option('--tag <tag>', '选择要处理的任务分组')
 		.action(async (options) => {
 			const initOptions = {
 				tasksPath: options.file || true,
@@ -592,9 +592,9 @@ function registerCommands(programInstance) {
 	// validate-dependencies command
 	programInstance
 		.command('validate-dependencies')
-		.description(`Identify invalid dependencies without fixing them${chalk.reset('')}`)
-		.option('-f, --file <file>', 'Path to the tasks file', TASKMASTER_TASKS_FILE)
-		.option('--tag <tag>', 'Specify tag context for task operations')
+		.description('识别无效的依赖关系但不进行修复')
+		.option('-f, --file <file>', '任务文件路径', TASKMASTER_TASKS_FILE)
+		.option('--tag <tag>', '选择要处理的任务分组')
 		.action(async (options) => {
 			const initOptions = {
 				tasksPath: options.file || true,
@@ -618,9 +618,9 @@ function registerCommands(programInstance) {
 	// fix-dependencies command
 	programInstance
 		.command('fix-dependencies')
-		.description(`Fix invalid dependencies automatically${chalk.reset('')}`)
-		.option('-f, --file <file>', 'Path to the tasks file', TASKMASTER_TASKS_FILE)
-		.option('--tag <tag>', 'Specify tag context for task operations')
+		.description('自动修复无效的依赖关系')
+		.option('-f, --file <file>', '任务文件路径', TASKMASTER_TASKS_FILE)
+		.option('--tag <tag>', '选择要处理的任务分组')
 		.action(async (options) => {
 			const initOptions = {
 				tasksPath: options.file || true,
@@ -644,17 +644,17 @@ function registerCommands(programInstance) {
 	// update-task command
 	programInstance
 		.command('update-task')
-		.description('Update a single specific task by ID with manual field changes')
-		.option('-f, --file <file>', 'Path to the tasks file', TASKMASTER_TASKS_FILE)
-		.option('-i, --id <id>', 'Task ID to update (required)')
-		.option('-t, --title <text>', 'Update task title')
-		.option('-d, --description <text>', 'Update task description (supports incremental update with --append)')
-		.option('-s, --status <status>', 'Update task status (pending, in-progress, done)')
-		.option('-p, --priority <priority>', 'Update task priority (high, medium, low)')
-		.option('--details <text>', 'Update task implementation details (supports incremental update with --append)')
-		.option('--test-strategy <text>', 'Update task test strategy (supports incremental update with --append)')
-		.option('--append', 'Append to description/details/test-strategy fields instead of replacing')
-		.option('--tag <tag>', 'Specify tag context for task operations')
+		.description('通过ID更新单个特定任务的手动字段更改')
+		.option('-f, --file <file>', '任务文件路径', TASKMASTER_TASKS_FILE)
+		.option('-i, --id <id>', '要更新的任务ID（必需）')
+		.option('-t, --title <text>', '更新任务标题')
+		.option('-d, --description <text>', '更新任务描述，支持--append增量更新')
+		.option('-s, --status <status>', '更新任务状态（pending, in-progress, done）')
+		.option('-p, --priority <priority>', '更新任务优先级（high, medium, low）')
+		.option('--details <text>', '更新任务实现细节，支持--append增量更新')
+		.option('--test-strategy <text>', '更新任务测试策略，支持--append增量更新')
+		.option('--append', '追加到描述/细节/测试策略字段而不是替换')
+		.option('--tag <tag>', '选择要处理的任务分组')
 		.action(async (options) => {
 			try {
 				// Initialize TaskMaster
@@ -773,15 +773,15 @@ function registerCommands(programInstance) {
 	// update-subtask command
 	programInstance
 		.command('update-subtask')
-		.description('Update a specific subtask by ID with manual field changes')
-		.option('-f, --file <file>', 'Path to the tasks file', TASKMASTER_TASKS_FILE)
-		.option('-i, --id <id>', 'Subtask ID in format "parentId.subtaskId" (required)')
-		.option('-t, --title <text>', 'Update subtask title')
-		.option('-d, --description <text>', 'Update subtask description (supports incremental update with --append)')
-		.option('-s, --status <status>', 'Update subtask status (pending, in-progress, done)')
-		.option('--details <text>', 'Update subtask implementation details (supports incremental update with --append)')
-		.option('--append', 'Append to description/details fields instead of replacing')
-		.option('--tag <tag>', 'Specify tag context for task operations')
+		.description('通过ID更新特定子任务的手动字段更改')
+		.option('-f, --file <file>', '任务文件路径', TASKMASTER_TASKS_FILE)
+		.option('-i, --id <id>', '子任务ID，格式为"parentId.subtaskId"（必需）')
+		.option('-t, --title <text>', '更新子任务标题')
+		.option('-d, --description <text>', '更新子任务描述，支持--append增量更新')
+		.option('-s, --status <status>', '更新子任务状态（pending, in-progress, done）')
+		.option('--details <text>', '更新子任务实现细节，支持--append增量更新')
+		.option('--append', '追加到描述/细节字段而不是替换')
+		.option('--tag <tag>', '选择要处理的任务分组')
 		.action(async (options) => {
 			try {
 				// Initialize TaskMaster
@@ -911,17 +911,17 @@ function registerCommands(programInstance) {
 	// add-subtask command
 	programInstance
 		.command('add-subtask')
-		.description('Add a subtask to an existing task')
-		.option('-f, --file <file>', 'Path to the tasks file', TASKMASTER_TASKS_FILE)
-		.option('-p, --parent <id>', 'Parent task ID (required)')
-		.option('-i, --task-id <id>', 'Existing task ID to convert to subtask')
-		.option('-t, --title <title>', 'Title for the new subtask (when creating a new subtask)')
-		.option('-d, --description <text>', 'Description for the new subtask')
-		.option('--details <text>', 'Implementation details for the new subtask')
-		.option('--dependencies <ids>', 'Comma-separated list of dependency IDs for the new subtask')
-		.option('-s, --status <status>', 'Status for the new subtask', 'pending')
-		.option('--generate', 'Regenerate task files after adding subtask')
-		.option('--tag <tag>', 'Specify tag context for task operations')
+		.description('为现有任务添加子任务')
+		.option('-f, --file <file>', '任务文件路径', TASKMASTER_TASKS_FILE)
+		.option('-p, --parent <id>', '父任务ID（必需）')
+		.option('-i, --task-id <id>', '要转换为子任务的现有任务ID')
+		.option('-t, --title <title>', '新子任务的标题')
+		.option('-d, --description <text>', '新子任务的描述')
+		.option('--details <text>', '新子任务的实现细节')
+		.option('--dependencies <ids>', '新子任务的依赖ID列表，用逗号分隔')
+		.option('-s, --status <status>', '新子任务的状态', 'pending')
+		.option('--generate', '添加子任务后重新生成任务文件')
+		.option('--tag <tag>', '选择要处理的任务分组')
 		.action(async (options) => {
 			// Initialize TaskMaster
 			const taskMaster = initTaskMaster({
@@ -1073,15 +1073,15 @@ function registerCommands(programInstance) {
 	// remove-subtask command
 	programInstance
 		.command('remove-subtask')
-		.description('Remove a subtask from its parent task')
-		.option('-f, --file <file>', 'Path to the tasks file', TASKMASTER_TASKS_FILE)
+		.description('从父任务中移除子任务')
+		.option('-f, --file <file>', '任务文件路径', TASKMASTER_TASKS_FILE)
 		.option(
 			'-i, --id <id>',
-			'Subtask ID(s) to remove in format "parentId.subtaskId" (can be comma-separated for multiple subtasks)'
+			'要移除的子任务ID，格式为"parentId.subtaskId"，支持逗号分隔多个'
 		)
-		.option('-c, --convert', 'Convert the subtask to a standalone task instead of deleting it')
-		.option('--generate', 'Regenerate task files after removing subtask')
-		.option('--tag <tag>', 'Specify tag context for task operations')
+		.option('-c, --convert', '将子任务转换为独立任务而不是删除')
+		.option('--generate', '移除子任务后重新生成任务文件')
+		.option('--tag <tag>', '选择要处理的任务分组')
 		.action(async (options) => {
 			// Initialize TaskMaster
 			const taskMaster = initTaskMaster({
@@ -1330,14 +1330,14 @@ function registerCommands(programInstance) {
 	// remove-task command
 	programInstance
 		.command('remove-task')
-		.description('Remove one or more tasks or subtasks permanently')
+		.description('永久删除一个或多个任务或子任务')
 		.option(
 			'-i, --id <ids>',
-			'ID(s) of the task(s) or subtask(s) to remove (e.g., "5", "5.2", or "5,6.1,7")'
+			'要删除的任务或子任务ID，支持格式如"5", "5.2"或"5,6.1,7"'
 		)
-		.option('-f, --file <file>', 'Path to the tasks file', TASKMASTER_TASKS_FILE)
-		.option('-y, --yes', 'Skip confirmation prompt', false)
-		.option('--tag <tag>', 'Specify tag context for task operations')
+		.option('-f, --file <file>', '任务文件路径', TASKMASTER_TASKS_FILE)
+		.option('-y, --yes', '跳过确认提示', false)
+		.option('--tag <tag>', '选择要处理的任务分组')
 		.action(async (options) => {
 			// Initialize TaskMaster
 			const taskMaster = initTaskMaster({
@@ -1555,20 +1555,20 @@ function registerCommands(programInstance) {
 	// init command (Directly calls the implementation from init.js)
 	programInstance
 		.command('init')
-		.description('Initialize a new project with Task Master structure')
-		.option('-y, --yes', 'Skip prompts and use default values')
-		.option('-n, --name <name>', 'Project name')
-		.option('-d, --description <description>', 'Project description')
-		.option('-v, --version <version>', 'Project version', '0.1.0') // Set default here
-		.option('-a, --author <author>', 'Author name')
-		.option('--skip-install', 'Skip installing dependencies')
-		.option('--dry-run', 'Show what would be done without making changes')
-		.option('--aliases', 'Add shell aliases (tm, taskmaster)')
-		.option('--no-aliases', 'Skip shell aliases (tm, taskmaster)')
-		.option('--git', 'Initialize Git repository')
-		.option('--no-git', 'Skip Git repository initialization')
-		.option('--git-tasks', 'Store tasks in Git')
-		.option('--no-git-tasks', 'No Git storage of tasks')
+		.description('使用Task Master结构初始化新项目')
+		.option('-y, --yes', '跳过提示并使用默认值')
+		.option('-n, --name <name>', '项目名称')
+		.option('-d, --description <description>', '项目描述')
+		.option('-v, --version <version>', '项目版本', '0.1.0') // Set default here
+		.option('-a, --author <author>', '作者名称')
+		.option('--skip-install', '跳过安装依赖')
+		.option('--dry-run', '显示将要执行的操作但不进行更改')
+		.option('--aliases', '添加shell别名（tm, taskmaster）')
+		.option('--no-aliases', '跳过shell别名（tm, taskmaster）')
+		.option('--git', '初始化Git仓库')
+		.option('--no-git', '跳过Git仓库初始化')
+		.option('--git-tasks', '在Git中存储任务')
+		.option('--no-git-tasks', '不在Git中存储任务')
 		.action(async (cmdOptions) => {
 			// cmdOptions contains parsed arguments
 
@@ -1585,9 +1585,9 @@ function registerCommands(programInstance) {
 	// response-language command
 	programInstance
 		.command('lang')
-		.description('Manage response language settings')
-		.option('--response <response_language>', 'Set the response language')
-		.option('--setup', 'Run interactive setup to configure response language')
+		.description('管理响应语言设置')
+		.option('--response <response_language>', '设置响应语言')
+		.option('--setup', '运行交互式设置来配置响应语言')
 		.action(async (options) => {
 			const taskMaster = initTaskMaster({})
 			const projectRoot = taskMaster.getProjectRoot() // Find project root for context
@@ -1627,23 +1627,21 @@ function registerCommands(programInstance) {
 	// move-task command
 	programInstance
 		.command('move')
-		.description(
-			'Move tasks between tags or reorder within tags. Supports cross-tag moves with dependency resolution options.'
-		)
-		.option('-f, --file <file>', 'Path to the tasks file', TASKMASTER_TASKS_FILE)
+		.description('在标签间移动任务或重新排序。支持跨标签移动及依赖关系解析选项。')
+		.option('-f, --file <file>', '任务文件路径', TASKMASTER_TASKS_FILE)
 		.option(
 			'--from <id>',
-			'ID of the task/subtask to move (e.g., "5" or "5.2"). Can be comma-separated to move multiple tasks (e.g., "5,6,7")'
+			'要移动的任务/子任务ID，支持格式如"5"或"5.2"，可逗号分隔多个任务'
 		)
 		.option(
 			'--to <id>',
-			'ID of the destination (e.g., "7" or "7.3"). Must match the number of source IDs if comma-separated'
+			'目标位置ID，支持格式如"7"或"7.3"，数量须与源ID匹配'
 		)
-		.option('--tag <tag>', 'Specify tag context for task operations')
-		.option('--from-tag <tag>', 'Source tag for cross-tag moves')
-		.option('--to-tag <tag>', 'Target tag for cross-tag moves')
-		.option('--with-dependencies', 'Move dependent tasks along with main task')
-		.option('--ignore-dependencies', 'Break cross-tag dependencies during move')
+		.option('--tag <tag>', '选择要处理的任务分组')
+		.option('--from-tag <tag>', '跨标签移动的源标签')
+		.option('--to-tag <tag>', '跨标签移动的目标标签')
+		.option('--with-dependencies', '连同主任务一起移动依赖任务')
+		.option('--ignore-dependencies', '在移动时断开跨标签依赖关系')
 		.action(async (options) => {
 			// Helper function to show move command help - defined in scope for proper encapsulation
 			function showMoveHelp() {
@@ -1991,12 +1989,12 @@ function registerCommands(programInstance) {
 
 	programInstance
 		.command('migrate')
-		.description('Migrate existing project to use the new .taskmaster directory structure')
-		.option('-f, --force', 'Force migration even if .taskmaster directory already exists')
-		.option('--backup', 'Create backup of old files before migration (default: false)', false)
-		.option('--cleanup', 'Remove old files after successful migration (default: true)', true)
-		.option('-y, --yes', 'Skip confirmation prompts')
-		.option('--dry-run', 'Show what would be migrated without actually moving files')
+		.description('迁移现有项目以使用新的.taskmaster目录结构')
+		.option('-f, --force', '强制迁移，即使.taskmaster目录已存在')
+		.option('--backup', '迁移前创建旧文件的备份（默认：false）', false)
+		.option('--cleanup', '成功迁移后删除旧文件（默认：true）', true)
+		.option('-y, --yes', '跳过确认提示')
+		.option('--dry-run', '显示将要迁移的内容但不实际移动文件')
 		.action(async (options) => {
 			try {
 				await migrateProject(options)
@@ -2009,11 +2007,11 @@ function registerCommands(programInstance) {
 	// sync-readme command
 	programInstance
 		.command('sync-readme')
-		.description('Sync the current task list to README.md in the project root')
-		.option('-f, --file <file>', 'Path to the tasks file', TASKMASTER_TASKS_FILE)
-		.option('--with-subtasks', 'Include subtasks in the README output')
-		.option('-s, --status <status>', 'Show only tasks matching this status (e.g., pending, done)')
-		.option('-t, --tag <tag>', 'Tag to use for the task list (default: master)')
+		.description('将当前任务列表同步到项目根目录的README.md文件')
+		.option('-f, --file <file>', '任务文件路径', TASKMASTER_TASKS_FILE)
+		.option('--with-subtasks', '在README输出中包含子任务')
+		.option('-s, --status <status>', '仅显示匹配此状态的任务，如pending, done')
+		.option('-t, --tag <tag>', '用于任务列表的标签（默认：master）')
 		.action(async (options) => {
 			// Initialize TaskMaster
 			const taskMaster = initTaskMaster({
@@ -2050,13 +2048,13 @@ function registerCommands(programInstance) {
 	// add-tag command
 	programInstance
 		.command('add-tag')
-		.description('Create a new tag context for organizing tasks')
-		.argument('[tagName]', 'Name of the new tag to create (optional when using --from-branch)')
-		.option('-f, --file <file>', 'Path to the tasks file', TASKMASTER_TASKS_FILE)
-		.option('--copy-from-current', 'Copy tasks from the current tag to the new tag')
-		.option('--copy-from <tag>', 'Copy tasks from the specified tag to the new tag')
-		.option('--from-branch', 'Create tag name from current git branch (ignores tagName argument)')
-		.option('-d, --description <text>', 'Optional description for the tag')
+		.description('创建新的标签上下文来组织任务')
+		.argument('[tagName]', '新标签的名称，使用--from-branch时可选')
+		.option('-f, --file <file>', '任务文件路径', TASKMASTER_TASKS_FILE)
+		.option('--copy-from-current', '从当前标签复制任务到新标签')
+		.option('--copy-from <tag>', '从指定标签复制任务到新标签')
+		.option('--from-branch', '从当前git分支创建标签名称，忽略tagName参数')
+		.option('-d, --description <text>', '标签的可选描述')
 		.action(async (tagName, options) => {
 			try {
 				// Initialize TaskMaster
@@ -2159,10 +2157,10 @@ function registerCommands(programInstance) {
 	// delete-tag command
 	programInstance
 		.command('delete-tag')
-		.description('Delete an existing tag and all its tasks')
-		.argument('<tagName>', 'Name of the tag to delete')
-		.option('-f, --file <file>', 'Path to the tasks file', TASKMASTER_TASKS_FILE)
-		.option('-y, --yes', 'Skip confirmation prompts')
+		.description('删除现有标签及其所有任务')
+		.argument('<tagName>', '要删除的标签名称')
+		.option('-f, --file <file>', '任务文件路径', TASKMASTER_TASKS_FILE)
+		.option('-y, --yes', '跳过确认提示')
 		.action(async (tagName, options) => {
 			try {
 				// Initialize TaskMaster
@@ -2203,10 +2201,10 @@ function registerCommands(programInstance) {
 	// tags command
 	programInstance
 		.command('tags')
-		.description('List all available tags with metadata')
-		.option('-f, --file <file>', 'Path to the tasks file', TASKMASTER_TASKS_FILE)
-		.option('--show-metadata', 'Show detailed metadata for each tag')
-		.option('--tag <tag>', 'Specify tag context for task operations')
+		.description('列出所有可用标签及其元数据')
+		.option('-f, --file <file>', '任务文件路径', TASKMASTER_TASKS_FILE)
+		.option('--show-metadata', '显示每个标签的详细元数据')
+		.option('--tag <tag>', '选择要处理的任务分组')
 		.action(async (options) => {
 			try {
 				// Initialize TaskMaster
@@ -2249,9 +2247,9 @@ function registerCommands(programInstance) {
 	// use-tag command
 	programInstance
 		.command('use-tag')
-		.description('Switch to a different tag context')
-		.argument('<tagName>', 'Name of the tag to switch to')
-		.option('-f, --file <file>', 'Path to the tasks file', TASKMASTER_TASKS_FILE)
+		.description('切换到不同的标签上下文')
+		.argument('<tagName>', '要切换到的标签名称')
+		.option('-f, --file <file>', '任务文件路径', TASKMASTER_TASKS_FILE)
 		.action(async (tagName, options) => {
 			try {
 				// Initialize TaskMaster
@@ -2288,10 +2286,10 @@ function registerCommands(programInstance) {
 	// rename-tag command
 	programInstance
 		.command('rename-tag')
-		.description('Rename an existing tag')
-		.argument('<oldName>', 'Current name of the tag')
-		.argument('<newName>', 'New name for the tag')
-		.option('-f, --file <file>', 'Path to the tasks file', TASKMASTER_TASKS_FILE)
+		.description('重命名现有标签')
+		.argument('<oldName>', '标签的当前名称')
+		.argument('<newName>', '标签的新名称')
+		.option('-f, --file <file>', '任务文件路径', TASKMASTER_TASKS_FILE)
 		.action(async (oldName, newName, options) => {
 			try {
 				// Initialize TaskMaster
@@ -2326,11 +2324,11 @@ function registerCommands(programInstance) {
 	// copy-tag command
 	programInstance
 		.command('copy-tag')
-		.description('Copy an existing tag to create a new tag with the same tasks')
-		.argument('<sourceName>', 'Name of the source tag to copy from')
-		.argument('<targetName>', 'Name of the new tag to create')
-		.option('-f, --file <file>', 'Path to the tasks file', TASKMASTER_TASKS_FILE)
-		.option('-d, --description <text>', 'Optional description for the new tag')
+		.description('复制现有标签来创建具有相同任务的新标签')
+		.argument('<sourceName>', '要复制的源标签名称')
+		.argument('<targetName>', '要创建的新标签名称')
+		.option('-f, --file <file>', '任务文件路径', TASKMASTER_TASKS_FILE)
+		.option('-d, --description <text>', '新标签的可选描述')
 		.action(async (sourceName, targetName, options) => {
 			try {
 				// Initialize TaskMaster

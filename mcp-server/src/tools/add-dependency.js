@@ -16,16 +16,16 @@ import { createErrorResponse, handleApiResult, withNormalizedProjectRoot } from 
 export function registerAddDependencyTool(server) {
 	server.addTool({
 		name: 'add_dependency',
-		description: 'Add a dependency relationship between two tasks',
+		description: '在两个任务之间添加依赖关系',
 		parameters: z.object({
-			id: z.string().describe('ID of task that will depend on another task'),
-			dependsOn: z.string().describe('ID of task that will become a dependency'),
+			id: z.string().describe('将依赖其他任务的任务ID'),
+			dependsOn: z.string().describe('将成为依赖项的任务ID'),
 			file: z
 				.string()
 				.optional()
-				.describe('Absolute path to the tasks file (default: tasks/tasks.json)'),
-			projectRoot: z.string().describe('The directory of the project. Must be an absolute path.'),
-			tag: z.string().optional().describe('Tag context to operate on')
+				.describe('任务文件的绝对路径，默认为tasks/tasks.json'),
+			projectRoot: z.string().describe('项目目录，必须是绝对路径'),
+			tag: z.string().optional().describe('选择要处理的任务分组')
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
 			try {

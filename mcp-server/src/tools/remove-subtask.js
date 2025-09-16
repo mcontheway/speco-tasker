@@ -16,7 +16,7 @@ import { createErrorResponse, handleApiResult, withNormalizedProjectRoot } from 
 export function registerRemoveSubtaskTool(server) {
 	server.addTool({
 		name: 'remove_subtask',
-		description: 'Remove a subtask from its parent task',
+		description: '从父任务中移除子任务',
 		parameters: z.object({
 			id: z.string().describe("Subtask ID to remove in format 'parentId.subtaskId' (required)"),
 			convert: z
@@ -29,7 +29,7 @@ export function registerRemoveSubtaskTool(server) {
 				.describe('Absolute path to the tasks file (default: tasks/tasks.json)'),
 			skipGenerate: z.boolean().optional().describe('Skip regenerating task files'),
 			projectRoot: z.string().describe('The directory of the project. Must be an absolute path.'),
-			tag: z.string().optional().describe('Tag context to operate on')
+			tag: z.string().optional().describe('选择要处理的任务分组')
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
 			try {

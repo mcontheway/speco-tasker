@@ -15,13 +15,13 @@ import { createErrorResponse, handleApiResult, withNormalizedProjectRoot } from 
 export function registerCopyTagTool(server) {
 	server.addTool({
 		name: 'copy_tag',
-		description: 'Copy an existing tag to create a new tag with all tasks and metadata',
+		description: '复制现有标签来创建包含所有任务和元数据的新标签',
 		parameters: z.object({
-			sourceName: z.string().describe('Name of the source tag to copy from'),
-			targetName: z.string().describe('Name of the new tag to create'),
-			description: z.string().optional().describe('Optional description for the new tag'),
-			file: z.string().optional().describe('Path to the tasks file (default: tasks/tasks.json)'),
-			projectRoot: z.string().describe('The directory of the project. Must be an absolute path.')
+			sourceName: z.string().describe('要复制的源标签名称'),
+			targetName: z.string().describe('要创建的新标签名称'),
+			description: z.string().optional().describe('新标签的可选描述'),
+			file: z.string().optional().describe('任务文件路径，默认为tasks/tasks.json'),
+			projectRoot: z.string().describe('项目目录，必须是绝对路径')
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
 			try {

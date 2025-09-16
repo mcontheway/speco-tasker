@@ -16,17 +16,17 @@ import { createErrorResponse, handleApiResult, withNormalizedProjectRoot } from 
 export function registerClearSubtasksTool(server) {
 	server.addTool({
 		name: 'clear_subtasks',
-		description: 'Clear subtasks from specified tasks',
+		description: '清除指定任务的子任务',
 		parameters: z
 			.object({
-				id: z.string().optional().describe('Task IDs (comma-separated) to clear subtasks from'),
-				all: z.boolean().optional().describe('Clear subtasks from all tasks'),
+				id: z.string().optional().describe('要清除子任务的任务ID，支持逗号分隔'),
+				all: z.boolean().optional().describe('清除所有任务的子任务'),
 				file: z
 					.string()
 					.optional()
-					.describe('Absolute path to the tasks file (default: tasks/tasks.json)'),
-				projectRoot: z.string().describe('The directory of the project. Must be an absolute path.'),
-				tag: z.string().optional().describe('Tag context to operate on')
+					.describe('任务文件的绝对路径，默认为tasks/tasks.json'),
+				projectRoot: z.string().describe('项目目录，必须是绝对路径'),
+				tag: z.string().optional().describe('选择要处理的任务分组')
 			})
 			.refine((data) => data.id || data.all, {
 				message: "Either 'id' or 'all' parameter must be provided",

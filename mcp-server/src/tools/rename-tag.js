@@ -15,12 +15,12 @@ import { createErrorResponse, handleApiResult, withNormalizedProjectRoot } from 
 export function registerRenameTagTool(server) {
 	server.addTool({
 		name: 'rename_tag',
-		description: 'Rename an existing tag',
+		description: '重命名现有标签',
 		parameters: z.object({
-			oldName: z.string().describe('Current name of the tag to rename'),
-			newName: z.string().describe('New name for the tag'),
-			file: z.string().optional().describe('Path to the tasks file (default: tasks/tasks.json)'),
-			projectRoot: z.string().describe('The directory of the project. Must be an absolute path.')
+			oldName: z.string().describe('标签的当前名称'),
+			newName: z.string().describe('标签的新名称'),
+			file: z.string().optional().describe('任务文件路径，默认为tasks/tasks.json'),
+			projectRoot: z.string().describe('项目目录，必须是绝对路径')
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
 			try {
