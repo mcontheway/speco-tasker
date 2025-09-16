@@ -5,7 +5,7 @@ sidebarTitle: "PRD Creation and Parsing"
 
 # Writing a PRD
 
-A PRD (Product Requirements Document) is the starting point of every task flow in Task Master. It defines what you're building and why. A clear PRD dramatically improves the quality of your tasks, your model outputs, and your final product — so it’s worth taking the time to get it right.
+A PRD (Product Requirements Document) helps you plan and organize your tasks in Speco Tasker. It defines what you're building and why. A clear PRD improves the quality of your task planning and final product — so it's worth taking the time to get it right.
 
 <Tip>
 You don’t need to define your whole app up front. You can write a focused PRD just for the next feature or module you’re working on.
@@ -26,22 +26,19 @@ You can add and parse multiple PRDs per project using the --append flag
 - Constraints — what limits or requirements need to be respected?
 - Reasoning — why are you building it this way?
 
-The more context you give the model, the better the breakdown and results.
+The more context you provide, the better your task planning and results.
 
 ---
 
-## Writing a PRD for Task Master
+## Writing a PRD for Speco Tasker
 
 <Note>An example PRD can be found in .taskmaster/templates/example_prd.txt</Note>
 
+You can write your PRD manually using any text editor:
 
-You can co-write your PRD with an LLM model using the following workflow:
-
-1. **Chat about requirements** — explain what you want to build.
-2. **Show an example PRD** — share the example PRD so the model understands the expected format. The example uses formatting that work well with Task Master's code. Following the example will yield better results.
-3. **Iterate and refine** — work with the model to shape the draft into a clear and well-structured PRD.
-
-This approach works great in Cursor, or anywhere you use a chat-based LLM.
+1. **Define requirements** — clearly explain what you want to build.
+2. **Use the example PRD** — reference the example PRD to understand the expected format. Following the example will help you create better structured PRDs.
+3. **Iterate and refine** — review and improve your PRD draft to ensure clarity.
 
 ---
 
@@ -55,27 +52,27 @@ Place your PRD file in the `.taskmaster/docs` folder in your project.
 
 ---
 
-# Parse your PRD into Tasks
+# Using Your PRD in Speco Tasker
 
-This is where the Task Master magic begins.
+Once you have written your PRD, you can use it to manually create tasks in Speco Tasker.
 
-In Cursor's AI chat, instruct the agent to generate tasks from your PRD:
-
-```
-Please use the task-master parse-prd command to generate tasks from my PRD. The PRD is located at .taskmaster/docs/<prd-name>.txt.
-```
-
-The agent will execute the following command which you can alternatively paste into the CLI:
+You can create tasks manually using the CLI or MCP interface:
 
 ```bash
-task-master parse-prd .taskmaster/docs/<prd-name>.txt
+# Create tasks manually based on your PRD
+task-master add-task --prompt "Implement user authentication system"
+task-master add-task --prompt "Create database schema for users"
+task-master add-dependency --id=2 --depends-on=1
 ```
 
-This will:
+Or through MCP in your editor:
 
-- Parse your PRD document
-- Generate a structured `tasks.json` file with tasks, dependencies, priorities, and test strategies
+```
+Add a new task: Implement user authentication system
+```
 
-Now that you have written and parsed a PRD, you are ready to start setting up your tasks.
+This will help you organize your work based on the requirements defined in your PRD. You can create tasks, set dependencies, and track progress manually.
+
+Now that you have written a PRD, you are ready to start setting up your tasks.
 
 
