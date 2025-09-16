@@ -1,6 +1,6 @@
 {
 	"name": "taskmaster-no-ai",
-	"version": "1.0.11",
+	"version": "1.0.12",
 	"description": "A pure manual task management system for efficient development workflows, designed to work seamlessly with any development environment.",
 	"main": "index.js",
 	"type": "module",
