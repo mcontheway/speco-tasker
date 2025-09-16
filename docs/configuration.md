@@ -1,6 +1,6 @@
 # Configuration
 
-Taskmaster uses two primary methods for configuration:
+Speco Tasker uses two primary methods for configuration:
 
 1.  **`.taskmaster/config.json` File (Recommended - New Structure)**
 
@@ -101,7 +101,7 @@ Taskmaster includes a tagged task lists system for multi-context task management
 
 ### Git Integration
 
-Task Master provides manual git integration through the `--from-branch` option:
+Speco Tasker provides manual git integration through the `--from-branch` option:
 
 - **Manual Tag Creation**: Use `task-master add-tag --from-branch` to create a tag based on your current git branch name
 - **User Control**: No automatic tag switching - you control when and how tags are created
@@ -152,7 +152,7 @@ PERPLEXITY_API_KEY=pplx-your-key-here
 
 ### Configuration Errors
 
-- If Task Master reports errors about missing configuration or cannot find the config file, run `task-master models --setup` in your project root to create or repair the file.
+- If Speco Tasker reports errors about missing configuration or cannot find the config file, run `task-master models --setup` in your project root to create or repair the file.
 - For new projects, config will be created at `.taskmaster/config.json`. For legacy projects, you may want to use `task-master migrate` to move to the new structure.
 - Ensure API keys are correctly placed in your `.env` file (for CLI) or `.cursor/mcp.json` (for MCP) and are valid for the providers selected in your config file.
 
@@ -161,7 +161,7 @@ PERPLEXITY_API_KEY=pplx-your-key-here
 Try running it with Node directly:
 
 ```bash
-node node_modules/claude-task-master/scripts/init.js
+node node_modules/speco-tasker/scripts/init.js
 ```
 
 Or clone the repository and run:

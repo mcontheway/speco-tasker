@@ -2,7 +2,7 @@
 
 ## Overview
 
-The MCP Provider creates a modern AI SDK-compliant custom provider that integrates with the existing Task Master MCP server infrastructure. This provider enables AI operations through MCP session sampling while following modern AI SDK patterns and **includes full support for structured object generation (generateObject)** for schema-driven features like PRD parsing and task creation.
+The MCP Provider creates a modern AI SDK-compliant custom provider that integrates with the existing Speco Tasker MCP server infrastructure. This provider enables AI operations through MCP session sampling while following modern AI SDK patterns and **includes full support for structured object generation (generateObject)** for schema-driven features like PRD parsing and task creation.
 
 ## Architecture
 

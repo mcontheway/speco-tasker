@@ -1,11 +1,11 @@
-# Task Master Usage Examples
+# Speco Tasker Usage Examples
 
-Here are common usage patterns and command examples for Task Master:
+Here are common usage patterns and command examples for Speco Tasker:
 
 ## Starting a new project
 
 ```bash
-# Initialize Task Master in your project
+# Initialize Speco Tasker in your project
 task-master init
 
 # Parse your PRD to create initial tasks

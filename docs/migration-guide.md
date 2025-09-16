@@ -1,10 +1,10 @@
-# Task Master AI Removal Migration Guide
+# Speco Tasker Migration Guide
 
 This guide helps users migrate from the AI-powered Task Master to the new pure manual version (`speco-tasker`).
 
 ## Overview
 
-Task Master has been completely refactored to remove all AI dependencies and become a pure manual task management system. This change eliminates the need for API keys and external AI services while maintaining all core task management functionality.
+Speco Tasker has been completely refactored to remove all AI dependencies and become a pure manual task management system. This change eliminates the need for API keys and external AI services while maintaining all core task management functionality.
 
 ## What Changed
 
@@ -30,7 +30,7 @@ Task Master has been completely refactored to remove all AI dependencies and bec
 Before migrating, backup your existing `.taskmaster/` directory:
 
 ```bash
-# Backup existing Task Master data
+# Backup existing Speco Tasker data
 cp -r .taskmaster .taskmaster-backup-ai
 ```
 
@@ -85,7 +85,7 @@ Update your MCP configuration to remove API keys:
 ```
 
 ### 5. Reinitialize Project
-Reinitialize Task Master in your project:
+Reinitialize Speco Tasker in your project:
 
 ```bash
 # Initialize the new version

@@ -47,7 +47,7 @@ The AI will:
 
 5. Place your PRD document in the `.taskmaster/docs/` directory (e.g., `.taskmaster/docs/prd.txt`)
 
-6. **Use natural language commands** to interact with Task Master:
+6. **Use natural language commands** to interact with Speco Tasker:
 
 ```
 Can you parse my PRD at .taskmaster/docs/prd.txt?
@@ -81,7 +81,7 @@ This will prompt you for project details and set up a new project with the neces
 
 ## Common Commands
 
-After setting up Task Master, you can use these commands (either via AI prompts or CLI):
+After setting up Speco Tasker, you can use these commands (either via AI prompts or CLI):
 
 ```bash
 # Parse a PRD and generate tasks
@@ -128,12 +128,12 @@ You can also set up the MCP server in Cursor settings:
 2. Navigate to the MCP section
 3. Click on "Add New MCP Server"
 4. Configure with the following details:
-   - Name: "Task Master"
+   - Name: "Speco Tasker"
    - Type: "Command"
    - Command: "npx -y --package=task-master-ai task-master-ai"
 5. Save the settings
 
-Once configured, you can interact with Task Master's task management commands directly through Cursor's interface, providing a more integrated experience.
+Once configured, you can interact with Speco Tasker's task management commands directly through Cursor's interface, providing a more integrated experience.
 
 ## Initial Task Generation
 
@@ -382,7 +382,7 @@ task-master expand --id=5 --research
 ### Starting a new project
 
 ```
-I've just initialized a new project with Claude Task Master. I have a PRD at .taskmaster/docs/prd.txt.
+I've just initialized a new project with Speco Tasker. I have a PRD at .taskmaster/docs/prd.txt.
 Can you help me parse it and set up the initial tasks?
 ```
 
@@ -431,7 +431,7 @@ Can you show me the complexity report in a more readable format?
 
 ### Research-Driven Development
 
-Task Master includes a powerful research tool that provides fresh, up-to-date information beyond the AI's knowledge cutoff. This is particularly valuable for:
+Speco Tasker includes a powerful research tool that provides fresh, up-to-date information beyond the AI's knowledge cutoff. This is particularly valuable for:
 
 #### Getting Current Best Practices
 
@@ -483,7 +483,7 @@ The research tool automatically includes relevant project context and provides f
 
 ## Git Integration and Tag Management
 
-Task Master supports tagged task lists for multi-context development, which is particularly useful when working with git branches or different project phases.
+Speco Tasker supports tagged task lists for multi-context development, which is particularly useful when working with git branches or different project phases.
 
 ### Working with Tags
 
@@ -564,7 +564,7 @@ task-master tags --show-metadata
 
 ### Git Workflow Integration
 
-A typical git workflow with Task Master tags:
+A typical git workflow with Speco Tasker tags:
 
 1. **Create feature branch**: `git checkout -b feature/user-auth`
 2. **Create matching tag**: Ask agent to run `task-master add-tag --from-branch`

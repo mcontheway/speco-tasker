@@ -2,11 +2,11 @@
 
 ## Overview
 
-Task Master provides a **unified MCP provider** for AI operations:
+Speco Tasker provides a **unified MCP provider** for AI operations:
 
 **MCP Provider** (`mcp`) - Modern AI SDK-compatible provider with full structured object generation support
 
-The MCP provider enables Task Master to act as an MCP client, using MCP servers as AI providers alongside traditional API-based providers. This integration follows the existing provider pattern and supports all standard AI operations including structured object generation for PRD parsing and task creation.
+The MCP provider enables Speco Tasker to act as an MCP client, using MCP servers as AI providers alongside traditional API-based providers. This integration follows the existing provider pattern and supports all standard AI operations including structured object generation for PRD parsing and task creation.
 
 ## MCP Provider Features
 
@@ -29,7 +29,7 @@ For detailed information, see [MCP Provider Documentation](mcp-provider.md).
 
 ## What is MCP Provider?
 
-The MCP provider allows Task Master to:
+The MCP provider allows Speco Tasker to:
 - Connect to MCP servers/tools as AI providers
 - Use session-based authentication instead of API keys
 - Map AI operations to MCP tool calls
@@ -174,7 +174,7 @@ const research = await generateTextService({
 
 ## CLI Integration
 
-The MCP provider works seamlessly with Task Master CLI commands when running in an MCP context:
+The MCP provider works seamlessly with Speco Tasker CLI commands when running in an MCP context:
 
 ```bash
 # Generate tasks using MCP provider (if configured as main)
@@ -191,14 +191,14 @@ task-master parse-prd requirements.txt
 
 ### Provider Architecture
 **MCPProvider** (`mcp-server/src/providers/mcp-provider.js`)
-   - Modern AI SDK-compliant provider for Task Master's MCP server
-   - Auto-registers when MCP sessions connect to Task Master
-   - Enables Task Master to use MCP sessions for AI operations
+   - Modern AI SDK-compliant provider for Speco Tasker's MCP server
+   - Auto-registers when MCP sessions connect to Speco Tasker
+   - Enables Speco Tasker to use MCP sessions for AI operations
    - Supports both text generation and structured object generation
 
 ### Auto-Registration Process
 
-When running as an MCP server, Task Master automatically:
+When running as an MCP server, Speco Tasker automatically:
 
 ```javascript
 // On MCP session connect
@@ -314,7 +314,7 @@ const result = await generateTextService({
 
 ### 3. Session Management
 
-Ensure your MCP session remains active throughout Task Master operations:
+Ensure your MCP session remains active throughout Speco Tasker operations:
 
 ```javascript
 // Check session health before operations
@@ -439,12 +439,12 @@ if (session && session.clientCapabilities && session.clientCapabilities.sampling
 
 ### VS Code with MCP Extension
 
-When using Task Master in VS Code with MCP support:
+When using Speco Tasker in VS Code with MCP support:
 
-1. Configure Task Master MCP server in your `.vscode/mcp.json`
+1. Configure Speco Tasker MCP server in your `.vscode/mcp.json`
 2. Set MCP provider as main/research in `.taskmaster/config.json`
 3. Benefit from integrated AI assistance within your development workflow
-4. Use Task Master tools directly from VS Code's MCP interface
+4. Use Speco Tasker tools directly from VS Code's MCP interface
 
 **Example VS Code MCP Configuration:**
 ```json
@@ -466,10 +466,10 @@ When using Task Master in VS Code with MCP support:
 
 ### Claude Desktop
 
-When using Task Master through Claude Desktop's MCP integration:
+When using Speco Tasker through Claude Desktop's MCP integration:
 
-1. Configure Task Master as MCP provider in Claude Desktop
-2. Use MCP provider for AI operations within Task Master
+1. Configure Speco Tasker as MCP provider in Claude Desktop
+2. Use MCP provider for AI operations within Speco Tasker
 3. Benefit from nested MCP tool calling capabilities
 
 ### Cursor and Other MCP Clients
@@ -477,7 +477,7 @@ When using Task Master through Claude Desktop's MCP integration:
 The MCP provider works with any MCP-compatible development environment:
 
 1. Ensure your IDE has MCP client capabilities
-2. Configure Task Master MCP server endpoint
+2. Configure Speco Tasker MCP server endpoint
 3. Use MCP provider for enhanced AI-driven development
 
 ## Advanced Configuration

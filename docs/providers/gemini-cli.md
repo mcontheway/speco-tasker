@@ -12,7 +12,7 @@ The primary benefit of using the `gemini-cli` provider is to leverage your exist
 
 ## Installation
 
-The provider is already included in Task Master. However, you need to install the Gemini CLI tool:
+The provider is already included in Speco Tasker. However, you need to install the Gemini CLI tool:
 
 ```bash
 # Install gemini CLI globally
@@ -30,7 +30,7 @@ The Gemini CLI provider is designed to use your pre-configured OAuth authenticat
 gemini
 ```
 
-For OAuth use, select `Login with Google` - This will open a browser window for OAuth authentication. Once authenticated, Task Master will automatically use these credentials when you select the `gemini-cli` provider and models.
+For OAuth use, select `Login with Google` - This will open a browser window for OAuth authentication. Once authenticated, Speco Tasker will automatically use these credentials when you select the `gemini-cli` provider and models.
 
 ### Alternative Method: API Key
 
@@ -54,7 +54,7 @@ task-master init
 
 **OR**
 
-Configure `gemini-cli` as a provider using the Task Master models command:
+Configure `gemini-cli` as a provider using the Speco Tasker models command:
 
 ```bash
 # Set gemini-cli as your main provider with gemini-2.5-pro
@@ -115,7 +115,7 @@ The gemini-cli provider supports only two models:
 
 ### Basic Usage
 
-Once gemini-cli is installed and authenticated, and Task Master  simply use Task Master as normal:
+Once gemini-cli is installed and authenticated, and Speco Tasker  simply use Speco Tasker as normal:
 
 ```bash
 # The provider will automatically use your OAuth credentials
@@ -158,4 +158,4 @@ gemini --version
 - **Limited Model Support**: Only `gemini-2.5-pro` and `gemini-2.5-flash` are available through gemini-cli.
 - **Subscription Benefits**: Using OAuth authentication allows you to leverage any subscription benefits associated with your Google account.
 - The provider uses the `ai-sdk-provider-gemini-cli` npm package internally.
-- Supports all standard Task Master features: text generation, streaming, and structured object generation.
+- Supports all standard Speco Tasker features: text generation, streaming, and structured object generation.
