@@ -772,12 +772,12 @@ describe('Cross-Tag Move CLI Integration', () => {
 		const { errorMessages, logMessages, restore } = captureConsoleAndExit()
 
 		await expect(moveAction(options)).rejects.toThrow(
-			'Source and target tags are the same ("master") but no destination specified'
+			'Source and target tags are the same ("main") but no destination specified'
 		)
 
 		expect(
 			errorMessages.some((msg) =>
-				msg.includes('Source and target tags are the same ("master") but no destination specified')
+				msg.includes('Source and target tags are the same ("main") but no destination specified')
 			)
 		).toBe(true)
 		expect(logMessages.some((msg) => msg.includes('For within-tag moves'))).toBe(true)

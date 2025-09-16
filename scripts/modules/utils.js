@@ -449,7 +449,7 @@ function readJSON(filepath, projectRoot = null, tag = null) {
 		}
 
 		try {
-			// Default to master tag if anything goes wrong
+			// Default to main tag if anything goes wrong
 			let resolvedTag = 'master'
 
 			// Try to resolve the correct tag, but don't fail if it doesn't work
@@ -1387,7 +1387,7 @@ function getTasksForTag(data, tagName) {
 		return []
 	}
 
-	// Handle migrated format: { "master": { "tasks": [...] }, "otherTag": { "tasks": [...] } }
+	// Handle migrated format: { "main": { "tasks": [...] }, "otherTag": { "tasks": [...] } }
 	if (data[tagName] && data[tagName].tasks && Array.isArray(data[tagName].tasks)) {
 		return data[tagName].tasks
 	}

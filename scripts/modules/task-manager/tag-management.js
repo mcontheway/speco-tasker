@@ -77,7 +77,7 @@ async function createTag(tasksPath, tagName, options = {}, context = {}, outputF
 			// If we have _rawTaggedData, use it (this is the clean tagged structure)
 			rawData = data._rawTaggedData
 		} else if (data.tasks && !data.master) {
-			// This is legacy format - create a master tag structure
+			// This is legacy format - create a main tag structure
 			rawData = {
 				master: {
 					tasks: data.tasks,
@@ -218,9 +218,9 @@ async function deleteTag(tasksPath, tagName, options = {}, context = {}, outputF
 			throw new Error('Tag name is required and must be a string')
 		}
 
-		// Prevent deletion of master tag
+		// Prevent deletion of main tag
 		if (tagName === 'master') {
-			throw new Error('Cannot delete the "master" tag')
+			throw new Error('Cannot delete the "main" tag')
 		}
 
 		logFn.info(`Deleting tag: ${tagName}`)
@@ -237,7 +237,7 @@ async function deleteTag(tasksPath, tagName, options = {}, context = {}, outputF
 			// If we have _rawTaggedData, use it (this is the clean tagged structure)
 			rawData = data._rawTaggedData
 		} else if (data.tasks && !data.master) {
-			// This is legacy format - create a master tag structure
+			// This is legacy format - create a main tag structure
 			rawData = {
 				master: {
 					tasks: data.tasks,
@@ -332,7 +332,7 @@ async function deleteTag(tasksPath, tagName, options = {}, context = {}, outputF
 		// If we're deleting the current tag, switch to master
 		if (isCurrentTag) {
 			await switchCurrentTag(projectRoot, 'master')
-			logFn.info('Switched current tag to "master"')
+			logFn.info('Switched current tag to "main"')
 		}
 
 		// Create clean data for writing (exclude _rawTaggedData to prevent corruption)
@@ -366,7 +366,7 @@ async function deleteTag(tasksPath, tagName, options = {}, context = {}, outputF
 					chalk.red.bold('✓ Tag Deleted Successfully') +
 						`\n\nTag Name: ${chalk.cyan(tagName)}` +
 						`\nTasks Deleted: ${chalk.yellow(taskCount)}` +
-						(isCurrentTag ? `\n${chalk.yellow('⚠ Switched current tag to "master"')}` : ''),
+						(isCurrentTag ? `\n${chalk.yellow('⚠ Switched current tag to "main"')}` : ''),
 					{
 						padding: 1,
 						borderColor: 'red',
@@ -800,9 +800,9 @@ async function renameTag(
 			throw new Error('New tag name can only contain letters, numbers, hyphens, and underscores')
 		}
 
-		// Prevent renaming master tag
+		// Prevent renaming main tag
 		if (oldName === 'master') {
-			throw new Error('Cannot rename the "master" tag')
+			throw new Error('Cannot rename the "main" tag')
 		}
 
 		// Reserved tag names

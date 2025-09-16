@@ -268,7 +268,6 @@ jest.unstable_mockModule('../../../../../scripts/modules/config-manager.js', () 
 	getLogLevel: jest.fn(() => 'info'),
 	getDebugFlag: jest.fn(() => false),
 	getDefaultNumTasks: jest.fn(() => 10),
-	getDefaultSubtasks: jest.fn(() => 5),
 	getDefaultPriority: jest.fn(() => 'medium'),
 	getProjectName: jest.fn(() => 'Test Project'),
 	getOllamaBaseURL: jest.fn(() => 'http://localhost:11434/api'),
@@ -503,7 +502,7 @@ describe('Complexity Report Tag Isolation', () => {
 	})
 
 	describe('Path Resolution Tag Isolation', () => {
-		test('should resolve master tag to default filename', () => {
+		test('should resolve main tag to default filename', () => {
 			const result = resolveComplexityReportOutputPath(null, {
 				tag: 'master',
 				projectRoot
@@ -513,7 +512,7 @@ describe('Complexity Report Tag Isolation', () => {
 			)
 		})
 
-		test('should resolve non-master tag to tag-specific filename', () => {
+		test('should resolve non-main tag to tag-specific filename', () => {
 			const result = resolveComplexityReportOutputPath(null, {
 				tag: 'feature-auth',
 				projectRoot
@@ -541,7 +540,7 @@ describe('Complexity Report Tag Isolation', () => {
 	})
 
 	describe('Analysis Generation Tag Isolation', () => {
-		test('should generate master tag report to default location', async () => {
+		test('should generate main tag report to default location', async () => {
 			const options = {
 				file: 'tasks/tasks.json',
 				threshold: '5',
@@ -612,7 +611,7 @@ describe('Complexity Report Tag Isolation', () => {
 		})
 
 		test('should not overwrite master report when analyzing feature tag', async () => {
-			// First, analyze master tag
+			// First, analyze main tag
 			const masterOptions = {
 				file: 'tasks/tasks.json',
 				threshold: '5',
@@ -671,7 +670,7 @@ describe('Complexity Report Tag Isolation', () => {
 	})
 
 	describe('Report Reading Tag Isolation', () => {
-		test('should read master tag report from default location', async () => {
+		test('should read main tag report from default location', async () => {
 			// Mock existing master report
 			mockExistsSync.mockImplementation((filepath) => {
 				return filepath.endsWith('task-complexity-report.json')
@@ -811,7 +810,7 @@ describe('Complexity Report Tag Isolation', () => {
 			)
 		})
 
-		test('should use master complexity report for master tag expansion', async () => {
+		test('should use master complexity report for main tag expansion', async () => {
 			// Mock existing master report
 			mockExistsSync.mockImplementation((filepath) => {
 				return filepath.endsWith('task-complexity-report.json')
@@ -899,7 +898,7 @@ describe('Complexity Report Tag Isolation', () => {
 				return '{}'
 			})
 
-			// Analyze master tag
+			// Analyze main tag
 			const masterOptions = {
 				file: 'tasks/tasks.json',
 				threshold: '5',

@@ -852,7 +852,7 @@ When implementing project initialization commands:
       // Verify migration occurred
       expect(fs.writeFileSync).toHaveBeenCalledWith(
         '/test/tasks.json',
-        expect.stringContaining('"master"')
+        expect.stringContaining('"main"')
       );
     });
   });

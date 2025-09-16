@@ -28,7 +28,7 @@ describe('Tag System Integration Test', () => {
 
   describe('Basic tag operations', () => {
     it('should create and manage basic tags', () => {
-      // Start with master tag (default)
+      // Start with main tag (default)
       mockTagManager.listTags.mockReturnValueOnce({
         success: true,
         data: [
@@ -595,11 +595,11 @@ describe('Tag System Integration Test', () => {
       expect(invalidName.error).toBe('Invalid tag name')
     })
 
-    it('should prevent master tag deletion', () => {
+    it('should prevent main tag deletion', () => {
       mockTagManager.deleteTag.mockReturnValueOnce({
         success: false,
-        error: 'Cannot delete master tag',
-        message: 'The master tag cannot be deleted as it is the default context'
+        error: 'Cannot delete main tag',
+        message: 'The main tag cannot be deleted as it is the default context'
       })
 
       const deleteMaster = mockTagManager.deleteTag({
@@ -607,7 +607,7 @@ describe('Tag System Integration Test', () => {
       })
 
       expect(deleteMaster.success).toBe(false)
-      expect(deleteMaster.error).toBe('Cannot delete master tag')
+      expect(deleteMaster.error).toBe('Cannot delete main tag')
     })
   })
 })

@@ -624,7 +624,7 @@ Refer to [`context_gathering.mdc`](mdc:.cursor/rules/context_gathering.mdc) for 
       const isTasksFile = filepath.includes('tasks.json') || path.basename(filepath) === 'tasks.json';
       
       if (data && data.tasks && Array.isArray(data.tasks) && !data.master && isTasksFile) {
-        // Migrate from old format { "tasks": [...] } to new format { "master": { "tasks": [...] } }
+        // Migrate from old format { "tasks": [...] } to new format { "main": { "tasks": [...] } }
         const migratedData = {
           master: {
             tasks: data.tasks
@@ -689,7 +689,7 @@ Refer to [`context_gathering.mdc`](mdc:.cursor/rules/context_gathering.mdc) for 
 - **Tag Resolution Functions**:
   - ✅ DO: Use tag resolution layer for all task data access
   - ✅ DO: Provide backward compatibility with legacy format
-  - ✅ DO: Default to "master" tag when no tag is specified
+  - ✅ DO: Default to "main" tag when no tag is specified
 
   ```javascript
   // ✅ DO: Implement tag resolution functions

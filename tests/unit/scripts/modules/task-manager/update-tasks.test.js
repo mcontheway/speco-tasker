@@ -242,7 +242,7 @@ describe('updateTasks', () => {
 		// Arrange - Simple 2-tag structure to test tag corruption fix
 		const mockTasksPath = '/mock/path/tasks.json'
 		const mockFromId = 1
-		const mockPrompt = 'Update master tag tasks'
+		const mockPrompt = 'Update main tag tasks'
 
 		const mockTaggedData = {
 			master: {
@@ -262,7 +262,7 @@ describe('updateTasks', () => {
 				],
 				metadata: {
 					created: '2024-01-01T00:00:00.000Z',
-					description: 'Master tag tasks'
+					description: 'main tag tasks'
 				}
 			},
 			'feature-branch': {
@@ -295,7 +295,7 @@ describe('updateTasks', () => {
 			}
 		]
 
-		// Configure mocks - readJSON returns resolved view for master tag
+		// Configure mocks - readJSON returns resolved view for main tag
 		readJSON.mockReturnValue({
 			...mockTaggedData.master,
 			tag: 'master',

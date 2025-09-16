@@ -171,7 +171,7 @@ describe('generateTaskFiles', () => {
 			'master'
 		)
 
-		// Verify files were written for each task in the master tag
+		// Verify files were written for each task in the main tag
 		expect(fs.writeFileSync).toHaveBeenCalledTimes(3)
 
 		// Verify specific file paths

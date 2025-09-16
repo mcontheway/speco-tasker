@@ -94,7 +94,7 @@ The Task Template Importing system enables seamless integration of external task
         // Array of task objects
       ]
     },
-    "master": {
+    "main": {
       // This section is ignored to prevent conflicts
     }
   }
@@ -106,7 +106,7 @@ The Task Template Importing system enables seamless integration of external task
 {
   "mainTags": [
     {
-      "name": "master",
+      "name": "main",
       "source": "main",
       "taskCount": 150,
       "isActive": true

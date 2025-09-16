@@ -98,7 +98,7 @@ You can also manually edit your `.taskmaster/config.json`:
     "ollamaBaseURL": "http://localhost:11434/api",
     "bedrockBaseURL": "https://bedrock.us-east-1.amazonaws.com",
     "responseLanguage": "English",
-    "defaultTag": "master",
+    "defaultTag": "main",
     "azureOpenaiBaseURL": "https://your-endpoint.openai.azure.com/"
   },
   "claudeCode": {}

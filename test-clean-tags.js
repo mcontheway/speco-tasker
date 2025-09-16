@@ -13,7 +13,7 @@ const cleanData = {
 		],
 		metadata: {
 			created: new Date().toISOString(),
-			description: 'Master tag'
+			description: 'main tag'
 		}
 	}
 }

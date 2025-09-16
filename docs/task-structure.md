@@ -152,7 +152,7 @@ Task Master now organizes tasks into separate contexts called **tags**. This ena
 
 ```json
 {
-  "master": {
+  "main": {
     "tasks": [
       { "id": 1, "title": "Setup API", "status": "pending", ... }
     ]
@@ -177,7 +177,7 @@ Task Master now organizes tasks into separate contexts called **tags**. This ena
 
 ### Tag-based Task Lists (v0.17+) and Compatibility
 
-- **Seamless Migration**: Existing `tasks.json` files are automatically migrated to use a "master" tag
+- **Seamless Migration**: Existing `tasks.json` files are automatically migrated to use a "main" tag
 - **Zero Disruption**: All existing commands continue to work exactly as before
 - **Backward Compatibility**: Existing workflows remain unchanged
 - **Silent Process**: Migration happens transparently on first use with a friendly notification
@@ -287,7 +287,7 @@ Here's a complete example showing the tagged task structure:
 
 ```json
 {
-  "master": {
+  "main": {
     "tasks": [
       {
         "id": 1,
@@ -355,7 +355,7 @@ Here's a complete example showing the tagged task structure:
 Task Master automatically determines the current tag context based on:
 
 1. **State Configuration**: Current tag stored in `.taskmaster/state.json`
-2. **Default Fallback**: "master" tag when no context is specified
+2. **Default Fallback**: "main" tag when no context is specified
 3. **Future Enhancement**: Git branch-based tag switching (Part 2)
 
 ### Tag Isolation
@@ -396,7 +396,7 @@ Task Master can generate individual markdown files for each task based on the JS
 When Task Master encounters a legacy format `tasks.json` file:
 
 1. **Detection**: Automatically detects `{"tasks": [...]}` format
-2. **Transformation**: Converts to `{"master": {"tasks": [...]}}` format
+2. **Transformation**: Converts to `{"main": {"tasks": [...]}}` format
 3. **Configuration**: Updates `.taskmaster/config.json` with tagged system settings
 4. **State Creation**: Creates `.taskmaster/state.json` for tag management
 5. **Notification**: Shows one-time friendly notice about the new system

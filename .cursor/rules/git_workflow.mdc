@@ -37,7 +37,7 @@ Task Master's **tagged task lists system** provides significant benefits for Git
 - **Parallel Development**: Multiple team members can work on separate task contexts
 
 ### **Migration and Compatibility**
-- **Seamless Migration**: Existing projects automatically migrate to use a "master" tag
+- **Seamless Migration**: Existing projects automatically migrate to use a "main" tag
 - **Zero Disruption**: All existing Git workflows continue unchanged
 - **Backward Compatibility**: Legacy projects work exactly as before
 

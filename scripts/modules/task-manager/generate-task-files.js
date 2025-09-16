@@ -75,7 +75,7 @@ function generateTaskFiles(tasksPath, outputDir, options = {}) {
 					match = file.match(masterFilePattern)
 					if (match) {
 						fileTaskId = parseInt(match[1], 10)
-						// Only clean up master files when processing master tag
+						// Only clean up master files when processing main tag
 						return !validTaskIds.includes(fileTaskId)
 					}
 				} else {

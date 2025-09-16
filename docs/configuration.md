@@ -39,7 +39,7 @@ Taskmaster uses two primary methods for configuration:
           "defaultNumTasks": 10,
           "defaultSubtasks": 5,
           "defaultPriority": "medium",
-          "defaultTag": "master",
+          "defaultTag": "main",
           "projectName": "Your Project Name",
           "ollamaBaseURL": "http://localhost:11434/api",
           "azureBaseURL": "https://your-endpoint.azure.com/openai/deployments",
@@ -93,11 +93,11 @@ Taskmaster includes a tagged task lists system for multi-context task management
 
 ```json
 "global": {
-  "defaultTag": "master"
+  "defaultTag": "main"
 }
 ```
 
-- **`defaultTag`** (string): Default tag context for new operations (default: "master")
+- **`defaultTag`** (string): Default tag context for new operations (default: "main")
 
 ### Git Integration
 
@@ -113,7 +113,7 @@ Taskmaster uses `.taskmaster/state.json` to track tagged system runtime informat
 
 ```json
 {
-  "currentTag": "master",
+  "currentTag": "main",
   "lastSwitched": "2025-06-11T20:26:12.598Z",
   "migrationNoticeShown": true
 }

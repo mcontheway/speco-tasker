@@ -389,7 +389,7 @@ describe('CLI Move Command Cross-Tag Functionality', () => {
 			}
 
 			mocks.moveTasksBetweenTags.mockResolvedValue({
-				message: 'Successfully moved 1 tasks from "master" to "in-progress"'
+				message: 'Successfully moved 1 tasks from "main" to "in-progress"'
 			})
 
 			await handleCrossTagMove(moveContext, options)

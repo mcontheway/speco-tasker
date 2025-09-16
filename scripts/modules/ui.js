@@ -14,7 +14,7 @@ import ora from 'ora'
 import { TASKMASTER_CONFIG_FILE, TASKMASTER_TASKS_FILE } from '../../src/constants/paths.js'
 import { TASK_STATUS_OPTIONS } from '../../src/constants/task-status.js'
 import { getTaskMasterVersion } from '../../src/utils/getVersion.js'
-import { getDefaultSubtasks, getProjectName } from './config-manager.js'
+import { getProjectName } from './config-manager.js'
 import { findNextTask, readComplexityReport } from './task-manager.js'
 import { findTaskById, formatTaskId, isSilentMode, log, readJSON, truncate } from './utils.js'
 
@@ -56,7 +56,7 @@ function displayCurrentTagIndicator(tag, options = {}) {
 
 	const { skipIfMaster = false, dim = false } = options
 
-	// Skip display for master tag only if explicitly requested
+	// Skip display for main tag only if explicitly requested
 	if (skipIfMaster && tag === 'master') return
 
 	// Create a small, tasteful tag indicator
@@ -1802,7 +1802,7 @@ async function displayComplexityReport(reportPath) {
  * @returns {string} Generated prompt
  */
 function generateComplexityAnalysisPrompt(tasksData) {
-	const defaultSubtasks = getDefaultSubtasks(null) // Use the getter
+	const defaultSubtasks = 5 // Default subtask count
 	return `Analyze the complexity of the following tasks and provide recommendations for subtask breakdown:
 
 ${tasksData.tasks

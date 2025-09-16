@@ -495,7 +495,7 @@ describe('parsePRD', () => {
 		// Verify fs.writeFileSync was called with the correct arguments in tagged format
 		expect(fs.default.writeFileSync).toHaveBeenCalledWith(
 			'tasks/tasks.json',
-			expect.stringContaining('"master"')
+			expect.stringContaining('"main"')
 		)
 
 		// Verify result
@@ -615,7 +615,7 @@ describe('parsePRD', () => {
 		// Verify the file was written after force overwrite
 		expect(fs.default.writeFileSync).toHaveBeenCalledWith(
 			'tasks/tasks.json',
-			expect.stringContaining('"master"')
+			expect.stringContaining('"main"')
 		)
 	})
 
@@ -695,7 +695,7 @@ describe('parsePRD', () => {
 		// Verify the file was written with merged tasks in the correct tag
 		expect(fs.default.writeFileSync).toHaveBeenCalledWith(
 			'tasks/tasks.json',
-			expect.stringContaining('"master"')
+			expect.stringContaining('"main"')
 		)
 
 		// Verify the result contains merged tasks

@@ -663,7 +663,7 @@ test('getTagAwareFilePath should use slugified tags in file paths', () => {
 	const basePath = '.taskmaster/reports/complexity-report.json'
 	const projectRoot = '/test/project'
 
-	// Master tag should not be slugified
+	// main tag should not be slugified
 	expect(getTagAwareFilePath(basePath, 'master', projectRoot)).toBe(
 		'/test/project/.taskmaster/reports/complexity-report.json'
 	)

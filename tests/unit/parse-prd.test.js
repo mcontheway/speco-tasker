@@ -50,7 +50,6 @@ jest.unstable_mockModule('../../scripts/modules/config-manager.js', () => ({
 	getFallbackProvider: jest.fn(() => 'anthropic'),
 	getResponseLanguage: jest.fn(() => 'English'),
 	getDefaultNumTasks: jest.fn(() => 10),
-	getDefaultSubtasks: jest.fn(() => 5),
 	getLogLevel: jest.fn(() => 'info'),
 	getConfig: jest.fn(() => ({})),
 	getAllProviders: jest.fn(() => ['anthropic', 'perplexity']),

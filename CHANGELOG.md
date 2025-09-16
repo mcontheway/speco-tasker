@@ -1047,7 +1047,7 @@
   - Enhance E2E tests with comprehensive tag-aware expand testing to verify tag corruption fix
   - Add new test section for feature-expand tag creation and testing during expand operations
   - Verify tag preservation during expand, force expand, and expand --all operations
-  - Test that master tag remains intact while feature-expand tag receives subtasks correctly
+  - Test that main tag remains intact while feature-expand tag receives subtasks correctly
   - Fix file path references to use correct .taskmaster/config.json and .taskmaster/tasks/tasks.json locations
   - All tag corruption verification tests pass successfully, confirming the expand command tag corruption bug fix works as expected
 
@@ -1146,7 +1146,7 @@
   - Enhance E2E tests with comprehensive tag-aware expand testing to verify tag corruption fix
   - Add new test section for feature-expand tag creation and testing during expand operations
   - Verify tag preservation during expand, force expand, and expand --all operations
-  - Test that master tag remains intact while feature-expand tag receives subtasks correctly
+  - Test that main tag remains intact while feature-expand tag receives subtasks correctly
   - Fix file path references to use correct .taskmaster/config.json and .taskmaster/tasks/tasks.json locations
   - All tag corruption verification tests pass successfully, confirming the expand command tag corruption bug fix works as expected
 
@@ -1243,7 +1243,7 @@
   - Enhance E2E tests with comprehensive tag-aware expand testing to verify tag corruption fix
   - Add new test section for feature-expand tag creation and testing during expand operations
   - Verify tag preservation during expand, force expand, and expand --all operations
-  - Test that master tag remains intact while feature-expand tag receives subtasks correctly
+  - Test that main tag remains intact while feature-expand tag receives subtasks correctly
   - Fix file path references to use correct .taskmaster/config.json and .taskmaster/tasks/tasks.json locations
   - All tag corruption verification tests pass successfully, confirming the expand command tag corruption bug fix works as expected
 
@@ -1378,7 +1378,7 @@
 
   The new tagged system fundamentally improves how tasks are organized:
   - **Legacy Format**: `{ "tasks": [...] }`
-  - **New Tagged Format**: `{ "master": { "tasks": [...], "metadata": {...} }, "feature-xyz": { "tasks": [...], "metadata": {...} } }`
+  - **New Tagged Format**: `{ "main": { "tasks": [...], "metadata": {...} }, "feature-xyz": { "tasks": [...], "metadata": {...} } }`
   - **Automatic Migration**: Existing projects will seamlessly migrate to tagged format with zero user intervention
   - **State Management**: New `.taskmaster/state.json` tracks current tag, last switched time, migration status and more.
   - **Configuration Integration**: Enhanced `.taskmaster/config.json` with tag-specific settings and defaults.
@@ -1434,7 +1434,7 @@
 
   **Intelligent File Management:**
   - Tag-specific complexity reports: `task-complexity-report_tagname.json`
-  - Master tag uses default filenames: `task-complexity-report.json`
+  - main tag uses default filenames: `task-complexity-report.json`
   - Automatic file isolation prevents cross-tag contamination
 
   **Advanced Confirmation Logic:**
@@ -1446,7 +1446,7 @@
 
   **Zero-Disruption Migration:**
   - Existing `tasks.json` files automatically migrate on first command
-  - Master tag receives proper metadata (creation date, description)
+  - main tag receives proper metadata (creation date, description)
   - Migration notice shown once with helpful explanation
   - All existing commands work identically to before
 

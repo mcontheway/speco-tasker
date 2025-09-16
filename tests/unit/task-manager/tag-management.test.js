@@ -20,7 +20,7 @@ function writeInitialFile() {
 			tasks: [{ id: 1, title: 'Initial Task', status: 'pending' }],
 			metadata: {
 				created: new Date().toISOString(),
-				description: 'Master tag'
+				description: 'main tag'
 			}
 		}
 	}

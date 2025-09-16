@@ -167,7 +167,7 @@ const taskFileName = targetTag === 'master'
 ```
 
 **Examples:**
-- Master tag: `task_001.txt`, `task_002.txt`
+- main tag: `task_001.txt`, `task_002.txt`
 - Other tags: `task_001_feature.txt`, `task_002_feature.txt`
 
 ## Common Anti-Patterns
@@ -214,7 +214,7 @@ node bin/task-master command-name --tag test-tag
 node bin/task-master use-tag test-tag
 node bin/task-master command-name
 
-# Test with master tag (default)
+# Test with main tag (default)
 node bin/task-master use-tag master  
 node bin/task-master command-name
 ```

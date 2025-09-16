@@ -19,7 +19,7 @@ function seedWorkspace() {
 		force: true
 	})
 
-	// Minimal master tag file
+	// Minimal main tag file
 	fs.writeFileSync(
 		TASKS_PATH,
 		JSON.stringify(
@@ -96,7 +96,7 @@ describe('Tag boundary resolution', () => {
 		expect(finalData.alpha.tasks[0].title).toBe('Changed in alpha')
 	})
 
-	it('addTask to non-master tag does not leak into master', async () => {
+	it('addTask to non-main tag does not leak into master', async () => {
 		// create and switch
 		await createTag(TASKS_PATH, 'feature-api', {}, { projectRoot: TEMP_DIR }, 'json')
 
@@ -130,10 +130,10 @@ describe('Tag boundary resolution', () => {
 		).rejects.toThrow(/reserved tag/i)
 	})
 
-	it('cannot delete the master tag', async () => {
+	it('cannot delete the main tag', async () => {
 		await expect(
 			deleteTag(TASKS_PATH, 'master', { yes: true }, { projectRoot: TEMP_DIR }, 'json')
-		).rejects.toThrow(/Cannot delete the "master" tag/)
+		).rejects.toThrow(/Cannot delete the "main" tag/)
 	})
 
 	it('copyTag deep copy – mutation does not affect source', async () => {

@@ -2,9 +2,8 @@
 	"global": {
 		"logLevel": "info",
 		"debug": false,
-		"defaultSubtasks": 5,
 		"defaultPriority": "medium",
-		"projectName": "Taskmaster",
-		"defaultTag": "master"
+		"projectName": "{{projectName}}",
+		"defaultTag": "main"
 	}
 }

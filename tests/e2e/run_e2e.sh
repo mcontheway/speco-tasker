@@ -423,12 +423,12 @@ log_step() {
     log_error "Tag corruption detected! Before: $tag_count_before, After: $tag_count_after"
   fi
 
-  log_step "Verifying master tag still exists and has tasks"
+  log_step "Verifying main tag still exists and has tasks"
   master_task_count=$(jq -r '.master.tasks | length' .taskmaster/tasks/tasks.json 2>/dev/null || echo "0")
   if [ "$master_task_count" -gt "0" ]; then
-    log_success "Master tag preserved with $master_task_count tasks"
+    log_success "main tag preserved with $master_task_count tasks"
   else
-    log_error "Master tag corrupted or empty after tagged expand"
+    log_error "main tag corrupted or empty after tagged expand"
   fi
 
   log_step "Verifying feature-expand tag has expanded subtasks"

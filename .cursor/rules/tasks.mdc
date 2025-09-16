@@ -11,10 +11,10 @@ Task Master now uses a **tagged task lists system** for multi-context task manag
 
 - **Data Structure**: Tasks are organized into separate contexts (tags) within `tasks.json`
 - **Legacy Format**: `{"tasks": [...]}`
-- **Tagged Format**: `{"master": {"tasks": [...]}, "feature-branch": {"tasks": [...]}}`
+- **Tagged Format**: `{"main": {"tasks": [...]}, "feature-branch": {"tasks": [...]}}`
 - **Silent Migration**: Legacy format automatically converts to tagged format on first use
 - **Tag Resolution**: Core functions receive legacy format for 100% backward compatibility
-- **Default Tag**: "master" is used for all existing and new tasks unless otherwise specified
+- **Default Tag**: "main" is used for all existing and new tasks unless otherwise specified
 
 ## Task Structure Standards
 
@@ -92,7 +92,7 @@ Task Master now uses a **tagged task lists system** for multi-context task manag
 
 - **PRD Parsing**:
   - ✅ DO: Extract tasks from PRD documents using AI
-  - ✅ DO: Create tasks in the current tag context (defaults to "master")
+  - ✅ DO: Create tasks in the current tag context (defaults to "main")
   - ✅ DO: Provide clear prompts to guide AI task generation
   - ✅ DO: Validate and clean up AI-generated tasks
 

@@ -29,7 +29,7 @@ const useTagParameterHelp = generateParameterHelp(
 	[{ name: 'file', description: '任务文件路径（默认：tasks/tasks.json）' }],
 	[
 		'{"projectRoot": "/path/to/project", "name": "feature-branch"}',
-		'{"projectRoot": "/path/to/project", "name": "master"}'
+		'{"projectRoot": "/path/to/project", "name": "main"}'
 	]
 )
 

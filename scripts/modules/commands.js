@@ -66,7 +66,6 @@ import {
 	getConfig,
 	getDebugFlag,
 	getDefaultNumTasks,
-	getDefaultSubtasks,
 	isConfigFilePresent,
 	writeConfig
 } from './config-manager.js'

@@ -10,7 +10,7 @@ describe('getTagAwareFilePath utility function', () => {
 	const projectRoot = '/test/project'
 	const basePath = '.taskmaster/reports/task-complexity-report.json'
 
-	it('should return base path for master tag', () => {
+	it('should return base path for main tag', () => {
 		const result = getTagAwareFilePath(basePath, 'master', projectRoot)
 		const expected = path.join(projectRoot, basePath)
 		expect(result).toBe(expected)
@@ -28,7 +28,7 @@ describe('getTagAwareFilePath utility function', () => {
 		expect(result).toBe(expected)
 	})
 
-	it('should return tag-specific path for non-master tag', () => {
+	it('should return tag-specific path for non-main tag', () => {
 		const tag = 'feature-branch'
 		const result = getTagAwareFilePath(basePath, tag, projectRoot)
 		const expected = path.join(
