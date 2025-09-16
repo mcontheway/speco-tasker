@@ -271,7 +271,7 @@ function normalizeTaskIds(tasks) {
 		// Convert task ID to number with validation
 		if (task.id !== undefined) {
 			const parsedId = parseInt(task.id, 10)
-			if (!isNaN(parsedId) && parsedId > 0) {
+			if (!Number.isNaN(parsedId) && parsedId > 0) {
 				task.id = parsedId
 			}
 		}
@@ -287,7 +287,7 @@ function normalizeTaskIds(tasks) {
 						subtask.id = parseInt(parts[parts.length - 1], 10)
 					} else {
 						const parsedSubtaskId = parseInt(subtask.id, 10)
-						if (!isNaN(parsedSubtaskId) && parsedSubtaskId > 0) {
+						if (!Number.isNaN(parsedSubtaskId) && parsedSubtaskId > 0) {
 							subtask.id = parsedSubtaskId
 						}
 					}
@@ -1101,7 +1101,7 @@ function traverseDependencies(sourceTasks, allTasks, options = {}) {
 			}
 			// Convert simple string numbers to numbers for consistency
 			const parsed = parseInt(depId, 10)
-			return isNaN(parsed) ? depId : parsed
+			return Number.isNaN(parsed) ? depId : parsed
 		}
 		return depId
 	}
@@ -1504,7 +1504,7 @@ function stripAnsiCodes(text) {
 		return text
 	}
 	// Remove ANSI escape sequences (color codes, cursor movements, etc.)
-	return text.replace(/\x1b\[[0-9;]*m/g, '')
+	return text.replace(/\x1B\[[0-9;]*m/g, '')
 }
 
 // Export all utility functions and configuration

@@ -175,7 +175,6 @@ async function updateSubtaskById(
 
 		let generatedContentString = ''
 		let newlyAddedSnippet = ''
-		let aiServiceResponse = null
 
 		try {
 			const parentContext = {
@@ -199,51 +198,20 @@ async function updateSubtaskById(
 						}
 					: undefined
 
-			// Build prompts using PromptManager
-			const promptManager = getPromptManager()
+			// Manual prompt creation without PromptManager
+			const systemPrompt = 'You are a subtask update assistant.'
+			const userPrompt = `Update the following subtask:
 
-			const promptParams = {
-				parentTask: parentContext,
-				prevSubtask: prevSubtask,
-				nextSubtask: nextSubtask,
-				currentDetails: subtask.details || '(No existing details)',
-				updatePrompt: prompt,
-				useResearch: useResearch,
-				gatheredContext: gatheredContext || '',
-				projectRoot: projectRoot
-			}
+Parent Task: ${parentContext.title}
+Subtask: ${subtask.title}
+Current Details: ${subtask.details || '(No existing details)'}
+Update Request: ${prompt}
+${gatheredContext ? `Context: ${gatheredContext}` : ''}`
 
-			const variantKey = useResearch ? 'research' : 'default'
-			const { systemPrompt, userPrompt } = await promptManager.loadPrompt(
-				'update-subtask',
-				promptParams,
-				variantKey
-			)
+			report('info', 'Manual subtask update prompt created.')
 
-			const role = useResearch ? 'research' : 'main'
-			report('info', `Using AI text service with role: ${role}`)
-
-			aiServiceResponse = await generateTextService({
-				prompt: userPrompt,
-				systemPrompt: systemPrompt,
-				role,
-				session,
-				projectRoot,
-				maxRetries: 2,
-				commandName: 'update-subtask',
-				outputType: isMCP ? 'mcp' : 'cli'
-			})
-
-			if (
-				aiServiceResponse &&
-				aiServiceResponse.mainResult &&
-				typeof aiServiceResponse.mainResult === 'string'
-			) {
-				generatedContentString = aiServiceResponse.mainResult
-			} else {
-				generatedContentString = ''
-				report('warn', 'AI service response did not contain expected text string.')
-			}
+			// Use provided prompt directly as content (no AI processing)
+			generatedContentString = prompt && prompt.trim() ? prompt.trim() : 'No content provided for update.'
 
 			if (outputFormat === 'text' && loadingIndicator) {
 				stopLoadingIndicator(loadingIndicator)

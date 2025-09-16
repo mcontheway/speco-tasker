@@ -9,7 +9,7 @@
 		"task-master-mcp": "mcp-server/server.js",
 		"taskmaster-no-ai": "mcp-server/server.js"
 	},
-	"workspaces": ["apps/*", "."],
+	"workspaces": ["apps/docs", "."],
 	"scripts": {
 		"test": "NODE_PATH=$(pwd)/node_modules NODE_OPTIONS=\"--experimental-vm-modules --experimental-specifier-resolution=node\" node_modules/.bin/jest",
 		"test:fails": "NODE_OPTIONS=\"--experimental-vm-modules --experimental-specifier-resolution=node\" node_modules/.bin/jest --onlyFailures",

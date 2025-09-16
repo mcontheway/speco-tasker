@@ -21,7 +21,7 @@ jest.unstable_mockModule('../../../../../scripts/modules/utils.js', () => ({
 	addComplexityToTask: jest.fn(),
 	readComplexityReport: jest.fn(() => null),
 	getTagAwareFilePath: jest.fn((tag, path) => '/mock/tagged/report.json'),
-	stripAnsiCodes: jest.fn((text) => (text ? text.replace(/\x1b\[[0-9;]*m/g, '') : text))
+	stripAnsiCodes: jest.fn((text) => (text ? text.replace(/\x1B\[[0-9;]*m/g, '') : text))
 }))
 
 jest.unstable_mockModule('../../../../../scripts/modules/ui.js', () => ({

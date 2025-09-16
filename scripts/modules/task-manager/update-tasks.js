@@ -370,52 +370,24 @@ async function updateTasks(
 		}
 
 		try {
-			// Determine role based on research flag
-			const serviceRole = useResearch ? 'research' : 'main'
+			if (loadingIndicator) stopLoadingIndicator(loadingIndicator, 'Manual update complete.')
 
-			// Call the unified AI service
-			aiServiceResponse = await generateTextService({
-				role: serviceRole,
-				session: session,
-				projectRoot: projectRoot,
-				systemPrompt: systemPrompt,
-				prompt: userPrompt,
-				commandName: 'update-tasks',
-				outputType: isMCP ? 'mcp' : 'cli'
-			})
-
-			if (loadingIndicator) stopLoadingIndicator(loadingIndicator, 'AI update complete.')
-
-			// Use the mainResult (text) for parsing
-			const parsedUpdatedTasks = parseUpdatedTasksFromText(
-				aiServiceResponse.mainResult,
-				tasksToUpdate.length,
-				logFn,
-				isMCP
-			)
-
-			// --- Update Tasks Data (Updated writeJSON call) ---
-			if (!Array.isArray(parsedUpdatedTasks)) {
-				// Should be caught by parser, but extra check
-				throw new Error('Parsed AI response for updated tasks was not an array.')
-			}
-			if (isMCP) logFn.info(`Received ${parsedUpdatedTasks.length} updated tasks from AI.`)
-			else logFn('info', `Received ${parsedUpdatedTasks.length} updated tasks from AI.`)
-			// Create a map for efficient lookup
-			const updatedTasksMap = new Map(parsedUpdatedTasks.map((task) => [task.id, task]))
-
+			// Manual update: apply the same update to all selected tasks
 			let actualUpdateCount = 0
-			data.tasks.forEach((task, index) => {
-				if (updatedTasksMap.has(task.id)) {
-					// Only update if the task was part of the set sent to AI
-					const updatedTask = updatedTasksMap.get(task.id)
-					// Merge the updated task with the existing one to preserve fields like subtasks
-					data.tasks[index] = {
-						...task, // Keep all existing fields
-						...updatedTask, // Override with updated fields
-						// Ensure subtasks field is preserved if not provided by AI
-						subtasks: updatedTask.subtasks !== undefined ? updatedTask.subtasks : task.subtasks
-					}
+
+			tasksToUpdate.forEach((task) => {
+				const taskIndex = data.tasks.findIndex((t) => t.id === task.id)
+				if (taskIndex !== -1) {
+					// Apply manual update to task
+					const updatedTask = { ...data.tasks[taskIndex] }
+
+					// Add update note to description
+					const updateNote = `[Manual Update: ${new Date().toLocaleDateString()}] ${prompt}`
+					updatedTask.description = updatedTask.description
+						? `${updatedTask.description}\n\n${updateNote}`
+						: updateNote
+
+					data.tasks[taskIndex] = updatedTask
 					actualUpdateCount++
 				}
 			})
@@ -428,25 +400,16 @@ async function updateTasks(
 			else logFn('success', `Successfully updated ${actualUpdateCount} tasks in ${tasksPath}`)
 			// await generateTaskFiles(tasksPath, path.dirname(tasksPath));
 
-			if (outputFormat === 'text' && aiServiceResponse.telemetryData) {
-				displayAiUsageSummary(aiServiceResponse.telemetryData, 'cli')
-			}
-
 			return {
 				success: true,
-				updatedTasks: parsedUpdatedTasks,
-				telemetryData: aiServiceResponse.telemetryData,
-				tagInfo: aiServiceResponse.tagInfo
+				message: `Successfully updated ${actualUpdateCount} tasks`,
+				telemetryData: null, // No AI telemetry for manual updates
+				tagInfo: null
 			}
 		} catch (error) {
 			if (loadingIndicator) stopLoadingIndicator(loadingIndicator)
-			if (isMCP) logFn.error(`Error during AI service call: ${error.message}`)
-			else logFn('error', `Error during AI service call: ${error.message}`)
-			if (error.message.includes('API key')) {
-				if (isMCP)
-					logFn.error('Please ensure API keys are configured correctly in .env or mcp.json.')
-				else logFn('error', 'Please ensure API keys are configured correctly in .env or mcp.json.')
-			}
+			if (isMCP) logFn.error(`Error during manual task update: ${error.message}`)
+			else logFn('error', `Error during manual task update: ${error.message}`)
 			throw error
 		} finally {
 			if (loadingIndicator) stopLoadingIndicator(loadingIndicator)

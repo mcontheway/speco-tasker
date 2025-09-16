@@ -317,7 +317,7 @@ describe.skip('Task Master Memory Usage', () => {
 			const heapUsages = memoryStats.samples.map((s) => s.heapUsed)
 			const mean = heapUsages.reduce((sum, usage) => sum + usage, 0) / heapUsages.length
 			const variance =
-				heapUsages.reduce((sum, usage) => sum + Math.pow(usage - mean, 2), 0) / heapUsages.length
+				heapUsages.reduce((sum, usage) => sum + (usage - mean) ** 2, 0) / heapUsages.length
 			const stdDev = Math.sqrt(variance)
 			const coefficientOfVariation = stdDev / mean
 

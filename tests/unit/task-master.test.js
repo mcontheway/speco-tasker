@@ -182,7 +182,10 @@ describe('initTaskMaster', () => {
 	})
 
 	describe('Path resolution with boolean logic', () => {
-		let taskMasterDir, tasksPath, configPath, statePath
+		let taskMasterDir
+		let tasksPath
+		let configPath
+		let statePath
 
 		beforeEach(() => {
 			// Setup a valid project structure

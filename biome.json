@@ -10,10 +10,9 @@
 			"dist",
 			"node_modules",
 			"apps/docs/build",
-			"apps/extension/build",
 			"*.d.ts"
 		],
-		"include": ["**/*.js", "**/*.ts", "**/*.json", "apps/extension/**/*.tsx"]
+		"include": ["**/*.js", "**/*.ts", "**/*.json"]
 	},
 	"formatter": {
 		"bracketSpacing": true,
@@ -51,6 +50,7 @@
 			"suspicious": {
 				"noDuplicateTestHooks": "off",
 				"noPrototypeBuiltins": "off",
+				"noControlCharactersInRegex": "off",
 				"noExplicitAny": "warn"
 			},
 			"style": {

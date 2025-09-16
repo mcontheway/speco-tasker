@@ -818,9 +818,7 @@ describe('parsePRD', () => {
 				return {
 					mainResult: {
 						get partialObjectStream() {
-							return (async function* () {
-								throw new Error('Stream processing failed')
-							})()
+							return Promise.reject(new Error('Stream processing failed'))
 						},
 						usage: Promise.resolve(null),
 						object: Promise.resolve(null)

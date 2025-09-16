@@ -1,9 +1,6 @@
 /**
  * Tests for the generate-task-files.js module
  */
-const fs = require('fs')
-const path = require('path')
-
 // Mock the dependencies before importing the module under test
 jest.mock('fs')
 jest.mock('path')

@@ -355,8 +355,8 @@ function registerCommands(programInstance) {
 				// Restore specific logging for manual creation
 				console.log(chalk.blue(`Creating task manually with title: "${options.title}"`))
 			} else {
-				// Restore specific logging for AI creation
-				console.log(chalk.blue(`Creating task with AI using prompt: "${options.prompt}"`))
+				// Restore specific logging for manual creation
+				console.log(chalk.blue(`Creating task manually with prompt: "${options.prompt}"`))
 			}
 
 			// Log dependencies and priority if provided (restored)
@@ -2343,7 +2343,7 @@ function setupCLI() {
 	// Create a new program instance
 	const programInstance = program
 		.name('dev')
-		.description('AI-driven development task management')
+		.description('Manual development task management')
 		.version(() => {
 			// Read version directly from package.json ONLY
 			try {

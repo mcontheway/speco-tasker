@@ -388,59 +388,27 @@ async function updateTaskById(
 			)
 		}
 
-		// --- Build Prompts using PromptManager ---
-		const promptManager = getPromptManager()
+		// Manual prompt creation without PromptManager
+		const systemPrompt = 'You are a task update assistant.'
+		const userPrompt = `Update the following task:
 
-		const promptParams = {
-			task: taskToUpdate,
-			taskJson: JSON.stringify(taskToUpdate, null, 2),
-			updatePrompt: prompt,
-			appendMode: appendMode,
-			useResearch: useResearch,
-			currentDetails: taskToUpdate.details || '(No existing details)',
-			gatheredContext: gatheredContext || '',
-			projectRoot: projectRoot
-		}
+Current Task: ${JSON.stringify(taskToUpdate, null, 2)}
 
-		const variantKey = appendMode ? 'append' : useResearch ? 'research' : 'default'
+Update Request: ${prompt}
+
+Mode: ${appendMode ? 'append' : 'replace'}
+${appendMode ? 'Append new information to existing details.' : 'Replace existing details with new information.'}
+
+Current Details: ${taskToUpdate.details || '(No existing details)'}
+${gatheredContext ? `Context: ${gatheredContext}` : ''}`
 
 		report(
 			'info',
-			`Loading prompt template with variant: ${variantKey}, appendMode: ${appendMode}, useResearch: ${useResearch}`
+			`Manual prompt created - systemPrompt length: ${systemPrompt?.length}, userPrompt length: ${userPrompt?.length}`
 		)
-
-		let systemPrompt
-		let userPrompt
-		try {
-			const promptResult = await promptManager.loadPrompt('update-task', promptParams, variantKey)
-			report(
-				'info',
-				`Prompt result type: ${typeof promptResult}, keys: ${promptResult ? Object.keys(promptResult).join(', ') : 'null'}`
-			)
-
-			// Extract prompts - loadPrompt returns { systemPrompt, userPrompt, metadata }
-			systemPrompt = promptResult.systemPrompt
-			userPrompt = promptResult.userPrompt
-
-			report(
-				'info',
-				`Loaded prompts - systemPrompt length: ${systemPrompt?.length}, userPrompt length: ${userPrompt?.length}`
-			)
-		} catch (error) {
-			report('error', `Failed to load prompt template: ${error.message}`)
-			throw new Error(`Failed to load prompt template: ${error.message}`)
-		}
-
-		// If prompts are still not set, throw an error
-		if (!systemPrompt || !userPrompt) {
-			throw new Error(
-				`Failed to load prompts: systemPrompt=${!!systemPrompt}, userPrompt=${!!userPrompt}`
-			)
-		}
 		// --- End Build Prompts ---
 
 		let loadingIndicator = null
-		let aiServiceResponse = null
 
 		if (!isMCP && outputFormat === 'text') {
 			loadingIndicator = startLoadingIndicator(
@@ -449,27 +417,15 @@ async function updateTaskById(
 		}
 
 		try {
-			const serviceRole = useResearch ? 'research' : 'main'
-			aiServiceResponse = await generateTextService({
-				role: serviceRole,
-				session: session,
-				projectRoot: projectRoot,
-				systemPrompt: systemPrompt,
-				prompt: userPrompt,
-				commandName: 'update-task',
-				outputType: isMCP ? 'mcp' : 'cli'
-			})
-
-			if (loadingIndicator) stopLoadingIndicator(loadingIndicator, 'AI update complete.')
+			if (loadingIndicator) stopLoadingIndicator(loadingIndicator, 'Manual update complete.')
 
 			if (appendMode) {
-				// Append mode: handle as plain text
-				const generatedContentString = aiServiceResponse.mainResult
+				// Append mode: use provided prompt directly as content
 				let newlyAddedSnippet = ''
 
-				if (generatedContentString && generatedContentString.trim()) {
+				if (prompt && prompt.trim()) {
 					const timestamp = new Date().toISOString()
-					const formattedBlock = `<info added on ${timestamp}>\n${generatedContentString.trim()}\n</info added on ${timestamp}>`
+					const formattedBlock = `<info added on ${timestamp}>\n${prompt.trim()}\n</info added on ${timestamp}>`
 					newlyAddedSnippet = formattedBlock
 
 					// Append to task details
@@ -478,9 +434,9 @@ async function updateTaskById(
 				} else {
 					report(
 						'warn',
-						'AI response was empty or whitespace after trimming. Original details remain unchanged.'
+						'No content provided for append. Original details remain unchanged.'
 					)
-					newlyAddedSnippet = 'No new details were added by the AI.'
+					newlyAddedSnippet = 'No new details were added.'
 				}
 
 				// Update description with timestamp if prompt is short
@@ -526,87 +482,26 @@ async function updateTaskById(
 				}
 			}
 
-			// Full update mode: Use mainResult (text) for parsing
-			const updatedTask = parseUpdatedTaskFromText(
-				aiServiceResponse.mainResult,
-				taskId,
-				logFn,
-				isMCP
-			)
+			// Full update mode: Use provided values directly (no AI processing)
+			const updatedTask = { ...taskToUpdate }
 
-			// --- Task Validation/Correction (Keep existing logic) ---
-			if (!updatedTask || typeof updatedTask !== 'object')
-				throw new Error('Received invalid task object from AI.')
-			if (!updatedTask.title || !updatedTask.description)
-				throw new Error('Updated task missing required fields.')
-			// Preserve ID if AI changed it
-			if (updatedTask.id !== taskId) {
-				report('warn', `AI changed task ID. Restoring original ID ${taskId}.`)
-				updatedTask.id = taskId
-			}
-			// Preserve status if AI changed it
-			if (updatedTask.status !== taskToUpdate.status && !prompt.toLowerCase().includes('status')) {
-				report(
-					'warn',
-					`AI changed task status. Restoring original status '${taskToUpdate.status}'.`
-				)
-				updatedTask.status = taskToUpdate.status
-			}
-			// Fix subtask IDs if they exist (ensure they are numeric and sequential)
-			if (updatedTask.subtasks && Array.isArray(updatedTask.subtasks)) {
-				let currentSubtaskId = 1
-				updatedTask.subtasks = updatedTask.subtasks.map((subtask) => {
-					// Fix AI-generated subtask IDs that might be strings or use parent ID as prefix
-					const correctedSubtask = {
-						...subtask,
-						id: currentSubtaskId, // Override AI-generated ID with correct sequential ID
-						dependencies: Array.isArray(subtask.dependencies)
-							? subtask.dependencies
-									.map((dep) => (typeof dep === 'string' ? parseInt(dep, 10) : dep))
-									.filter((depId) => !Number.isNaN(depId) && depId >= 1 && depId < currentSubtaskId)
-							: [],
-						status: subtask.status || 'pending'
-					}
-					currentSubtaskId++
-					return correctedSubtask
-				})
-				report(
-					'info',
-					`Fixed ${updatedTask.subtasks.length} subtask IDs to be sequential numeric IDs.`
-				)
-			}
-
-			// Preserve completed subtasks (Keep existing logic)
-			if (taskToUpdate.subtasks?.length > 0) {
-				if (!updatedTask.subtasks) {
-					report('warn', 'Subtasks removed by AI. Restoring original subtasks.')
-					updatedTask.subtasks = taskToUpdate.subtasks
+			// Apply manual updates from prompt (simple field updates)
+			if (prompt && prompt.trim()) {
+				// For simple text prompts, update the description or details
+				if (prompt.length < 200) {
+					// Short prompts update description
+					updatedTask.description = prompt.trim()
 				} else {
-					const completedOriginal = taskToUpdate.subtasks.filter(
-						(st) => st.status === 'done' || st.status === 'completed'
-					)
-					completedOriginal.forEach((compSub) => {
-						const updatedSub = updatedTask.subtasks.find((st) => st.id === compSub.id)
-						if (!updatedSub || JSON.stringify(updatedSub) !== JSON.stringify(compSub)) {
-							report('warn', `Completed subtask ${compSub.id} was modified or removed. Restoring.`)
-							// Remove potentially modified version
-							updatedTask.subtasks = updatedTask.subtasks.filter((st) => st.id !== compSub.id)
-							// Add back original
-							updatedTask.subtasks.push(compSub)
-						}
-					})
-					// Deduplicate just in case
-					const subtaskIds = new Set()
-					updatedTask.subtasks = updatedTask.subtasks.filter((st) => {
-						if (!subtaskIds.has(st.id)) {
-							subtaskIds.add(st.id)
-							return true
-						}
-						report('warn', `Duplicate subtask ID ${st.id} removed.`)
-						return false
-					})
+					// Long prompts update details
+					updatedTask.details = prompt.trim()
 				}
 			}
+
+			// Preserve critical fields
+			updatedTask.id = taskId
+			updatedTask.status = taskToUpdate.status // Keep original status
+
+			report('info', 'Manual task update completed.')
 			// --- End Task Validation/Correction ---
 
 			// --- Update Task Data (Keep existing) ---
@@ -619,24 +514,34 @@ async function updateTaskById(
 			// await generateTaskFiles(tasksPath, path.dirname(tasksPath));
 			// --- End Write File ---
 
-			// --- Display CLI Telemetry ---
-			if (outputFormat === 'text' && aiServiceResponse.telemetryData) {
-				displayAiUsageSummary(aiServiceResponse.telemetryData, 'cli') // <<< ADD display
+			// --- Display Success Message ---
+			if (outputFormat === 'text') {
+				console.log(
+					boxen(
+						chalk.green(`Successfully updated task #${taskId}`) +
+							'\n\n' +
+							chalk.white.bold('Title:') +
+							' ' +
+							updatedTask.title +
+							'\n\n' +
+							chalk.white.bold('Updated:') +
+							' ' +
+							new Date().toLocaleString(),
+						{ padding: 1, borderColor: 'green', borderStyle: 'round' }
+					)
+				)
 			}
 
-			// --- Return Success with Telemetry ---
+			// --- Return Success ---
 			return {
 				updatedTask: updatedTask, // Return the updated task object
-				telemetryData: aiServiceResponse.telemetryData, // <<< ADD telemetryData
-				tagInfo: aiServiceResponse.tagInfo
+				telemetryData: null, // No AI telemetry for manual updates
+				tagInfo: null
 			}
 		} catch (error) {
-			// Catch errors from generateTextService
+			// Catch errors from manual update process
 			if (loadingIndicator) stopLoadingIndicator(loadingIndicator)
-			report('error', `Error during AI service call: ${error.message}`)
-			if (error.message.includes('API key')) {
-				report('error', 'Please ensure API keys are configured correctly.')
-			}
+			report('error', `Error during manual task update: ${error.message}`)
 			throw error // Re-throw error
 		}
 	} catch (error) {

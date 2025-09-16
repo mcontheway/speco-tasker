@@ -114,7 +114,7 @@ async function runStartupBenchmark(scriptPath, args = [], runs = TEST_RUNS) {
 	const max = Math.max(...times)
 
 	// Calculate standard deviation
-	const variance = times.reduce((sum, time) => sum + Math.pow(time - average, 2), 0) / times.length
+	const variance = times.reduce((sum, time) => sum + (time - average) ** 2, 0) / times.length
 	const stdDev = Math.sqrt(variance)
 
 	return {

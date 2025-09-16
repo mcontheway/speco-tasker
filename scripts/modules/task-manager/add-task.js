@@ -68,16 +68,16 @@ function getAllTasks(rawData) {
 }
 
 /**
- * Add a new task using AI
+ * Add a new task manually or with AI
  * @param {string} tasksPath - Path to the tasks.json file
- * @param {string} prompt - Description of the task to add (required for AI-driven creation)
+ * @param {string|null} [prompt=null] - Description of the task to add (optional, for backward compatibility)
  * @param {Array} dependencies - Task dependencies
  * @param {string} priority - Task priority
  * @param {function} reportProgress - Function to report progress to MCP server (optional)
  * @param {Object} mcpLog - MCP logger object (optional)
  * @param {Object} session - Session object from MCP server (optional)
  * @param {string} outputFormat - Output format (text or json)
- * @param {Object} customEnv - Custom environment variables (optional) - Note: AI params override deprecated
+ * @param {Object} customEnv - Custom environment variables (optional) - Note: manual params override deprecated
  * @param {Object} manualTaskData - Manual task data (optional, for direct task creation without AI)
  * @param {boolean} useResearch - Whether to use the research model (passed to unified service)
  * @param {Object} context - Context object containing session and potentially projectRoot
@@ -89,7 +89,7 @@ function getAllTasks(rawData) {
  */
 async function addTask(
 	tasksPath,
-	prompt,
+	prompt = null, // Made optional for manual mode
 	dependencies = [],
 	priority = null,
 	context = {},
@@ -139,7 +139,6 @@ async function addTask(
 	}
 
 	let loadingIndicator = null
-	let aiServiceResponse = null // To store the full response from AI service
 
 	// Create custom reporter that checks for MCP log
 	const report = (message, level = 'info') => {
@@ -357,9 +356,9 @@ async function addTask(
 				throw new Error('Manual task data must include at least a title and description.')
 			}
 		} else {
-			report('DEBUG: Taking AI task generation path.', 'debug')
-			// --- Refactored AI Interaction ---
-			report(`Generating task data with AI with prompt:\n${prompt}`, 'info')
+			report('DEBUG: Taking manual task creation path.', 'debug')
+			// --- Manual Task Creation ---
+			report(`Creating task data manually with prompt:\n${prompt}`, 'info')
 
 			// --- Use the new ContextGatherer ---
 			const contextGatherer = new ContextGatherer(projectRoot, tag)
@@ -387,86 +386,52 @@ async function addTask(
 			if (manualTaskData?.testStrategy)
 				contextFromArgs += `\n- Additional Test Strategy Context: "${manualTaskData.testStrategy}"`
 
-			// Load prompts using PromptManager
-			const promptManager = getPromptManager()
-			const { systemPrompt, userPrompt } = await promptManager.loadPrompt('add-task', {
-				prompt,
-				newTaskId,
-				existingTasks: allTasks,
-				gatheredContext,
-				contextFromArgs,
-				useResearch,
-				priority: effectivePriority,
-				dependencies: numericDependencies,
-				projectRoot: projectRoot
-			})
-
-			// Start the loading indicator - only for text mode
+			// Manual task creation without AI - use provided field values directly
 			if (outputFormat === 'text') {
-				loadingIndicator = startLoadingIndicator(
-					`Generating new task with ${useResearch ? 'Research' : 'Main'} AI... \n`
-				)
+				loadingIndicator = startLoadingIndicator('Creating new task manually... \n')
 			}
 
 			try {
-				const serviceRole = useResearch ? 'research' : 'main'
-				report('DEBUG: Calling generateObjectService...', 'debug')
+				report('DEBUG: Creating task data manually...', 'debug')
 
-				aiServiceResponse = await generateObjectService({
-					// Capture the full response
-					role: serviceRole,
-					session: session,
-					projectRoot: projectRoot,
-					schema: AiTaskDataSchema,
-					objectName: 'newTaskData',
-					systemPrompt: systemPrompt,
-					prompt: userPrompt,
-					commandName: commandName || 'add-task', // Use passed commandName or default
-					outputType: outputType || (isMCP ? 'mcp' : 'cli') // Use passed outputType or derive
-				})
-				report('DEBUG: generateObjectService returned successfully.', 'debug')
-
-				if (!aiServiceResponse || !aiServiceResponse.mainResult) {
-					throw new Error('AI service did not return the expected object structure.')
+				// Use provided field values directly (no AI processing)
+				taskData = {
+					title: manualTaskData?.title || 'New Task',
+					description: manualTaskData?.description || 'Task created manually without prompt',
+					details: manualTaskData?.details || 'Task created without AI assistance',
+					testStrategy: manualTaskData?.testStrategy || 'Manual verification required',
+					dependencies: [] // Required array for dependencies
 				}
 
-				// Prefer mainResult if it looks like a valid task object, otherwise try mainResult.object
-				if (aiServiceResponse.mainResult.title && aiServiceResponse.mainResult.description) {
-					taskData = aiServiceResponse.mainResult
-				} else if (
-					aiServiceResponse.mainResult.object &&
-					aiServiceResponse.mainResult.object.title &&
-					aiServiceResponse.mainResult.object.description
-				) {
-					taskData = aiServiceResponse.mainResult.object
-				} else {
-					throw new Error('AI service did not return a valid task object.')
+				// Validate the task data structure
+				const validationResult = AiTaskDataSchema.safeParse(taskData)
+				if (!validationResult.success) {
+					throw new Error(`Invalid task data structure: ${validationResult.error.message}`)
 				}
 
-				report('Successfully generated task data from AI.', 'success')
+				report('Successfully created task data manually.', 'success')
 
 				// Success! Show checkmark
 				if (loadingIndicator) {
-					succeedLoadingIndicator(loadingIndicator, 'Task generated successfully')
+					succeedLoadingIndicator(loadingIndicator, 'Task created successfully')
 					loadingIndicator = null // Clear it
 				}
 			} catch (error) {
 				// Failure! Show X
 				if (loadingIndicator) {
-					failLoadingIndicator(loadingIndicator, 'AI generation failed')
+					failLoadingIndicator(loadingIndicator, 'Manual task creation failed')
 					loadingIndicator = null
 				}
-				report(`DEBUG: generateObjectService caught error: ${error.message}`, 'debug')
-				report(`Error generating task with AI: ${error.message}`, 'error')
+				report(`DEBUG: Manual task creation error: ${error.message}`, 'debug')
+				report(`Error creating task: ${error.message}`, 'error')
 				throw error // Re-throw error after logging
 			} finally {
-				report('DEBUG: generateObjectService finally block reached.', 'debug')
 				// Clean up if somehow still running
 				if (loadingIndicator) {
 					stopLoadingIndicator(loadingIndicator)
 				}
 			}
-			// --- End Refactored AI Interaction ---
+			// --- End Manual Task Creation ---
 		}
 
 		// Create the new task object
@@ -477,12 +442,12 @@ async function addTask(
 			details: taskData.details || '',
 			testStrategy: taskData.testStrategy || '',
 			status: 'pending',
-			dependencies: taskData.dependencies?.length ? taskData.dependencies : numericDependencies, // Use AI-suggested dependencies if available, fallback to manually specified
+			dependencies: taskData.dependencies?.length ? taskData.dependencies : numericDependencies, // Use provided dependencies if available, fallback to manually specified
 			priority: effectivePriority,
 			subtasks: [] // Initialize with empty subtasks array
 		}
 
-		// Additional check: validate all dependencies in the AI response
+		// Additional check: validate all dependencies
 		if (taskData.dependencies?.length) {
 			const allValidDeps = taskData.dependencies.every((depId) => {
 				const numDepId = parseInt(depId, 10)
@@ -490,7 +455,7 @@ async function addTask(
 			})
 
 			if (!allValidDeps) {
-				report('AI suggested invalid dependencies. Filtering them out...', 'warn')
+				report('Some dependencies are invalid. Filtering them out...', 'warn')
 				newTask.dependencies = taskData.dependencies.filter((depId) => {
 					const numDepId = parseInt(depId, 10)
 					return !Number.isNaN(numDepId) && allTasks.some((t) => t.id === numDepId)
@@ -535,11 +500,11 @@ async function addTask(
 				}
 			}
 
-			// Check if AI added new dependencies that weren't explicitly provided
-			const aiAddedDeps = newTask.dependencies.filter((dep) => !numericDependencies.includes(dep))
+			// Check if system added new dependencies that weren't explicitly provided
+			const addedDeps = newTask.dependencies.filter((dep) => !numericDependencies.includes(dep))
 
-			// Check if AI removed any dependencies that were explicitly provided
-			const aiRemovedDeps = numericDependencies.filter((dep) => !newTask.dependencies.includes(dep))
+			// Check if system removed any dependencies that were explicitly provided
+			const removedDeps = numericDependencies.filter((dep) => !newTask.dependencies.includes(dep))
 
 			// Get task titles for dependencies to display
 			const depTitles = {}
@@ -555,8 +520,8 @@ async function addTask(
 			if (newTask.dependencies.length > 0) {
 				dependencyDisplay = chalk.white('Dependencies:') + '\n'
 				newTask.dependencies.forEach((dep) => {
-					const isAiAdded = aiAddedDeps.includes(dep)
-					const depType = isAiAdded ? chalk.yellow(' (AI suggested)') : ''
+					const isAdded = addedDeps.includes(dep)
+					const depType = isAdded ? chalk.yellow(' (automatically added)') : ''
 					dependencyDisplay +=
 						chalk.white(`  - ${dep}: ${depTitles[dep] || 'Unknown task'}${depType}`) + '\n'
 				})
@@ -565,9 +530,9 @@ async function addTask(
 			}
 
 			// Add info about removed dependencies if any
-			if (aiRemovedDeps.length > 0) {
+			if (removedDeps.length > 0) {
 				dependencyDisplay += chalk.gray('\nUser-specified dependencies that were not used:') + '\n'
-				aiRemovedDeps.forEach((dep) => {
+				removedDeps.forEach((dep) => {
 					const depTask = allTasks.find((t) => t.id === dep)
 					const title = depTask ? truncate(depTask.title, 30) : 'Unknown task'
 					dependencyDisplay += chalk.gray(`  - ${dep}: ${title}`) + '\n'
@@ -576,15 +541,15 @@ async function addTask(
 
 			// Add dependency analysis summary
 			let dependencyAnalysis = ''
-			if (aiAddedDeps.length > 0 || aiRemovedDeps.length > 0) {
+			if (addedDeps.length > 0 || removedDeps.length > 0) {
 				dependencyAnalysis = '\n' + chalk.white.bold('Dependency Analysis:') + '\n'
-				if (aiAddedDeps.length > 0) {
+				if (addedDeps.length > 0) {
 					dependencyAnalysis +=
-						chalk.green(`AI identified ${aiAddedDeps.length} additional dependencies`) + '\n'
+						chalk.green(`System identified ${addedDeps.length} additional dependencies`) + '\n'
 				}
-				if (aiRemovedDeps.length > 0) {
+				if (removedDeps.length > 0) {
 					dependencyAnalysis +=
-						chalk.yellow(`AI excluded ${aiRemovedDeps.length} user-provided dependencies`) + '\n'
+						chalk.yellow(`System excluded ${removedDeps.length} user-provided dependencies`) + '\n'
 				}
 			}
 
@@ -621,21 +586,14 @@ async function addTask(
 				)
 			)
 
-			// Display AI Usage Summary if telemetryData is available
-			if (
-				aiServiceResponse &&
-				aiServiceResponse.telemetryData &&
-				(outputType === 'cli' || outputType === 'text')
-			) {
-				displayAiUsageSummary(aiServiceResponse.telemetryData, 'cli')
-			}
+			// No AI usage summary to display in manual mode
 		}
 
 		report(`DEBUG: Returning new task ID: ${newTaskId} and telemetry.`, 'debug')
 		return {
 			newTaskId: newTaskId,
-			telemetryData: aiServiceResponse ? aiServiceResponse.telemetryData : null,
-			tagInfo: aiServiceResponse ? aiServiceResponse.tagInfo : null
+			telemetryData: null, // No AI telemetry for manual task creation
+			tagInfo: null
 		}
 	} catch (error) {
 		// Stop any loading indicator on error

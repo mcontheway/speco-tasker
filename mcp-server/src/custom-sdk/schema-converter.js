@@ -64,7 +64,7 @@ function generateExampleFromSchema(schema) {
 	const def = schema._def
 
 	switch (def.typeName) {
-		case 'ZodObject':
+		case 'ZodObject': {
 			const result = {}
 			const shape = def.shape()
 
@@ -73,6 +73,7 @@ function generateExampleFromSchema(schema) {
 			}
 
 			return result
+		}
 
 		case 'ZodString':
 			return 'string'
@@ -83,9 +84,10 @@ function generateExampleFromSchema(schema) {
 		case 'ZodBoolean':
 			return false
 
-		case 'ZodArray':
+		case 'ZodArray': {
 			const elementExample = generateExampleFromSchema(def.type)
 			return [elementExample]
+		}
 
 		case 'ZodOptional':
 			return generateExampleFromSchema(def.innerType)

@@ -1272,7 +1272,7 @@ function findDependencyTask(depId, taskId, allTasks) {
 	}
 
 	// If still not found, try numeric comparison for relative subtask references
-	if (!depTask && !isNaN(depId)) {
+	if (!depTask && !Number.isNaN(depId)) {
 		const numericId = parseInt(depId, 10)
 		// For subtasks, this might be a relative reference within the same parent
 		if (taskId && typeof taskId === 'string' && taskId.includes('.')) {
@@ -1538,7 +1538,7 @@ function getDependentTaskIds(sourceTasks, crossTagDependencies, allTasks) {
 				typeof conflict.dependencyId === 'string'
 					? parseInt(conflict.dependencyId, 10)
 					: conflict.dependencyId
-			if (!isNaN(depId)) {
+			if (!Number.isNaN(depId)) {
 				dependentTaskIds.add(depId)
 				// Find the task object for recursive dependency finding
 				const depTask = allTasks.find((t) => t.id === depId)
