@@ -714,7 +714,7 @@ function listTasks(
 				chalk.white.bold('Suggested Next Steps:') +
 					'\n\n' +
 					`${chalk.cyan('1.')} Run ${chalk.yellow('task-master next')} to see what to work on next\n` +
-					`${chalk.cyan('2.')} Run ${chalk.yellow('task-master expand --id=<id>')} to break down a task into subtasks\n` +
+					`${chalk.cyan('2.')} Run ${chalk.yellow('task-master add-subtask --parent=<id> --title="Subtask title"')} to add subtasks\n` +
 					`${chalk.cyan('3.')} Run ${chalk.yellow('task-master set-status --id=<id> --status=done')} to mark a task as complete`,
 				{
 					padding: 1,

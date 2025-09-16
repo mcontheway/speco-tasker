@@ -19,7 +19,7 @@ import { createLogWrapper } from '../../tools/utils.js'
  * @param {string} [args.dependencies] - Comma-separated list of task IDs this task depends on
  * @param {string} [args.priority='medium'] - Task priority (high, medium, low)
  * @param {string} [args.tasksJsonPath] - Path to the tasks.json file (resolved by tool)
- * @param {boolean} [args.research=false] - Whether to use research capabilities for task creation
+ * @param {boolean} [args.research=false] - Deprecated: Research functionality removed
  * @param {string} [args.projectRoot] - Project root path
  * @param {string} [args.tag] - Tag for the task (optional)
  * @param {Object} log - Logger object
@@ -27,8 +27,8 @@ import { createLogWrapper } from '../../tools/utils.js'
  * @returns {Promise<Object>} - Result object { success: boolean, data?: any, error?: { code: string, message: string } }
  */
 export async function addTaskDirect(args, log, context = {}) {
-	// Destructure expected args (including research and projectRoot)
-	const { tasksJsonPath, prompt, dependencies, priority, research, projectRoot, tag } = args
+	// Destructure expected args
+	const { tasksJsonPath, prompt, dependencies, priority, projectRoot, tag } = args
 	const { session } = context // Destructure session from context
 
 	// Enable silent mode to prevent console logs from interfering with JSON response
@@ -123,13 +123,13 @@ export async function addTaskDirect(args, log, context = {}) {
 		} else {
 			// AI-driven task creation
 			log.info(
-				`Adding new task with prompt: "${prompt}", dependencies: [${taskDependencies.join(', ')}], priority: ${taskPriority}, research: ${research}`
+				`Adding new task with prompt: "${prompt}", dependencies: [${taskDependencies.join(', ')}], priority: ${taskPriority}`
 			)
 
-			// Call the addTask function, passing the research flag
+			// Call the addTask function
 			const result = await addTask(
 				tasksPath,
-				prompt, // Use the prompt for AI creation
+				prompt, // Use the prompt for manual creation
 				taskDependencies,
 				taskPriority,
 				{
@@ -141,8 +141,7 @@ export async function addTaskDirect(args, log, context = {}) {
 					tag
 				},
 				'json', // outputFormat
-				null, // manualTaskData is null for AI creation
-				research // Pass the research flag
+				null // manualTaskData is null for manual creation
 			)
 			newTaskId = result.newTaskId
 			telemetryData = result.telemetryData

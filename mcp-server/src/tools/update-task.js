@@ -25,7 +25,7 @@ export function registerUpdateTaskTool(server) {
 					"ID of the task (e.g., '15') to update. Subtasks are supported using the update-subtask tool."
 				),
 			prompt: z.string().describe('New information or context to incorporate into the task'),
-			research: z.boolean().optional().describe('Use Perplexity AI for research-backed updates'),
+			// research parameter removed - AI functionality no longer available
 			append: z
 				.boolean()
 				.optional()
@@ -58,7 +58,6 @@ export function registerUpdateTaskTool(server) {
 						tasksJsonPath: tasksJsonPath,
 						id: args.id,
 						prompt: args.prompt,
-						research: args.research,
 						append: args.append,
 						projectRoot: args.projectRoot,
 						tag: resolvedTag

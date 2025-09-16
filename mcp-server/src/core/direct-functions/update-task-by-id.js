@@ -18,7 +18,7 @@ import { createLogWrapper } from '../../tools/utils.js'
  * @param {string} args.tasksJsonPath - Explicit path to the tasks.json file.
  * @param {string} args.id - Task ID (or subtask ID like "1.2").
  * @param {string} args.prompt - New information/context prompt.
- * @param {boolean} [args.research] - Whether to use research role.
+ * @param {boolean} [args.research] - Deprecated: Research functionality removed.
  * @param {boolean} [args.append] - Whether to append timestamped information instead of full update.
  * @param {string} [args.projectRoot] - Project root path.
  * @param {string} [args.tag] - Tag for the task (optional)
@@ -28,8 +28,8 @@ import { createLogWrapper } from '../../tools/utils.js'
  */
 export async function updateTaskByIdDirect(args, log, context = {}) {
 	const { session } = context
-	// Destructure expected args, including projectRoot
-	const { tasksJsonPath, id, prompt, research, append, projectRoot, tag } = args
+	// Destructure expected args
+	const { tasksJsonPath, id, prompt, append, projectRoot, tag } = args
 
 	const logWrapper = createLogWrapper(log)
 
@@ -93,11 +93,8 @@ export async function updateTaskByIdDirect(args, log, context = {}) {
 		// Use the provided path
 		const tasksPath = tasksJsonPath
 
-		// Get research flag
-		const useResearch = research === true
-
 		logWrapper.info(
-			`Updating task with ID ${taskId} with prompt "${prompt}" and research: ${useResearch}`
+			`Updating task with ID ${taskId} with prompt "${prompt}"`
 		)
 
 		const wasSilent = isSilentMode()
@@ -111,7 +108,6 @@ export async function updateTaskByIdDirect(args, log, context = {}) {
 				tasksPath,
 				taskId,
 				prompt,
-				useResearch,
 				{
 					mcpLog: logWrapper,
 					session,

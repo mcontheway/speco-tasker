@@ -25,7 +25,7 @@ export function registerUpdateTool(server) {
 					"Task ID from which to start updating (inclusive). IMPORTANT: This tool uses 'from', not 'id'"
 				),
 			prompt: z.string().describe('Explanation of changes or new context to apply'),
-			research: z.boolean().optional().describe('Use Perplexity AI for research-backed updates'),
+			// research parameter removed - AI functionality no longer available
 			file: z.string().optional().describe('Path to the tasks file relative to project root'),
 			projectRoot: z
 				.string()
@@ -35,7 +35,7 @@ export function registerUpdateTool(server) {
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
 			const toolName = 'update'
-			const { from, prompt, research, file, projectRoot, tag } = args
+			const { from, prompt, file, projectRoot, tag } = args
 
 			const resolvedTag = resolveTag({
 				projectRoot: args.projectRoot,
@@ -61,7 +61,6 @@ export function registerUpdateTool(server) {
 						tasksJsonPath: tasksJsonPath,
 						from: from,
 						prompt: prompt,
-						research: research,
 						projectRoot: projectRoot,
 						tag: resolvedTag
 					},

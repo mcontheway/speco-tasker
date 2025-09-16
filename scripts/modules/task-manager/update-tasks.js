@@ -235,7 +235,7 @@ function parseUpdatedTasksFromText(text, expectedCount, logFn, isMCP) {
  * @param {string} tasksPath - Path to the tasks.json file
  * @param {number} fromId - Task ID to start updating from
  * @param {string} prompt - Prompt with new context
- * @param {boolean} [useResearch=false] - Whether to use the research AI role.
+ * @param {boolean} [useResearch=false] - Deprecated: Research functionality removed.
  * @param {Object} context - Context object containing session and mcpLog.
  * @param {Object} [context.session] - Session object from MCP server.
  * @param {Object} [context.mcpLog] - MCP logger object.
@@ -246,7 +246,6 @@ async function updateTasks(
 	tasksPath,
 	fromId,
 	prompt,
-	useResearch = false,
 	context = {},
 	outputFormat = 'text' // Default to text for CLI
 ) {

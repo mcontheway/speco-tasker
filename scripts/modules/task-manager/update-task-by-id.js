@@ -225,7 +225,7 @@ function parseUpdatedTaskFromText(text, expectedTaskId, logFn, isMCP) {
  * @param {string} tasksPath - Path to the tasks.json file
  * @param {number} taskId - ID of the task to update
  * @param {string} prompt - Prompt for generating updated task information
- * @param {boolean} [useResearch=false] - Whether to use the research AI role.
+ * @param {boolean} [useResearch=false] - Deprecated: Research functionality removed.
  * @param {Object} context - Context object containing session and mcpLog.
  * @param {Object} [context.session] - Session object from MCP server.
  * @param {Object} [context.mcpLog] - MCP logger object.
@@ -239,7 +239,6 @@ async function updateTaskById(
 	tasksPath,
 	taskId,
 	prompt,
-	useResearch = false,
 	context = {},
 	outputFormat = 'text',
 	appendMode = false
@@ -266,12 +265,7 @@ async function updateTaskById(
 			throw new Error(`Invalid task ID: ${taskId}. Task ID must be a positive integer.`)
 		if (!prompt || typeof prompt !== 'string' || prompt.trim() === '')
 			throw new Error('Prompt cannot be empty.')
-		if (useResearch && !isApiKeySet('perplexity', session)) {
-			report('warn', 'Perplexity research requested but API key not set. Falling back.')
-			if (outputFormat === 'text')
-				console.log(chalk.yellow('Perplexity AI not available. Falling back to main AI.'))
-			useResearch = false
-		}
+		// Note: Research functionality has been removed
 		if (!fs.existsSync(tasksPath)) throw new Error(`Tasks file not found: ${tasksPath}`)
 		// --- End Input Validations ---
 
@@ -411,9 +405,7 @@ ${gatheredContext ? `Context: ${gatheredContext}` : ''}`
 		let loadingIndicator = null
 
 		if (!isMCP && outputFormat === 'text') {
-			loadingIndicator = startLoadingIndicator(
-				useResearch ? 'Updating task with research...\n' : 'Updating task...\n'
-			)
+			loadingIndicator = startLoadingIndicator('Updating task manually...\n')
 		}
 
 		try {

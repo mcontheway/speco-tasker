@@ -115,7 +115,7 @@ function clearSubtasks(tasksPath, taskIds, context = {}) {
 				boxen(
 					chalk.white.bold('Next Steps:') +
 						'\n\n' +
-						`${chalk.cyan('1.')} Run ${chalk.yellow('task-master expand --id=<id>')} to generate new subtasks\n` +
+						`${chalk.cyan('1.')} Run ${chalk.yellow('task-master add-subtask --parent=<id> --title="Subtask title"')} to add new subtasks\n` +
 						`${chalk.cyan('2.')} Run ${chalk.yellow('task-master list --with-subtasks')} to verify changes`,
 					{
 						padding: 1,

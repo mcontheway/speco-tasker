@@ -759,9 +759,9 @@ function createProjectStructure(addAliases, initGit, storeTasksInGit, dryRun, op
 				)}\n${chalk.white('3. ')}${chalk.yellow(
 					'Ask Cursor Agent (or run CLI) to parse your PRD and generate initial tasks:'
 				)}\n${chalk.white('   └─ ')}${chalk.dim('MCP Tool: ')}${chalk.cyan('parse_prd')}${chalk.dim(' | CLI: ')}${chalk.cyan('task-master parse-prd scripts/prd.txt')}\n${chalk.white('4. ')}${chalk.yellow(
-					'Ask Cursor to analyze the complexity of the tasks in your PRD using research'
+					'Manually review and organize your tasks as needed'
 				)}\n${chalk.white('   └─ ')}${chalk.dim('MCP Tool: ')}${chalk.cyan('analyze_project_complexity')}${chalk.dim(' | CLI: ')}${chalk.cyan('task-master analyze-complexity')}\n${chalk.white('5. ')}${chalk.yellow(
-					'Ask Cursor to expand all of your tasks using the complexity analysis'
+					'Manually add subtasks to your tasks as needed'
 				)}\n${chalk.white('6. ')}${chalk.yellow('Ask Cursor to begin working on the next task')}\n${chalk.white('7. ')}${chalk.yellow(
 					'Add new tasks anytime using the add-task command or MCP tool'
 				)}\n${chalk.white('8. ')}${chalk.yellow(

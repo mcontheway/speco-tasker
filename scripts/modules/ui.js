@@ -596,16 +596,7 @@ function displayHelp() {
 					args: '[--file=<path>]',
 					desc: 'Display the complexity analysis report'
 				},
-				{
-					name: 'expand',
-					args: '--id=<id> [--num=5] [--prompt="<context>"]',
-					desc: 'Break down tasks into detailed subtasks'
-				},
-				{
-					name: 'expand --all',
-					args: '[--force]',
-					desc: 'Expand all pending tasks with subtasks'
-				}
+				// expand command removed - functionality no longer available
 			]
 		},
 		{
@@ -1049,13 +1040,13 @@ async function displayNextTask(tasksPath, complexityReportPath = null, context =
 		console.log(subtaskTable.toString())
 	}
 
-	// Suggest expanding if no subtasks (only for parent tasks without subtasks)
+	// Suggest adding subtasks if no subtasks (only for parent tasks without subtasks)
 	if (!isSubtask && (!nextTask.subtasks || nextTask.subtasks.length === 0)) {
 		console.log(
 			boxen(
-				chalk.yellow('No subtasks found. Consider breaking down this task:') +
+				chalk.yellow('No subtasks found. Consider adding subtasks:') +
 					'\n' +
-					chalk.white(`Run: ${chalk.cyan(`task-master expand --id=${nextTask.id}`)}`),
+					chalk.white(`Run: ${chalk.cyan(`task-master add-subtask --parent=${nextTask.id} --title="Subtask title"`)}`),
 				{
 					padding: { top: 0, bottom: 0, left: 1, right: 1 },
 					borderColor: 'yellow',
@@ -1081,7 +1072,7 @@ async function displayNextTask(tasksPath, complexityReportPath = null, context =
 			`${chalk.cyan('2.')} Mark as done when completed: ${chalk.yellow(`task-master set-status --id=${nextTask.id} --status=done`)}\n` +
 			(nextTask.subtasks && nextTask.subtasks.length > 0
 				? `${chalk.cyan('3.')} Update subtask status: ${chalk.yellow(`task-master set-status --id=${nextTask.id}.1 --status=done`)}` // Example: first subtask
-				: `${chalk.cyan('3.')} Break down into subtasks: ${chalk.yellow(`task-master expand --id=${nextTask.id}`)}`)
+				: `${chalk.cyan('3.')} Add subtasks manually: ${chalk.yellow(`task-master add-subtask --parent=${nextTask.id} --title="Subtask title"`)}`)
 	}
 
 	console.log(
@@ -1410,9 +1401,9 @@ async function displayTaskById(
 		if (!actualSubtasks || actualSubtasks.length === 0) {
 			console.log(
 				boxen(
-					chalk.yellow('No subtasks found. Consider breaking down this task:') +
+					chalk.yellow('No subtasks found. Consider adding subtasks:') +
 						'\n' +
-						chalk.white(`Run: ${chalk.cyan(`task-master expand --id=${task.id}`)}`),
+						chalk.white(`Run: ${chalk.cyan(`task-master add-subtask --parent=${task.id} --title="Subtask title"`)}`),
 					{
 						padding: { top: 0, bottom: 0, left: 1, right: 1 },
 						borderColor: 'yellow',
@@ -1507,7 +1498,7 @@ async function displayTaskById(
 		)
 	} else {
 		actions.push(
-			`${chalk.cyan(`${actionNumber}.`)} Break down into subtasks: ${chalk.yellow(`task-master expand --id=${task.id}`)}`
+			`${chalk.cyan(`${actionNumber}.`)} Add subtasks manually: ${chalk.yellow(`task-master add-subtask --parent=${task.id} --title="Subtask title"`)}`
 		)
 	}
 	actionNumber++
@@ -1731,7 +1722,7 @@ async function displayComplexityReport(reportPath) {
 
 	// When adding rows, don't truncate the expansion command
 	tasksNeedingExpansion.forEach((task) => {
-		const expansionCommand = `task-master expand --id=${task.taskId} --num=${task.recommendedSubtasks}${task.expansionPrompt ? ` --prompt="${task.expansionPrompt}"` : ''}`
+		const expansionCommand = `task-master add-subtask --parent=${task.taskId} --title="Subtask title" --description="Subtask description"`
 
 		complexTable.push([
 			task.taskId,
@@ -1783,8 +1774,8 @@ async function displayComplexityReport(reportPath) {
 		boxen(
 			chalk.white.bold('Suggested Actions:') +
 				'\n\n' +
-				`${chalk.cyan('1.')} Expand all complex tasks: ${chalk.yellow(`task-master expand --all`)}\n` +
-				`${chalk.cyan('2.')} Expand a specific task: ${chalk.yellow(`task-master expand --id=<id>`)}\n` +
+				`${chalk.cyan('1.')} Add subtasks to complex tasks: ${chalk.yellow(`task-master add-subtask --parent=<id> --title="Subtask title"`)}\n` +
+				`${chalk.cyan('2.')} Add subtasks to specific task: ${chalk.yellow(`task-master add-subtask --parent=<id> --title="Subtask title"`)}\n` +
 				`${chalk.cyan('3.')} View complexity report: ${chalk.yellow(`task-master complexity-report`)}`,
 			{
 				padding: 1,
@@ -2328,7 +2319,7 @@ async function displayMultipleTasksSummary(
 						' Show next available task' +
 						'\n' +
 						chalk.cyan('4.') +
-						' Expand all tasks (generate subtasks)' +
+						' Add subtasks to tasks' +
 						'\n' +
 						chalk.cyan('5.') +
 						' View dependency relationships' +
@@ -2378,9 +2369,9 @@ async function displayMultipleTasksSummary(
 					console.log(chalk.green('✓ Copy and run this command to see the next available task'))
 					break
 				case '4':
-					console.log(chalk.blue(`\n→ Command: task-master expand --id=${taskIdList} --research`))
+					console.log(chalk.blue(`\n→ Command: task-master add-subtask --parent=${taskIdList} --title="Subtask title"`))
 					console.log(
-						chalk.green('✓ Copy and run this command to expand all selected tasks into subtasks')
+						chalk.green('✓ Copy and run this command to add subtasks to selected tasks')
 					)
 					break
 				case '5': {

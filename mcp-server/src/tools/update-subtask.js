@@ -25,7 +25,7 @@ export function registerUpdateSubtaskTool(server) {
 					'ID of the subtask to update in format "parentId.subtaskId" (e.g., "5.2"). Parent ID is the ID of the task that contains the subtask.'
 				),
 			prompt: z.string().describe('Information to add to the subtask'),
-			research: z.boolean().optional().describe('Use Perplexity AI for research-backed updates'),
+			// research parameter removed - AI functionality no longer available
 			file: z.string().optional().describe('Absolute path to the tasks file'),
 			projectRoot: z.string().describe('The directory of the project. Must be an absolute path.'),
 			tag: z.string().optional().describe('Tag context to operate on')
@@ -53,7 +53,6 @@ export function registerUpdateSubtaskTool(server) {
 						tasksJsonPath: tasksJsonPath,
 						id: args.id,
 						prompt: args.prompt,
-						research: args.research,
 						projectRoot: args.projectRoot,
 						tag: resolvedTag
 					},

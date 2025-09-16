@@ -29,7 +29,7 @@ import generateTaskFiles from './generate-task-files.js'
  * @param {string} tasksPath - Path to the tasks.json file
  * @param {string} subtaskId - ID of the subtask to update in format "parentId.subtaskId"
  * @param {string} prompt - Prompt for generating additional information
- * @param {boolean} [useResearch=false] - Whether to use the research AI role.
+ * @param {boolean} [useResearch=false] - Deprecated: Research functionality removed.
  * @param {Object} context - Context object containing session and mcpLog.
  * @param {Object} [context.session] - Session object from MCP server.
  * @param {Object} [context.mcpLog] - MCP logger object.
@@ -42,7 +42,6 @@ async function updateSubtaskById(
 	tasksPath,
 	subtaskId,
 	prompt,
-	useResearch = false,
 	context = {},
 	outputFormat = context.mcpLog ? 'json' : 'text'
 ) {
@@ -168,9 +167,7 @@ async function updateSubtaskById(
 				})
 			)
 			console.log(table.toString())
-			loadingIndicator = startLoadingIndicator(
-				useResearch ? 'Updating subtask with research...' : 'Updating subtask...'
-			)
+			loadingIndicator = startLoadingIndicator('Updating subtask manually...')
 		}
 
 		let generatedContentString = ''

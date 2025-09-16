@@ -853,8 +853,8 @@ async function finalizeMove(
 	const { projectRoot } = context
 	const { rawData, movedTasks } = moveResult
 
-	// Write the updated data
-	writeJSON(tasksPath, rawData, projectRoot, null)
+	// Write the updated data - don't specify a tag since we're writing the full tagged structure
+	writeJSON(tasksPath, rawData, projectRoot)
 
 	const response = {
 		message: `Successfully moved ${movedTasks.length} tasks from "${sourceTag}" to "${targetTag}"`,

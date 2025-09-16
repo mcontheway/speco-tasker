@@ -79,7 +79,7 @@ function getAllTasks(rawData) {
  * @param {string} outputFormat - Output format (text or json)
  * @param {Object} customEnv - Custom environment variables (optional) - Note: manual params override deprecated
  * @param {Object} manualTaskData - Manual task data (optional, for direct task creation without AI)
- * @param {boolean} useResearch - Whether to use the research model (passed to unified service)
+ * @param {boolean} useResearch - Deprecated: Research functionality removed
  * @param {Object} context - Context object containing session and potentially projectRoot
  * @param {string} [context.projectRoot] - Project root path (for MCP/env fallback)
  * @param {string} [context.commandName] - The name of the command being executed (for telemetry)
@@ -94,8 +94,7 @@ async function addTask(
 	priority = null,
 	context = {},
 	outputFormat = 'text', // Default to text for CLI
-	manualTaskData = null,
-	useResearch = false
+	manualTaskData = null
 ) {
 	const { session, mcpLog, projectRoot, commandName, outputType, tag } = context
 	const isMCP = !!mcpLog
@@ -132,7 +131,7 @@ async function addTask(
 	}
 
 	logFn.info(
-		`Adding new task with prompt: "${prompt}", Priority: ${effectivePriority}, Dependencies: ${dependencies.join(', ') || 'None'}, Research: ${useResearch}, ProjectRoot: ${projectRoot}`
+		`Adding new task with prompt: "${prompt}", Priority: ${effectivePriority}, Dependencies: ${dependencies.join(', ') || 'None'}, ProjectRoot: ${projectRoot}`
 	)
 	if (tag) {
 		logFn.info(`Using tag context: ${tag}`)
@@ -580,7 +579,7 @@ async function addTask(
 						) +
 						'\n' +
 						chalk.cyan(
-							`3. Run ${chalk.yellow(`task-master expand --id=${newTaskId}`)} to break it down into subtasks`
+							`3. Run ${chalk.yellow(`task-master add-subtask --parent=${newTaskId} --title="Subtask title"`)} to add subtasks`
 						),
 					{ padding: 1, borderColor: 'green', borderStyle: 'round' }
 				)

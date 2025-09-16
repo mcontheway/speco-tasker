@@ -308,7 +308,7 @@ function registerCommands(programInstance) {
 			'Comma-separated list of task IDs this task depends on'
 		)
 		.option('--priority <priority>', 'Task priority (high, medium, low)', 'medium')
-		.option('-r, --research', 'Whether to use research capabilities for task creation')
+		// Research option removed - functionality no longer available
 		.option('--tag <tag>', 'Specify tag context for task operations')
 		.action(async (options) => {
 			const isManualCreation = options.title && options.description
@@ -385,8 +385,7 @@ function registerCommands(programInstance) {
 					options.priority,
 					context,
 					'text',
-					manualTaskData,
-					options.research
+					manualTaskData
 				)
 
 				// addTask handles detailed CLI success logging AND telemetry display when outputFormat is 'text'
@@ -1756,6 +1755,15 @@ function registerCommands(programInstance) {
 					console.log(
 						chalk.yellow('Usage: task-master move --from=<sourceId> --to=<destinationId>')
 					)
+					process.exit(1)
+				}
+
+				// Check if destinationId looks like a tag name (contains letters)
+				const destIdNum = parseInt(destinationId, 10)
+				if (isNaN(destIdNum) && destinationId.match(/[a-zA-Z]/)) {
+					console.error(chalk.red('Error: --to parameter appears to be a tag name, but no --to-tag specified'))
+					console.error(chalk.red('For cross-tag moves, use: --to-tag=<tagName>'))
+					console.error(chalk.yellow('Example: task-master move --from=108 --to-tag=test-move'))
 					process.exit(1)
 				}
 

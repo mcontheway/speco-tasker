@@ -47,9 +47,9 @@ function generateTaskFiles(tasksPath, outputDir, options = {}) {
 
 		log('info', `Preparing to regenerate ${tasksForGeneration.length} task files for tag '${tag}'`)
 
-		// 3. Validate dependencies using the FULL, raw data structure to prevent data loss.
+		// 3. Validate dependencies using the tag-specific data structure
 		validateAndFixDependencies(
-			rawData, // Pass the entire object with all tags
+			tagData, // Pass only the tag-specific data with tasks array
 			tasksPath,
 			projectRoot,
 			tag // Provide the current tag context for the operation

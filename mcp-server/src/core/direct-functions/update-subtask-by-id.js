@@ -18,7 +18,7 @@ import { createLogWrapper } from '../../tools/utils.js'
  * @param {string} args.tasksJsonPath - Explicit path to the tasks.json file.
  * @param {string} args.id - Subtask ID in format "parent.sub".
  * @param {string} args.prompt - Information to append to the subtask.
- * @param {boolean} [args.research] - Whether to use research role.
+ * @param {boolean} [args.research] - Deprecated: Research functionality removed.
  * @param {string} [args.projectRoot] - Project root path.
  * @param {string} [args.tag] - Tag for the task (optional)
  * @param {Object} log - Logger object.
@@ -27,8 +27,8 @@ import { createLogWrapper } from '../../tools/utils.js'
  */
 export async function updateSubtaskByIdDirect(args, log, context = {}) {
 	const { session } = context
-	// Destructure expected args, including projectRoot
-	const { tasksJsonPath, id, prompt, research, projectRoot, tag } = args
+	// Destructure expected args
+	const { tasksJsonPath, id, prompt, projectRoot, tag } = args
 
 	const logWrapper = createLogWrapper(log)
 
@@ -90,10 +90,8 @@ export async function updateSubtaskByIdDirect(args, log, context = {}) {
 
 		// Use the provided path
 		const tasksPath = tasksJsonPath
-		const useResearch = research === true
-
 		log.info(
-			`Updating subtask with ID ${subtaskIdStr} with prompt "${prompt}" and research: ${useResearch}`
+			`Updating subtask with ID ${subtaskIdStr} with prompt "${prompt}"`
 		)
 
 		const wasSilent = isSilentMode()
@@ -107,7 +105,6 @@ export async function updateSubtaskByIdDirect(args, log, context = {}) {
 				tasksPath,
 				subtaskIdStr,
 				prompt,
-				useResearch,
 				{
 					mcpLog: logWrapper,
 					session,
