@@ -10,7 +10,7 @@ import { log } from '../utils.js'
  * @param {Function} report - Report function for logging
  * @returns {Object} Validation result with isValid boolean and error messages
  */
-export function validateSpecFiles(task, isSubtask = false, projectRoot, report) {
+export function validateSpecFiles(task, projectRoot, report, isSubtask = false) {
 	const result = {
 		isValid: true,
 		errors: [],
@@ -76,7 +76,7 @@ export function validateSpecFiles(task, isSubtask = false, projectRoot, report) 
  * @param {Function} report - Report function for logging
  * @returns {Object} Validation result
  */
-export function validateLogs(task, isSubtask = false, report) {
+export function validateLogs(task, report, isSubtask = false) {
 	const result = {
 		isValid: true,
 		errors: [],
@@ -101,7 +101,7 @@ export function validateLogs(task, isSubtask = false, report) {
  * @param {Function} report - Report function for logging
  * @returns {Object} Validation result
  */
-export function validateRequiredFields(task, isSubtask = false, report) {
+export function validateRequiredFields(task, report, isSubtask = false) {
 	const result = {
 		isValid: true,
 		errors: [],
@@ -130,7 +130,11 @@ export function validateRequiredFields(task, isSubtask = false, report) {
 	}
 
 	// Validate testStrategy
-	if (!task.testStrategy || typeof task.testStrategy !== 'string' || task.testStrategy.trim() === '') {
+	if (
+		!task.testStrategy ||
+		typeof task.testStrategy !== 'string' ||
+		task.testStrategy.trim() === ''
+	) {
 		result.isValid = false
 		result.errors.push(`${taskType}测试策略不能为空`)
 	}
@@ -146,13 +150,14 @@ export function validateRequiredFields(task, isSubtask = false, report) {
  * @param {Function} report - Report function for logging
  * @returns {Object} Complete validation result
  */
-export function validateTaskData(task, isSubtask = false, projectRoot, report) {
-	const specFilesValidation = validateSpecFiles(task, isSubtask, projectRoot, report)
-	const logsValidation = validateLogs(task, isSubtask, report)
-	const requiredFieldsValidation = validateRequiredFields(task, isSubtask, report)
+export function validateTaskData(task, projectRoot, report, isSubtask = false) {
+	const specFilesValidation = validateSpecFiles(task, projectRoot, report, isSubtask)
+	const logsValidation = validateLogs(task, report, isSubtask)
+	const requiredFieldsValidation = validateRequiredFields(task, report, isSubtask)
 
 	return {
-		isValid: specFilesValidation.isValid && logsValidation.isValid && requiredFieldsValidation.isValid,
+		isValid:
+			specFilesValidation.isValid && logsValidation.isValid && requiredFieldsValidation.isValid,
 		specFiles: specFilesValidation,
 		logs: logsValidation,
 		requiredFields: requiredFieldsValidation,
@@ -176,20 +181,20 @@ export function validateTaskData(task, isSubtask = false, projectRoot, report) {
  * @param {number|string} taskId - Task ID
  * @returns {string} Formatted error message
  */
-export function formatValidationError(validationResult, isSubtask = false, taskId) {
+export function formatValidationError(validationResult, taskId, isSubtask = false) {
 	const taskType = isSubtask ? '子任务' : '任务'
 	let message = `${taskType} ${taskId} 验证失败:\n`
 
 	if (validationResult.allErrors.length > 0) {
 		message += '\n错误:\n'
-		validationResult.allErrors.forEach(error => {
+		validationResult.allErrors.forEach((error) => {
 			message += `  - ${error}\n`
 		})
 	}
 
 	if (validationResult.allWarnings.length > 0) {
 		message += '\n警告:\n'
-		validationResult.allWarnings.forEach(warning => {
+		validationResult.allWarnings.forEach((warning) => {
 			message += `  - ${warning}\n`
 		})
 	}

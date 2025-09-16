@@ -1,11 +1,7 @@
 #!/usr/bin/env node
 
-import dotenv from 'dotenv'
 import TaskMasterMCPServer from './src/index.js'
 import logger from './src/logger.js'
-
-// Load environment variables
-dotenv.config()
 
 /**
  * Start the MCP server

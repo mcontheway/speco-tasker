@@ -51,9 +51,7 @@ export function registerSetTaskStatusTool(server) {
 		parameters: z.object({
 			id: z
 				.string()
-				.describe(
-					"任务ID或子任务ID，支持格式如'15', '15.2'，可逗号分隔同时更新多个任务"
-				),
+				.describe("任务ID或子任务ID，支持格式如'15', '15.2'，可逗号分隔同时更新多个任务"),
 			status: z
 				.enum(TASK_STATUS_OPTIONS)
 				.describe(

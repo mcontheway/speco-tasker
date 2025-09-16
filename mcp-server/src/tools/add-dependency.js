@@ -20,10 +20,7 @@ export function registerAddDependencyTool(server) {
 		parameters: z.object({
 			id: z.string().describe('将依赖其他任务的任务ID'),
 			dependsOn: z.string().describe('将成为依赖项的任务ID'),
-			file: z
-				.string()
-				.optional()
-				.describe('任务文件的绝对路径，默认为tasks/tasks.json'),
+			file: z.string().optional().describe('任务文件的绝对路径，默认为tasks/tasks.json'),
 			projectRoot: z.string().describe('项目目录，必须是绝对路径'),
 			tag: z.string().optional().describe('选择要处理的任务分组')
 		}),

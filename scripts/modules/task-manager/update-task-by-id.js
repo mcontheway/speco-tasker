@@ -23,7 +23,7 @@ import {
 } from '../ui.js'
 
 import { getDebugFlag } from '../config-manager.js'
-import { validateTaskData, formatValidationError } from '../utils/task-validation.js'
+import { formatValidationError, validateTaskData } from '../utils/task-validation.js'
 
 // Zod schema for post-parsing validation of the updated task object
 const updatedTaskSchema = z
@@ -49,25 +49,38 @@ const updatedTaskSchema = z
 					dependencies: z.array(z.number().int()).nullable().default([]),
 					details: z.string().min(1, 'Details are required and cannot be empty'),
 					testStrategy: z.string().min(1, 'Test strategy is required and cannot be empty'),
-					priority: z.enum(['high', 'medium', 'low'], {
-						required_error: 'Priority is required',
-						invalid_type_error: 'Priority must be one of: high, medium, low'
-					}).optional().default('medium'),
-					spec_files: z.array(z.object({
-						type: z.string().describe('Document type, e.g., "plan", "spec", "requirement"'),
-						title: z.string().describe('Document title'),
-						file: z.string().describe('Relative file path to the specification document')
-					})).min(1, 'At least one specification document is required').describe('Associated specification documents'),
+					priority: z
+						.enum(['high', 'medium', 'low'], {
+							required_error: 'Priority is required',
+							invalid_type_error: 'Priority must be one of: high, medium, low'
+						})
+						.optional()
+						.default('medium'),
+					spec_files: z
+						.array(
+							z.object({
+								type: z.string().describe('Document type, e.g., "plan", "spec", "requirement"'),
+								title: z.string().describe('Document title'),
+								file: z.string().describe('Relative file path to the specification document')
+							})
+						)
+						.min(1, 'At least one specification document is required')
+						.describe('Associated specification documents'),
 					logs: z.string().optional().describe('Implementation process logs')
 				})
 			)
 			.nullable()
 			.default([]),
-		spec_files: z.array(z.object({
-			type: z.string().describe('Document type, e.g., "plan", "spec", "requirement"'),
-			title: z.string().describe('Document title'),
-			file: z.string().describe('Relative file path to the specification document')
-		})).min(1, 'At least one specification document is required').describe('Associated specification documents'),
+		spec_files: z
+			.array(
+				z.object({
+					type: z.string().describe('Document type, e.g., "plan", "spec", "requirement"'),
+					title: z.string().describe('Document title'),
+					file: z.string().describe('Relative file path to the specification document')
+				})
+			)
+			.min(1, 'At least one specification document is required')
+			.describe('Associated specification documents'),
 		logs: z.string().optional().describe('Implementation process logs')
 	})
 	.strip() // Allows parsing even if AI adds extra fields, but validation focuses on schema
@@ -443,10 +456,7 @@ ${gatheredContext ? `Context: ${gatheredContext}` : ''}`
 					taskToUpdate.details =
 						(taskToUpdate.details ? taskToUpdate.details + '\n' : '') + formattedBlock
 				} else {
-					report(
-						'warn',
-						'No content provided for append. Original details remain unchanged.'
-					)
+					report('warn', 'No content provided for append. Original details remain unchanged.')
 					newlyAddedSnippet = 'No new details were added.'
 				}
 
@@ -520,9 +530,9 @@ ${gatheredContext ? `Context: ${gatheredContext}` : ''}`
 			// --- End Update Task Data ---
 
 			// Validate updated task data
-			const validationResult = validateTaskData(updatedTask, false, projectRoot, report)
+			const validationResult = validateTaskData(updatedTask, projectRoot, report, false)
 			if (!validationResult.isValid) {
-				const errorMessage = formatValidationError(validationResult, false, taskId)
+				const errorMessage = formatValidationError(validationResult, taskId, false)
 				report('error', errorMessage)
 				throw new Error(errorMessage)
 			}

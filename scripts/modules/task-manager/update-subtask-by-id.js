@@ -22,7 +22,7 @@ import {
 } from '../utils.js'
 import { ContextGatherer } from '../utils/contextGatherer.js'
 import { FuzzyTaskSearch } from '../utils/fuzzyTaskSearch.js'
-import { validateTaskData, formatValidationError } from '../utils/task-validation.js'
+import { formatValidationError, validateTaskData } from '../utils/task-validation.js'
 import generateTaskFiles from './generate-task-files.js'
 
 /**
@@ -209,7 +209,8 @@ ${gatheredContext ? `Context: ${gatheredContext}` : ''}`
 			report('info', 'Manual subtask update prompt created.')
 
 			// Use provided prompt directly as content (no AI processing)
-			generatedContentString = prompt && prompt.trim() ? prompt.trim() : 'No content provided for update.'
+			generatedContentString =
+				prompt && prompt.trim() ? prompt.trim() : 'No content provided for update.'
 
 			if (outputFormat === 'text' && loadingIndicator) {
 				stopLoadingIndicator(loadingIndicator)
@@ -242,9 +243,9 @@ ${gatheredContext ? `Context: ${gatheredContext}` : ''}`
 		const updatedSubtask = parentTask.subtasks[subtaskIndex]
 
 		// Validate updated subtask data
-		const validationResult = validateTaskData(updatedSubtask, true, projectRoot, report)
+		const validationResult = validateTaskData(updatedSubtask, projectRoot, report, true)
 		if (!validationResult.isValid) {
-			const errorMessage = formatValidationError(validationResult, true, subtaskId)
+			const errorMessage = formatValidationError(validationResult, subtaskId, true)
 			report('error', errorMessage)
 			throw new Error(errorMessage)
 		}

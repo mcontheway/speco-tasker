@@ -32,30 +32,46 @@ import {
 	writeJSON
 } from '../utils.js'
 import ContextGatherer from '../utils/contextGatherer.js'
-import { validateTaskData, formatValidationError } from '../utils/task-validation.js'
+import { formatValidationError, validateTaskData } from '../utils/task-validation.js'
 import generateTaskFiles from './generate-task-files.js'
 
 // Define Zod schema for the expected AI output object
 const AiTaskDataSchema = z.object({
 	title: z.string().describe('Clear, concise title for the task'),
-	description: z.string().min(1, 'Description is required and cannot be empty').describe('A one or two sentence description of the task'),
-	details: z.string().min(1, 'Details are required and cannot be empty').describe('In-depth implementation details, considerations, and guidance'),
-	testStrategy: z.string().min(1, 'Test strategy is required and cannot be empty').describe('Detailed approach for verifying task completion'),
+	description: z
+		.string()
+		.min(1, 'Description is required and cannot be empty')
+		.describe('A one or two sentence description of the task'),
+	details: z
+		.string()
+		.min(1, 'Details are required and cannot be empty')
+		.describe('In-depth implementation details, considerations, and guidance'),
+	testStrategy: z
+		.string()
+		.min(1, 'Test strategy is required and cannot be empty')
+		.describe('Detailed approach for verifying task completion'),
 	dependencies: z
 		.array(z.number())
 		.nullable()
 		.describe(
 			'Array of task IDs that this task depends on (must be completed before this task can start)'
 		),
-	priority: z.enum(['high', 'medium', 'low'], {
-		required_error: 'Priority is required',
-		invalid_type_error: 'Priority must be one of: high, medium, low'
-	}).describe('Task priority level'),
-	spec_files: z.array(z.object({
-		type: z.string().describe('Document type, e.g., "plan", "spec", "requirement"'),
-		title: z.string().describe('Document title'),
-		file: z.string().describe('Relative file path to the specification document')
-	})).min(1, 'At least one specification document is required').describe('Associated specification documents'),
+	priority: z
+		.enum(['high', 'medium', 'low'], {
+			required_error: 'Priority is required',
+			invalid_type_error: 'Priority must be one of: high, medium, low'
+		})
+		.describe('Task priority level'),
+	spec_files: z
+		.array(
+			z.object({
+				type: z.string().describe('Document type, e.g., "plan", "spec", "requirement"'),
+				title: z.string().describe('Document title'),
+				file: z.string().describe('Relative file path to the specification document')
+			})
+		)
+		.min(1, 'At least one specification document is required')
+		.describe('Associated specification documents'),
 	logs: z.string().optional().describe('Implementation process logs')
 })
 
@@ -404,15 +420,15 @@ async function addTask(
 			try {
 				report('DEBUG: Creating task data manually...', 'debug')
 
-			// Use provided field values directly (no AI processing)
-			taskData = {
-				title: manualTaskData?.title,
-				description: manualTaskData?.description,
-				details: manualTaskData?.details,
-				testStrategy: manualTaskData?.testStrategy,
-				dependencies: [], // Required array for dependencies
-				priority: manualTaskData?.priority || effectivePriority
-			}
+				// Use provided field values directly (no AI processing)
+				taskData = {
+					title: manualTaskData?.title,
+					description: manualTaskData?.description,
+					details: manualTaskData?.details,
+					testStrategy: manualTaskData?.testStrategy,
+					dependencies: [], // Required array for dependencies
+					priority: manualTaskData?.priority || effectivePriority
+				}
 
 				// Validate the task data structure
 				const validationResult = AiTaskDataSchema.safeParse(taskData)
@@ -461,9 +477,9 @@ async function addTask(
 		}
 
 		// Validate the new task data
-		const validationResult = validateTaskData(newTask, false, projectRoot, report)
+		const validationResult = validateTaskData(newTask, projectRoot, report, false)
 		if (!validationResult.isValid) {
-			const errorMessage = formatValidationError(validationResult, false, newTaskId)
+			const errorMessage = formatValidationError(validationResult, newTaskId, false)
 			report('error', errorMessage)
 			throw new Error(errorMessage)
 		}

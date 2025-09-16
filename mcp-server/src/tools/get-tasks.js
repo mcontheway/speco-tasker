@@ -45,23 +45,14 @@ const getTasksParameterHelp = generateParameterHelp(
 export function registerListTasksTool(server) {
 	server.addTool({
 		name: 'get_tasks',
-		description:
-			'获取Speco Tasker中的所有任务，可选按状态过滤和包含子任务。',
+		description: '获取Speco Tasker中的所有任务，可选按状态过滤和包含子任务。',
 		parameters: z.object({
 			status: z
 				.string()
 				.optional()
-				.describe(
-					"按状态过滤任务，支持格式如'pending', 'done'或用逗号分隔多个状态"
-				),
-			withSubtasks: z
-				.boolean()
-				.optional()
-				.describe('在响应中包含嵌套在父任务中的子任务'),
-			file: z
-				.string()
-				.optional()
-				.describe('任务文件路径（相对于项目根目录或绝对路径）'),
+				.describe("按状态过滤任务，支持格式如'pending', 'done'或用逗号分隔多个状态"),
+			withSubtasks: z.boolean().optional().describe('在响应中包含嵌套在父任务中的子任务'),
+			file: z.string().optional().describe('任务文件路径（相对于项目根目录或绝对路径）'),
 			complexityReport: z
 				.string()
 				.optional()

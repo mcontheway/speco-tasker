@@ -17,10 +17,7 @@ export function registerListTagsTool(server) {
 		name: 'list_tags',
 		description: '列出所有可用标签及其任务数量和元数据',
 		parameters: z.object({
-			showMetadata: z
-				.boolean()
-				.optional()
-				.describe('是否在输出中包含元数据，默认为false'),
+			showMetadata: z.boolean().optional().describe('是否在输出中包含元数据，默认为false'),
 			file: z.string().optional().describe('任务文件路径，默认为tasks/tasks.json'),
 			projectRoot: z.string().describe('项目目录，必须是绝对路径')
 		}),

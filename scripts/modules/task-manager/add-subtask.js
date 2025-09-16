@@ -2,7 +2,7 @@ import path from 'path'
 
 import { isTaskDependentOn } from '../task-manager.js'
 import { getCurrentTag, log, readJSON, writeJSON } from '../utils.js'
-import { validateTaskData, formatValidationError } from '../utils/task-validation.js'
+import { formatValidationError, validateTaskData } from '../utils/task-validation.js'
 import generateTaskFiles from './generate-task-files.js'
 
 /**
@@ -131,9 +131,13 @@ async function addSubtask(
 			log('info', `Created new subtask ${parentIdNum}.${newSubtaskId}`)
 
 			// Validate the new subtask data
-			const validationResult = validateTaskData(newSubtask, true, projectRoot, log)
+			const validationResult = validateTaskData(newSubtask, projectRoot, log, true)
 			if (!validationResult.isValid) {
-				const errorMessage = formatValidationError(validationResult, true, `${parentIdNum}.${newSubtaskId}`)
+				const errorMessage = formatValidationError(
+					validationResult,
+					`${parentIdNum}.${newSubtaskId}`,
+					true
+				)
 				log('error', errorMessage)
 				throw new Error(errorMessage)
 			}

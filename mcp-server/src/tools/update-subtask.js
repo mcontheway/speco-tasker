@@ -30,10 +30,7 @@ export function registerUpdateSubtaskTool(server) {
 			status: z.string().optional().describe('更新子任务状态，支持pending, in-progress, done'),
 			details: z.string().optional().describe('更新子任务实现细节，支持追加模式'),
 			// Update mode
-			append: z
-				.boolean()
-				.optional()
-				.describe('追加到描述/细节字段而不是替换，默认为false'),
+			append: z.boolean().optional().describe('追加到描述/细节字段而不是替换，默认为false'),
 			file: z.string().optional().describe('任务文件的绝对路径'),
 			projectRoot: z.string().describe('项目目录，必须是绝对路径'),
 			tag: z.string().optional().describe('选择要处理的任务分组')
@@ -68,9 +65,16 @@ export function registerUpdateSubtaskTool(server) {
 				}
 
 				// Check if at least one field to update is provided
-				const hasUpdates = Object.values(updateData.fieldsToUpdate).some((value) => value !== undefined)
+				const hasUpdates = Object.values(updateData.fieldsToUpdate).some(
+					(value) => value !== undefined
+				)
 				if (!hasUpdates) {
-					return createErrorResponse('At least one field to update must be provided', undefined, undefined, 'NO_UPDATES_PROVIDED')
+					return createErrorResponse(
+						'At least one field to update must be provided',
+						undefined,
+						undefined,
+						'NO_UPDATES_PROVIDED'
+					)
 				}
 
 				const result = await updateSubtaskByIdDirect(

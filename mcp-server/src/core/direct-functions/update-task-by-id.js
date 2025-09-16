@@ -58,7 +58,8 @@ export async function updateTaskByIdDirect(args, log, context = {}) {
 		}
 
 		if (!fieldsToUpdate) {
-			const errorMessage = 'No fields to update specified. Please provide at least one field to update.'
+			const errorMessage =
+				'No fields to update specified. Please provide at least one field to update.'
 			logWrapper.error(errorMessage)
 			return {
 				success: false,
@@ -113,16 +114,11 @@ export async function updateTaskByIdDirect(args, log, context = {}) {
 
 		try {
 			// Execute core updateTaskManually function with proper parameters
-			const coreResult = await updateTaskManually(
-				tasksPath,
-				taskId,
-				fieldsToUpdate,
-				{
-					projectRoot,
-					tag,
-					appendMode: appendMode || false
-				}
-			)
+			const coreResult = await updateTaskManually(tasksPath, taskId, fieldsToUpdate, {
+				projectRoot,
+				tag,
+				appendMode: appendMode || false
+			})
 
 			// Check if the update was successful
 			if (coreResult.success) {

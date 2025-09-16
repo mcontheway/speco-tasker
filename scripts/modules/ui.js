@@ -84,9 +84,7 @@ function displayBanner() {
 	console.log(coolGradient(bannerText))
 
 	// Add creator credit line below the banner
-	console.log(
-		chalk.dim('by ') + chalk.cyan.underline('https://github.com/mcontheway/speco-tasker')
-	)
+	console.log(chalk.dim('by ') + chalk.cyan.underline('https://github.com/mcontheway/speco-tasker'))
 
 	// Read version directly from package.json
 	const version = getTaskMasterVersion()
@@ -595,7 +593,7 @@ function displayHelp() {
 					name: 'complexity-report',
 					args: '[--file=<path>]',
 					desc: 'Display the complexity analysis report'
-				},
+				}
 				// expand command removed - functionality no longer available
 			]
 		},
@@ -1046,7 +1044,9 @@ async function displayNextTask(tasksPath, complexityReportPath = null, context =
 			boxen(
 				chalk.yellow('No subtasks found. Consider adding subtasks:') +
 					'\n' +
-					chalk.white(`Run: ${chalk.cyan(`task-master add-subtask --parent=${nextTask.id} --title="Subtask title"`)}`),
+					chalk.white(
+						`Run: ${chalk.cyan(`task-master add-subtask --parent=${nextTask.id} --title="Subtask title"`)}`
+					),
 				{
 					padding: { top: 0, bottom: 0, left: 1, right: 1 },
 					borderColor: 'yellow',
@@ -1403,7 +1403,9 @@ async function displayTaskById(
 				boxen(
 					chalk.yellow('No subtasks found. Consider adding subtasks:') +
 						'\n' +
-						chalk.white(`Run: ${chalk.cyan(`task-master add-subtask --parent=${task.id} --title="Subtask title"`)}`),
+						chalk.white(
+							`Run: ${chalk.cyan(`task-master add-subtask --parent=${task.id} --title="Subtask title"`)}`
+						),
 					{
 						padding: { top: 0, bottom: 0, left: 1, right: 1 },
 						borderColor: 'yellow',
@@ -2369,10 +2371,12 @@ async function displayMultipleTasksSummary(
 					console.log(chalk.green('✓ Copy and run this command to see the next available task'))
 					break
 				case '4':
-					console.log(chalk.blue(`\n→ Command: task-master add-subtask --parent=${taskIdList} --title="Subtask title"`))
 					console.log(
-						chalk.green('✓ Copy and run this command to add subtasks to selected tasks')
+						chalk.blue(
+							`\n→ Command: task-master add-subtask --parent=${taskIdList} --title="Subtask title"`
+						)
 					)
+					console.log(chalk.green('✓ Copy and run this command to add subtasks to selected tasks'))
 					break
 				case '5': {
 					// Show dependency visualization

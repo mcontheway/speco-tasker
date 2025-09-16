@@ -16,14 +16,11 @@ import { createErrorResponse, handleApiResult, withNormalizedProjectRoot } from 
 export function registerUpdateTaskTool(server) {
 	server.addTool({
 		name: 'update_task',
-		description:
-			'通过ID更新单个任务的手动字段更改。支持完整替换和增量追加模式。',
+		description: '通过ID更新单个任务的手动字段更改。支持完整替换和增量追加模式。',
 		parameters: z.object({
 			id: z
 				.string() // ID can be number or string like "1.2"
-				.describe(
-					"要更新的任务ID，支持格式如'15'，子任务请使用update-subtask工具"
-				),
+				.describe("要更新的任务ID，支持格式如'15'，子任务请使用update-subtask工具"),
 			// Manual field update parameters
 			title: z.string().optional().describe('更新任务标题'),
 			description: z.string().optional().describe('更新任务描述，支持追加模式'),
@@ -72,9 +69,16 @@ export function registerUpdateTaskTool(server) {
 				}
 
 				// Check if at least one field to update is provided
-				const hasUpdates = Object.values(updateData.fieldsToUpdate).some((value) => value !== undefined)
+				const hasUpdates = Object.values(updateData.fieldsToUpdate).some(
+					(value) => value !== undefined
+				)
 				if (!hasUpdates) {
-					return createErrorResponse('At least one field to update must be provided', undefined, undefined, 'NO_UPDATES_PROVIDED')
+					return createErrorResponse(
+						'At least one field to update must be provided',
+						undefined,
+						undefined,
+						'NO_UPDATES_PROVIDED'
+					)
 				}
 
 				// 3. Call Direct Function with manual update parameters

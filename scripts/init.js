@@ -75,9 +75,7 @@ function displayBanner() {
 	console.log(coolGradient(bannerText))
 
 	// Add creator credit line below the banner
-	console.log(
-		chalk.dim('by ') + chalk.cyan.underline('https://github.com/mcontheway/speco-tasker')
-	)
+	console.log(chalk.dim('by ') + chalk.cyan.underline('https://github.com/mcontheway/speco-tasker'))
 
 	console.log(
 		boxen(chalk.white(`${chalk.bold('Initializing')} your new project`), {
@@ -644,7 +642,6 @@ function createProjectStructure(addAliases, initGit, storeTasksInGit, dryRun, op
 			})
 		)
 	}
-
 
 	// === Add Model Configuration Step ===
 	if (!isSilentMode() && !dryRun && !options?.yes) {

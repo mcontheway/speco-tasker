@@ -6,7 +6,6 @@
 import fs from 'fs'
 import path from 'path'
 import chalk from 'chalk'
-import dotenv from 'dotenv'
 import {
 	COMPLEXITY_REPORT_FILE,
 	LEGACY_COMPLEXITY_REPORT_FILE,
@@ -25,37 +24,18 @@ let silentMode = false
  * Precedence:
  * 1. session.env (if session provided)
  * 2. process.env
- * 3. .env file at projectRoot (if projectRoot provided)
  * @param {string} key - The environment variable key.
  * @param {object|null} [session=null] - The MCP session object.
- * @param {string|null} [projectRoot=null] - The project root directory (for .env fallback).
+ * @param {string|null} [projectRoot=null] - The project root directory (parameter kept for compatibility).
  * @returns {string|undefined} The value of the environment variable or undefined if not found.
  */
 function resolveEnvVariable(key, session = null, projectRoot = null) {
-	// 1. Check session.env
+	// 1. Check session.env (for MCP integrations)
 	if (session?.env?.[key]) {
 		return session.env[key]
 	}
 
-	// 2. Read .env file at projectRoot
-	if (projectRoot) {
-		const envPath = path.join(projectRoot, '.env')
-		if (fs.existsSync(envPath)) {
-			try {
-				const envFileContent = fs.readFileSync(envPath, 'utf-8')
-				const parsedEnv = dotenv.parse(envFileContent) // Use dotenv to parse
-				if (parsedEnv && parsedEnv[key]) {
-					// console.log(`DEBUG: Found key ${key} in ${envPath}`); // Optional debug log
-					return parsedEnv[key]
-				}
-			} catch (error) {
-				// Log error but don't crash, just proceed as if key wasn't found in file
-				log('warn', `Could not read or parse ${envPath}: ${error.message}`)
-			}
-		}
-	}
-
-	// 3. Fallback: Check process.env
+	// 2. Check process.env
 	if (process.env[key]) {
 		return process.env[key]
 	}

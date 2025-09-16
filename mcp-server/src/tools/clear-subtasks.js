@@ -21,10 +21,7 @@ export function registerClearSubtasksTool(server) {
 			.object({
 				id: z.string().optional().describe('要清除子任务的任务ID，支持逗号分隔'),
 				all: z.boolean().optional().describe('清除所有任务的子任务'),
-				file: z
-					.string()
-					.optional()
-					.describe('任务文件的绝对路径，默认为tasks/tasks.json'),
+				file: z.string().optional().describe('任务文件的绝对路径，默认为tasks/tasks.json'),
 				projectRoot: z.string().describe('项目目录，必须是绝对路径'),
 				tag: z.string().optional().describe('选择要处理的任务分组')
 			})

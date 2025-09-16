@@ -59,7 +59,8 @@ export async function updateSubtaskByIdDirect(args, log, context = {}) {
 		}
 
 		if (!fieldsToUpdate) {
-			const errorMessage = 'No fields to update specified. Please provide at least one field to update.'
+			const errorMessage =
+				'No fields to update specified. Please provide at least one field to update.'
 			logWrapper.error(errorMessage)
 			return {
 				success: false,

@@ -23,10 +23,7 @@ export function registerAddTagTool(server) {
 				.optional()
 				.describe('是否从当前标签复制任务到新标签，默认为false'),
 			copyFromTag: z.string().optional().describe('要复制任务的特定标签'),
-			fromBranch: z
-				.boolean()
-				.optional()
-				.describe('从当前git分支创建标签名称，忽略name参数'),
+			fromBranch: z.boolean().optional().describe('从当前git分支创建标签名称，忽略name参数'),
 			description: z.string().optional().describe('标签的可选描述'),
 			file: z.string().optional().describe('任务文件路径，默认为tasks/tasks.json'),
 			projectRoot: z.string().describe('项目目录，必须是绝对路径')

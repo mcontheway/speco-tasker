@@ -35,20 +35,12 @@ export function registerMoveTaskTool(server) {
 					'ID of the destination (e.g., "7" or "7.3"). Required for within-tag moves. For cross-tag moves, if omitted, task will be moved to the target tag maintaining its ID'
 				),
 			file: z.string().optional().describe('自定义tasks.json文件路径'),
-			projectRoot: z
-				.string()
-				.describe('项目根目录，通常从会话中获取'),
+			projectRoot: z.string().describe('项目根目录，通常从会话中获取'),
 			tag: z.string().optional().describe('选择要处理的任务分组'),
 			fromTag: z.string().optional().describe('跨标签移动的源标签'),
 			toTag: z.string().optional().describe('跨标签移动的目标标签'),
-			withDependencies: z
-				.boolean()
-				.optional()
-				.describe('同时移动主任务的依赖任务'),
-			ignoreDependencies: z
-				.boolean()
-				.optional()
-				.describe('在跨标签移动期间断开依赖关系')
+			withDependencies: z.boolean().optional().describe('同时移动主任务的依赖任务'),
+			ignoreDependencies: z.boolean().optional().describe('在跨标签移动期间断开依赖关系')
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
 			try {

@@ -1,14 +1,10 @@
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import dotenv from 'dotenv'
 import { FastMCP } from 'fastmcp'
 import logger from './logger.js'
 import { MCPProvider } from './providers/mcp-provider.js'
 import { registerTaskMasterTools } from './tools/index.js'
-
-// Load environment variables
-dotenv.config()
 
 // Constants
 const __filename = fileURLToPath(import.meta.url)

@@ -70,9 +70,7 @@ export function registerShowTaskTool(server) {
 				.string()
 				.optional()
 				.describe('复杂度报告文件路径，相对于项目根目录或绝对路径'),
-			projectRoot: z
-				.string()
-				.describe('项目根目录的绝对路径，可选，通常从会话获取'),
+			projectRoot: z.string().describe('项目根目录的绝对路径，可选，通常从会话获取'),
 			tag: z.string().optional().describe('选择要处理的任务分组')
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {

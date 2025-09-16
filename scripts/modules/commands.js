@@ -295,17 +295,11 @@ function registerCommands(programInstance) {
 		.command('add-task')
 		.description('添加新任务')
 		.option('-f, --file <file>', '任务文件路径', TASKMASTER_TASKS_FILE)
-		.option(
-			'-p, --prompt <prompt>',
-			'要添加任务的描述，不使用手动字段时必需'
-		)
+		.option('-p, --prompt <prompt>', '要添加任务的描述，不使用手动字段时必需')
 		.option('-t, --title <title>', '任务标题，用于手动创建任务')
 		.option('-d, --description <description>', '任务描述，用于手动创建任务')
 		.option('--details <details>', '实现细节，用于手动创建任务')
-		.option(
-			'--dependencies <dependencies>',
-			'此任务依赖的任务ID列表，用逗号分隔'
-		)
+		.option('--dependencies <dependencies>', '此任务依赖的任务ID列表，用逗号分隔')
 		.option('--priority <priority>', '任务优先级（high, medium, low）', 'medium')
 		// Research option removed - functionality no longer available
 		.option('--tag <tag>', '选择要处理的任务分组')
@@ -703,7 +697,9 @@ function registerCommands(programInstance) {
 					appendMode: options.append || false
 				}
 
-				const hasUpdates = Object.values(updateData.fieldsToUpdate).some((value) => value !== undefined)
+				const hasUpdates = Object.values(updateData.fieldsToUpdate).some(
+					(value) => value !== undefined
+				)
 				if (!hasUpdates) {
 					console.error(chalk.red('Error: At least one field to update must be provided.'))
 					console.log(
@@ -851,7 +847,9 @@ function registerCommands(programInstance) {
 					appendMode: options.append || false
 				}
 
-				const hasUpdates = Object.values(updateData.fieldsToUpdate).some((value) => value !== undefined)
+				const hasUpdates = Object.values(updateData.fieldsToUpdate).some(
+					(value) => value !== undefined
+				)
 				if (!hasUpdates) {
 					console.error(chalk.red('Error: At least one field to update must be provided.'))
 					console.log(
@@ -884,11 +882,17 @@ function registerCommands(programInstance) {
 
 				// Import and call the manual update function
 				const { updateSubtaskManually } = await import('./task-manager/update-subtask-manually.js')
-				const result = await updateSubtaskManually(tasksPath, parentId, subtaskId, updateData.fieldsToUpdate, {
-					projectRoot: taskMaster.getProjectRoot(),
-					tag,
-					appendMode: updateData.appendMode
-				})
+				const result = await updateSubtaskManually(
+					tasksPath,
+					parentId,
+					subtaskId,
+					updateData.fieldsToUpdate,
+					{
+						projectRoot: taskMaster.getProjectRoot(),
+						tag,
+						appendMode: updateData.appendMode
+					}
+				)
 
 				if (result.success) {
 					console.log(chalk.green(`✓ Subtask ${options.id} updated successfully`))
@@ -1074,10 +1078,7 @@ function registerCommands(programInstance) {
 		.command('remove-subtask')
 		.description('从父任务中移除子任务')
 		.option('-f, --file <file>', '任务文件路径', TASKMASTER_TASKS_FILE)
-		.option(
-			'-i, --id <id>',
-			'要移除的子任务ID，格式为"parentId.subtaskId"，支持逗号分隔多个'
-		)
+		.option('-i, --id <id>', '要移除的子任务ID，格式为"parentId.subtaskId"，支持逗号分隔多个')
 		.option('-c, --convert', '将子任务转换为独立任务而不是删除')
 		.option('--generate', '移除子任务后重新生成任务文件')
 		.option('--tag <tag>', '选择要处理的任务分组')
@@ -1330,10 +1331,7 @@ function registerCommands(programInstance) {
 	programInstance
 		.command('remove-task')
 		.description('永久删除一个或多个任务或子任务')
-		.option(
-			'-i, --id <ids>',
-			'要删除的任务或子任务ID，支持格式如"5", "5.2"或"5,6.1,7"'
-		)
+		.option('-i, --id <ids>', '要删除的任务或子任务ID，支持格式如"5", "5.2"或"5,6.1,7"')
 		.option('-f, --file <file>', '任务文件路径', TASKMASTER_TASKS_FILE)
 		.option('-y, --yes', '跳过确认提示', false)
 		.option('--tag <tag>', '选择要处理的任务分组')
@@ -1581,20 +1579,13 @@ function registerCommands(programInstance) {
 			}
 		})
 
-
 	// move-task command
 	programInstance
 		.command('move')
 		.description('在标签间移动任务或重新排序。支持跨标签移动及依赖关系解析选项。')
 		.option('-f, --file <file>', '任务文件路径', TASKMASTER_TASKS_FILE)
-		.option(
-			'--from <id>',
-			'要移动的任务/子任务ID，支持格式如"5"或"5.2"，可逗号分隔多个任务'
-		)
-		.option(
-			'--to <id>',
-			'目标位置ID，支持格式如"7"或"7.3"，数量须与源ID匹配'
-		)
+		.option('--from <id>', '要移动的任务/子任务ID，支持格式如"5"或"5.2"，可逗号分隔多个任务')
+		.option('--to <id>', '目标位置ID，支持格式如"7"或"7.3"，数量须与源ID匹配')
 		.option('--tag <tag>', '选择要处理的任务分组')
 		.option('--from-tag <tag>', '跨标签移动的源标签')
 		.option('--to-tag <tag>', '跨标签移动的目标标签')
@@ -1742,8 +1733,10 @@ function registerCommands(programInstance) {
 
 				// Check if destinationId looks like a tag name (contains letters)
 				const destIdNum = parseInt(destinationId, 10)
-				if (isNaN(destIdNum) && destinationId.match(/[a-zA-Z]/)) {
-					console.error(chalk.red('Error: --to parameter appears to be a tag name, but no --to-tag specified'))
+				if (Number.isNaN(destIdNum) && destinationId.match(/[a-zA-Z]/)) {
+					console.error(
+						chalk.red('Error: --to parameter appears to be a tag name, but no --to-tag specified')
+					)
 					console.error(chalk.red('For cross-tag moves, use: --to-tag=<tagName>'))
 					console.error(chalk.yellow('Example: task-master move --from=108 --to-tag=test-move'))
 					process.exit(1)

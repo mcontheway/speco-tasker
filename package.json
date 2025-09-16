@@ -9,10 +9,7 @@
 		"task-master": "bin/task-master.js",
 		"task-master-mcp": "mcp-server/server.js"
 	},
-	"workspaces": [
-		"apps/docs",
-		"."
-	],
+	"workspaces": ["apps/docs", "."],
 	"scripts": {
 		"test": "NODE_PATH=$(pwd)/node_modules NODE_OPTIONS=\"--experimental-vm-modules --experimental-specifier-resolution=node\" node_modules/.bin/jest",
 		"test:fails": "NODE_OPTIONS=\"--experimental-vm-modules --experimental-specifier-resolution=node\" node_modules/.bin/jest --onlyFailures",
@@ -61,7 +58,6 @@
 		"cli-table3": "^0.6.5",
 		"commander": "^11.1.0",
 		"cors": "^2.8.5",
-		"dotenv": "^16.3.1",
 		"express": "^4.21.2",
 		"fastmcp": "^3.5.0",
 		"figlet": "^1.8.0",

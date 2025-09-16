@@ -29,7 +29,6 @@ describe('MCPProvider', () => {
 		})
 	})
 
-
 	describe('setSession', () => {
 		it('should set session when provided', () => {
 			const mockSession = {

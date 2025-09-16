@@ -196,9 +196,9 @@ describe('removeSubtask function', () => {
 
 	test('should throw an error if subtask ID format is invalid', async () => {
 		// Expect an error for invalid subtask ID format
-		expect(() =>
-			testRemoveSubtask('tasks/tasks.json', '1', false, true, { tag: 'main' })
-		).toThrow(/Invalid subtask ID format/)
+		expect(() => testRemoveSubtask('tasks/tasks.json', '1', false, true, { tag: 'main' })).toThrow(
+			/Invalid subtask ID format/
+		)
 
 		// Verify writeJSON was not called
 		expect(mockWriteJSON).not.toHaveBeenCalled()
