@@ -6,7 +6,7 @@
 import { z } from 'zod'
 import { listTasksDirect } from '../core/task-master-core.js'
 import { resolveComplexityReportPath, resolveTasksPath } from '../core/utils/path-utils.js'
-import { createErrorResponse, handleApiResult, withNormalizedProjectRoot } from './utils.js'
+import { createErrorResponse, handleApiResult, withNormalizedProjectRoot, getTagInfo, generateParameterHelp } from './utils.js'
 
 import { resolveTag } from '../../../scripts/modules/utils.js'
 
@@ -14,6 +14,27 @@ import { resolveTag } from '../../../scripts/modules/utils.js'
  * Register the getTasks tool with the MCP server
  * @param {Object} server - FastMCP server instance
  */
+
+// Generate parameter help for get_tasks tool
+const getTasksParameterHelp = generateParameterHelp(
+	'get_tasks',
+	[
+		{ name: 'projectRoot', description: '项目根目录的绝对路径' }
+	],
+	[
+		{ name: 'status', description: '按状态过滤任务（pending, done, in-progress等），多个状态用逗号分隔' },
+		{ name: 'withSubtasks', description: '是否包含子任务信息' },
+		{ name: 'file', description: '任务文件路径（默认：tasks/tasks.json）' },
+		{ name: 'complexityReport', description: '复杂度报告文件路径' },
+		{ name: 'tag', description: '要操作的标签上下文' }
+	],
+	[
+		'{"projectRoot": "/path/to/project"}',
+		'{"projectRoot": "/path/to/project", "status": "pending"}',
+		'{"projectRoot": "/path/to/project", "withSubtasks": true, "tag": "feature-branch"}'
+	]
+)
+
 export function registerListTasksTool(server) {
 	server.addTool({
 		name: 'get_tasks',
@@ -54,8 +75,13 @@ export function registerListTasksTool(server) {
 				try {
 					tasksJsonPath = resolveTasksPath(args, log)
 				} catch (error) {
-					log.error(`Error finding tasks.json: ${error.message}`)
-					return createErrorResponse(`Failed to find tasks.json: ${error.message}`)
+					const errorMessage = `Failed to find tasks.json: ${error.message || 'File not found'}`
+					log.error(`[get-tasks tool] ${errorMessage}`)
+
+					// Get tag info for better error context
+					const tagInfo = args.projectRoot ? getTagInfo(args.projectRoot, log) : null
+
+					return createErrorResponse(errorMessage, undefined, tagInfo, 'TASKS_JSON_NOT_FOUND')
 				}
 
 				// Resolve the path to complexity report
@@ -84,8 +110,13 @@ export function registerListTasksTool(server) {
 				log.info(`Retrieved ${result.success ? result.data?.tasks?.length || 0 : 0} tasks`)
 				return handleApiResult(result, log, 'Error getting tasks', undefined, args.projectRoot)
 			} catch (error) {
-				log.error(`Error getting tasks: ${error.message}`)
-				return createErrorResponse(error.message)
+				const errorMessage = `获取任务列表失败: ${error.message || '未知错误'}`
+				log.error(`[get-tasks tool] ${errorMessage}`)
+
+				// Get tag info for better error context
+				const tagInfo = args.projectRoot ? getTagInfo(args.projectRoot, log) : null
+
+				return createErrorResponse(errorMessage, undefined, tagInfo, 'GET_TASKS_FAILED', getTasksParameterHelp)
 			}
 		})
 	})

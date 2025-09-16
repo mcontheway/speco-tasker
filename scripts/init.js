@@ -210,6 +210,31 @@ function createInitialStateFile(targetDir) {
 	}
 }
 
+function createInitialTasksFile(targetDir) {
+	const tasksFilePath = path.join(targetDir, TASKMASTER_TASKS_FILE)
+
+	// Check if tasks.json already exists
+	if (fs.existsSync(tasksFilePath)) {
+		log('info', 'Tasks file already exists, preserving current tasks')
+		return
+	}
+
+	// Create initial tasks structure
+	const initialTasks = {
+		master: {
+			tasks: []
+		}
+	}
+
+	try {
+		fs.writeFileSync(tasksFilePath, JSON.stringify(initialTasks, null, 2))
+		log('success', `Created initial tasks file: ${tasksFilePath}`)
+		log('info', 'Initialized with empty tasks list in "master" tag')
+	} catch (error) {
+		log('error', `Failed to create tasks file: ${error.message}`)
+	}
+}
+
 // Function to copy a file from the package to the target directory
 function copyTemplateFile(templateName, targetPath, replacements = {}) {
 	// Get the file content from the appropriate source directory
@@ -547,15 +572,15 @@ function createProjectStructure(
 	const targetDir = process.cwd()
 	log('info', `Initializing project in ${targetDir}`)
 
-	// Create NEW .taskmaster directory structure (using constants)
+	// Create minimal .taskmaster directory structure (only what's needed)
 	ensureDirectoryExists(path.join(targetDir, TASKMASTER_DIR))
 	ensureDirectoryExists(path.join(targetDir, TASKMASTER_TASKS_DIR))
-	ensureDirectoryExists(path.join(targetDir, TASKMASTER_DOCS_DIR))
-	ensureDirectoryExists(path.join(targetDir, TASKMASTER_REPORTS_DIR))
-	ensureDirectoryExists(path.join(targetDir, TASKMASTER_TEMPLATES_DIR))
 
 	// Create initial state.json file for tag management
 	createInitialStateFile(targetDir)
+
+	// Create initial tasks.json file
+	createInitialTasksFile(targetDir)
 
 	// Copy template files with replacements
 	const replacements = {
@@ -573,8 +598,7 @@ function createProjectStructure(
 		}
 	}
 
-	// Copy .env.example
-	copyTemplateFile('env.example', path.join(targetDir, ENV_EXAMPLE_FILE), replacements)
+	// Skip .env.example - not needed for minimal initialization
 
 	// Copy config.json with project name to NEW location
 	copyTemplateFile('config.json', path.join(targetDir, TASKMASTER_CONFIG_FILE), {
@@ -598,8 +622,7 @@ function createProjectStructure(
 		log('error', `Failed to create .gitignore: ${error.message}`)
 	}
 
-	// Copy example_prd.txt to NEW location
-	copyTemplateFile('example_prd.txt', path.join(targetDir, EXAMPLE_PRD_FILE))
+	// Skip example_prd.txt - not needed for minimal initialization
 
 	// Initialize git repository if git is available
 	try {

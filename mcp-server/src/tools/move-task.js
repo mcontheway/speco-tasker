@@ -7,7 +7,7 @@ import { z } from 'zod'
 import { resolveTag } from '../../../scripts/modules/utils.js'
 import { moveTaskCrossTagDirect, moveTaskDirect } from '../core/task-master-core.js'
 import { findTasksPath } from '../core/utils/path-utils.js'
-import { createErrorResponse, handleApiResult, withNormalizedProjectRoot } from './utils.js'
+import { createErrorResponse, handleApiResult, withNormalizedProjectRoot, getTagInfo } from './utils.js'
 
 /**
  * Register the moveTask tool with the MCP server
@@ -206,7 +206,13 @@ export function registerMoveTaskTool(server) {
 					}
 				}
 			} catch (error) {
-				return createErrorResponse(`Failed to move task: ${error.message}`, 'MOVE_TASK_ERROR')
+				const errorMessage = `Failed to move task: ${error.message || 'Unknown error'}`
+				log.error(`[move-task tool] ${errorMessage}`)
+
+				// Get tag info for better error context
+				const tagInfo = args.projectRoot ? getTagInfo(args.projectRoot, log) : null
+
+				return createErrorResponse(errorMessage, undefined, tagInfo, 'MOVE_TASK_ERROR')
 			}
 		})
 	})

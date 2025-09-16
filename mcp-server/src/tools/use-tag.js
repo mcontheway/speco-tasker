@@ -6,12 +6,29 @@
 import { z } from 'zod'
 import { useTagDirect } from '../core/task-master-core.js'
 import { findTasksPath } from '../core/utils/path-utils.js'
-import { createErrorResponse, handleApiResult, withNormalizedProjectRoot } from './utils.js'
+import { createErrorResponse, handleApiResult, withNormalizedProjectRoot, getTagInfo, generateParameterHelp } from './utils.js'
 
 /**
  * Register the useTag tool with the MCP server
  * @param {Object} server - FastMCP server instance
  */
+
+// Generate parameter help for use_tag tool
+const useTagParameterHelp = generateParameterHelp(
+	'use_tag',
+	[
+		{ name: 'projectRoot', description: '项目根目录的绝对路径' },
+		{ name: 'name', description: '要切换到的标签名称' }
+	],
+	[
+		{ name: 'file', description: '任务文件路径（默认：tasks/tasks.json）' }
+	],
+	[
+		'{"projectRoot": "/path/to/project", "name": "feature-branch"}',
+		'{"projectRoot": "/path/to/project", "name": "master"}'
+	]
+)
+
 export function registerUseTagTool(server) {
 	server.addTool({
 		name: 'use_tag',
@@ -30,8 +47,13 @@ export function registerUseTagTool(server) {
 				try {
 					tasksJsonPath = findTasksPath({ projectRoot: args.projectRoot, file: args.file }, log)
 				} catch (error) {
-					log.error(`Error finding tasks.json: ${error.message}`)
-					return createErrorResponse(`Failed to find tasks.json: ${error.message}`)
+					const errorMessage = `Failed to find tasks.json: ${error.message || 'File not found'}`
+					log.error(`[use-tag tool] ${errorMessage}`)
+
+					// Get tag info for better error context
+					const tagInfo = args.projectRoot ? getTagInfo(args.projectRoot, log) : null
+
+					return createErrorResponse(errorMessage, undefined, tagInfo, 'USE_TAG_FAILED', useTagParameterHelp)
 				}
 
 				// Call the direct function

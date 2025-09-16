@@ -1,7 +1,28 @@
 import { z } from 'zod'
 import { RULE_PROFILES } from '../../../src/constants/profiles.js'
 import { initializeProjectDirect } from '../core/task-master-core.js'
-import { createErrorResponse, handleApiResult, withNormalizedProjectRoot } from './utils.js'
+import { createErrorResponse, handleApiResult, withNormalizedProjectRoot, getTagInfo, generateParameterHelp } from './utils.js'
+
+// Generate parameter help for initialize_project tool
+const initializeProjectParameterHelp = generateParameterHelp(
+	'initialize_project',
+	[
+		{ name: 'projectRoot', description: '项目根目录的绝对路径' }
+	],
+	[
+		{ name: 'skipInstall', description: '是否跳过依赖安装' },
+		{ name: 'addAliases', description: '是否添加shell别名' },
+		{ name: 'initGit', description: '是否初始化Git仓库' },
+		{ name: 'storeTasksInGit', description: '是否在Git中存储任务' },
+		{ name: 'yes', description: '是否跳过确认提示' },
+		{ name: 'rules', description: '要包含的规则配置列表' }
+	],
+	[
+		'{"projectRoot": "/path/to/project"}',
+		'{"projectRoot": "/path/to/project", "addAliases": true, "initGit": true}',
+		'{"projectRoot": "/path/to/project", "rules": ["cursor"], "yes": true}'
+	]
+)
 
 export function registerInitializeProjectTool(server) {
 	server.addTool({
@@ -59,9 +80,13 @@ export function registerInitializeProjectTool(server) {
 
 				return handleApiResult(result, log, 'Initialization failed', undefined, args.projectRoot)
 			} catch (error) {
-				const errorMessage = `Project initialization tool failed: ${error.message || 'Unknown error'}`
+				const errorMessage = `Project initialization failed: ${error.message || 'Unknown error'}`
 				log.error(errorMessage, error)
-				return createErrorResponse(errorMessage, { details: error.stack })
+
+				// Get tag info for better error context
+				const tagInfo = args.projectRoot ? getTagInfo(args.projectRoot, log) : null
+
+				return createErrorResponse(errorMessage, undefined, tagInfo, 'INITIALIZE_PROJECT_FAILED', initializeProjectParameterHelp)
 			}
 		})
 	})

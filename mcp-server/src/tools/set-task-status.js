@@ -8,16 +8,37 @@ import { resolveTag } from '../../../scripts/modules/utils.js'
 import { TASK_STATUS_OPTIONS } from '../../../src/constants/task-status.js'
 import { nextTaskDirect, setTaskStatusDirect } from '../core/task-master-core.js'
 import { findComplexityReportPath, findTasksPath } from '../core/utils/path-utils.js'
-import { createErrorResponse, handleApiResult, withNormalizedProjectRoot } from './utils.js'
+import { createErrorResponse, handleApiResult, withNormalizedProjectRoot, getTagInfo, generateParameterHelp } from './utils.js'
 
 /**
  * Register the setTaskStatus tool with the MCP server
  * @param {Object} server - FastMCP server instance
  */
+
+// Generate parameter help for set_task_status tool
+const setTaskStatusParameterHelp = generateParameterHelp(
+	'set_task_status',
+	[
+		{ name: 'projectRoot', description: '项目根目录的绝对路径' },
+		{ name: 'id', description: '任务ID或子任务ID（例如：15, 15.2），多个ID用逗号分隔' },
+		{ name: 'status', description: '新状态（pending, done, in-progress, review, deferred, cancelled）' }
+	],
+	[
+		{ name: 'file', description: '任务文件路径（默认：tasks/tasks.json）' },
+		{ name: 'complexityReport', description: '复杂度报告文件路径' },
+		{ name: 'tag', description: '要操作的标签上下文' }
+	],
+	[
+		'{"projectRoot": "/path/to/project", "id": "1", "status": "done"}',
+		'{"projectRoot": "/path/to/project", "id": "2,3,4", "status": "in-progress"}',
+		'{"projectRoot": "/path/to/project", "id": "5.1", "status": "review", "tag": "feature-branch"}'
+	]
+)
+
 export function registerSetTaskStatusTool(server) {
 	server.addTool({
 		name: 'set_task_status',
-		description: 'Set the status of one or more tasks or subtasks.',
+		description: '设置一个或多个任务/子任务的状态',
 		parameters: z.object({
 			id: z
 				.string()
@@ -53,8 +74,13 @@ export function registerSetTaskStatusTool(server) {
 				try {
 					tasksJsonPath = findTasksPath({ projectRoot: args.projectRoot, file: args.file }, log)
 				} catch (error) {
-					log.error(`Error finding tasks.json: ${error.message}`)
-					return createErrorResponse(`Failed to find tasks.json: ${error.message}`)
+					const errorMessage = `Failed to find tasks.json: ${error.message || 'File not found'}`
+					log.error(`[set-task-status tool] ${errorMessage}`)
+
+					// Get tag info for better error context
+					const tagInfo = args.projectRoot ? getTagInfo(args.projectRoot, log) : null
+
+					return createErrorResponse(errorMessage, undefined, tagInfo, 'TASKS_JSON_NOT_FOUND')
 				}
 
 				let complexityReportPath

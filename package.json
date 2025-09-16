@@ -1,12 +1,13 @@
 {
 	"name": "taskmaster-no-ai",
-	"version": "1.0.8",
+	"version": "1.0.11",
 	"description": "A pure manual task management system for efficient development workflows, designed to work seamlessly with any development environment.",
 	"main": "index.js",
 	"type": "module",
 	"bin": {
 		"task-master": "bin/task-master.js",
-		"task-master-mcp": "mcp-server/server.js"
+		"task-master-mcp": "mcp-server/server.js",
+		"taskmaster-no-ai": "mcp-server/server.js"
 	},
 	"workspaces": [
 		"apps/*",
@@ -125,6 +126,7 @@
 		"npm-check-updates": "^18.1.1",
 		"prettier": "^3.5.3",
 		"supertest": "^7.1.0",
+		"taskmaster-no-ai": "^1.0.9",
 		"ts-jest": "^29.4.1",
 		"tsx": "^4.16.2"
 	}

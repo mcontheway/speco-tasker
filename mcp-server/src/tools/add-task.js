@@ -7,37 +7,51 @@ import { z } from 'zod'
 import { resolveTag } from '../../../scripts/modules/utils.js'
 import { addTaskDirect } from '../core/task-master-core.js'
 import { findTasksPath } from '../core/utils/path-utils.js'
-import { createErrorResponse, handleApiResult, withNormalizedProjectRoot } from './utils.js'
+import { createErrorResponse, handleApiResult, withNormalizedProjectRoot, getTagInfo, generateParameterHelp } from './utils.js'
 
 /**
  * Register the addTask tool with the MCP server
  * @param {Object} server - FastMCP server instance
  */
+// Generate parameter help for add_task tool
+const addTaskParameterHelp = generateParameterHelp(
+	'add_task',
+	[
+		{ name: 'projectRoot', description: '项目根目录的绝对路径' },
+		{ name: 'title', description: '任务标题' },
+		{ name: 'description', description: '任务描述' }
+	],
+	[
+		{ name: 'details', description: '实现细节' },
+		{ name: 'testStrategy', description: '测试策略' },
+		{ name: 'dependencies', description: '依赖的任务ID列表，用逗号分隔' },
+		{ name: 'priority', description: '任务优先级（high, medium, low）' },
+		{ name: 'file', description: '任务文件路径（默认：tasks/tasks.json）' },
+		{ name: 'tag', description: '要操作的标签上下文' }
+	],
+	[
+		'{"projectRoot": "/path/to/project", "title": "用户认证", "description": "实现JWT用户认证", "priority": "high"}',
+		'{"projectRoot": "/path/to/project", "title": "数据库迁移", "description": "创建用户表结构", "details": "使用SQL创建users表，包含id, email, password字段"}'
+	]
+)
+
 export function registerAddTaskTool(server) {
 	server.addTool({
 		name: 'add_task',
-		description: 'Add a new task using AI',
+		description: '手动添加一个新任务'
 		parameters: z.object({
-			prompt: z
-				.string()
-				.optional()
-				.describe('Description of the task to add (required if not using manual fields)'),
-			title: z.string().optional().describe('Task title (for manual task creation)'),
-			description: z.string().optional().describe('Task description (for manual task creation)'),
-			details: z.string().optional().describe('Implementation details (for manual task creation)'),
-			testStrategy: z.string().optional().describe('Test strategy (for manual task creation)'),
+			projectRoot: z.string().describe('项目根目录的绝对路径'),
+			title: z.string().describe('任务标题'),
+			description: z.string().describe('任务描述'),
+			details: z.string().optional().describe('实现细节'),
+			testStrategy: z.string().optional().describe('测试策略'),
 			dependencies: z
 				.string()
 				.optional()
-				.describe('Comma-separated list of task IDs this task depends on'),
-			priority: z.string().optional().describe('Task priority (high, medium, low)'),
-			file: z.string().optional().describe('Path to the tasks file (default: tasks/tasks.json)'),
-			projectRoot: z.string().describe('The directory of the project. Must be an absolute path.'),
-			tag: z.string().optional().describe('Tag context to operate on'),
-			research: z
-				.boolean()
-				.optional()
-				.describe('Whether to use research capabilities for task creation')
+				.describe('依赖的任务ID列表，用逗号分隔'),
+			priority: z.string().optional().describe('任务优先级（high, medium, low）'),
+			file: z.string().optional().describe('任务文件路径（默认：tasks/tasks.json）'),
+			tag: z.string().optional().describe('要操作的标签上下文')
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
 			try {
@@ -53,22 +67,25 @@ export function registerAddTaskTool(server) {
 				try {
 					tasksJsonPath = findTasksPath({ projectRoot: args.projectRoot, file: args.file }, log)
 				} catch (error) {
-					log.error(`Error finding tasks.json: ${error.message}`)
-					return createErrorResponse(`Failed to find tasks.json: ${error.message}`)
+					const errorMessage = `Failed to find tasks.json: ${error.message || 'File not found'}`
+					log.error(`[add-task tool] ${errorMessage}`)
+
+					// Get tag info for better error context
+					const tagInfo = args.projectRoot ? getTagInfo(args.projectRoot, log) : null
+
+					return createErrorResponse(errorMessage, undefined, tagInfo, 'TASKS_JSON_NOT_FOUND')
 				}
 
-				// Call the direct functionP
+				// Call the direct function
 				const result = await addTaskDirect(
 					{
 						tasksJsonPath: tasksJsonPath,
-						prompt: args.prompt,
 						title: args.title,
 						description: args.description,
 						details: args.details,
 						testStrategy: args.testStrategy,
 						dependencies: args.dependencies,
 						priority: args.priority,
-						research: args.research,
 						projectRoot: args.projectRoot,
 						tag: resolvedTag
 					},
@@ -78,8 +95,13 @@ export function registerAddTaskTool(server) {
 
 				return handleApiResult(result, log, 'Error adding task', undefined, args.projectRoot)
 			} catch (error) {
-				log.error(`Error in add-task tool: ${error.message}`)
-				return createErrorResponse(error.message)
+				const errorMessage = `添加任务失败: ${error.message || '未知错误'}`
+				log.error(`[add-task tool] ${errorMessage}`)
+
+				// Get tag info for better error context
+				const tagInfo = args.projectRoot ? getTagInfo(args.projectRoot, log) : null
+
+				return createErrorResponse(errorMessage, undefined, tagInfo, 'ADD_TASK_FAILED', addTaskParameterHelp)
 			}
 		})
 	})

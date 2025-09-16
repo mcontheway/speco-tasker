@@ -7,12 +7,30 @@ import { z } from 'zod'
 import { resolveTag } from '../../../scripts/modules/utils.js'
 import { nextTaskDirect } from '../core/task-master-core.js'
 import { resolveComplexityReportPath, resolveTasksPath } from '../core/utils/path-utils.js'
-import { createErrorResponse, handleApiResult, withNormalizedProjectRoot } from './utils.js'
+import { createErrorResponse, handleApiResult, withNormalizedProjectRoot, getTagInfo, generateParameterHelp } from './utils.js'
 
 /**
  * Register the nextTask tool with the MCP server
  * @param {Object} server - FastMCP server instance
  */
+
+// Generate parameter help for next_task tool
+const nextTaskParameterHelp = generateParameterHelp(
+	'next_task',
+	[
+		{ name: 'projectRoot', description: '项目根目录的绝对路径' }
+	],
+	[
+		{ name: 'file', description: '任务文件路径（默认：tasks/tasks.json）' },
+		{ name: 'complexityReport', description: '复杂度报告文件路径' },
+		{ name: 'tag', description: '要操作的标签上下文' }
+	],
+	[
+		'{"projectRoot": "/path/to/project"}',
+		'{"projectRoot": "/path/to/project", "tag": "feature-branch"}'
+	]
+)
+
 export function registerNextTaskTool(server) {
 	server.addTool({
 		name: 'next_task',
@@ -67,8 +85,13 @@ export function registerNextTaskTool(server) {
 				log.info(`Next task result: ${result.success ? 'found' : 'none'}`)
 				return handleApiResult(result, log, 'Error finding next task', undefined, args.projectRoot)
 			} catch (error) {
-				log.error(`Error finding next task: ${error.message}`)
-				return createErrorResponse(error.message)
+				const errorMessage = `查找下一个任务失败: ${error.message || '未知错误'}`
+				log.error(`[next-task tool] ${errorMessage}`)
+
+				// Get tag info for better error context
+				const tagInfo = args.projectRoot ? getTagInfo(args.projectRoot, log) : null
+
+				return createErrorResponse(errorMessage, undefined, tagInfo, 'NEXT_TASK_FAILED', nextTaskParameterHelp)
 			}
 		})
 	})

@@ -7,12 +7,32 @@ import { z } from 'zod'
 import { resolveTag } from '../../../scripts/modules/utils.js'
 import { showTaskDirect } from '../core/task-master-core.js'
 import { findComplexityReportPath, findTasksPath } from '../core/utils/path-utils.js'
-import { createErrorResponse, handleApiResult, withNormalizedProjectRoot } from './utils.js'
+import { createErrorResponse, handleApiResult, withNormalizedProjectRoot, getTagInfo, generateParameterHelp } from './utils.js'
 
 /**
  * Custom processor function that removes allTasks from the response
  * @param {Object} data - The data returned from showTaskDirect
  * @returns {Object} - The processed data with allTasks removed
+ */
+
+// Generate parameter help for get_task tool
+const getTaskParameterHelp = generateParameterHelp(
+	'get_task',
+	[
+		{ name: 'projectRoot', description: '项目根目录的绝对路径' },
+		{ name: 'id', description: '要查看的任务ID或子任务ID（例如：15, 15.2）' }
+	],
+	[
+		{ name: 'file', description: '任务文件路径（默认：tasks/tasks.json）' },
+		{ name: 'complexityReport', description: '复杂度报告文件路径' },
+		{ name: 'tag', description: '要操作的标签上下文' }
+	],
+	[
+		'{"projectRoot": "/path/to/project", "id": "1"}',
+		'{"projectRoot": "/path/to/project", "id": "5.2"}',
+		'{"projectRoot": "/path/to/project", "id": "10", "tag": "feature-branch"}'
+	]
+)
  */
 function processTaskResponse(data) {
 	if (!data) return data
@@ -68,8 +88,13 @@ export function registerShowTaskTool(server) {
 					tasksJsonPath = findTasksPath({ projectRoot: projectRoot, file: file }, log)
 					log.info(`Resolved tasks path: ${tasksJsonPath}`)
 				} catch (error) {
-					log.error(`Error finding tasks.json: ${error.message}`)
-					return createErrorResponse(`Failed to find tasks.json: ${error.message}`)
+					const errorMessage = `Failed to find tasks.json: ${error.message || 'File not found'}`
+					log.error(`[get-task tool] ${errorMessage}`)
+
+					// Get tag info for better error context
+					const tagInfo = args.projectRoot ? getTagInfo(args.projectRoot, log) : null
+
+					return createErrorResponse(errorMessage, undefined, tagInfo, 'TASKS_JSON_NOT_FOUND')
 				}
 
 				// Call the direct function, passing the normalized projectRoot
@@ -116,8 +141,13 @@ export function registerShowTaskTool(server) {
 					projectRoot
 				)
 			} catch (error) {
-				log.error(`Error in get-task tool: ${error.message}\n${error.stack}`)
-				return createErrorResponse(`Failed to get task: ${error.message}`)
+				const errorMessage = `获取任务失败: ${error.message || '未知错误'}`
+				log.error(`[get-task tool] ${errorMessage}`)
+
+				// Get tag info for better error context
+				const tagInfo = args.projectRoot ? getTagInfo(args.projectRoot, log) : null
+
+				return createErrorResponse(errorMessage, undefined, tagInfo, 'GET_TASK_FAILED', getTaskParameterHelp)
 			}
 		})
 	})

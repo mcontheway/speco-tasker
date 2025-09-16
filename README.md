@@ -112,12 +112,24 @@ TaskMaster No-AI 是一个纯手动任务管理系统，无需任何外部API密
 
 ###### Cursor & Windsurf (`mcpServers`)
 
+**推荐配置**：
+```json
+{
+  "mcpServers": {
+    "taskmaster-no-ai": {
+      "command": "task-master-mcp"
+    }
+  }
+}
+```
+
+**临时替代方案**：
 ```json
 {
   "mcpServers": {
     "taskmaster-no-ai": {
       "command": "npx",
-      "args": ["-y", "--package=taskmaster-no-ai", "taskmaster-no-ai"]
+      "args": ["-y", "taskmaster-no-ai"]
     }
   }
 }
@@ -129,8 +141,20 @@ TaskMaster No-AI 是一个纯手动任务管理系统，无需任何外部API密
 {
   "servers": {
     "taskmaster-no-ai": {
+      "command": "task-master-mcp",
+      "type": "stdio"
+    }
+  }
+}
+```
+
+**临时替代方案 (推荐)**：
+```json
+{
+  "servers": {
+    "taskmaster-no-ai": {
       "command": "npx",
-      "args": ["-y", "--package=taskmaster-no-ai", "taskmaster-no-ai"],
+      "args": ["-y", "taskmaster-no-ai"],
       "type": "stdio"
     }
   }
@@ -140,6 +164,50 @@ TaskMaster No-AI 是一个纯手动任务管理系统，无需任何外部API密
 #### 2. (仅 Cursor) 启用 TaskMaster MCP
 
 打开 Cursor 设置 (Ctrl+Shift+J) ➡ 点击左侧的 MCP 标签页 ➡ 启用 taskmaster-no-ai 开关
+
+#### 2.5 临时解决方案 (如果遇到 "command not found" 错误)
+
+如果遇到 `taskmaster-no-ai: command not found` 错误，请使用以下任一临时解决方案：
+
+**方案A：使用本地安装**
+```bash
+# 在项目根目录执行
+npm install taskmaster-no-ai
+```
+
+然后修改MCP配置为：
+```json
+{
+  "mcpServers": {
+    "taskmaster-no-ai": {
+      "command": "npx",
+      "args": ["taskmaster-no-ai"]
+    }
+  }
+}
+```
+
+**方案B：使用完整路径**
+```json
+{
+  "mcpServers": {
+    "taskmaster-no-ai": {
+      "command": "/opt/homebrew/lib/node_modules/taskmaster-no-ai/mcp-server/server.js"
+    }
+  }
+}
+```
+
+**方案C：使用task-master-mcp命令**
+```json
+{
+  "mcpServers": {
+    "taskmaster-no-ai": {
+      "command": "task-master-mcp"
+    }
+  }
+}
+```
 
 #### 3. 初始化项目
 

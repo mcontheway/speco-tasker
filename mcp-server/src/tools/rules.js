@@ -6,12 +6,31 @@
 import { z } from 'zod'
 import { RULE_PROFILES } from '../../../src/constants/profiles.js'
 import { rulesDirect } from '../core/direct-functions/rules.js'
-import { createErrorResponse, handleApiResult, withNormalizedProjectRoot } from './utils.js'
+import { createErrorResponse, handleApiResult, withNormalizedProjectRoot, getTagInfo, generateParameterHelp } from './utils.js'
 
 /**
  * Register the rules tool with the MCP server
  * @param {Object} server - FastMCP server instance
  */
+
+// Generate parameter help for rules tool
+const rulesParameterHelp = generateParameterHelp(
+	'rules',
+	[
+		{ name: 'projectRoot', description: '项目根目录的绝对路径' },
+		{ name: 'action', description: '操作类型（add 或 remove）' },
+		{ name: 'profiles', description: '要添加或移除的规则配置列表' }
+	],
+	[
+		{ name: 'force', description: '是否强制移除（危险操作）' }
+	],
+	[
+		'{"projectRoot": "/path/to/project", "action": "add", "profiles": ["cursor"]}',
+		'{"projectRoot": "/path/to/project", "action": "remove", "profiles": ["windsurf"]}',
+		'{"projectRoot": "/path/to/project", "action": "add", "profiles": ["cursor", "roo"], "force": false}'
+	]
+)
+
 export function registerRulesTool(server) {
 	server.addTool({
 		name: 'rules',
@@ -43,8 +62,13 @@ export function registerRulesTool(server) {
 				const result = await rulesDirect(args, log, { session })
 				return handleApiResult(result, log)
 			} catch (error) {
-				log.error(`[rules tool] Error: ${error.message}`)
-				return createErrorResponse(error.message, { details: error.stack })
+				const errorMessage = `Rules operation failed: ${error.message || 'Unknown error'}`
+				log.error(`[rules tool] ${errorMessage}`)
+
+				// Get tag info for better error context
+				const tagInfo = args.projectRoot ? getTagInfo(args.projectRoot, log) : null
+
+				return createErrorResponse(errorMessage, undefined, tagInfo, 'RULES_OPERATION_FAILED', rulesParameterHelp)
 			}
 		})
 	})

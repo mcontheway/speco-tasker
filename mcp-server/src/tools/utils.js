@@ -519,22 +519,68 @@ function createContentResponse(content) {
  * @param {string} errorMessage - Error message to include in response
  * @param {Object} [versionInfo] - Optional version information object
  * @param {Object} [tagInfo] - Optional tag information object
+ * @param {string} [errorCode] - Optional error code for better error categorization
+ * @param {Object} [parameterHelp] - Optional parameter help information
  * @returns {Object} - Error content response object in FastMCP format
  */
-function createErrorResponse(errorMessage, versionInfo, tagInfo) {
+function createErrorResponse(errorMessage, versionInfo, tagInfo, errorCode, parameterHelp) {
 	// Provide fallback version info if not provided
 	if (!versionInfo) {
 		versionInfo = getVersionInfo()
 	}
 
-	let responseText = `Error: ${errorMessage}
-Version: ${versionInfo.version}
-Name: ${versionInfo.name}`
+	let responseText = `❌ Error: ${errorMessage}
+
+📋 Version: ${versionInfo.version}
+🏷️  Tool: ${versionInfo.name}`
+
+	// Add error code if provided
+	if (errorCode) {
+		responseText += `
+🔍 Error Code: ${errorCode}`
+	}
 
 	// Add tag information if available
 	if (tagInfo) {
 		responseText += `
-Current Tag: ${tagInfo.currentTag}`
+📂 Current Tag: ${tagInfo.currentTag}
+📊 Available Tags: ${tagInfo.availableTags?.join(', ') || 'None'}`
+	}
+
+	// Add parameter help if provided
+	if (parameterHelp) {
+		responseText += `
+
+📝 参数说明:
+${parameterHelp.description}
+
+必需参数:
+${parameterHelp.required.map(param => `• ${param.name}: ${param.description}`).join('\n')}
+
+可选参数:
+${parameterHelp.optional.map(param => `• ${param.name}: ${param.description}`).join('\n')}
+
+使用示例:
+${parameterHelp.examples.join('\n')}`
+	}
+
+	// Add helpful suggestions based on error type
+	if (errorMessage.includes('projectRoot')) {
+		responseText += `
+
+💡 Suggestion: Please provide a valid projectRoot parameter (absolute path to your project directory).`
+	} else if (errorMessage.includes('tasks.json')) {
+		responseText += `
+
+💡 Suggestion: Make sure you're in a TaskMaster project directory or provide the correct projectRoot path.`
+	} else if (errorMessage.includes('tag')) {
+		responseText += `
+
+💡 Suggestion: Check that the specified tag exists in your project.`
+	} else if (errorMessage.includes('required') || errorMessage.includes('missing')) {
+		responseText += `
+
+💡 Suggestion: Check the parameter help above and ensure all required parameters are provided.`
 	}
 
 	return {
@@ -545,6 +591,23 @@ Current Tag: ${tagInfo.currentTag}`
 			}
 		],
 		isError: true
+	}
+}
+
+/**
+ * Generates parameter help information for a tool
+ * @param {string} toolName - Name of the tool
+ * @param {Array} requiredParams - Array of required parameter objects
+ * @param {Array} optionalParams - Array of optional parameter objects
+ * @param {Array} examples - Array of usage examples
+ * @returns {Object} Parameter help object
+ */
+function generateParameterHelp(toolName, requiredParams, optionalParams, examples) {
+	return {
+		description: `${toolName} 工具的参数说明`,
+		required: requiredParams,
+		optional: optionalParams,
+		examples: examples
 	}
 }
 
@@ -683,6 +746,13 @@ function withNormalizedProjectRoot(executeFn) {
 				rootSource = 'args.projectRoot'
 				log.info(`Using project root from ${rootSource}: ${normalizedRoot}`)
 			}
+			// 2.5. Additional check: if args.projectRoot is a string but normalizeProjectRoot returned null
+			else if (typeof args.projectRoot === 'string' && args.projectRoot.trim()) {
+				log.warn(`args.projectRoot provided but normalizeProjectRoot returned null. Using raw path: ${args.projectRoot}`)
+				normalizedRoot = path.resolve(args.projectRoot)
+				rootSource = 'args.projectRoot (fallback)'
+				log.info(`Using fallback project root: ${normalizedRoot}`)
+			}
 			// 3. If no args.projectRoot, try session-based resolution
 			else {
 				const sessionRoot = getProjectRootFromSession(session, log)
@@ -694,9 +764,9 @@ function withNormalizedProjectRoot(executeFn) {
 			}
 
 			if (!normalizedRoot) {
-				log.error('Could not determine project root from environment, args, or session.')
+				log.error(`Could not determine project root. Args: ${JSON.stringify({ hasProjectRoot: !!args.projectRoot, projectRootType: typeof args.projectRoot, projectRootValue: args.projectRoot })}`)
 				return createErrorResponse(
-					'Could not determine project root. Please provide projectRoot argument or ensure TASK_MASTER_PROJECT_ROOT environment variable is set.'
+					'Could not determine project root. Please provide a valid projectRoot argument (absolute path) or ensure TASK_MASTER_PROJECT_ROOT environment variable is set.'
 				)
 			}
 
@@ -799,6 +869,7 @@ export {
 	processMCPResponseData,
 	createContentResponse,
 	createErrorResponse,
+	generateParameterHelp,
 	createLogWrapper,
 	normalizeProjectRoot,
 	getRawProjectRootFromSession,
