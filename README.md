@@ -116,7 +116,7 @@ npm run setup
   "mcpServers": {
     "speco-tasker": {
       "command": "npx",
-      "args": ["speco-tasker"]
+      "args": ["-y", "--package=speco-tasker", "speco-tasker"]
     }
   }
 }
@@ -199,7 +199,7 @@ npm run install-mcp
   "servers": {
     "speco-tasker": {
       "command": "npx",
-      "args": ["speco-tasker"],
+      "args": ["-y", "--package=speco-tasker", "speco-tasker"],
       "type": "stdio"
     }
   }

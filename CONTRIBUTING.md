@@ -277,7 +277,7 @@ Any additional context or notes for reviewers.
 ## 🏗️ Project Structure
 
 ```
-claude-task-master/
+speco-tasker/
 ├── bin/                    # CLI executables
 ├── mcp-server/            # MCP server implementation
 ├── scripts/               # Core task management logic

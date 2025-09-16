@@ -2,7 +2,7 @@
 	"mcpServers": {
 		"speco-tasker": {
 			"command": "npx",
-			"args": ["speco-tasker"]
+			"args": ["-y", "--package=speco-tasker", "speco-tasker"]
 		}
 	}
 }

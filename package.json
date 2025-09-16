@@ -5,9 +5,9 @@
 	"main": "index.js",
 	"type": "module",
 	"bin": {
+		"speco-tasker": "mcp-server/server.js",
 		"task-master": "bin/task-master.js",
-		"task-master-mcp": "mcp-server/server.js",
-		"speco-tasker": "mcp-server/server.js"
+		"task-master-mcp": "mcp-server/server.js"
 	},
 	"workspaces": ["apps/docs", "."],
 	"scripts": {
