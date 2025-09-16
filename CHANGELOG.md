@@ -1,5 +1,13 @@
 # taskmaster-no-ai
 
+## 1.0.15 (2025-09-16)
+
+### 🐛 修复
+
+- **🔧 路径解析修复**：修复了withNormalizedProjectRoot中的路径解析逻辑，确保projectRoot始终为有效字符串
+- **⚡ 错误处理改善**：增强了initializeProjectDirect的错误处理，提供详细的调试信息
+- **📍 Fallback机制**：添加了多层fallback确保即使在复杂环境中也能确定项目根路径
+
 ## 1.0.14 (2025-09-16)
 
 ### 🐛 修复
