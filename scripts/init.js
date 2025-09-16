@@ -23,7 +23,6 @@ import chalk from 'chalk'
 import figlet from 'figlet'
 import gradient from 'gradient-string'
 import { RULE_PROFILES } from '../src/constants/profiles.js'
-import { manageGitignoreFile } from '../src/utils/manage-gitignore.js'
 import { convertAllRulesToProfileRules, getRulesProfile } from '../src/utils/rule-transformer.js'
 import { updateConfigMaxTokens } from './modules/update-config-tokens.js'
 import { isSilentMode } from './modules/utils.js'
@@ -33,7 +32,6 @@ import { execSync } from 'child_process'
 import {
 	ENV_EXAMPLE_FILE,
 	EXAMPLE_PRD_FILE,
-	GITIGNORE_FILE,
 	TASKMASTER_CONFIG_FILE,
 	TASKMASTER_DIR,
 	TASKMASTER_DOCS_DIR,
@@ -205,7 +203,7 @@ function createInitialStateFile(targetDir) {
 	try {
 		fs.writeFileSync(stateFilePath, JSON.stringify(initialState, null, 2))
 		log('success', `Created initial state file: ${stateFilePath}`)
-		log('info', 'Default tag set to "master" for task organization')
+		log('info', 'Default tag set to "main" for task organization')
 	} catch (error) {
 		log('error', `Failed to create state file: ${error.message}`)
 	}
@@ -230,10 +228,39 @@ function createInitialTasksFile(targetDir) {
 	try {
 		fs.writeFileSync(tasksFilePath, JSON.stringify(initialTasks, null, 2))
 		log('success', `Created initial tasks file: ${tasksFilePath}`)
-		log('info', 'Initialized with empty tasks list in "master" tag')
+		log('info', 'Initialized with empty tasks list in "main" tag')
 	} catch (error) {
 		log('error', `Failed to create tasks file: ${error.message}`)
 	}
+}
+
+// Helper function to get project name dynamically
+async function getDynamicProjectName(projectRoot) {
+	try {
+		// Try to get from Git remote URL
+		const gitUrl = execSync('git config --get remote.origin.url', { cwd: projectRoot, stdio: 'pipe' }).toString().trim();
+		if (gitUrl) {
+			const parts = gitUrl.split('/');
+			let repoName = parts[parts.length - 1];
+			if (repoName.endsWith('.git')) {
+				repoName = repoName.slice(0, -4);
+			}
+			log('debug', `从 Git 获取项目名称: ${repoName}`);
+			return repoName;
+		}
+	} catch (error) {
+		log('debug', `无法从 Git 获取项目名称: ${error.message}`);
+	}
+
+	// Fallback to directory name
+	const fsName = path.basename(projectRoot);
+	if (fsName && fsName !== '.') {
+		log('debug', `从文件系统获取项目名称: ${fsName}`);
+		return fsName;
+	}
+
+	log('debug', '使用兜底项目名称: MyProject');
+	return "MyProject"; // Default fallback
 }
 
 // Function to copy a file from the package to the target directory
@@ -276,23 +303,6 @@ function copyTemplateFile(templateName, targetPath, replacements = {}) {
 	if (fs.existsSync(targetPath)) {
 		const filename = path.basename(targetPath)
 
-		// Handle .gitignore - append lines that don't exist
-		if (filename === '.gitignore') {
-			log('info', `${targetPath} already exists, merging content...`)
-			const existingContent = fs.readFileSync(targetPath, 'utf8')
-			const existingLines = new Set(existingContent.split('\n').map((line) => line.trim()))
-			const newLines = content.split('\n').filter((line) => !existingLines.has(line.trim()))
-
-			if (newLines.length > 0) {
-				// Add a comment to separate the original content from our additions
-				const updatedContent = `${existingContent.trim()}\n\n# Added by Task Master AI\n${newLines.join('\n')}`
-				fs.writeFileSync(targetPath, updatedContent)
-				log('success', `Updated ${targetPath} with additional entries`)
-			} else {
-				log('info', `No new content to add to ${targetPath}`)
-			}
-			return
-		}
 
 		// Handle README.md - offer to preserve or create a different file
 		if (filename === 'README-task-master.md') {
@@ -376,13 +386,15 @@ async function initializeProject(options = {}) {
 		selectedRuleProfiles = []
 	}
 
+	const projectRoot = process.cwd() // Get current working directory as project root
+
 	if (skipPrompts) {
 		if (!isSilentMode()) {
 			console.log('SKIPPING PROMPTS - Using defaults or provided values')
 		}
 
-		// Use provided options or defaults
-		const projectName = options.name || 'task-master-project'
+		// Use provided options or dynamically get project name
+		const projectName = options.name || (await getDynamicProjectName(projectRoot))
 		const projectDescription = options.description || 'A project managed with Task Master AI'
 		const projectVersion = options.version || '0.1.0'
 		const authorName = options.author || 'Vibe coder'
@@ -390,6 +402,9 @@ async function initializeProject(options = {}) {
 		const addAliases = options.addAliases !== undefined ? options.addAliases : true // Default to true if not specified
 		const initGit = options.initGit !== undefined ? options.initGit : true // Default to true if not specified
 		const storeTasksInGit = options.storeTasksInGit !== undefined ? options.storeTasksInGit : true // Default to true if not specified
+
+		// Update options with the resolved project name
+		options.name = projectName
 
 		if (dryRun) {
 			log('info', 'DRY RUN MODE: No files will be modified')
@@ -470,8 +485,22 @@ async function initializeProject(options = {}) {
 				storeGitPrompted = gitTasksInput.trim().toLowerCase() !== 'n'
 			}
 
+			// Get dynamic project name for default prompt
+			const defaultProjectName = await getDynamicProjectName(projectRoot);
+			const projectNameInput = await promptQuestion(
+				rl,
+				chalk.cyan(`Project name (${defaultProjectName}): `)
+			);
+			options.name = projectNameInput.trim() || defaultProjectName;
+
+			log('info', `Project name set to: ${options.name}`);
+
 			// Confirm settings...
 			console.log('\nTask Master Project settings:')
+			console.log(
+				chalk.blue('Project Name:'),
+				chalk.white(options.name)
+			)
 			console.log(
 				chalk.blue('Add shell aliases (so you can use "tm" instead of "task-master"):'),
 				chalk.white(addAliasesPrompted ? 'Yes' : 'No')
@@ -585,7 +614,8 @@ function createProjectStructure(
 
 	// Copy template files with replacements
 	const replacements = {
-		year: new Date().getFullYear()
+		year: new Date().getFullYear(),
+		projectName: options.name || "MyProject" // Use resolved name from options
 	}
 
 	// Helper function to create rule profiles
@@ -614,14 +644,6 @@ function createProjectStructure(
 		log('warn', 'Could not update maxTokens in config')
 	}
 
-	// Copy .gitignore with GitTasks preference
-	try {
-		const gitignoreTemplatePath = path.join(__dirname, '..', 'assets', 'gitignore')
-		const templateContent = fs.readFileSync(gitignoreTemplatePath, 'utf8')
-		manageGitignoreFile(path.join(targetDir, GITIGNORE_FILE), templateContent, storeTasksInGit, log)
-	} catch (error) {
-		log('error', `Failed to create .gitignore: ${error.message}`)
-	}
 
 	// Skip example_prd.txt - not needed for minimal initialization
 

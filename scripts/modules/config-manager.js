@@ -20,9 +20,8 @@ const DEFAULTS = {
 		logLevel: 'info',
 		debug: false,
 		defaultNumTasks: 10,
-		defaultSubtasks: 5,
 		defaultPriority: 'medium',
-		projectName: 'Task Master'
+		projectName: 'MyProject'
 	}
 }
 
@@ -245,12 +244,6 @@ function getDebugFlag(explicitRoot = null) {
 	return getGlobalConfig(explicitRoot).debug === true
 }
 
-function getDefaultSubtasks(explicitRoot = null) {
-	// Directly return value from config, ensure integer
-	const val = getGlobalConfig(explicitRoot).defaultSubtasks
-	const parsedVal = parseInt(val, 10)
-	return Number.isNaN(parsedVal) ? DEFAULTS.global.defaultSubtasks : parsedVal
-}
 
 function getDefaultNumTasks(explicitRoot = null) {
 	const val = getGlobalConfig(explicitRoot).defaultNumTasks
@@ -402,7 +395,6 @@ export {
 	getLogLevel,
 	getDebugFlag,
 	getDefaultNumTasks,
-	getDefaultSubtasks,
 	getDefaultPriority,
 	getProjectName,
 	getCodebaseAnalysisEnabled,
