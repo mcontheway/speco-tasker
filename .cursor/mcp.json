@@ -1,7 +1,3 @@
 {
-	"mcpServers": {
-	  "taskmaster-no-ai": {
-		"command": "taskmaster-no-ai"
-	  }
-	}
-  }
+  "mcpServers": {}
+}
