@@ -17,19 +17,25 @@ export function registerUpdateTaskTool(server) {
 	server.addTool({
 		name: 'update_task',
 		description:
-			'Updates a single task by ID with new information or context provided in the prompt.',
+			'Updates a single task by ID with manual field changes. Supports both full replacement and incremental append modes.',
 		parameters: z.object({
 			id: z
 				.string() // ID can be number or string like "1.2"
 				.describe(
 					"ID of the task (e.g., '15') to update. Subtasks are supported using the update-subtask tool."
 				),
-			prompt: z.string().describe('New information or context to incorporate into the task'),
-			// research parameter removed - AI functionality no longer available
+			// Manual field update parameters
+			title: z.string().optional().describe('Update task title'),
+			description: z.string().optional().describe('Update task description (supports append mode)'),
+			status: z.string().optional().describe('Update task status (pending, in-progress, done)'),
+			priority: z.string().optional().describe('Update task priority (high, medium, low)'),
+			details: z.string().optional().describe('Update task implementation details (supports append mode)'),
+			testStrategy: z.string().optional().describe('Update task test strategy (supports append mode)'),
+			// Update mode
 			append: z
 				.boolean()
 				.optional()
-				.describe('Append timestamped information to task details instead of full update'),
+				.describe('Append to description/details/test-strategy fields instead of replacing (default: false)'),
 			file: z.string().optional().describe('Absolute path to the tasks file'),
 			projectRoot: z.string().describe('The directory of the project. Must be an absolute path.'),
 			tag: z.string().optional().describe('Tag context to operate on')
@@ -52,13 +58,32 @@ export function registerUpdateTaskTool(server) {
 					return createErrorResponse(`Failed to find tasks.json: ${error.message}`)
 				}
 
-				// 3. Call Direct Function - Include projectRoot
+				// Prepare manual field update data
+				const updateData = {
+					fieldsToUpdate: {
+						title: args.title,
+						description: args.description,
+						status: args.status,
+						priority: args.priority,
+						details: args.details,
+						testStrategy: args.testStrategy
+					},
+					appendMode: args.append || false
+				}
+
+				// Check if at least one field to update is provided
+				const hasUpdates = Object.values(updateData.fieldsToUpdate).some((value) => value !== undefined)
+				if (!hasUpdates) {
+					return createErrorResponse('At least one field to update must be provided', undefined, undefined, 'NO_UPDATES_PROVIDED')
+				}
+
+				// 3. Call Direct Function with manual update parameters
 				const result = await updateTaskByIdDirect(
 					{
 						tasksJsonPath: tasksJsonPath,
 						id: args.id,
-						prompt: args.prompt,
-						append: args.append,
+						fieldsToUpdate: updateData.fieldsToUpdate,
+						appendMode: updateData.appendMode,
 						projectRoot: args.projectRoot,
 						tag: resolvedTag
 					},

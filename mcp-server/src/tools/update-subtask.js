@@ -17,15 +17,23 @@ export function registerUpdateSubtaskTool(server) {
 	server.addTool({
 		name: 'update_subtask',
 		description:
-			'Appends timestamped information to a specific subtask without replacing existing content. If you just want to update the subtask status, use set_task_status instead.',
+			'Updates a specific subtask by ID with manual field changes. Supports both full replacement and incremental append modes.',
 		parameters: z.object({
 			id: z
 				.string()
 				.describe(
 					'ID of the subtask to update in format "parentId.subtaskId" (e.g., "5.2"). Parent ID is the ID of the task that contains the subtask.'
 				),
-			prompt: z.string().describe('Information to add to the subtask'),
-			// research parameter removed - AI functionality no longer available
+			// Manual field update parameters
+			title: z.string().optional().describe('Update subtask title'),
+			description: z.string().optional().describe('Update subtask description (supports append mode)'),
+			status: z.string().optional().describe('Update subtask status (pending, in-progress, done)'),
+			details: z.string().optional().describe('Update subtask implementation details (supports append mode)'),
+			// Update mode
+			append: z
+				.boolean()
+				.optional()
+				.describe('Append to description/details fields instead of replacing (default: false)'),
 			file: z.string().optional().describe('Absolute path to the tasks file'),
 			projectRoot: z.string().describe('The directory of the project. Must be an absolute path.'),
 			tag: z.string().optional().describe('Tag context to operate on')
@@ -48,11 +56,29 @@ export function registerUpdateSubtaskTool(server) {
 					return createErrorResponse(`Failed to find tasks.json: ${error.message}`)
 				}
 
+				// Prepare manual field update data
+				const updateData = {
+					fieldsToUpdate: {
+						title: args.title,
+						description: args.description,
+						status: args.status,
+						details: args.details
+					},
+					appendMode: args.append || false
+				}
+
+				// Check if at least one field to update is provided
+				const hasUpdates = Object.values(updateData.fieldsToUpdate).some((value) => value !== undefined)
+				if (!hasUpdates) {
+					return createErrorResponse('At least one field to update must be provided', undefined, undefined, 'NO_UPDATES_PROVIDED')
+				}
+
 				const result = await updateSubtaskByIdDirect(
 					{
 						tasksJsonPath: tasksJsonPath,
 						id: args.id,
-						prompt: args.prompt,
+						fieldsToUpdate: updateData.fieldsToUpdate,
+						appendMode: updateData.appendMode,
 						projectRoot: args.projectRoot,
 						tag: resolvedTag
 					},

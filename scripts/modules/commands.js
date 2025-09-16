@@ -648,11 +648,12 @@ function registerCommands(programInstance) {
 		.option('-f, --file <file>', 'Path to the tasks file', TASKMASTER_TASKS_FILE)
 		.option('-i, --id <id>', 'Task ID to update (required)')
 		.option('-t, --title <text>', 'Update task title')
-		.option('-d, --description <text>', 'Update task description')
+		.option('-d, --description <text>', 'Update task description (supports incremental update with --append)')
 		.option('-s, --status <status>', 'Update task status (pending, in-progress, done)')
 		.option('-p, --priority <priority>', 'Update task priority (high, medium, low)')
-		.option('--details <text>', 'Update task implementation details')
-		.option('--test-strategy <text>', 'Update task test strategy')
+		.option('--details <text>', 'Update task implementation details (supports incremental update with --append)')
+		.option('--test-strategy <text>', 'Update task test strategy (supports incremental update with --append)')
+		.option('--append', 'Append to description/details/test-strategy fields instead of replacing')
 		.option('--tag <tag>', 'Specify tag context for task operations')
 		.action(async (options) => {
 			try {
@@ -690,22 +691,30 @@ function registerCommands(programInstance) {
 					process.exit(1)
 				}
 
-				// Check if at least one field to update is provided
-				const fieldsToUpdate = {
-					title: options.title,
-					description: options.description,
-					status: options.status,
-					priority: options.priority,
-					details: options.details,
-					testStrategy: options.testStrategy
+				// Prepare update data with append mode support
+				const updateData = {
+					fieldsToUpdate: {
+						title: options.title,
+						description: options.description,
+						status: options.status,
+						priority: options.priority,
+						details: options.details,
+						testStrategy: options.testStrategy
+					},
+					appendMode: options.append || false
 				}
 
-				const hasUpdates = Object.values(fieldsToUpdate).some((value) => value !== undefined)
+				const hasUpdates = Object.values(updateData.fieldsToUpdate).some((value) => value !== undefined)
 				if (!hasUpdates) {
 					console.error(chalk.red('Error: At least one field to update must be provided.'))
 					console.log(
 						chalk.yellow(
 							'Usage example: task-master update-task --id=23 --title="New title" --status="in-progress"'
+						)
+					)
+					console.log(
+						chalk.yellow(
+							'For incremental updates: task-master update-task --id=23 --description="Additional info" --append'
 						)
 					)
 					process.exit(1)
@@ -732,12 +741,16 @@ function registerCommands(programInstance) {
 				}
 
 				console.log(chalk.blue(`Updating task ${taskId}...`))
+				if (updateData.appendMode) {
+					console.log(chalk.blue('Using incremental update mode (--append)'))
+				}
 
 				// Import and call the manual update function
 				const { updateTaskManually } = await import('./task-manager/update-task-manually.js')
-				const result = await updateTaskManually(tasksPath, taskId, fieldsToUpdate, {
+				const result = await updateTaskManually(tasksPath, taskId, updateData.fieldsToUpdate, {
 					projectRoot: taskMaster.getProjectRoot(),
-					tag
+					tag,
+					appendMode: updateData.appendMode
 				})
 
 				if (result.success) {
@@ -764,9 +777,10 @@ function registerCommands(programInstance) {
 		.option('-f, --file <file>', 'Path to the tasks file', TASKMASTER_TASKS_FILE)
 		.option('-i, --id <id>', 'Subtask ID in format "parentId.subtaskId" (required)')
 		.option('-t, --title <text>', 'Update subtask title')
-		.option('-d, --description <text>', 'Update subtask description')
+		.option('-d, --description <text>', 'Update subtask description (supports incremental update with --append)')
 		.option('-s, --status <status>', 'Update subtask status (pending, in-progress, done)')
-		.option('--details <text>', 'Update subtask implementation details')
+		.option('--details <text>', 'Update subtask implementation details (supports incremental update with --append)')
+		.option('--append', 'Append to description/details fields instead of replacing')
 		.option('--tag <tag>', 'Specify tag context for task operations')
 		.action(async (options) => {
 			try {
@@ -827,20 +841,28 @@ function registerCommands(programInstance) {
 					process.exit(1)
 				}
 
-				// Check if at least one field to update is provided
-				const fieldsToUpdate = {
-					title: options.title,
-					description: options.description,
-					status: options.status,
-					details: options.details
+				// Prepare update data with append mode support
+				const updateData = {
+					fieldsToUpdate: {
+						title: options.title,
+						description: options.description,
+						status: options.status,
+						details: options.details
+					},
+					appendMode: options.append || false
 				}
 
-				const hasUpdates = Object.values(fieldsToUpdate).some((value) => value !== undefined)
+				const hasUpdates = Object.values(updateData.fieldsToUpdate).some((value) => value !== undefined)
 				if (!hasUpdates) {
 					console.error(chalk.red('Error: At least one field to update must be provided.'))
 					console.log(
 						chalk.yellow(
 							'Usage example: task-master update-subtask --id=5.2 --title="New title" --status="in-progress"'
+						)
+					)
+					console.log(
+						chalk.yellow(
+							'For incremental updates: task-master update-subtask --id=5.2 --description="Additional info" --append'
 						)
 					)
 					process.exit(1)
@@ -857,12 +879,16 @@ function registerCommands(programInstance) {
 				}
 
 				console.log(chalk.blue(`Updating subtask ${options.id}...`))
+				if (updateData.appendMode) {
+					console.log(chalk.blue('Using incremental update mode (--append)'))
+				}
 
 				// Import and call the manual update function
 				const { updateSubtaskManually } = await import('./task-manager/update-subtask-manually.js')
-				const result = await updateSubtaskManually(tasksPath, parentId, subtaskId, fieldsToUpdate, {
+				const result = await updateSubtaskManually(tasksPath, parentId, subtaskId, updateData.fieldsToUpdate, {
 					projectRoot: taskMaster.getProjectRoot(),
-					tag
+					tag,
+					appendMode: updateData.appendMode
 				})
 
 				if (result.success) {

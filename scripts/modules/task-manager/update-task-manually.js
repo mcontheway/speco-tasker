@@ -8,11 +8,11 @@ import { log as consoleLog, findProjectRoot, readJSON, writeJSON } from '../util
  * @param {string} tasksPath - Path to the tasks.json file
  * @param {number} taskId - ID of the task to update
  * @param {object} fieldsToUpdate - Object containing fields to update
- * @param {object} context - Context object with projectRoot and tag
+ * @param {object} context - Context object with projectRoot, tag, and appendMode
  * @returns {object} Result object with success status and updated fields
  */
 async function updateTaskManually(tasksPath, taskId, fieldsToUpdate, context = {}) {
-	const { projectRoot, tag } = context
+	const { projectRoot, tag, appendMode } = context
 
 	try {
 		// Read the tasks data
@@ -35,9 +35,22 @@ async function updateTaskManually(tasksPath, taskId, fieldsToUpdate, context = {
 		// Update the fields that were provided
 		Object.keys(fieldsToUpdate).forEach((field) => {
 			const newValue = fieldsToUpdate[field]
-			if (newValue !== undefined && newValue !== task[field]) {
-				task[field] = newValue
-				updatedFields.push(field)
+			if (newValue !== undefined) {
+				// Handle append mode for text fields
+				if (appendMode && ['description', 'details', 'testStrategy'].includes(field)) {
+					const currentValue = task[field] || ''
+					const updatedValue = currentValue ? `${currentValue}\n\n${newValue}` : newValue
+					if (updatedValue !== task[field]) {
+						task[field] = updatedValue
+						updatedFields.push(field)
+					}
+				} else {
+					// Regular replacement mode
+					if (newValue !== task[field]) {
+						task[field] = newValue
+						updatedFields.push(field)
+					}
+				}
 			}
 		})
 

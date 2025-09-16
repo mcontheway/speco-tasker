@@ -9,11 +9,11 @@ import { log as consoleLog, findProjectRoot, readJSON, writeJSON } from '../util
  * @param {number} parentId - ID of the parent task
  * @param {number} subtaskId - ID of the subtask to update
  * @param {object} fieldsToUpdate - Object containing fields to update
- * @param {object} context - Context object with projectRoot and tag
+ * @param {object} context - Context object with projectRoot, tag, and appendMode
  * @returns {object} Result object with success status and updated fields
  */
 async function updateSubtaskManually(tasksPath, parentId, subtaskId, fieldsToUpdate, context = {}) {
-	const { projectRoot, tag } = context
+	const { projectRoot, tag, appendMode } = context
 
 	try {
 		// Read the tasks data
@@ -53,9 +53,22 @@ async function updateSubtaskManually(tasksPath, parentId, subtaskId, fieldsToUpd
 		// Update the fields that were provided
 		Object.keys(fieldsToUpdate).forEach((field) => {
 			const newValue = fieldsToUpdate[field]
-			if (newValue !== undefined && newValue !== subtask[field]) {
-				subtask[field] = newValue
-				updatedFields.push(field)
+			if (newValue !== undefined) {
+				// Handle append mode for text fields
+				if (appendMode && ['description', 'details'].includes(field)) {
+					const currentValue = subtask[field] || ''
+					const updatedValue = currentValue ? `${currentValue}\n\n${newValue}` : newValue
+					if (updatedValue !== subtask[field]) {
+						subtask[field] = updatedValue
+						updatedFields.push(field)
+					}
+				} else {
+					// Regular replacement mode
+					if (newValue !== subtask[field]) {
+						subtask[field] = newValue
+						updatedFields.push(field)
+					}
+				}
 			}
 		})
 

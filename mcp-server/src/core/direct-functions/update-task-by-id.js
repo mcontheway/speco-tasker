@@ -3,7 +3,7 @@
  * Direct function implementation for updating a single task by ID with new information
  */
 
-import { updateTaskById } from '../../../../scripts/modules/task-manager.js'
+import { updateTaskManually } from '../../../../scripts/modules/task-manager/update-task-manually.js'
 import {
 	disableSilentMode,
 	enableSilentMode,
@@ -12,14 +12,13 @@ import {
 import { createLogWrapper } from '../../tools/utils.js'
 
 /**
- * Direct function wrapper for updateTaskById with error handling.
+ * Direct function wrapper for manual task field updates with error handling.
  *
- * @param {Object} args - Command arguments containing id, prompt, useResearch, tasksJsonPath, and projectRoot.
+ * @param {Object} args - Command arguments containing manual field update parameters.
  * @param {string} args.tasksJsonPath - Explicit path to the tasks.json file.
  * @param {string} args.id - Task ID (or subtask ID like "1.2").
- * @param {string} args.prompt - New information/context prompt.
- * @param {boolean} [args.research] - Deprecated: Research functionality removed.
- * @param {boolean} [args.append] - Whether to append timestamped information instead of full update.
+ * @param {object} args.fieldsToUpdate - Object containing fields to update (title, description, etc.).
+ * @param {boolean} [args.appendMode] - Whether to append to text fields instead of replacing.
  * @param {string} [args.projectRoot] - Project root path.
  * @param {string} [args.tag] - Tag for the task (optional)
  * @param {Object} log - Logger object.
@@ -29,7 +28,7 @@ import { createLogWrapper } from '../../tools/utils.js'
 export async function updateTaskByIdDirect(args, log, context = {}) {
 	const { session } = context
 	// Destructure expected args
-	const { tasksJsonPath, id, prompt, append, projectRoot, tag } = args
+	const { tasksJsonPath, id, fieldsToUpdate, appendMode, projectRoot, tag } = args
 
 	const logWrapper = createLogWrapper(log)
 
@@ -48,7 +47,7 @@ export async function updateTaskByIdDirect(args, log, context = {}) {
 			}
 		}
 
-		// Check required parameters (id and prompt)
+		// Check required parameters
 		if (!id) {
 			const errorMessage = 'No task ID specified. Please provide a task ID to update.'
 			logWrapper.error(errorMessage)
@@ -58,13 +57,23 @@ export async function updateTaskByIdDirect(args, log, context = {}) {
 			}
 		}
 
-		if (!prompt) {
-			const errorMessage =
-				'No prompt specified. Please provide a prompt with new information for the task update.'
+		if (!fieldsToUpdate) {
+			const errorMessage = 'No fields to update specified. Please provide at least one field to update.'
 			logWrapper.error(errorMessage)
 			return {
 				success: false,
-				error: { code: 'MISSING_PROMPT', message: errorMessage }
+				error: { code: 'MISSING_FIELDS', message: errorMessage }
+			}
+		}
+
+		// Check if at least one field to update is provided
+		const hasUpdates = Object.values(fieldsToUpdate).some((value) => value !== undefined)
+		if (!hasUpdates) {
+			const errorMessage = 'No field values provided. Please provide at least one field to update.'
+			logWrapper.error(errorMessage)
+			return {
+				success: false,
+				error: { code: 'NO_UPDATES_PROVIDED', message: errorMessage }
 			}
 		}
 
@@ -94,7 +103,7 @@ export async function updateTaskByIdDirect(args, log, context = {}) {
 		const tasksPath = tasksJsonPath
 
 		logWrapper.info(
-			`Updating task with ID ${taskId} with prompt "${prompt}"`
+			`Updating task with ID ${taskId} with fields: ${Object.keys(fieldsToUpdate).join(', ')} ${appendMode ? '(append mode)' : '(replace mode)'}`
 		)
 
 		const wasSilent = isSilentMode()
@@ -103,54 +112,42 @@ export async function updateTaskByIdDirect(args, log, context = {}) {
 		}
 
 		try {
-			// Execute core updateTaskById function with proper parameters
-			const coreResult = await updateTaskById(
+			// Execute core updateTaskManually function with proper parameters
+			const coreResult = await updateTaskManually(
 				tasksPath,
 				taskId,
-				prompt,
+				fieldsToUpdate,
 				{
-					mcpLog: logWrapper,
-					session,
 					projectRoot,
 					tag,
-					commandName: 'update-task',
-					outputType: 'mcp'
-				},
-				'json',
-				append || false
+					appendMode: appendMode || false
+				}
 			)
 
-			// Check if the core function returned null or an object without success
-			if (!coreResult || coreResult.updatedTask === null) {
-				// Core function logs the reason, just return success with info
-				const message = `Task ${taskId} was not updated (likely already completed).`
-				logWrapper.info(message)
+			// Check if the update was successful
+			if (coreResult.success) {
+				const successMessage = `Successfully updated task with ID ${taskId}`
+				logWrapper.success(successMessage)
 				return {
 					success: true,
 					data: {
-						message: message,
+						message: successMessage,
 						taskId: taskId,
-						updated: false,
-						telemetryData: coreResult?.telemetryData,
-						tagInfo: coreResult?.tagInfo
+						tasksPath: tasksPath,
+						updated: true,
+						updatedFields: coreResult.updatedFields
 					}
 				}
-			}
-
-			// Task was updated successfully
-			const successMessage = `Successfully updated task with ID ${taskId} based on the prompt`
-			logWrapper.success(successMessage)
-			return {
-				success: true,
-				data: {
-					message: successMessage,
-					taskId: taskId,
-					tasksPath: tasksPath,
-					useResearch: useResearch,
-					updated: true,
-					updatedTask: coreResult.updatedTask,
-					telemetryData: coreResult.telemetryData,
-					tagInfo: coreResult.tagInfo
+			} else {
+				// Update failed
+				const errorMessage = coreResult.error?.message || 'Unknown error updating task'
+				logWrapper.error(`Task update failed: ${errorMessage}`)
+				return {
+					success: false,
+					error: {
+						code: 'UPDATE_FAILED',
+						message: errorMessage
+					}
 				}
 			}
 		} catch (error) {

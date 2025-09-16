@@ -3,7 +3,7 @@
  * Direct function implementation for appending information to a specific subtask
  */
 
-import { updateSubtaskById } from '../../../../scripts/modules/task-manager.js'
+import { updateSubtaskManually } from '../../../../scripts/modules/task-manager/update-subtask-manually.js'
 import {
 	disableSilentMode,
 	enableSilentMode,
@@ -12,13 +12,13 @@ import {
 import { createLogWrapper } from '../../tools/utils.js'
 
 /**
- * Direct function wrapper for updateSubtaskById with error handling.
+ * Direct function wrapper for manual subtask field updates with error handling.
  *
- * @param {Object} args - Command arguments containing id, prompt, useResearch, tasksJsonPath, and projectRoot.
+ * @param {Object} args - Command arguments containing manual field update parameters.
  * @param {string} args.tasksJsonPath - Explicit path to the tasks.json file.
  * @param {string} args.id - Subtask ID in format "parent.sub".
- * @param {string} args.prompt - Information to append to the subtask.
- * @param {boolean} [args.research] - Deprecated: Research functionality removed.
+ * @param {object} args.fieldsToUpdate - Object containing fields to update (title, description, etc.).
+ * @param {boolean} [args.appendMode] - Whether to append to text fields instead of replacing.
  * @param {string} [args.projectRoot] - Project root path.
  * @param {string} [args.tag] - Tag for the task (optional)
  * @param {Object} log - Logger object.
@@ -28,7 +28,7 @@ import { createLogWrapper } from '../../tools/utils.js'
 export async function updateSubtaskByIdDirect(args, log, context = {}) {
 	const { session } = context
 	// Destructure expected args
-	const { tasksJsonPath, id, prompt, projectRoot, tag } = args
+	const { tasksJsonPath, id, fieldsToUpdate, appendMode, projectRoot, tag } = args
 
 	const logWrapper = createLogWrapper(log)
 
@@ -58,12 +58,23 @@ export async function updateSubtaskByIdDirect(args, log, context = {}) {
 			}
 		}
 
-		if (!prompt) {
-			const errorMessage = 'No prompt specified. Please provide the information to append.'
+		if (!fieldsToUpdate) {
+			const errorMessage = 'No fields to update specified. Please provide at least one field to update.'
 			logWrapper.error(errorMessage)
 			return {
 				success: false,
-				error: { code: 'MISSING_PROMPT', message: errorMessage }
+				error: { code: 'MISSING_FIELDS', message: errorMessage }
+			}
+		}
+
+		// Check if at least one field to update is provided
+		const hasUpdates = Object.values(fieldsToUpdate).some((value) => value !== undefined)
+		if (!hasUpdates) {
+			const errorMessage = 'No field values provided. Please provide at least one field to update.'
+			logWrapper.error(errorMessage)
+			return {
+				success: false,
+				error: { code: 'NO_UPDATES_PROVIDED', message: errorMessage }
 			}
 		}
 
@@ -91,7 +102,7 @@ export async function updateSubtaskByIdDirect(args, log, context = {}) {
 		// Use the provided path
 		const tasksPath = tasksJsonPath
 		log.info(
-			`Updating subtask with ID ${subtaskIdStr} with prompt "${prompt}"`
+			`Updating subtask with ID ${subtaskIdStr} with fields: ${Object.keys(fieldsToUpdate).join(', ')} ${appendMode ? '(append mode)' : '(replace mode)'}`
 		)
 
 		const wasSilent = isSilentMode()
@@ -100,45 +111,49 @@ export async function updateSubtaskByIdDirect(args, log, context = {}) {
 		}
 
 		try {
-			// Execute core updateSubtaskById function
-			const coreResult = await updateSubtaskById(
+			// Parse subtask ID to get parent and subtask IDs
+			const [parentIdStr, subtaskIdStr] = subtaskIdStr.split('.')
+			const parentId = parseInt(parentIdStr, 10)
+			const subtaskId = parseInt(subtaskIdStr, 10)
+
+			// Execute core updateSubtaskManually function
+			const coreResult = await updateSubtaskManually(
 				tasksPath,
-				subtaskIdStr,
-				prompt,
+				parentId,
+				subtaskId,
+				fieldsToUpdate,
 				{
-					mcpLog: logWrapper,
-					session,
 					projectRoot,
 					tag,
-					commandName: 'update-subtask',
-					outputType: 'mcp'
-				},
-				'json'
+					appendMode: appendMode || false
+				}
 			)
 
-			if (!coreResult || coreResult.updatedSubtask === null) {
-				const message = `Subtask ${id} or its parent task not found.`
-				logWrapper.error(message)
+			// Check if the update was successful
+			if (coreResult.success) {
+				const successMessage = `Successfully updated subtask with ID ${subtaskIdStr}`
+				logWrapper.success(successMessage)
+				return {
+					success: true,
+					data: {
+						message: successMessage,
+						subtaskId: subtaskIdStr,
+						parentId: parentId.toString(),
+						tasksPath,
+						updated: true,
+						updatedFields: coreResult.updatedFields
+					}
+				}
+			} else {
+				// Update failed
+				const errorMessage = coreResult.error?.message || 'Unknown error updating subtask'
+				logWrapper.error(`Subtask update failed: ${errorMessage}`)
 				return {
 					success: false,
-					error: { code: 'SUBTASK_NOT_FOUND', message: message }
-				}
-			}
-
-			// Subtask updated successfully
-			const successMessage = `Successfully updated subtask with ID ${subtaskIdStr}`
-			logWrapper.success(successMessage)
-			return {
-				success: true,
-				data: {
-					message: `Successfully updated subtask with ID ${subtaskIdStr}`,
-					subtaskId: subtaskIdStr,
-					parentId: subtaskIdStr.split('.')[0],
-					subtask: coreResult.updatedSubtask,
-					tasksPath,
-					useResearch,
-					telemetryData: coreResult.telemetryData,
-					tagInfo: coreResult.tagInfo
+					error: {
+						code: 'UPDATE_FAILED',
+						message: errorMessage
+					}
 				}
 			}
 		} catch (error) {
