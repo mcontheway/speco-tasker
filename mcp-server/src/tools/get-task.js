@@ -33,7 +33,6 @@ const getTaskParameterHelp = generateParameterHelp(
 		'{"projectRoot": "/path/to/project", "id": "10", "tag": "feature-branch"}'
 	]
 )
- */
 function processTaskResponse(data) {
 	if (!data) return data
 
