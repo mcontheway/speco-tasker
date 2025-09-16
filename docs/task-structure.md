@@ -1,6 +1,6 @@
 # Task Structure
 
-Tasks in Task Master follow a specific format designed to provide comprehensive information for both humans and AI assistants.
+Tasks in Speco Tasker follow a specific format designed to provide comprehensive information for both humans and AI assistants.
 
 ## Task Fields in tasks.json
 
@@ -243,11 +243,11 @@ The `show` command:
 
 # Task Structure Documentation
 
-Task Master uses a structured JSON format to organize and manage tasks. As of version 0.16.2, Task Master introduces **Tagged Task Lists** for multi-context task management while maintaining full backward compatibility.
+Speco Tasker uses a structured JSON format to organize and manage tasks. As of version 0.16.2, Speco Tasker introduces **Tagged Task Lists** for multi-context task management while maintaining full backward compatibility.
 
 ## Tagged Task Lists System
 
-Task Master now organizes tasks into separate contexts called **tags**. This enables working across multiple contexts such as different branches, environments, or project phases without conflicts.
+Speco Tasker now organizes tasks into separate contexts called **tags**. This enables working across multiple contexts such as different branches, environments, or project phases without conflicts.
 
 ### Data Structure Overview
 
@@ -528,7 +528,7 @@ Here's a complete example showing the tagged task structure:
 
 ### Current Tag Resolution
 
-Task Master automatically determines the current tag context based on:
+Speco Tasker automatically determines the current tag context based on:
 
 1. **State Configuration**: Current tag stored in `.taskmaster/state.json`
 2. **Default Fallback**: "main" tag when no context is specified
@@ -542,7 +542,7 @@ Task Master automatically determines the current tag context based on:
 
 ## Data Validation
 
-Task Master validates the following aspects of task data:
+Speco Tasker validates the following aspects of task data:
 
 ### Required Validations
 
@@ -559,7 +559,7 @@ Task Master validates the following aspects of task data:
 
 ## File Generation
 
-Task Master can generate individual markdown files for each task based on the JSON structure. These files include:
+Speco Tasker can generate individual markdown files for each task based on the JSON structure. These files include:
 
 - **Task Overview**: ID, title, status, dependencies
 - **Tag Context**: Which tag the task belongs to
@@ -569,7 +569,7 @@ Task Master can generate individual markdown files for each task based on the JS
 
 ## Migration Process
 
-When Task Master encounters a legacy format `tasks.json` file:
+When Speco Tasker encounters a legacy format `tasks.json` file:
 
 1. **Detection**: Automatically detects `{"tasks": [...]}` format
 2. **Transformation**: Converts to `{"main": {"tasks": [...]}}` format

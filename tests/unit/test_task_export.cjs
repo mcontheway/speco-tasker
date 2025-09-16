@@ -22,8 +22,8 @@ jest.mock('../../scripts/modules/utils.js', () => ({
 	markMigrationForNotice: jest.fn(),
 	performCompleteTagMigration: jest.fn(),
 	isSilentMode: jest.fn(() => false),
-	getCurrentTag: jest.fn(() => 'master'),
-	slugifyTagForFilePath: jest.fn(() => 'master'),
+	getCurrentTag: jest.fn(() => 'main'),
+	slugifyTagForFilePath: jest.fn(() => 'main'),
 	truncate: jest.fn((text, length) => text.length > length ? text.substring(0, length) + '...' : text)
 }))
 
@@ -72,7 +72,7 @@ describe('任务导出功能验证', () => {
 					version: '1.0.0',
 					exportedAt: new Date().toISOString(),
 					exportedBy: 'test-user',
-					tag: 'master',
+					tag: 'main',
 					totalTasks: 5,
 					totalSubtasks: 12,
 					format: 'json'
@@ -151,7 +151,7 @@ describe('任务导出功能验证', () => {
 						version: '1.0.0',
 						exportedAt: new Date().toISOString(),
 						exportedBy: 'test-user',
-						tag: 'master',
+						tag: 'main',
 						totalTasks: 3,
 						totalSubtasks: 5,
 						format: formatInfo.format,
@@ -206,7 +206,7 @@ describe('任务导出功能验证', () => {
 				version: '1.0.0',
 				exportedAt: new Date().toISOString(),
 				exportedBy: 'test-user',
-				tag: 'master',
+				tag: 'main',
 				totalTasks,
 				totalSubtasks,
 				format: 'json'
@@ -353,12 +353,12 @@ describe('任务导出功能验证', () => {
 	describe('导出文件操作验证', () => {
 		it('应该能够生成正确的导出文件名', () => {
 			const baseName = 'tasks'
-			const tag = 'master'
+			const tag = 'main'
 			const timestamp = '2024-01-01'
 			const format = 'json'
 
 			// 模拟文件名生成
-			const fileName = tag === 'master'
+			const fileName = tag === 'main'
 				? `${baseName}_export_${timestamp}.${format}`
 				: `${baseName}_export_${timestamp}_${tag}.${format}`
 
@@ -366,7 +366,7 @@ describe('任务导出功能验证', () => {
 
 			// 测试非master标签
 			const featureTag = 'feature-branch'
-			const featureFileName = featureTag === 'master'
+			const featureFileName = featureTag === 'main'
 				? `${baseName}_export_${timestamp}.${format}`
 				: `${baseName}_export_${timestamp}_${featureTag}.${format}`
 

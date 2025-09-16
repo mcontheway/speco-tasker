@@ -74,7 +74,7 @@ export class TaskMaster {
 		}
 
 		const complexityReportFile =
-			this.getCurrentTag() !== 'master'
+			this.getCurrentTag() !== 'main'
 				? COMPLEXITY_REPORT_FILE.replace('.json', `_${this.getCurrentTag()}.json`)
 				: COMPLEXITY_REPORT_FILE
 
@@ -138,7 +138,7 @@ export class TaskMaster {
 		}
 
 		// Final fallback
-		return 'master'
+		return 'main'
 	}
 }
 

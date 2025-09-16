@@ -1,19 +1,19 @@
-# Task Master Tutorial
+# Speco Tasker Tutorial
 
-This tutorial will guide you through setting up and using Task Master for manual development workflows.
+This tutorial will guide you through setting up and using Speco Tasker for manual development workflows.
 
 ## Initial Setup
 
-There are two ways to set up Task Master: using MCP (recommended) or via npm installation.
+There are two ways to set up Speco Tasker: using MCP (recommended) or via npm installation.
 
 ### Option 1: Using MCP (Recommended)
 
-MCP (Model Control Protocol) provides the easiest way to get started with Task Master directly in your editor.
+MCP (Model Control Protocol) provides the easiest way to get started with Speco Tasker directly in your editor.
 
 1. **Install the package**
 
 ```bash
-npm i -g taskmaster-no-ai
+npm i -g speco-tasker
 ```
 
 2. **Add the MCP config to your IDE/MCP Client** (Cursor is recommended, but it works with other clients):
@@ -21,9 +21,9 @@ npm i -g taskmaster-no-ai
 ```json
 {
   "mcpServers": {
-    "taskmaster-no-ai": {
+    "speco-tasker": {
       "command": "npx",
-      "args": ["-y", "--package=taskmaster-no-ai", "taskmaster-no-ai"]
+      "args": ["-y", "--package=speco-tasker", "speco-tasker"]
     }
   }
 }
@@ -33,7 +33,7 @@ npm i -g taskmaster-no-ai
 
 3. **Enable the MCP** in your editor settings
 
-4. **Initialize Task Master** in your project:
+4. **Initialize Speco Tasker** in your project:
 
 ```bash
 task-master init
@@ -99,11 +99,11 @@ task-master generate
 
 ## Setting up Cursor AI Integration
 
-Task Master is designed to work seamlessly with [Cursor AI](https://www.cursor.so/), providing a structured workflow for AI-driven development.
+Speco Tasker is designed to work seamlessly with [Cursor AI](https://www.cursor.so/), providing a structured workflow for manual development.
 
 ### Using Cursor with MCP (Recommended)
 
-If you've already set up Task Master with MCP in Cursor, the integration is automatic. You can simply use natural language to interact with Task Master:
+If you've already set up Speco Tasker with MCP in Cursor, the integration is automatic. You can simply use natural language to interact with Speco Tasker:
 
 ```
 What tasks are available to work on next?

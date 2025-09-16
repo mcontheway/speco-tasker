@@ -138,7 +138,7 @@ describe('generateTaskFiles', () => {
 			// Default to master if no tag or tag not found
 			return {
 				...sampleTasksData.master,
-				tag: 'master',
+				tag: 'main',
 				_rawTaggedData: sampleTasksData
 			}
 		})
@@ -153,19 +153,19 @@ describe('generateTaskFiles', () => {
 		const outputDir = 'tasks'
 
 		await generateTaskFiles(tasksPath, outputDir, {
-			tag: 'master',
+			tag: 'main',
 			mcpLog: { info: jest.fn() }
 		})
 
 		// Verify the data was read with new signature, defaulting to master
-		expect(readJSON).toHaveBeenCalledWith(tasksPath, undefined, 'master')
+		expect(readJSON).toHaveBeenCalledWith(tasksPath, undefined, 'main')
 
 		// Verify dependencies were validated with the raw tagged data
 		expect(validateAndFixDependencies).toHaveBeenCalledWith(
 			sampleTasksData,
 			tasksPath,
 			undefined,
-			'master'
+			'main'
 		)
 
 		// Verify files were written for each task in the main tag
@@ -184,7 +184,7 @@ describe('generateTaskFiles', () => {
 
 		// Call the function
 		await generateTaskFiles('tasks/tasks.json', 'tasks', {
-			tag: 'master',
+			tag: 'main',
 			mcpLog: { info: jest.fn() }
 		})
 
@@ -221,7 +221,7 @@ describe('generateTaskFiles', () => {
 		readJSON.mockImplementation((tasksPath, projectRoot, tag) => {
 			return {
 				...tasksWithoutSubtasks.master,
-				tag: 'master',
+				tag: 'main',
 				_rawTaggedData: tasksWithoutSubtasks
 			}
 		})
@@ -230,7 +230,7 @@ describe('generateTaskFiles', () => {
 
 		// Call the function
 		await generateTaskFiles('tasks/tasks.json', 'tasks', {
-			tag: 'master',
+			tag: 'main',
 			mcpLog: { info: jest.fn() }
 		})
 
@@ -245,7 +245,7 @@ describe('generateTaskFiles', () => {
 
 		// Call the function
 		await generateTaskFiles('tasks/tasks.json', 'tasks', {
-			tag: 'master',
+			tag: 'main',
 			mcpLog: { info: jest.fn() }
 		})
 
@@ -254,7 +254,7 @@ describe('generateTaskFiles', () => {
 			sampleTasksData,
 			'tasks/tasks.json',
 			undefined,
-			'master'
+			'main'
 		)
 	})
 })

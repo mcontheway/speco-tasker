@@ -89,14 +89,14 @@ function slugifyTagForFilePath(tagName) {
  * Resolves a file path to be tag-aware, following the pattern used by other commands.
  * For non-master tags, appends _slugified-tagname before the file extension.
  * @param {string} basePath - The base file path (e.g., '.taskmaster/reports/task-complexity-report.json')
- * @param {string|null} tag - The tag name (null, undefined, or 'master' uses base path)
+ * @param {string|null} tag - The tag name (null, undefined, or 'main' uses base path)
  * @param {string} [projectRoot='.'] - The project root directory
  * @returns {string} The resolved file path
  */
 function getTagAwareFilePath(basePath, tag, projectRoot = '.') {
 	// Use path.parse and format for clean tag insertion
 	const parsedPath = path.parse(basePath)
-	if (!tag || tag === 'master') {
+	if (!tag || tag === 'main') {
 		return path.join(projectRoot, basePath)
 	}
 
@@ -450,7 +450,7 @@ function readJSON(filepath, projectRoot = null, tag = null) {
 
 		try {
 			// Default to main tag if anything goes wrong
-			let resolvedTag = 'master'
+			let resolvedTag = 'main'
 
 			// Try to resolve the correct tag, but don't fail if it doesn't work
 			try {
@@ -466,13 +466,13 @@ function readJSON(filepath, projectRoot = null, tag = null) {
 					if (derivedProjectRoot) {
 						resolvedTag = resolveTag({ projectRoot: derivedProjectRoot })
 					}
-					// If derivedProjectRoot is null, stick with 'master'
+					// If derivedProjectRoot is null, stick with 'main'
 				}
 			} catch (tagResolveError) {
 				if (isDebug) {
 					console.log(`Tag resolution failed, using master: ${tagResolveError.message}`)
 				}
-				// resolvedTag stays as 'master'
+				// resolvedTag stays as 'main'
 			}
 
 			if (isDebug) {
@@ -507,7 +507,7 @@ function readJSON(filepath, projectRoot = null, tag = null) {
 					}
 					return {
 						...masterData,
-						tag: 'master',
+						tag: 'main',
 						_rawTaggedData: originalTaggedData
 					}
 				} else {
@@ -517,7 +517,7 @@ function readJSON(filepath, projectRoot = null, tag = null) {
 					// Return empty structure if no valid data
 					return {
 						tasks: [],
-						tag: 'master',
+						tag: 'main',
 						_rawTaggedData: originalTaggedData
 					}
 				}
@@ -597,7 +597,7 @@ function migrateConfigJson(configPath) {
 			config.global = {}
 		}
 		if (!config.global.defaultTag) {
-			config.global.defaultTag = 'master'
+			config.global.defaultTag = 'main'
 			modified = true
 		}
 
@@ -621,7 +621,7 @@ function migrateConfigJson(configPath) {
 function createStateJson(statePath) {
 	try {
 		const initialState = {
-			currentTag: 'master',
+			currentTag: 'main',
 			lastSwitched: new Date().toISOString(),
 			branchTagMapping: {},
 			migrationNoticeShown: false
@@ -1350,7 +1350,7 @@ function getCurrentTag(projectRoot) {
 	}
 
 	// Final fallback
-	return 'master'
+	return 'main'
 }
 
 /**
@@ -1453,7 +1453,7 @@ function flattenTasksWithSubtasks(tasks) {
 
 /**
  * Ensures the tag object has a metadata object with created/updated timestamps.
- * @param {Object} tagObj - The tag object (e.g., data['master'])
+ * @param {Object} tagObj - The tag object (e.g., data['main'])
  * @param {Object} [opts] - Optional fields (e.g., description, skipUpdate)
  * @param {string} [opts.description] - Description for the tag
  * @param {boolean} [opts.skipUpdate] - If true, don't update the 'updated' timestamp

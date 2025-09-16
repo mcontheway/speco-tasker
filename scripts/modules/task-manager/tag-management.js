@@ -58,7 +58,7 @@ async function createTag(tasksPath, tagName, options = {}, context = {}, outputF
 		}
 
 		// Reserved tag names
-		const reservedNames = ['master', 'main', 'default']
+		const reservedNames = ['main', 'main', 'default']
 		if (reservedNames.includes(tagName.toLowerCase())) {
 			throw new Error(`"${tagName}" is a reserved tag name`)
 		}
@@ -219,7 +219,7 @@ async function deleteTag(tasksPath, tagName, options = {}, context = {}, outputF
 		}
 
 		// Prevent deletion of main tag
-		if (tagName === 'master') {
+		if (tagName === 'main') {
 			throw new Error('Cannot delete the "main" tag')
 		}
 
@@ -331,7 +331,7 @@ async function deleteTag(tasksPath, tagName, options = {}, context = {}, outputF
 
 		// If we're deleting the current tag, switch to master
 		if (isCurrentTag) {
-			await switchCurrentTag(projectRoot, 'master')
+			await switchCurrentTag(projectRoot, 'main')
 			logFn.info('Switched current tag to "main"')
 		}
 
@@ -436,7 +436,7 @@ async function enhanceTagsWithMetadata(tasksPath, rawData, context = {}) {
 			}
 
 			if (!tagData.metadata.description) {
-				if (tagName === 'master') {
+				if (tagName === 'main') {
 					tagData.metadata.description = 'Tasks live here by default'
 				} else {
 					tagData.metadata.description = `Tag created on ${new Date(tagData.metadata.created).toLocaleDateString()}`
@@ -801,12 +801,12 @@ async function renameTag(
 		}
 
 		// Prevent renaming main tag
-		if (oldName === 'master') {
+		if (oldName === 'main') {
 			throw new Error('Cannot rename the "main" tag')
 		}
 
 		// Reserved tag names
-		const reservedNames = ['master', 'main', 'default']
+		const reservedNames = ['main', 'main', 'default']
 		if (reservedNames.includes(newName.toLowerCase())) {
 			throw new Error(`"${newName}" is a reserved tag name`)
 		}
@@ -965,7 +965,7 @@ async function copyTag(
 		}
 
 		// Reserved tag names
-		const reservedNames = ['master', 'main', 'default']
+		const reservedNames = ['main', 'main', 'default']
 		if (reservedNames.includes(targetName.toLowerCase())) {
 			throw new Error(`"${targetName}" is a reserved tag name`)
 		}

@@ -85,7 +85,7 @@ function setupMocks(config = mockConfig) {
 			// Minimal set of utils that might be used
 			log: jest.fn(),
 			writeJSON: jest.fn(),
-			getCurrentTag: jest.fn(() => 'master')
+			getCurrentTag: jest.fn(() => 'main')
 		}))
 	}
 
@@ -200,7 +200,7 @@ describe('CLI Move Command Cross-Tag Functionality', () => {
 
 		// Mock TaskMaster instance
 		mockTaskMaster = {
-			getCurrentTag: jest.fn().mockReturnValue('master'),
+			getCurrentTag: jest.fn().mockReturnValue('main'),
 			getTasksPath: jest.fn().mockReturnValue('/test/path/tasks.json'),
 			getProjectRoot: jest.fn().mockReturnValue('/test/project')
 		}
@@ -383,7 +383,7 @@ describe('CLI Move Command Cross-Tag Functionality', () => {
 
 			const moveContext = {
 				sourceId: options.from,
-				sourceTag: 'master', // Should use current tag
+				sourceTag: 'main', // Should use current tag
 				toTag: options.toTag,
 				taskMaster: mockTaskMaster
 			}
@@ -397,7 +397,7 @@ describe('CLI Move Command Cross-Tag Functionality', () => {
 			expect(mocks.moveTasksBetweenTags).toHaveBeenCalledWith(
 				'/test/path/tasks.json',
 				['1'],
-				'master',
+				'main',
 				'in-progress',
 				expect.any(Object),
 				{ projectRoot: '/test/project' }

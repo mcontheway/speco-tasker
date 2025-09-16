@@ -249,7 +249,7 @@ describe('任务创建功能验证', () => {
 			const { readJSON } = require('../../scripts/modules/utils.js')
 			readJSON.mockReturnValue(mockTasksData)
 
-			const result = readJSON('/mock/tasks.json', '/mock/project', 'master')
+			const result = readJSON('/mock/tasks.json', '/mock/project', 'main')
 			expect(result).toEqual(mockTasksData)
 		})
 	})

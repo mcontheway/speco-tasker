@@ -29,7 +29,7 @@ export function registerInitializeProjectTool(server) {
 	server.addTool({
 		name: 'initialize_project',
 		description:
-			'初始化新的Task Master项目结构，调用核心初始化逻辑，在当前目录创建必要的文件夹和配置文件。',
+			'初始化新的Speco Tasker项目结构，调用核心初始化逻辑，在当前目录创建必要的文件夹和配置文件。',
 		parameters: z.object({
 			skipInstall: z
 				.boolean()

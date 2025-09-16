@@ -68,7 +68,7 @@ jest.unstable_mockModule('../../scripts/modules/utils.js', () => ({
 	enableSilentMode: jest.fn(),
 	disableSilentMode: jest.fn(),
 	isSilentMode: jest.fn(() => false),
-	getCurrentTag: jest.fn(() => 'master'),
+	getCurrentTag: jest.fn(() => 'main'),
 	ensureTagMetadata: jest.fn(),
 	readJSON: jest.fn(() => ({ master: { tasks: [] } })),
 	findProjectRoot: jest.fn(() => '/tmp/test'),
@@ -81,12 +81,12 @@ jest.unstable_mockModule('../../scripts/modules/utils.js', () => ({
 	isEmpty: jest.fn(() => false),
 	truncate: jest.fn((text) => text),
 	slugify: jest.fn((text) => text.toLowerCase()),
-	getTagFromPath: jest.fn(() => 'master'),
+	getTagFromPath: jest.fn(() => 'main'),
 	isValidTag: jest.fn(() => true),
 	migrateToTaggedFormat: jest.fn(() => ({ master: { tasks: [] } })),
 	performCompleteTagMigration: jest.fn(),
-	resolveCurrentTag: jest.fn(() => 'master'),
-	getDefaultTag: jest.fn(() => 'master'),
+	resolveCurrentTag: jest.fn(() => 'main'),
+	getDefaultTag: jest.fn(() => 'main'),
 	performMigrationIfNeeded: jest.fn()
 }))
 

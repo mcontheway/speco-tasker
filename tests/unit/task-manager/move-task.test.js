@@ -32,7 +32,7 @@ describe('moveTask basic scenarios', () => {
 			{ id: 2, title: 'B' }
 		])
 
-		await moveTask(TASKS, '1', '3', false, { projectRoot: TMP, tag: 'master' })
+		await moveTask(TASKS, '1', '3', false, { projectRoot: TMP, tag: 'main' })
 
 		const data = JSON.parse(fs.readFileSync(TASKS, 'utf8'))
 		const ids = data.master.tasks.map((t) => t.id)

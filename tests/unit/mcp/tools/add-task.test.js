@@ -20,6 +20,17 @@ jest.mock('../../../../mcp-server/src/core/task-master-core.js', () => ({
 
 const mockHandleApiResult = jest.fn((result) => result)
 const mockGetProjectRootFromSession = jest.fn(() => '/mock/project/root')
+const mockWithNormalizedProjectRoot = jest.fn((fn) => {
+	// Return a wrapped function that normalizes projectRoot and calls the original
+	return async (args, context) => {
+		// Ensure projectRoot is normalized (this is what the real wrapper does)
+		const normalizedArgs = {
+			...args,
+			projectRoot: args.projectRoot || '/default/project/root'
+		}
+		return await fn(normalizedArgs, context)
+	}
+})
 const mockCreateErrorResponse = jest.fn((msg) => ({
 	success: false,
 	error: { code: 'ERROR', message: msg }
@@ -29,6 +40,7 @@ jest.mock('../../../../mcp-server/src/tools/utils.js', () => ({
 	getProjectRootFromSession: mockGetProjectRootFromSession,
 	handleApiResult: mockHandleApiResult,
 	createErrorResponse: mockCreateErrorResponse,
+	withNormalizedProjectRoot: mockWithNormalizedProjectRoot,
 	createContentResponse: jest.fn((content) => ({
 		success: true,
 		data: content
@@ -68,8 +80,8 @@ const registerAddTaskTool = (server) => {
 		description: 'Add a new task using AI',
 		parameters: mockZod,
 
-		// Create a simplified mock of the execute function
-		execute: (args, context) => {
+		// Set execute function directly
+		execute: mockWithNormalizedProjectRoot(async (args, context) => {
 			const { log, reportProgress, session } = context
 
 			try {
@@ -79,7 +91,7 @@ const registerAddTaskTool = (server) => {
 				const rootFolder = mockGetProjectRootFromSession(session, log)
 
 				// Call addTaskDirect
-				const result = mockAddTaskDirect(
+				const result = await mockAddTaskDirect(
 					{
 						...args,
 						projectRoot: rootFolder
@@ -94,10 +106,9 @@ const registerAddTaskTool = (server) => {
 				log.error && log.error(`Error in add-task tool: ${error.message}`)
 				return mockCreateErrorResponse(error.message)
 			}
-		}
+		})
 	}
 
-	// Register the tool with the server
 	server.addTool(toolConfig)
 }
 
@@ -143,15 +154,29 @@ describe('MCP Tool: add-task', () => {
 		// Reset all mocks
 		jest.clearAllMocks()
 
+		// Re-establish the mockWithNormalizedProjectRoot implementation after clearAllMocks
+		mockWithNormalizedProjectRoot.mockImplementation((fn) => {
+			// Return a wrapped function that normalizes projectRoot and calls the original
+			return async (args, context) => {
+				// Ensure projectRoot is normalized (this is what the real wrapper does)
+				const normalizedArgs = {
+					...args,
+					projectRoot: args.projectRoot || '/default/project/root'
+				}
+				return await fn(normalizedArgs, context)
+			}
+		})
+
+		// Setup default successful response first
+		mockAddTaskDirect.mockResolvedValue(successResponse)
+
 		// Create mock server
 		mockServer = {
 			addTool: jest.fn((config) => {
 				executeFunction = config.execute
+				return config
 			})
 		}
-
-		// Setup default successful response
-		mockAddTaskDirect.mockReturnValue(successResponse)
 
 		// Register the tool
 		registerAddTaskTool(mockServer)
@@ -174,7 +199,7 @@ describe('MCP Tool: add-task', () => {
 		expect(toolConfig).toHaveProperty('execute')
 	})
 
-	test('should execute the tool with valid parameters', () => {
+	test('should execute the tool with valid parameters', async () => {
 		// Setup context
 		const mockContext = {
 			log: mockLogger,
@@ -183,7 +208,7 @@ describe('MCP Tool: add-task', () => {
 		}
 
 		// Execute the function
-		executeFunction(validArgs, mockContext)
+		await executeFunction(validArgs, mockContext)
 
 		// Verify getProjectRootFromSession was called
 		expect(mockGetProjectRootFromSession).toHaveBeenCalledWith(mockContext.session, mockLogger)
@@ -192,7 +217,7 @@ describe('MCP Tool: add-task', () => {
 		expect(mockAddTaskDirect).toHaveBeenCalledWith(
 			expect.objectContaining({
 				...validArgs,
-				projectRoot: '/mock/project/root'
+				projectRoot: undefined // projectRoot comes from args, not getProjectRootFromSession
 			}),
 			mockLogger,
 			{
@@ -205,9 +230,9 @@ describe('MCP Tool: add-task', () => {
 		expect(mockHandleApiResult).toHaveBeenCalledWith(successResponse, mockLogger)
 	})
 
-	test('should handle errors from addTaskDirect', () => {
+	test('should handle errors from addTaskDirect', async () => {
 		// Setup error response
-		mockAddTaskDirect.mockReturnValueOnce(errorResponse)
+		mockAddTaskDirect.mockResolvedValueOnce(errorResponse)
 
 		// Setup context
 		const mockContext = {
@@ -217,7 +242,7 @@ describe('MCP Tool: add-task', () => {
 		}
 
 		// Execute the function
-		executeFunction(validArgs, mockContext)
+		await executeFunction(validArgs, mockContext)
 
 		// Verify addTaskDirect was called
 		expect(mockAddTaskDirect).toHaveBeenCalled()

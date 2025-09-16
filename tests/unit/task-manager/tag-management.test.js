@@ -71,7 +71,7 @@ describe('Tag Management – writeJSON context preservation', () => {
 		const tagsList = await listTags(TASKS_PATH, {}, { projectRoot: TEMP_DIR }, 'json')
 
 		const tagNames = tagsList.tags.map((t) => t.name)
-		expect(tagNames).toContain('master')
+		expect(tagNames).toContain('main')
 		expect(tagNames).toContain('source')
 		expect(tagNames).not.toContain('copy')
 	})

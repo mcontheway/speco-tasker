@@ -1,6 +1,6 @@
 /**
  * tools/index.js
- * Export all Task Master CLI tools for MCP server
+ * Export all Speco Tasker CLI tools for MCP server
  */
 
 import logger from '../logger.js'
@@ -28,7 +28,7 @@ import { registerUseTagTool } from './use-tag.js'
 import { registerValidateDependenciesTool } from './validate-dependencies.js'
 
 /**
- * Register all Task Master tools with the MCP server
+ * Register all Speco Tasker tools with the MCP server
  * @param {Object} server - FastMCP server instance
  */
 export function registerTaskMasterTools(server) {
@@ -80,7 +80,7 @@ export function registerTaskMasterTools(server) {
 		// Group 8: Research Features
 		// AI-based research tool removed in phase 3.3
 	} catch (error) {
-		logger.error(`Error registering Task Master tools: ${error.message}`)
+		logger.error(`Error registering Speco Tasker tools: ${error.message}`)
 		throw error
 	}
 }

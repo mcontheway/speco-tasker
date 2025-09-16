@@ -11,7 +11,7 @@ describe('getTagAwareFilePath utility function', () => {
 	const basePath = '.taskmaster/reports/task-complexity-report.json'
 
 	it('should return base path for main tag', () => {
-		const result = getTagAwareFilePath(basePath, 'master', projectRoot)
+		const result = getTagAwareFilePath(basePath, 'main', projectRoot)
 		const expected = path.join(projectRoot, basePath)
 		expect(result).toBe(expected)
 	})

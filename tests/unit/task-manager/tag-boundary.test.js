@@ -38,7 +38,7 @@ function seedWorkspace() {
 	// Initial state.json
 	fs.writeFileSync(
 		STATE_PATH,
-		JSON.stringify({ currentTag: 'master', lastSwitched: new Date().toISOString() }, null, 2),
+		JSON.stringify({ currentTag: 'main', lastSwitched: new Date().toISOString() }, null, 2),
 		'utf8'
 	)
 }
@@ -69,7 +69,7 @@ describe('Tag boundary resolution', () => {
 		await deleteTag(TASKS_PATH, 'temp', { yes: true }, { projectRoot: TEMP_DIR }, 'json')
 
 		const state = JSON.parse(fs.readFileSync(STATE_PATH, 'utf8'))
-		expect(state.currentTag).toBe('master')
+		expect(state.currentTag).toBe('main')
 
 		const tasksFile = JSON.parse(fs.readFileSync(TASKS_PATH, 'utf8'))
 		expect(tasksFile.temp).toBeUndefined()
@@ -126,13 +126,13 @@ describe('Tag boundary resolution', () => {
 
 	it('reserved tag names are rejected', async () => {
 		await expect(
-			createTag(TASKS_PATH, 'master', {}, { projectRoot: TEMP_DIR }, 'json')
+			createTag(TASKS_PATH, 'main', {}, { projectRoot: TEMP_DIR }, 'json')
 		).rejects.toThrow(/reserved tag/i)
 	})
 
 	it('cannot delete the main tag', async () => {
 		await expect(
-			deleteTag(TASKS_PATH, 'master', { yes: true }, { projectRoot: TEMP_DIR }, 'json')
+			deleteTag(TASKS_PATH, 'main', { yes: true }, { projectRoot: TEMP_DIR }, 'json')
 		).rejects.toThrow(/Cannot delete the "main" tag/)
 	})
 

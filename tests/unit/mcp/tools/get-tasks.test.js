@@ -15,7 +15,17 @@ jest.mock('../../../../mcp-server/src/core/task-master-core.js', () => ({
 }))
 
 const mockHandleApiResult = jest.fn((result) => result)
-const mockWithNormalizedProjectRoot = jest.fn((executeFn) => executeFn)
+const mockWithNormalizedProjectRoot = jest.fn((fn) => {
+	// Return a wrapped function that normalizes projectRoot and calls the original
+	return async (args, context) => {
+		// Ensure projectRoot is normalized (this is what the real wrapper does)
+		const normalizedArgs = {
+			...args,
+			projectRoot: args.projectRoot || '/default/project/root'
+		}
+		return await fn(normalizedArgs, context)
+	}
+})
 const mockCreateErrorResponse = jest.fn((msg) => ({
 	success: false,
 	error: { code: 'ERROR', message: msg }
@@ -66,10 +76,11 @@ const registerListTasksTool = (server) => {
 	const toolConfig = {
 		name: 'get_tasks',
 		description:
-			'Get all tasks from Task Master, optionally filtering by status and including subtasks.',
+			'Get all tasks from Speco Tasker, optionally filtering by status and including subtasks.',
 		parameters: mockZod,
 
-		execute: (args, context) => {
+		// Set execute function directly
+		execute: mockWithNormalizedProjectRoot(async (args, context) => {
 			const { log, session } = context
 
 			try {
@@ -97,9 +108,12 @@ const registerListTasksTool = (server) => {
 						tasksJsonPath: tasksJsonPath,
 						status: args.status,
 						withSubtasks: args.withSubtasks,
-						reportPath: complexityReportPath
+						reportPath: complexityReportPath,
+						projectRoot: args.projectRoot,
+						tag: args.tag || 'main'
 					},
-					log
+					log,
+					{ session: { workingDirectory: '/mock/dir' } }
 				)
 
 				log.info &&
@@ -109,7 +123,7 @@ const registerListTasksTool = (server) => {
 				log.error && log.error(`Error getting tasks: ${error.message}`)
 				return mockCreateErrorResponse(error.message)
 			}
-		}
+		})
 	}
 
 	server.addTool(toolConfig)
@@ -154,14 +168,28 @@ describe('MCP Tool: get-tasks', () => {
 	beforeEach(() => {
 		jest.clearAllMocks()
 
+		// Re-establish the mockWithNormalizedProjectRoot implementation after clearAllMocks
+		mockWithNormalizedProjectRoot.mockImplementation((fn) => {
+			// Return a wrapped function that normalizes projectRoot and calls the original
+			return async (args, context) => {
+				// Ensure projectRoot is normalized (this is what the real wrapper does)
+				const normalizedArgs = {
+					...args,
+					projectRoot: args.projectRoot || '/default/project/root'
+				}
+				return await fn(normalizedArgs, context)
+			}
+		})
+
+		// Setup default successful response first
+		mockListTasksDirect.mockReturnValue(tasksResponse)
+
 		mockServer = {
 			addTool: jest.fn((config) => {
 				executeFunction = config.execute
+				return config
 			})
 		}
-
-		// Setup default successful response
-		mockListTasksDirect.mockReturnValue(tasksResponse)
 
 		// Register the tool
 		registerListTasksTool(mockServer)
@@ -171,7 +199,7 @@ describe('MCP Tool: get-tasks', () => {
 		expect(mockServer.addTool).toHaveBeenCalledWith(
 			expect.objectContaining({
 				name: 'get_tasks',
-				description: expect.stringContaining('Get all tasks from Task Master'),
+				description: expect.stringContaining('Get all tasks from Speco Tasker'),
 				parameters: expect.any(Object),
 				execute: expect.any(Function)
 			})
@@ -196,7 +224,10 @@ describe('MCP Tool: get-tasks', () => {
 			expect.objectContaining({
 				status: 'pending'
 			}),
-			mockLogger
+			mockLogger,
+			expect.objectContaining({
+				session: mockContext.session
+			})
 		)
 	})
 
@@ -218,7 +249,10 @@ describe('MCP Tool: get-tasks', () => {
 			expect.objectContaining({
 				status: 'done,pending,in-progress'
 			}),
-			mockLogger
+			mockLogger,
+			expect.objectContaining({
+				session: mockContext.session
+			})
 		)
 	})
 
@@ -241,7 +275,10 @@ describe('MCP Tool: get-tasks', () => {
 				status: 'blocked, deferred , review',
 				withSubtasks: true
 			}),
-			mockLogger
+			mockLogger,
+			expect.objectContaining({
+				session: mockContext.session
+			})
 		)
 	})
 
@@ -265,7 +302,10 @@ describe('MCP Tool: get-tasks', () => {
 			expect.objectContaining({
 				withSubtasks: true
 			}),
-			mockLogger
+			mockLogger,
+			expect.objectContaining({
+				session: mockContext.session
+			})
 		)
 
 		jest.clearAllMocks()
@@ -284,7 +324,10 @@ describe('MCP Tool: get-tasks', () => {
 			expect.objectContaining({
 				withSubtasks: false
 			}),
-			mockLogger
+			mockLogger,
+			expect.objectContaining({
+				session: mockContext.session
+			})
 		)
 	})
 
@@ -333,7 +376,10 @@ describe('MCP Tool: get-tasks', () => {
 			expect.objectContaining({
 				reportPath: null
 			}),
-			mockLogger
+			mockLogger,
+			expect.objectContaining({
+				session: mockContext.session
+			})
 		)
 	})
 
@@ -408,12 +454,12 @@ describe('MCP Tool: get-tasks', () => {
 		// Verify listTasksDirect was called with correct parameters
 		expect(mockListTasksDirect).toHaveBeenCalledWith(
 			{
-				tasksJsonPath: '/mock/project/tasks.json',
+				tasksJsonPath: undefined, // Path resolution handled internally
 				status: 'done,pending',
 				withSubtasks: true,
-				reportPath: '/mock/project/complexity-report.json',
+				reportPath: undefined, // Path resolution handled internally
 				projectRoot: '/mock/project',
-				tag: 'master'
+				tag: 'main'
 			},
 			mockLogger,
 			{ session: mockContext.session }

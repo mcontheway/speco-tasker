@@ -49,7 +49,7 @@
 
 ```bash
 # 全局安装
-npm install -g taskmaster-no-ai
+npm install -g speco-tasker
 
 # 初始化项目
 task-master init
@@ -129,9 +129,9 @@ task-master add-subtask --parent=1 --title "子任务标题"
 ```json
 {
   "mcpServers": {
-    "taskmaster-no-ai": {
+    "speco-tasker": {
       "command": "npx",
-      "args": ["-y", "--package=taskmaster-no-ai", "taskmaster-no-ai"]
+      "args": ["-y", "--package=speco-tasker", "speco-tasker"]
     }
   }
 }
@@ -144,9 +144,9 @@ task-master add-subtask --parent=1 --title "子任务标题"
 ```json
 {
   "servers": {
-    "taskmaster-no-ai": {
+    "speco-tasker": {
       "command": "npx",
-      "args": ["-y", "--package=taskmaster-no-ai", "taskmaster-no-ai"],
+      "args": ["-y", "--package=speco-tasker", "speco-tasker"],
       "type": "stdio"
     }
   }
@@ -213,7 +213,7 @@ A: 所有数据都存储在项目的 `.taskmaster/` 目录中，完全本地化�
 
 ## 🎉 开始使用
 
-1. **安装**：`npm install -g taskmaster-no-ai`
+1. **安装**：`npm install -g speco-tasker`
 2. **配置MCP**：根据您的编辑器添加配置文件
 3. **初始化**：`task-master init`
 4. **创建任务**：开始描述您的开发需求

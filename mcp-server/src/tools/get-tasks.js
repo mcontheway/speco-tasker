@@ -1,6 +1,6 @@
 /**
  * tools/get-tasks.js
- * Tool to get all tasks from Task Master
+ * Tool to get all tasks from Speco Tasker
  */
 
 import { z } from 'zod'
@@ -46,7 +46,7 @@ export function registerListTasksTool(server) {
 	server.addTool({
 		name: 'get_tasks',
 		description:
-			'获取Task Master中的所有任务，可选按状态过滤和包含子任务。',
+			'获取Speco Tasker中的所有任务，可选按状态过滤和包含子任务。',
 		parameters: z.object({
 			status: z
 				.string()

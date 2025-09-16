@@ -19,7 +19,7 @@ jest.unstable_mockModule('../../../../../scripts/modules/utils.js', () => ({
 	isSilentMode: jest.fn(() => false),
 	findTaskById: jest.fn((tasks, id) => tasks.find((t) => t.id === parseInt(id))),
 	ensureTagMetadata: jest.fn((tagObj) => tagObj),
-	getCurrentTag: jest.fn(() => 'master')
+	getCurrentTag: jest.fn(() => 'main')
 }))
 
 jest.unstable_mockModule(
@@ -196,18 +196,18 @@ describe('setTaskStatus', () => {
 
 		readJSON.mockReturnValue({
 			...testTasksData.master,
-			tag: 'master',
+			tag: 'main',
 			_rawTaggedData: testTasksData
 		})
 
 		// Act
 		await setTaskStatus(tasksPath, '2', 'done', {
-			tag: 'master',
+			tag: 'main',
 			mcpLog: { info: jest.fn() }
 		})
 
 		// Assert
-		expect(readJSON).toHaveBeenCalledWith(tasksPath, undefined, 'master')
+		expect(readJSON).toHaveBeenCalledWith(tasksPath, undefined, 'main')
 		expect(writeJSON).toHaveBeenCalledWith(
 			tasksPath,
 			expect.objectContaining({
@@ -216,7 +216,7 @@ describe('setTaskStatus', () => {
 				})
 			}),
 			undefined,
-			'master'
+			'main'
 		)
 		// expect(generateTaskFiles).toHaveBeenCalledWith(
 		// 	tasksPath,
@@ -232,18 +232,18 @@ describe('setTaskStatus', () => {
 
 		readJSON.mockReturnValue({
 			...testTasksData.master,
-			tag: 'master',
+			tag: 'main',
 			_rawTaggedData: testTasksData
 		})
 
 		// Act
 		await setTaskStatus(tasksPath, '3.1', 'done', {
-			tag: 'master',
+			tag: 'main',
 			mcpLog: { info: jest.fn() }
 		})
 
 		// Assert
-		expect(readJSON).toHaveBeenCalledWith(tasksPath, undefined, 'master')
+		expect(readJSON).toHaveBeenCalledWith(tasksPath, undefined, 'main')
 		expect(writeJSON).toHaveBeenCalledWith(
 			tasksPath,
 			expect.objectContaining({
@@ -257,7 +257,7 @@ describe('setTaskStatus', () => {
 				})
 			}),
 			undefined,
-			'master'
+			'main'
 		)
 	})
 
@@ -268,18 +268,18 @@ describe('setTaskStatus', () => {
 
 		readJSON.mockReturnValue({
 			...testTasksData.master,
-			tag: 'master',
+			tag: 'main',
 			_rawTaggedData: testTasksData
 		})
 
 		// Act
 		await setTaskStatus(tasksPath, '1,2', 'done', {
-			tag: 'master',
+			tag: 'main',
 			mcpLog: { info: jest.fn() }
 		})
 
 		// Assert
-		expect(readJSON).toHaveBeenCalledWith(tasksPath, undefined, 'master')
+		expect(readJSON).toHaveBeenCalledWith(tasksPath, undefined, 'main')
 		expect(writeJSON).toHaveBeenCalledWith(
 			tasksPath,
 			expect.objectContaining({
@@ -291,7 +291,7 @@ describe('setTaskStatus', () => {
 				})
 			}),
 			undefined,
-			'master'
+			'main'
 		)
 	})
 
@@ -302,13 +302,13 @@ describe('setTaskStatus', () => {
 
 		readJSON.mockReturnValue({
 			...testTasksData.master,
-			tag: 'master',
+			tag: 'main',
 			_rawTaggedData: testTasksData
 		})
 
 		// Act
 		await setTaskStatus(tasksPath, '3', 'done', {
-			tag: 'master',
+			tag: 'main',
 			mcpLog: { info: jest.fn() }
 		})
 
@@ -330,7 +330,7 @@ describe('setTaskStatus', () => {
 				})
 			}),
 			undefined,
-			'master'
+			'main'
 		)
 	})
 
@@ -341,14 +341,14 @@ describe('setTaskStatus', () => {
 
 		readJSON.mockReturnValue({
 			...testTasksData.master,
-			tag: 'master',
+			tag: 'main',
 			_rawTaggedData: testTasksData
 		})
 
 		// Act & Assert
 		await expect(
 			setTaskStatus(tasksPath, '99', 'done', {
-				tag: 'master',
+				tag: 'main',
 				mcpLog: { info: jest.fn() }
 			})
 		).rejects.toThrow('Task 99 not found')
@@ -361,7 +361,7 @@ describe('setTaskStatus', () => {
 
 		readJSON.mockReturnValue({
 			...testTasksData.master,
-			tag: 'master',
+			tag: 'main',
 			_rawTaggedData: testTasksData
 		})
 
@@ -383,14 +383,14 @@ describe('setTaskStatus', () => {
 		const tasksPath = '/mock/path/tasks.json'
 		readJSON.mockReturnValue({
 			...testTasksData.master,
-			tag: 'master',
+			tag: 'main',
 			_rawTaggedData: testTasksData
 		})
 
 		// Act & Assert
 		await expect(
 			setTaskStatus(tasksPath, '3.1', 'done', {
-				tag: 'master',
+				tag: 'main',
 				mcpLog: { info: jest.fn() }
 			})
 		).rejects.toThrow('has no subtasks')
@@ -403,14 +403,14 @@ describe('setTaskStatus', () => {
 
 		readJSON.mockReturnValue({
 			...testTasksData.master,
-			tag: 'master',
+			tag: 'main',
 			_rawTaggedData: testTasksData
 		})
 
 		// Act & Assert
 		await expect(
 			setTaskStatus(tasksPath, '3.99', 'done', {
-				tag: 'master',
+				tag: 'main',
 				mcpLog: { info: jest.fn() }
 			})
 		).rejects.toThrow('Subtask 99 not found')
@@ -463,13 +463,13 @@ describe('setTaskStatus', () => {
 
 		readJSON.mockReturnValue({
 			...testTasksData.master,
-			tag: 'master',
+			tag: 'main',
 			_rawTaggedData: testTasksData
 		})
 
 		// Act
 		const result = await setTaskStatus(tasksPath, taskIds, newStatus, {
-			tag: 'master',
+			tag: 'main',
 			mcpLog: { info: jest.fn() }
 		})
 
@@ -481,7 +481,7 @@ describe('setTaskStatus', () => {
 			newStatus,
 			expect.objectContaining({
 				tasks: expect.any(Array),
-				tag: 'master',
+				tag: 'main',
 				_rawTaggedData: expect.any(Object)
 			}),
 			false
@@ -492,7 +492,7 @@ describe('setTaskStatus', () => {
 			newStatus,
 			expect.objectContaining({
 				tasks: expect.any(Array),
-				tag: 'master',
+				tag: 'main',
 				_rawTaggedData: expect.any(Object)
 			}),
 			false
@@ -503,7 +503,7 @@ describe('setTaskStatus', () => {
 			newStatus,
 			expect.objectContaining({
 				tasks: expect.any(Array),
-				tag: 'master',
+				tag: 'main',
 				_rawTaggedData: expect.any(Object)
 			}),
 			false
@@ -525,13 +525,13 @@ describe('setTaskStatus', () => {
 
 		readJSON.mockReturnValue({
 			...multiTagData.master, // resolved view not used
-			tag: 'master',
+			tag: 'main',
 			_rawTaggedData: multiTagData
 		})
 
 		// Act
 		await setTaskStatus(tasksPath, '1', 'done', {
-			tag: 'master',
+			tag: 'main',
 			mcpLog: { info: jest.fn() }
 		})
 
@@ -539,15 +539,15 @@ describe('setTaskStatus', () => {
 		const writeArgs = writeJSON.mock.calls[0]
 		expect(writeArgs[0]).toBe(tasksPath)
 		const writtenData = writeArgs[1]
-		expect(writtenData).toHaveProperty('master')
+		expect(writtenData).toHaveProperty('main')
 		expect(writtenData).toHaveProperty('feature-branch')
 		// master task updated
 		const updatedTask = writtenData.master.tasks.find((t) => t.id === 1)
 		expect(updatedTask.status).toBe('done')
 		// feature-branch untouched
 		expect(writtenData['feature-branch'].tasks[0].status).toBe('pending')
-		// ensure additional args (projectRoot undefined, tag 'master') present
+		// ensure additional args (projectRoot undefined, tag 'main') present
 		expect(writeArgs[2]).toBeUndefined()
-		expect(writeArgs[3]).toBe('master')
+		expect(writeArgs[3]).toBe('main')
 	})
 })

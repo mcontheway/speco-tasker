@@ -104,13 +104,13 @@ describe('clearSubtasks', () => {
 		readJSON.mockImplementation((tasksPath, projectRoot, tag) => {
 			// Ensure tag contract is honoured
 			expect(tag).toBeDefined()
-			expect(tag).toBe('master')
+			expect(tag).toBe('main')
 			// Create a deep copy to avoid mutation issues between tests
 			const sampleTasksCopy = JSON.parse(JSON.stringify(sampleTasks))
-			// Return the data for the 'master' tag, which is what the tests use
+			// Return the data for the 'main' tag, which is what the tests use
 			return {
 				...sampleTasksCopy.master,
-				tag: tag || 'master',
+				tag: tag || 'main',
 				_rawTaggedData: sampleTasksCopy
 			}
 		})
@@ -123,13 +123,13 @@ describe('clearSubtasks', () => {
 		// Arrange
 		const taskId = '3'
 		const tasksPath = 'tasks/tasks.json'
-		const context = { tag: 'master' }
+		const context = { tag: 'main' }
 
 		// Act
 		clearSubtasks(tasksPath, taskId, context)
 
 		// Assert
-		expect(readJSON).toHaveBeenCalledWith(tasksPath, undefined, 'master')
+		expect(readJSON).toHaveBeenCalledWith(tasksPath, undefined, 'main')
 		expect(writeJSON).toHaveBeenCalledWith(
 			tasksPath,
 			expect.objectContaining({
@@ -145,7 +145,7 @@ describe('clearSubtasks', () => {
 				})
 			}),
 			undefined,
-			'master'
+			'main'
 		)
 	})
 
@@ -153,13 +153,13 @@ describe('clearSubtasks', () => {
 		// Arrange
 		const taskIds = '3,4'
 		const tasksPath = 'tasks/tasks.json'
-		const context = { tag: 'master' }
+		const context = { tag: 'main' }
 
 		// Act
 		clearSubtasks(tasksPath, taskIds, context)
 
 		// Assert
-		expect(readJSON).toHaveBeenCalledWith(tasksPath, undefined, 'master')
+		expect(readJSON).toHaveBeenCalledWith(tasksPath, undefined, 'main')
 		expect(writeJSON).toHaveBeenCalledWith(
 			tasksPath,
 			expect.objectContaining({
@@ -173,7 +173,7 @@ describe('clearSubtasks', () => {
 				})
 			}),
 			undefined,
-			'master'
+			'main'
 		)
 	})
 
@@ -181,13 +181,13 @@ describe('clearSubtasks', () => {
 		// Arrange
 		const taskId = '1' // Task 1 already has no subtasks
 		const tasksPath = 'tasks/tasks.json'
-		const context = { tag: 'master' }
+		const context = { tag: 'main' }
 
 		// Act
 		clearSubtasks(tasksPath, taskId, context)
 
 		// Assert
-		expect(readJSON).toHaveBeenCalledWith(tasksPath, undefined, 'master')
+		expect(readJSON).toHaveBeenCalledWith(tasksPath, undefined, 'main')
 		// Should not write the file if no changes were made
 		expect(writeJSON).not.toHaveBeenCalled()
 		expect(generateTaskFiles).not.toHaveBeenCalled()
@@ -197,13 +197,13 @@ describe('clearSubtasks', () => {
 		// Arrange
 		const taskId = '99' // Non-existent task
 		const tasksPath = 'tasks/tasks.json'
-		const context = { tag: 'master' }
+		const context = { tag: 'main' }
 
 		// Act
 		clearSubtasks(tasksPath, taskId, context)
 
 		// Assert
-		expect(readJSON).toHaveBeenCalledWith(tasksPath, undefined, 'master')
+		expect(readJSON).toHaveBeenCalledWith(tasksPath, undefined, 'main')
 		expect(log).toHaveBeenCalledWith('error', 'Task 99 not found')
 		// Should not write the file if no changes were made
 		expect(writeJSON).not.toHaveBeenCalled()
@@ -214,20 +214,20 @@ describe('clearSubtasks', () => {
 		// Arrange
 		const taskIds = '3,99' // Mix of valid and invalid IDs
 		const tasksPath = 'tasks/tasks.json'
-		const context = { tag: 'master' }
+		const context = { tag: 'main' }
 
 		// Act
 		clearSubtasks(tasksPath, taskIds, context)
 
 		// Assert
-		expect(readJSON).toHaveBeenCalledWith(tasksPath, undefined, 'master')
+		expect(readJSON).toHaveBeenCalledWith(tasksPath, undefined, 'main')
 		expect(log).toHaveBeenCalledWith('error', 'Task 99 not found')
 		// Since task 3 has subtasks that should be cleared, writeJSON should be called
 		expect(writeJSON).toHaveBeenCalledWith(
 			tasksPath,
 			expect.objectContaining({
 				tasks: expect.arrayContaining([expect.objectContaining({ id: 3, subtasks: [] })]),
-				tag: 'master',
+				tag: 'main',
 				_rawTaggedData: expect.objectContaining({
 					master: expect.objectContaining({
 						tasks: expect.arrayContaining([expect.objectContaining({ id: 3, subtasks: [] })])
@@ -235,7 +235,7 @@ describe('clearSubtasks', () => {
 				})
 			}),
 			undefined,
-			'master'
+			'main'
 		)
 	})
 
@@ -247,7 +247,7 @@ describe('clearSubtasks', () => {
 
 		// Act & Assert
 		expect(() => {
-			clearSubtasks('tasks/tasks.json', '3', { tag: 'master' })
+			clearSubtasks('tasks/tasks.json', '3', { tag: 'main' })
 		}).toThrow('File read failed')
 	})
 
@@ -261,7 +261,7 @@ describe('clearSubtasks', () => {
 		// Ensure task 3 has subtasks to clear so writeJSON gets called
 		readJSON.mockReturnValue({
 			...sampleTasks.master,
-			tag: 'master',
+			tag: 'main',
 			_rawTaggedData: sampleTasks,
 			tasks: [
 				...sampleTasks.master.tasks.slice(0, 2),
@@ -279,7 +279,7 @@ describe('clearSubtasks', () => {
 
 		// Act & Assert
 		expect(() => {
-			clearSubtasks('tasks/tasks.json', '3', { tag: 'master' })
+			clearSubtasks('tasks/tasks.json', '3', { tag: 'main' })
 		}).toThrow('File write failed')
 	})
 })

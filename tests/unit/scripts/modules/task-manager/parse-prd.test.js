@@ -21,7 +21,7 @@ jest.unstable_mockModule('../../../../../scripts/modules/utils.js', () => ({
 	disableSilentMode: jest.fn(),
 	findTaskById: jest.fn(),
 	ensureTagMetadata: jest.fn((tagObj) => tagObj),
-	getCurrentTag: jest.fn(() => 'master'),
+	getCurrentTag: jest.fn(() => 'main'),
 	promptYesNo: jest.fn()
 }))
 
@@ -473,7 +473,7 @@ describe('parsePRD', () => {
 
 		// Call the function with mcpLog to force non-streaming mode
 		const result = await parsePRD('path/to/prd.txt', 'tasks/tasks.json', 3, {
-			tag: 'master',
+			tag: 'main',
 			mcpLog: {
 				info: jest.fn(),
 				warn: jest.fn(),
@@ -522,7 +522,7 @@ describe('parsePRD', () => {
 
 		// Call the function with mcpLog to force non-streaming mode
 		await parsePRD('path/to/prd.txt', 'tasks/tasks.json', 3, {
-			tag: 'master',
+			tag: 'main',
 			mcpLog: {
 				info: jest.fn(),
 				warn: jest.fn(),
@@ -553,7 +553,7 @@ describe('parsePRD', () => {
 		// Call the function with mcpLog to make it think it's in MCP mode (which throws instead of process.exit)
 		await expect(
 			parsePRD('path/to/prd.txt', 'tasks/tasks.json', 3, {
-				tag: 'master',
+				tag: 'main',
 				mcpLog: {
 					info: jest.fn(),
 					warn: jest.fn(),
@@ -575,7 +575,7 @@ describe('parsePRD', () => {
 
 		// Call the function with mcpLog to force non-streaming mode
 		await parsePRD('path/to/prd.txt', 'tasks/tasks.json', 3, {
-			tag: 'master',
+			tag: 'main',
 			mcpLog: {
 				info: jest.fn(),
 				warn: jest.fn(),
@@ -599,7 +599,7 @@ describe('parsePRD', () => {
 		// Call the function with force=true to allow overwrite and mcpLog to force non-streaming mode
 		await parsePRD('path/to/prd.txt', 'tasks/tasks.json', 3, {
 			force: true,
-			tag: 'master',
+			tag: 'main',
 			mcpLog: {
 				info: jest.fn(),
 				warn: jest.fn(),
@@ -622,13 +622,13 @@ describe('parsePRD', () => {
 	test('should throw error when tasks in tag exist without force flag in MCP mode', async () => {
 		// Setup mocks to simulate tasks.json already exists with tasks in the target tag
 		fs.default.existsSync.mockReturnValue(true)
-		// Mock readFileSync to return data with tasks in the 'master' tag
+		// Mock readFileSync to return data with tasks in the 'main' tag
 		fs.default.readFileSync.mockReturnValueOnce(JSON.stringify(existingTasksData))
 
 		// Call the function with mcpLog to make it think it's in MCP mode (which throws instead of process.exit)
 		await expect(
 			parsePRD('path/to/prd.txt', 'tasks/tasks.json', 3, {
-				tag: 'master',
+				tag: 'main',
 				mcpLog: {
 					info: jest.fn(),
 					warn: jest.fn(),
@@ -654,7 +654,7 @@ describe('parsePRD', () => {
 		// Call the function without mcpLog (CLI mode) and expect it to throw an error
 		// In test environment, process.exit is prevented and error is thrown instead
 		await expect(
-			parsePRD('path/to/prd.txt', 'tasks/tasks.json', 3, { tag: 'master' })
+			parsePRD('path/to/prd.txt', 'tasks/tasks.json', 3, { tag: 'main' })
 		).rejects.toThrow('process.exit was called with code 1')
 
 		// Verify the file was NOT written
@@ -678,7 +678,7 @@ describe('parsePRD', () => {
 
 		// Call the function with append option and mcpLog to force non-streaming mode
 		const result = await parsePRD('path/to/prd.txt', 'tasks/tasks.json', 2, {
-			tag: 'master',
+			tag: 'main',
 			append: true,
 			mcpLog: {
 				info: jest.fn(),
@@ -751,7 +751,7 @@ describe('parsePRD', () => {
 
 		// Call the function with append option
 		await parsePRD('path/to/prd.txt', 'tasks/tasks.json', 3, {
-			tag: 'master',
+			tag: 'main',
 			append: true
 		})
 
@@ -1224,7 +1224,7 @@ describe('parsePRD', () => {
 
 			// Call the function with numTasks=0 for dynamic generation and mcpLog to force non-streaming mode
 			await parsePRD('path/to/prd.txt', 'tasks/tasks.json', 0, {
-				tag: 'master',
+				tag: 'main',
 				mcpLog: {
 					info: jest.fn(),
 					warn: jest.fn(),
@@ -1253,7 +1253,7 @@ describe('parsePRD', () => {
 
 			// Call the function with specific numTasks and mcpLog to force non-streaming mode
 			await parsePRD('path/to/prd.txt', 'tasks/tasks.json', 5, {
-				tag: 'master',
+				tag: 'main',
 				mcpLog: {
 					info: jest.fn(),
 					warn: jest.fn(),
@@ -1282,7 +1282,7 @@ describe('parsePRD', () => {
 
 			// Call the function with numTasks=0 and mcpLog to force non-streaming mode - should not throw error
 			const result = await parsePRD('path/to/prd.txt', 'tasks/tasks.json', 0, {
-				tag: 'master',
+				tag: 'main',
 				mcpLog: {
 					info: jest.fn(),
 					warn: jest.fn(),
@@ -1311,7 +1311,7 @@ describe('parsePRD', () => {
 			// Call the function with negative numTasks and mcpLog to force non-streaming mode
 			// Note: The main parse-prd.js module doesn't validate numTasks - validation happens at CLI/MCP level
 			await parsePRD('path/to/prd.txt', 'tasks/tasks.json', -5, {
-				tag: 'master',
+				tag: 'main',
 				mcpLog: {
 					info: jest.fn(),
 					warn: jest.fn(),
@@ -1341,7 +1341,7 @@ describe('parsePRD', () => {
 
 			// Call the function with null numTasks and mcpLog to force non-streaming mode
 			await parsePRD('path/to/prd.txt', 'tasks/tasks.json', null, {
-				tag: 'master',
+				tag: 'main',
 				mcpLog: {
 					info: jest.fn(),
 					warn: jest.fn(),
@@ -1367,7 +1367,7 @@ describe('parsePRD', () => {
 
 			// Call the function with invalid numTasks (string that's not a number) and mcpLog to force non-streaming mode
 			await parsePRD('path/to/prd.txt', 'tasks/tasks.json', 'invalid', {
-				tag: 'master',
+				tag: 'main',
 				mcpLog: {
 					info: jest.fn(),
 					warn: jest.fn(),

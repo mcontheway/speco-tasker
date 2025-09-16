@@ -25,8 +25,8 @@ We're a **PR-friendly team** that values collaboration:
 ### 1. Fork and Clone
 
 ```bash
-git clone https://github.com/mcontheway/taskmaster-no-ai.git
-cd taskmaster-no-ai
+git clone https://github.com/mcontheway/speco-tasker.git
+cd speco-tasker
 npm install
 ```
 
@@ -321,8 +321,8 @@ Include:
 ## 💬 Getting Help
 
 - <!-- TODO: Add Discord community link when available -->
-- **Issues**: [GitHub Issues](https://github.com/mcontheway/taskmaster-no-ai/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/mcontheway/taskmaster-no-ai/discussions)
+- **Issues**: [GitHub Issues](https://github.com/mcontheway/speco-tasker/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/mcontheway/speco-tasker/discussions)
 
 ## 📄 License
 

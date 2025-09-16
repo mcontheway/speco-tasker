@@ -20,9 +20,9 @@ const testRemoveSubtask = (
 	subtaskId,
 	convertToTask = false,
 	generateFiles = true,
-	context = { tag: 'master' }
+	context = { tag: 'main' }
 ) => {
-	const { projectRoot = undefined, tag = 'master' } = context
+	const { projectRoot = undefined, tag = 'main' } = context
 	// Read the existing tasks
 	const data = mockReadJSON(tasksPath, projectRoot, tag)
 	if (!data || !data.tasks) {
@@ -113,7 +113,7 @@ describe('removeSubtask function', () => {
 		// Default mock implementations
 		mockReadJSON.mockImplementation((p, root, tag) => {
 			expect(tag).toBeDefined()
-			expect(tag).toBe('master')
+			expect(tag).toBe('main')
 			return {
 				tasks: [
 					{
@@ -154,7 +154,7 @@ describe('removeSubtask function', () => {
 
 		// Setup success write response
 		mockWriteJSON.mockImplementation((path, data, root, tag) => {
-			expect(tag).toBe('master')
+			expect(tag).toBe('main')
 			return data
 		})
 	})
@@ -162,11 +162,11 @@ describe('removeSubtask function', () => {
 	test('should remove a subtask from its parent task', async () => {
 		// Execute the test version of removeSubtask to remove subtask 1.1
 		testRemoveSubtask('tasks/tasks.json', '1.1', false, true, {
-			tag: 'master'
+			tag: 'main'
 		})
 
 		// Verify readJSON was called with the correct path
-		expect(mockReadJSON).toHaveBeenCalledWith('tasks/tasks.json', undefined, 'master')
+		expect(mockReadJSON).toHaveBeenCalledWith('tasks/tasks.json', undefined, 'main')
 
 		// Verify writeJSON was called with updated data
 		expect(mockWriteJSON).toHaveBeenCalled()
@@ -178,7 +178,7 @@ describe('removeSubtask function', () => {
 	test('should convert a subtask to a standalone task', async () => {
 		// Execute the test version of removeSubtask to convert subtask 1.1 to a standalone task
 		const result = testRemoveSubtask('tasks/tasks.json', '1.1', true, true, {
-			tag: 'master'
+			tag: 'main'
 		})
 
 		// Verify the result is the new task
@@ -197,7 +197,7 @@ describe('removeSubtask function', () => {
 	test('should throw an error if subtask ID format is invalid', async () => {
 		// Expect an error for invalid subtask ID format
 		expect(() =>
-			testRemoveSubtask('tasks/tasks.json', '1', false, true, { tag: 'master' })
+			testRemoveSubtask('tasks/tasks.json', '1', false, true, { tag: 'main' })
 		).toThrow(/Invalid subtask ID format/)
 
 		// Verify writeJSON was not called
@@ -208,7 +208,7 @@ describe('removeSubtask function', () => {
 		// Expect an error for non-existent parent task
 		expect(() =>
 			testRemoveSubtask('tasks/tasks.json', '999.1', false, true, {
-				tag: 'master'
+				tag: 'main'
 			})
 		).toThrow(/Parent task with ID 999 not found/)
 
@@ -220,7 +220,7 @@ describe('removeSubtask function', () => {
 		// Expect an error for non-existent subtask
 		expect(() =>
 			testRemoveSubtask('tasks/tasks.json', '1.999', false, true, {
-				tag: 'master'
+				tag: 'main'
 			})
 		).toThrow(/Subtask 1.999 not found/)
 
@@ -231,7 +231,7 @@ describe('removeSubtask function', () => {
 	test('should remove subtasks array if last subtask is removed', async () => {
 		// Create a data object with just one subtask
 		mockReadJSON.mockImplementationOnce((p, root, tag) => {
-			expect(tag).toBe('master')
+			expect(tag).toBe('main')
 			return {
 				tasks: [
 					{
@@ -265,7 +265,7 @@ describe('removeSubtask function', () => {
 		// Mock the behavior of writeJSON to capture the updated tasks data
 		const updatedTasksData = { tasks: [] }
 		mockWriteJSON.mockImplementation((path, data, root, tag) => {
-			expect(tag).toBe('master')
+			expect(tag).toBe('main')
 			// Store the data for assertions
 			updatedTasksData.tasks = [...data.tasks]
 			return data
@@ -273,7 +273,7 @@ describe('removeSubtask function', () => {
 
 		// Remove the last subtask
 		testRemoveSubtask('tasks/tasks.json', '1.1', false, true, {
-			tag: 'master'
+			tag: 'main'
 		})
 
 		// Verify writeJSON was called
@@ -291,7 +291,7 @@ describe('removeSubtask function', () => {
 	test('should not regenerate task files if generateFiles is false', async () => {
 		// Execute the test version of removeSubtask with generateFiles = false
 		testRemoveSubtask('tasks/tasks.json', '1.1', false, false, {
-			tag: 'master'
+			tag: 'main'
 		})
 
 		// Verify writeJSON was called

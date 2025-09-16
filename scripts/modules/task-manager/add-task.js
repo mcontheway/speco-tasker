@@ -267,7 +267,7 @@ async function addTask(
 			report('Successfully migrated to tagged format.', 'success')
 		}
 
-		// Use the provided tag, or the current active tag, or default to 'master'
+		// Use the provided tag, or the current active tag, or default to 'main'
 		const targetTag = tag
 
 		// Ensure the target tag exists

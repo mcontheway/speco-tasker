@@ -262,7 +262,7 @@ export function findComplexityReportPath(explicitPath = null, args = null, log =
 
 	const fileNames = ['task-complexity-report', 'task-complexity', 'complexity-report'].map(
 		(fileName) => {
-			if (args?.tag && args?.tag !== 'master') {
+			if (args?.tag && args?.tag !== 'main') {
 				return `${fileName}_${args.tag}.json`
 			}
 			return `${fileName}.json`
@@ -358,7 +358,7 @@ export function resolveComplexityReportOutputPath(explicitPath = null, args = nu
 
 	// 3. Use tag-aware filename
 	let filename = 'task-complexity-report.json'
-	if (tag && tag !== 'master') {
+	if (tag && tag !== 'main') {
 		filename = `task-complexity-report_${tag}.json`
 	}
 

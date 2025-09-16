@@ -67,7 +67,7 @@ describe('moveTask (unit)', () => {
 	})
 
 	test('moves task to new ID in same tag', async () => {
-		await moveTask('tasks.json', '1', '3', false, { tag: 'master' })
+		await moveTask('tasks.json', '1', '3', false, { tag: 'main' })
 		expect(writeJSON).toHaveBeenCalled()
 		const written = writeJSON.mock.calls[0][1]
 		const ids = written.master.tasks.map((t) => t.id)
@@ -76,13 +76,13 @@ describe('moveTask (unit)', () => {
 	})
 
 	test('throws when counts of source and dest mismatch', async () => {
-		await expect(moveTask('tasks.json', '1,2', '3', {}, { tag: 'master' })).rejects.toThrow(
+		await expect(moveTask('tasks.json', '1,2', '3', {}, { tag: 'main' })).rejects.toThrow(
 			/Number of source IDs/
 		)
 	})
 
 	test('batch move calls generateTaskFiles once when flag true', async () => {
-		await moveTask('tasks.json', '1,2', '3,4', true, { tag: 'master' })
+		await moveTask('tasks.json', '1,2', '3,4', true, { tag: 'main' })
 		expect(generateTaskFiles).toHaveBeenCalledTimes(1)
 	})
 

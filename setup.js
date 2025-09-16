@@ -45,7 +45,7 @@ async function main() {
 		// 3. 测试配置
 		console.log('🧪 测试MCP服务器...')
 		try {
-			const testProcess = execSync('timeout 3 npx taskmaster-no-ai 2>&1 || true', {
+			const testProcess = execSync('timeout 3 npx speco-tasker 2>&1 || true', {
 				cwd: __dirname,
 				encoding: 'utf8'
 			})

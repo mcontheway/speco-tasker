@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Task Master
+ * Speco Tasker
  * Copyright (c) 2025 TaskMaster Team
  *
  * This software is licensed under the MIT License with Commons Clause.
@@ -16,7 +16,7 @@
  */
 
 /**
- * Claude Task Master CLI
+ * Speco Tasker CLI
  * Main entry point for globally installed package
  */
 
@@ -259,7 +259,7 @@ const program = new Command()
 
 program
 	.name('task-master')
-	.description('Claude Task Master CLI')
+	.description('Speco Tasker CLI')
 	.version(version)
 	.addHelpText('afterAll', () => {
 		// Use the same help display function as dev.js for consistency

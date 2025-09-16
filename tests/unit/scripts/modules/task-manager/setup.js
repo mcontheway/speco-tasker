@@ -126,7 +126,7 @@ export const cloneData = (data) => JSON.parse(JSON.stringify(data))
  * properly handling the projectRoot parameter, leading to different behaviors between test files.
  *
  * @param {string} basePath - The base file path
- * @param {string|null} tag - The tag name (null, undefined, or 'master' uses base path)
+ * @param {string|null} tag - The tag name (null, undefined, or 'main' uses base path)
  * @param {string} [projectRoot='.'] - The project root directory
  * @returns {string} The resolved file path
  */
@@ -135,7 +135,7 @@ export const createGetTagAwareFilePathMock = () => {
 		// Handle projectRoot consistently - this was the key fix
 		const fullPath = projectRoot ? `${projectRoot}/${basePath}` : basePath
 
-		if (!tag || tag === 'master') {
+		if (!tag || tag === 'main') {
 			return fullPath
 		}
 

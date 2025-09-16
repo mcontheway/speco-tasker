@@ -59,7 +59,7 @@
 			"anchors": [
 				{
 					"anchor": "Github",
-					"href": "https://github.com/mcontheway/taskmaster-no-ai",
+					"href": "https://github.com/mcontheway/speco-tasker",
 					"icon": "github"
 				}
 			]
@@ -71,7 +71,7 @@
 	},
 	"footer": {
 		"socials": {
-			"github": "https://github.com/mcontheway/taskmaster-no-ai"
+			"github": "https://github.com/mcontheway/speco-tasker"
 		}
 	}
 }

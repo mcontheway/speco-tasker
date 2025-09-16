@@ -22,8 +22,8 @@ jest.mock('../../scripts/modules/utils.js', () => ({
 	markMigrationForNotice: jest.fn(),
 	performCompleteTagMigration: jest.fn(),
 	isSilentMode: jest.fn(() => false),
-	getCurrentTag: jest.fn(() => 'master'),
-	slugifyTagForFilePath: jest.fn(() => 'master'),
+	getCurrentTag: jest.fn(() => 'main'),
+	slugifyTagForFilePath: jest.fn(() => 'main'),
 	truncate: jest.fn((text, length) => text.length > length ? text.substring(0, length) + '...' : text)
 }))
 
@@ -72,7 +72,7 @@ describe('任务导入功能验证', () => {
 					version: '1.0.0',
 					exportedAt: '2024-01-01T10:00:00Z',
 					exportedBy: 'test-user',
-					tag: 'master',
+					tag: 'main',
 					totalTasks: 3,
 					totalSubtasks: 5,
 					format: 'json'
@@ -414,7 +414,7 @@ describe('任务导入功能验证', () => {
 				validateData: true,
 				importMetadata: true,
 				importSettings: false,
-				targetTag: 'master',
+				targetTag: 'main',
 				createBackup: true,
 				dryRun: false
 			}

@@ -33,7 +33,7 @@ describe('Tag System Integration Test', () => {
         success: true,
         data: [
           {
-            name: 'master',
+            name: 'main',
             current: true,
             taskCount: 0,
             description: 'Default tag context',
@@ -46,7 +46,7 @@ describe('Tag System Integration Test', () => {
       const initialTags = mockTagManager.listTags()
       expect(initialTags.success).toBe(true)
       expect(initialTags.data).toHaveLength(1)
-      expect(initialTags.data[0].name).toBe('master')
+      expect(initialTags.data[0].name).toBe('main')
       expect(initialTags.data[0].current).toBe(true)
 
       // Create new feature tag
@@ -74,7 +74,7 @@ describe('Tag System Integration Test', () => {
       mockTagManager.useTag.mockReturnValueOnce({
         success: true,
         data: {
-          previousTag: 'master',
+          previousTag: 'main',
           currentTag: 'feature-auth',
           switched: true
         },
@@ -87,7 +87,7 @@ describe('Tag System Integration Test', () => {
 
       expect(switchResult.success).toBe(true)
       expect(switchResult.data.currentTag).toBe('feature-auth')
-      expect(switchResult.data.previousTag).toBe('master')
+      expect(switchResult.data.previousTag).toBe('main')
     })
 
     it('should handle tag-specific task operations', () => {
@@ -220,7 +220,7 @@ describe('Tag System Integration Test', () => {
       mockTagManager.listTags.mockReturnValueOnce({
         success: true,
         data: [
-          { name: 'master', taskCount: 0, current: false },
+          { name: 'main', taskCount: 0, current: false },
           { name: 'feature-ui', taskCount: 2, current: false },
           { name: 'feature-api', taskCount: 2, current: false },
           { name: 'bugfix-critical', taskCount: 2, current: true }
@@ -339,7 +339,7 @@ describe('Tag System Integration Test', () => {
       mockTagManager.listTags.mockReturnValueOnce({
         success: true,
         data: [
-          { name: 'master', taskCount: 0 },
+          { name: 'main', taskCount: 0 },
           { name: 'feature-auth', taskCount: 4 }
         ],
         message: 'Tags listed after cleanup'
@@ -424,7 +424,7 @@ describe('Tag System Integration Test', () => {
       mockTagManager.listTags.mockReturnValueOnce({
         success: true,
         data: [
-          { name: 'master', taskCount: 5, lastModified: '2024-01-01T10:00:00Z' },
+          { name: 'main', taskCount: 5, lastModified: '2024-01-01T10:00:00Z' },
           { name: 'feature-branch-a', taskCount: 3, lastModified: '2024-01-01T11:00:00Z' },
           { name: 'feature-branch-b', taskCount: 2, lastModified: '2024-01-01T11:30:00Z' }
         ],
@@ -436,7 +436,7 @@ describe('Tag System Integration Test', () => {
       
       // Verify isolation prevents conflicts
       const tagNames = conflictCheck.data.map(tag => tag.name)
-      expect(tagNames).toContain('master')
+      expect(tagNames).toContain('main')
       expect(tagNames).toContain('feature-branch-a')
       expect(tagNames).toContain('feature-branch-b')
       
@@ -510,7 +510,7 @@ describe('Tag System Integration Test', () => {
         success: true,
         data: {
           sourceName: 'feature-complete',
-          targetName: 'master',
+          targetName: 'main',
           mergeOperation: true,
           tasksMerged: 6,
           conflictsResolved: 0
@@ -520,7 +520,7 @@ describe('Tag System Integration Test', () => {
 
       const mergeResult = mockTagManager.copyTag({
         sourceName: 'feature-complete',
-        targetName: 'master',
+        targetName: 'main',
         merge: true
       })
 
@@ -603,7 +603,7 @@ describe('Tag System Integration Test', () => {
       })
 
       const deleteMaster = mockTagManager.deleteTag({
-        tagName: 'master'
+        tagName: 'main'
       })
 
       expect(deleteMaster.success).toBe(false)

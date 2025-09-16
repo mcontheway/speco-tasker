@@ -71,7 +71,7 @@ function generateTaskFiles(tasksPath, outputDir, options = {}) {
 				let fileTaskId = null
 
 				// Check if file belongs to current tag
-				if (tag === 'master') {
+				if (tag === 'main') {
 					match = file.match(masterFilePattern)
 					if (match) {
 						fileTaskId = parseInt(match[1], 10)
@@ -107,7 +107,7 @@ function generateTaskFiles(tasksPath, outputDir, options = {}) {
 		tasksForGeneration.forEach((task) => {
 			// Tag-aware file naming: master -> task_001.txt, other tags -> task_001_tagname.txt
 			const taskFileName =
-				tag === 'master'
+				tag === 'main'
 					? `task_${task.id.toString().padStart(3, '0')}.txt`
 					: `task_${task.id.toString().padStart(3, '0')}_${tag}.txt`
 

@@ -22,8 +22,8 @@ jest.mock('../../scripts/modules/utils.js', () => ({
 	markMigrationForNotice: jest.fn(),
 	performCompleteTagMigration: jest.fn(),
 	isSilentMode: jest.fn(() => false),
-	getCurrentTag: jest.fn(() => 'master'),
-	slugifyTagForFilePath: jest.fn(() => 'master'),
+	getCurrentTag: jest.fn(() => 'main'),
+	slugifyTagForFilePath: jest.fn(() => 'main'),
 	truncate: jest.fn((text, length) => text.length > length ? text.substring(0, length) + '...' : text)
 }))
 
@@ -74,7 +74,7 @@ describe('备份恢复功能验证', () => {
 					version: '1.0.0',
 					createdAt: new Date().toISOString(),
 					backupType: 'full',
-					sourceTag: 'master',
+					sourceTag: 'main',
 					totalTasks: 5,
 					totalSubtasks: 12,
 					backupId: 'backup_001',
@@ -154,7 +154,7 @@ describe('备份恢复功能验证', () => {
 						version: '1.0.0',
 						createdAt: new Date().toISOString(),
 						backupType: backupType.type,
-						sourceTag: 'master',
+						sourceTag: 'main',
 						totalTasks: 3,
 						backupId: `backup_${backupType.type}`,
 						description: backupType.description,
@@ -206,10 +206,10 @@ describe('备份恢复功能验证', () => {
 		it('应该生成正确的备份文件名', () => {
 			const timestamp = '2024-01-01_12-30-45'
 			const backupId = 'backup_001'
-			const tag = 'master'
+			const tag = 'main'
 
 			// 模拟文件名生成
-			const fileName = tag === 'master'
+			const fileName = tag === 'main'
 				? `tasks_backup_${timestamp}_${backupId}.json`
 				: `tasks_backup_${timestamp}_${backupId}_${tag}.json`
 
@@ -217,7 +217,7 @@ describe('备份恢复功能验证', () => {
 
 			// 测试非master标签
 			const featureTag = 'feature-branch'
-			const featureFileName = featureTag === 'master'
+			const featureFileName = featureTag === 'main'
 				? `tasks_backup_${timestamp}_${backupId}.json`
 				: `tasks_backup_${timestamp}_${backupId}_${featureTag}.json`
 

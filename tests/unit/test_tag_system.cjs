@@ -55,7 +55,7 @@ describe('标签系统功能验证', () => {
 		})
 
 		it('应该验证标签名称格式', () => {
-			const validNames = ['feature-auth', 'bug-fix', 'experiment_ui', 'v1.0', 'master', '001-task-refactor']
+			const validNames = ['feature-auth', 'bug-fix', 'experiment_ui', 'v1.0', 'main', '001-task-refactor']
 			const invalidNames = ['Feature Auth', 'bug fix', '', 'tag with spaces', 'tag-with-special!chars']
 
 			const isValidTagName = (name) => /^[a-zA-Z0-9_.-][a-zA-Z0-9_.-]*$/.test(name) && name.length > 0 && name.length <= 50
@@ -95,7 +95,7 @@ describe('标签系统功能验证', () => {
 	describe('标签管理操作', () => {
 		it('应该能够创建新标签', () => {
 			const tags = [
-				{ name: 'master', description: '主任务列表' }
+				{ name: 'main', description: '主任务列表' }
 			]
 
 			const newTag = {
@@ -132,7 +132,7 @@ describe('标签系统功能验证', () => {
 
 		it('应该能够删除标签', () => {
 			const tags = [
-				{ name: 'master', description: '主任务列表' },
+				{ name: 'main', description: '主任务列表' },
 				{ name: 'feature-auth', description: '认证功能' },
 				{ name: 'bug-fixes', description: 'Bug修复' }
 			]
@@ -141,24 +141,24 @@ describe('标签系统功能验证', () => {
 			const updatedTags = tags.filter(tag => tag.name !== tagToDelete)
 
 			expect(updatedTags).toHaveLength(2)
-			expect(updatedTags.map(t => t.name)).toEqual(['master', 'bug-fixes'])
+			expect(updatedTags.map(t => t.name)).toEqual(['main', 'bug-fixes'])
 		})
 
 		it('应该防止删除master标签', () => {
 			const tags = [
-				{ name: 'master', description: '主任务列表' },
+				{ name: 'main', description: '主任务列表' },
 				{ name: 'feature-auth', description: '认证功能' }
 			]
 
-			const canDeleteTag = (tagName) => tagName !== 'master'
+			const canDeleteTag = (tagName) => tagName !== 'main'
 
-			expect(canDeleteTag('master')).toBe(false)
+			expect(canDeleteTag('main')).toBe(false)
 			expect(canDeleteTag('feature-auth')).toBe(true)
 		})
 
 		it('应该防止创建重复标签名称', () => {
 			const existingTags = [
-				{ name: 'master' },
+				{ name: 'main' },
 				{ name: 'feature-auth' }
 			]
 
@@ -173,35 +173,35 @@ describe('标签系统功能验证', () => {
 
 	describe('标签上下文切换', () => {
 		it('应该能够切换当前标签上下文', () => {
-			let currentTag = 'master'
+			let currentTag = 'main'
 
 			const switchToTag = (tagName) => {
 				currentTag = tagName
-				return { success: true, previousTag: 'master', currentTag: tagName }
+				return { success: true, previousTag: 'main', currentTag: tagName }
 			}
 
 			const result = switchToTag('feature-auth')
 
 			expect(result.success).toBe(true)
-			expect(result.previousTag).toBe('master')
+			expect(result.previousTag).toBe('main')
 			expect(result.currentTag).toBe('feature-auth')
 			expect(currentTag).toBe('feature-auth')
 		})
 
 		it('应该验证标签存在性再切换', () => {
-			const availableTags = ['master', 'feature-auth', 'bug-fixes']
+			const availableTags = ['main', 'feature-auth', 'bug-fixes']
 
 			const canSwitchToTag = (tagName) => {
 				return availableTags.includes(tagName)
 			}
 
-			expect(canSwitchToTag('master')).toBe(true)
+			expect(canSwitchToTag('main')).toBe(true)
 			expect(canSwitchToTag('feature-auth')).toBe(true)
 			expect(canSwitchToTag('non-existent-tag')).toBe(false)
 		})
 
 		it('应该保持标签切换历史', () => {
-			const tagHistory = ['master']
+			const tagHistory = ['main']
 
 			const switchTagWithHistory = (newTag) => {
 				const previousTag = tagHistory[tagHistory.length - 1]
@@ -210,10 +210,10 @@ describe('标签系统功能验证', () => {
 			}
 
 			let result = switchTagWithHistory('feature-auth')
-			expect(result.history).toEqual(['master', 'feature-auth'])
+			expect(result.history).toEqual(['main', 'feature-auth'])
 
 			result = switchTagWithHistory('bug-fixes')
-			expect(result.history).toEqual(['master', 'feature-auth', 'bug-fixes'])
+			expect(result.history).toEqual(['main', 'feature-auth', 'bug-fixes'])
 		})
 	})
 
@@ -232,12 +232,12 @@ describe('标签系统功能验证', () => {
 
 			const getTasksForTag = (tagName) => tasksByTag[tagName] || []
 
-			expect(getTasksForTag('master')).toHaveLength(2)
+			expect(getTasksForTag('main')).toHaveLength(2)
 			expect(getTasksForTag('feature-auth')).toHaveLength(2)
 			expect(getTasksForTag('non-existent')).toHaveLength(0)
 
 			// 验证任务ID在不同标签中可以重复
-			const masterTaskIds = getTasksForTag('master').map(t => t.id)
+			const masterTaskIds = getTasksForTag('main').map(t => t.id)
 			const authTaskIds = getTasksForTag('feature-auth').map(t => t.id)
 			expect(masterTaskIds).toEqual([1, 2])
 			expect(authTaskIds).toEqual([1, 2])
@@ -289,10 +289,10 @@ describe('标签系统功能验证', () => {
 				return movedTask
 			}
 
-			const movedTask = moveTaskBetweenTags(1, 'master', 'feature-auth')
+			const movedTask = moveTaskBetweenTags(1, 'main', 'feature-auth')
 
 			expect(movedTask).not.toBeNull()
-			expect(movedTask.movedFrom).toBe('master')
+			expect(movedTask.movedFrom).toBe('main')
 			expect(tasksByTag.master).toHaveLength(1)
 			expect(tasksByTag['feature-auth']).toHaveLength(1)
 			expect(tasksByTag.master[0].id).toBe(2)
@@ -425,7 +425,7 @@ describe('标签系统功能验证', () => {
 
 			expect(comparison[0].name).toBe('bug-fixes') // 100%完成率
 			expect(comparison[0].completionRate).toBe(100)
-			expect(comparison[1].name).toBe('master') // 70%完成率
+			expect(comparison[1].name).toBe('main') // 70%完成率
 			expect(comparison[1].completionRate).toBe(70)
 			expect(comparison[2].name).toBe('feature-auth') // 40%完成率
 			expect(comparison[2].completionRate).toBe(40)
@@ -463,7 +463,7 @@ describe('标签系统功能验证', () => {
 
 		it('应该支持标签与分支的同步', () => {
 			const branchTagMapping = {
-				'main': 'master',
+				'main': 'main',
 				'feature/user-auth': 'feature-user-auth',
 				'develop': 'develop',
 				'release/v1.0': 'release-v1-0'
@@ -557,8 +557,8 @@ describe('标签系统功能验证', () => {
 	describe('标签安全和权限', () => {
 		it('应该验证标签访问权限', () => {
 			const userPermissions = {
-				user1: ['master', 'feature-auth', 'bug-fixes'],
-				user2: ['master', 'feature-dashboard'],
+				user1: ['main', 'feature-auth', 'bug-fixes'],
+				user2: ['main', 'feature-dashboard'],
 				admin: ['*'] // 所有标签
 			}
 
@@ -568,10 +568,10 @@ describe('标签系统功能验证', () => {
 				return permissions.includes('*') || permissions.includes(tagName)
 			}
 
-			expect(canAccessTag('user1', 'master')).toBe(true)
+			expect(canAccessTag('user1', 'main')).toBe(true)
 			expect(canAccessTag('user1', 'feature-dashboard')).toBe(false)
 			expect(canAccessTag('admin', 'any-tag')).toBe(true)
-			expect(canAccessTag('unknown-user', 'master')).toBe(false)
+			expect(canAccessTag('unknown-user', 'main')).toBe(false)
 		})
 
 		it('应该支持标签级别的操作审计', () => {
@@ -600,7 +600,7 @@ describe('标签系统功能验证', () => {
 		})
 
 		it('应该防止敏感标签的意外删除', () => {
-			const protectedTags = ['master', 'production', 'release-*']
+			const protectedTags = ['main', 'production', 'release-*']
 
 			const canDeleteTag = (tagName) => {
 				return !protectedTags.some(pattern => {
@@ -611,7 +611,7 @@ describe('标签系统功能验证', () => {
 				})
 			}
 
-			expect(canDeleteTag('master')).toBe(false)
+			expect(canDeleteTag('main')).toBe(false)
 			expect(canDeleteTag('production')).toBe(false)
 			expect(canDeleteTag('release-v1.0')).toBe(false)
 			expect(canDeleteTag('feature-auth')).toBe(true)

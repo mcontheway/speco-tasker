@@ -183,7 +183,7 @@ describe('项目初始化功能验证', () => {
 					taskmaster: {
 						version: '1.0.0',
 						defaultPriority: 'medium',
-						defaultTag: 'master',
+						defaultTag: 'main',
 						logLevel: 'info'
 					},
 					tags: {
@@ -210,7 +210,7 @@ describe('项目初始化功能验证', () => {
 
 			expect(config.project.name).toBe('test-project')
 			expect(config.project.version).toBe('2.0.0')
-			expect(config.taskmaster.defaultTag).toBe('master')
+			expect(config.taskmaster.defaultTag).toBe('main')
 			expect(fs.writeFileSync).toHaveBeenCalled()
 		})
 
@@ -247,7 +247,7 @@ describe('项目初始化功能验证', () => {
 			const createInitialTasksFile = (projectRoot) => {
 				const tasks = {
 					version: '1.0.0',
-					tag: 'master',
+					tag: 'main',
 					tasks: [],
 					metadata: {
 						createdAt: new Date().toISOString(),
@@ -264,7 +264,7 @@ describe('项目初始化功能验证', () => {
 
 			const tasks = createInitialTasksFile('/mock/project')
 
-			expect(tasks.tag).toBe('master')
+			expect(tasks.tag).toBe('main')
 			expect(tasks.tasks).toEqual([])
 			expect(tasks.metadata.totalTasks).toBe(0)
 			expect(fs.writeFileSync).toHaveBeenCalled()

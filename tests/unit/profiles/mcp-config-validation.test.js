@@ -1,8 +1,8 @@
 import path from 'path'
-import { RULE_PROFILES } from '../../../src/constants/profiles.js'
-import { getRulesProfile } from '../../../src/utils/rule-transformer.js'
+// Note: RULE_PROFILES and related functionality has been removed as part of AI feature removal
+// This test is skipped until the profiles system is re-implemented if needed
 
-describe('MCP Configuration Validation', () => {
+describe.skip('MCP Configuration Validation', () => {
 	describe('Profile MCP Configuration Properties', () => {
 		const expectedMcpConfigurations = {
 			amp: {

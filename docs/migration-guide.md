@@ -1,6 +1,6 @@
 # Task Master AI Removal Migration Guide
 
-This guide helps users migrate from the AI-powered Task Master to the new pure manual version (`taskmaster-no-ai`).
+This guide helps users migrate from the AI-powered Task Master to the new pure manual version (`speco-tasker`).
 
 ## Overview
 
@@ -50,10 +50,10 @@ Install the pure manual version:
 
 ```bash
 # Install globally
-npm install -g taskmaster-no-ai
+npm install -g speco-tasker
 
 # Or install locally in your project
-npm install taskmaster-no-ai
+npm install speco-tasker
 ```
 
 ### 4. Update MCP Configuration
@@ -63,9 +63,9 @@ Update your MCP configuration to remove API keys:
 ```json
 {
   "mcpServers": {
-    "taskmaster-no-ai": {
+    "speco-tasker": {
       "command": "npx",
-      "args": ["-y", "--package=taskmaster-no-ai", "taskmaster-no-ai"]
+      "args": ["-y", "--package=speco-tasker", "speco-tasker"]
     }
   }
 }
@@ -75,9 +75,9 @@ Update your MCP configuration to remove API keys:
 ```json
 {
   "servers": {
-    "taskmaster-no-ai": {
+    "speco-tasker": {
       "command": "npx",
-      "args": ["-y", "--package=taskmaster-no-ai", "taskmaster-no-ai"],
+      "args": ["-y", "--package=speco-tasker", "speco-tasker"],
       "type": "stdio"
     }
   }
@@ -175,10 +175,10 @@ While AI features were removed, the new version offers:
 **"Command not found" after installation:**
 ```bash
 # Try using npx
-npx taskmaster-no-ai --help
+npx speco-tasker --help
 
 # Or reinstall globally
-npm install -g taskmaster-no-ai
+npm install -g speco-tasker
 ```
 
 **Old tasks not loading:**
@@ -235,6 +235,6 @@ The pure manual version establishes a solid foundation for future enhancements:
 
 ## Summary
 
-The migration to `taskmaster-no-ai` represents a strategic shift toward simplicity and reliability. While AI-powered features provided convenience, the manual approach offers better performance, security, and maintainability for most use cases.
+The migration to `speco-tasker` represents a strategic shift toward simplicity and reliability. While AI-powered features provided convenience, the manual approach offers better performance, security, and maintainability for most use cases.
 
 The core task management functionality remains intact, ensuring that all your project planning and tracking needs are still met with a more robust and dependable solution.

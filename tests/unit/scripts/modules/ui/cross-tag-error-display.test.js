@@ -112,7 +112,7 @@ describe('Cross-Tag Error Display Functions', () => {
 		})
 
 		it('should handle single-level subtask IDs', () => {
-			displaySubtaskMoveError('15.1', 'master', 'feature-branch')
+			displaySubtaskMoveError('15.1', 'main', 'feature-branch')
 
 			expect(mockConsoleLog).toHaveBeenCalledWith(
 				expect.stringContaining('❌ Cannot move subtask 15.1 directly between tags')

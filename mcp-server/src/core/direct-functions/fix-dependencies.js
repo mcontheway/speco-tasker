@@ -62,7 +62,7 @@ export async function fixDependenciesDirect(args, log) {
 			data: {
 				message: 'Dependencies fixed successfully',
 				tasksPath,
-				tag: tag || 'master'
+				tag: tag || 'main'
 			}
 		}
 	} catch (error) {

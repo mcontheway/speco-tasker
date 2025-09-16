@@ -57,7 +57,7 @@ describe('任务列表功能验证', () => {
 				}
 			}
 
-			expect(taggedTasks).toHaveProperty('master')
+			expect(taggedTasks).toHaveProperty('main')
 			expect(taggedTasks).toHaveProperty('feature')
 			expect(Array.isArray(taggedTasks.master.tasks)).toBe(true)
 			expect(Array.isArray(taggedTasks.feature.tasks)).toBe(true)

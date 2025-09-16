@@ -1,4 +1,4 @@
-# Task Master Command Reference
+# Speco Tasker Command Reference
 
 Here's a comprehensive reference of all available commands:
 
@@ -255,7 +255,7 @@ task-master add-task --prompt="Description" --priority=high
 
 ## Tag Management
 
-Task Master supports tagged task lists for multi-context task management. Each tag represents a separate, isolated context for tasks.
+Speco Tasker supports tagged task lists for multi-context task management. Each tag represents a separate, isolated context for tasks.
 
 ```bash
 # List all available tags with task counts and status
@@ -306,7 +306,7 @@ task-master delete-tag <tag-name> --yes
 ## Initialize a Project
 
 ```bash
-# Initialize a new project with Task Master structure
+# Initialize a new project with Speco Tasker structure
 task-master init
 
 

@@ -15,7 +15,7 @@ jest.mock('../../../../../scripts/modules/utils.js', () => ({
 	isEmpty: jest.fn(() => false),
 	resolveEnvVariable: jest.fn(),
 	findTaskById: jest.fn(),
-	getCurrentTag: jest.fn(() => 'master')
+	getCurrentTag: jest.fn(() => 'main')
 }))
 
 jest.mock('../../../../../scripts/modules/ui.js', () => ({
@@ -56,7 +56,7 @@ describe('updateTaskById validation', () => {
 
 	test('throws error if prompt is empty', async () => {
 		await expect(
-			updateTaskById('tasks/tasks.json', 1, '', false, { tag: 'master' }, 'json')
+			updateTaskById('tasks/tasks.json', 1, '', false, { tag: 'main' }, 'json')
 		).rejects.toThrow('Prompt cannot be empty')
 	})
 
@@ -70,7 +70,7 @@ describe('updateTaskById validation', () => {
 				'prompt',
 				false,
 				{
-					tag: 'master'
+					tag: 'main'
 				},
 				'json'
 			)
@@ -80,7 +80,7 @@ describe('updateTaskById validation', () => {
 	test('throws error when task ID not found', async () => {
 		const fs = await import('fs')
 		fs.existsSync.mockReturnValue(true)
-		readJSON.mockReturnValue({ tag: 'master', tasks: [] })
+		readJSON.mockReturnValue({ tag: 'main', tasks: [] })
 		await expect(
 			updateTaskById(
 				'tasks/tasks.json',
@@ -88,7 +88,7 @@ describe('updateTaskById validation', () => {
 				'prompt',
 				false,
 				{
-					tag: 'master'
+					tag: 'main'
 				},
 				'json'
 			)

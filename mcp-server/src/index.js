@@ -15,7 +15,7 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 /**
- * Main MCP server class that integrates with Task Master
+ * Main MCP server class that integrates with Speco Tasker
  */
 class TaskMasterMCPServer {
 	constructor() {
@@ -24,7 +24,7 @@ class TaskMasterMCPServer {
 		const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf8'))
 
 		this.options = {
-			name: 'Task Master MCP Server',
+			name: 'Speco Tasker MCP Server',
 			version: packageJson.version
 		}
 
@@ -108,7 +108,7 @@ class TaskMasterMCPServer {
 			session.server.sendLoggingMessage({
 				data: {
 					context: session.context,
-					message: `MCP Server connected - Task Master tools available`
+					message: `MCP Server connected - Speco Tasker tools available`
 				},
 				level: 'info'
 			})

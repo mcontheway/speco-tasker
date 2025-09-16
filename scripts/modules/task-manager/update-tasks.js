@@ -357,7 +357,7 @@ async function updateTasks(
 		// AI functionality has been removed - cannot update tasks
 		consoleLog(
 			'error',
-			'AI functionality has been removed from Task Master. Task updates are no longer supported.'
+			'AI functionality has been removed from Speco Tasker. Task updates are no longer supported.'
 		)
 
 		return {

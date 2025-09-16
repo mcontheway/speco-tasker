@@ -1,7 +1,7 @@
 <a name="readme-top"></a>
 
 <div align='center'>
-<a href="https://github.com/mcontheway/taskmaster-no-ai" target="_blank"><img src="https://img.shields.io/badge/TaskMaster-纯手动任务管理系统-blue?style=for-the-badge&logo=github" alt="TaskMaster Project" style="width: 280px; height: 55px;" width="280" height="55"/></a>
+<a href="https://github.com/mcontheway/speco-tasker" target="_blank"><img src="https://img.shields.io/badge/TaskMaster-纯手动任务管理系统-blue?style=for-the-badge&logo=github" alt="TaskMaster Project" style="width: 280px; height: 55px;" width="280" height="55"/></a>
 </div>
 
 <p align="center">
@@ -13,14 +13,14 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/mcontheway/taskmaster-no-ai/actions/workflows/ci.yml"><img src="https://github.com/mcontheway/taskmaster-no-ai/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <a href="https://github.com/mcontheway/taskmaster-no-ai/stargazers"><img src="https://img.shields.io/github/stars/mcontheway/taskmaster-no-ai?style=social" alt="GitHub stars"></a>
-  <a href="https://www.npmjs.com/package/taskmaster-no-ai"><img src="https://img.shields.io/npm/v/taskmaster-no-ai.svg" alt="npm version"></a>
+  <a href="https://github.com/mcontheway/speco-tasker/actions/workflows/ci.yml"><img src="https://github.com/mcontheway/speco-tasker/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/mcontheway/speco-tasker/stargazers"><img src="https://img.shields.io/github/stars/mcontheway/speco-tasker?style=social" alt="GitHub stars"></a>
+  <a href="https://www.npmjs.com/package/speco-tasker"><img src="https://img.shields.io/npm/v/speco-tasker.svg" alt="npm version"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT%20with%20Commons%20Clause-blue.svg" alt="License"></a>
 </p>
 
 <p align="center">
-  <a href="https://www.npmjs.com/package/taskmaster-no-ai"><img src="https://img.shields.io/npm/dm/taskmaster-no-ai.svg" alt="npm downloads"></a>
+  <a href="https://www.npmjs.com/package/speco-tasker"><img src="https://img.shields.io/npm/dm/speco-tasker.svg" alt="npm downloads"></a>
 </p>
 
 ## 🎯 项目简介
@@ -97,8 +97,8 @@ TaskMaster No-AI 是一个纯手动任务管理系统，无需任何外部API密
 
 ```bash
 # 克隆项目
-git clone https://github.com/mcontheway/taskmaster-no-ai.git
-cd taskmaster-no-ai
+git clone https://github.com/mcontheway/speco-tasker.git
+cd speco-tasker
 
 # 安装依赖 (一键完成)
 npm run setup
@@ -114,9 +114,9 @@ npm run setup
 ```json
 {
   "mcpServers": {
-    "taskmaster-no-ai": {
+    "speco-tasker": {
       "command": "npx",
-      "args": ["taskmaster-no-ai"]
+      "args": ["speco-tasker"]
     }
   }
 }
@@ -129,7 +129,7 @@ npm run setup
 
 **Cursor用户：**
 1. 重启Cursor
-2. 在设置中启用MCP：`taskmaster-no-ai`
+2. 在设置中启用MCP：`speco-tasker`
 3. 在聊天中输入：`初始化 TaskMaster 项目`
 
 **VSCode用户：**
@@ -154,7 +154,7 @@ npm --version   # 应 >= 8.0.0
 
 **测试MCP服务器：**
 ```bash
-npx taskmaster-no-ai --help
+npx speco-tasker --help
 ```
 
 > [!SUCCESS]
@@ -185,9 +185,9 @@ npm run install-mcp
 ```json
 {
   "mcpServers": {
-    "taskmaster-no-ai": {
+    "speco-tasker": {
       "command": "npx",
-      "args": ["taskmaster-no-ai"]
+      "args": ["speco-tasker"]
     }
   }
 }
@@ -197,9 +197,9 @@ npm run install-mcp
 ```json
 {
   "servers": {
-    "taskmaster-no-ai": {
+    "speco-tasker": {
       "command": "npx",
-      "args": ["taskmaster-no-ai"],
+      "args": ["speco-tasker"],
       "type": "stdio"
     }
   }
@@ -208,7 +208,7 @@ npm run install-mcp
 
 #### 启用 MCP (仅 Cursor)
 
-打开 Cursor 设置 (Ctrl+Shift+P → "Preferences: Open Settings") ➡ 搜索 "mcp" ➡ 启用 taskmaster-no-ai
+打开 Cursor 设置 (Ctrl+Shift+P → "Preferences: Open Settings") ➡ 搜索 "mcp" ➡ 启用 speco-tasker
 
 #### 3. 初始化项目
 
@@ -249,10 +249,10 @@ npm run install-mcp
 
 ```bash
 # 全局安装 (推荐)
-npm install -g taskmaster-no-ai
+npm install -g speco-tasker
 
 # 或在项目中本地安装
-npm install taskmaster-no-ai
+npm install speco-tasker
 ```
 
 #### 🏗️ 初始化新项目
@@ -347,14 +347,14 @@ TaskMaster No-AI 提供完整的任务管理功能，完全不需要AI支持：
 尝试使用 Node 直接运行：
 
 ```bash
-node node_modules/taskmaster-no-ai/scripts/init.js
+node node_modules/speco-tasker/scripts/init.js
 ```
 
 或者克隆仓库并运行：
 
 ```bash
-git clone https://github.com/mcontheway/taskmaster-no-ai.git
-cd taskmaster-no-ai
+git clone https://github.com/mcontheway/speco-tasker.git
+cd speco-tasker
 node scripts/init.js
 ```
 
@@ -418,8 +418,8 @@ TaskMaster No-AI 使用 MIT 许可证配合 Commons Clause 进行授权。这意
 
 如果您在使用过程中遇到问题或有建议：
 
-- 📧 [提交 Issue](https://github.com/mcontheway/taskmaster-no-ai/issues)
-- 💬 [查看讨论](https://github.com/mcontheway/taskmaster-no-ai/discussions)
+- 📧 [提交 Issue](https://github.com/mcontheway/speco-tasker/issues)
+- 💬 [查看讨论](https://github.com/mcontheway/speco-tasker/discussions)
 - 📖 [阅读文档](docs/)
 
 ---

@@ -145,7 +145,7 @@ function setupTestData() {
 			fallback: 'gpt-3.5-turbo'
 		},
 		global: {
-			defaultTag: 'master'
+			defaultTag: 'main'
 		},
 		tags: {
 			master: {

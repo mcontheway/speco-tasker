@@ -1,6 +1,6 @@
 /**
  * ui.js
- * User interface functions for the Task Master CLI
+ * User interface functions for the Speco Tasker CLI
  */
 
 import fs from 'fs'
@@ -48,7 +48,7 @@ function displayTaggedTasksFYI(data) {
  * Display a small, non-intrusive indicator showing the current tag context
  * @param {string} tagName - The tag name to display
  * @param {Object} options - Display options
- * @param {boolean} [options.skipIfMaster=false] - Don't show indicator if tag is 'master'
+ * @param {boolean} [options.skipIfMaster=false] - Don't show indicator if tag is 'main'
  * @param {boolean} [options.dim=false] - Use dimmed styling
  */
 function displayCurrentTagIndicator(tag, options = {}) {
@@ -57,7 +57,7 @@ function displayCurrentTagIndicator(tag, options = {}) {
 	const { skipIfMaster = false, dim = false } = options
 
 	// Skip display for main tag only if explicitly requested
-	if (skipIfMaster && tag === 'master') return
+	if (skipIfMaster && tag === 'main') return
 
 	// Create a small, tasteful tag indicator
 	const tagIcon = '🏷️'
@@ -75,7 +75,7 @@ function displayBanner() {
 	if (isSilentMode()) return
 
 	// console.clear(); // Removing this to avoid clearing the terminal per command
-	const bannerText = figlet.textSync('Task Master', {
+	const bannerText = figlet.textSync('Speco Tasker', {
 		font: 'Standard',
 		horizontalLayout: 'default',
 		verticalLayout: 'default'
@@ -85,7 +85,7 @@ function displayBanner() {
 
 	// Add creator credit line below the banner
 	console.log(
-		chalk.dim('by ') + chalk.cyan.underline('https://github.com/mcontheway/taskmaster-no-ai')
+		chalk.dim('by ') + chalk.cyan.underline('https://github.com/mcontheway/speco-tasker')
 	)
 
 	// Read version directly from package.json
@@ -478,7 +478,7 @@ function displayHelp() {
 	const terminalWidth = process.stdout.columns || 100 // Default to 100 if can't detect
 
 	console.log(
-		boxen(chalk.white.bold('Task Master CLI'), {
+		boxen(chalk.white.bold('Speco Tasker CLI'), {
 			padding: 1,
 			borderColor: 'blue',
 			borderStyle: 'round',
@@ -495,7 +495,7 @@ function displayHelp() {
 				{
 					name: 'init',
 					args: '[--name=<name>] [--description=<desc>] [-y]',
-					desc: 'Initialize a new project with Task Master structure'
+					desc: 'Initialize a new project with Speco Tasker structure'
 				}
 			]
 		},
@@ -774,7 +774,7 @@ function displayHelp() {
 	configTable.push(
 		[
 			`${chalk.yellow(TASKMASTER_CONFIG_FILE)}${chalk.reset('')}`,
-			`${chalk.white('Task Master configuration file')}${chalk.reset('')}`,
+			`${chalk.white('Speco Tasker configuration file')}${chalk.reset('')}`,
 			`${chalk.dim('Project configuration')}${chalk.reset('')}`
 		],
 		[

@@ -23,7 +23,7 @@ jest.unstable_mockModule('../../scripts/modules/utils.js', () => ({
 	readJSON: jest.fn(),
 	writeJSON: jest.fn(),
 	findProjectRoot: jest.fn(() => '/test/project/root'),
-	getCurrentTag: jest.fn(() => 'master')
+	getCurrentTag: jest.fn(() => 'main')
 }))
 
 // --- Mock chalk for consistent output formatting ---
@@ -507,11 +507,11 @@ describe('Cross-Tag Move CLI Integration', () => {
 			message: 'Successfully moved task(s) between tags'
 		})
 
-		// Mock getCurrentTag to return 'master'
-		utilsModule.getCurrentTag.mockReturnValue('master')
+		// Mock getCurrentTag to return 'main'
+		utilsModule.getCurrentTag.mockReturnValue('main')
 
 		// Simulate command: task-master move --from=1 --to-tag=in-progress
-		// (no --from-tag provided, should use current tag 'master')
+		// (no --from-tag provided, should use current tag 'main')
 		await moveAction({
 			from: '1',
 			toTag: 'in-progress',
@@ -520,11 +520,11 @@ describe('Cross-Tag Move CLI Integration', () => {
 			// fromTag is intentionally not provided to test fallback
 		})
 
-		// Verify that moveTasksBetweenTags was called with 'master' as source tag
+		// Verify that moveTasksBetweenTags was called with 'main' as source tag
 		expect(mockMoveTasksBetweenTags).toHaveBeenCalledWith(
 			expect.stringContaining('.taskmaster/tasks/tasks.json'),
 			[1], // parseInt converts string to number
-			'master', // Should use current tag as fallback
+			'main', // Should use current tag as fallback
 			'in-progress',
 			{
 				withDependencies: false,
@@ -536,7 +536,7 @@ describe('Cross-Tag Move CLI Integration', () => {
 		expect(generateTaskFilesModule.default).toHaveBeenCalledWith(
 			expect.stringContaining('.taskmaster/tasks/tasks.json'),
 			expect.stringContaining('.taskmaster/tasks'),
-			{ tag: 'master' }
+			{ tag: 'main' }
 		)
 		expect(generateTaskFilesModule.default).toHaveBeenCalledWith(
 			expect.stringContaining('.taskmaster/tasks/tasks.json'),
@@ -752,8 +752,8 @@ describe('Cross-Tag Move CLI Integration', () => {
 		const options = {
 			from: '1',
 			to: '2',
-			fromTag: 'master',
-			toTag: 'master' // Same tag, should use within-tag logic
+			fromTag: 'main',
+			toTag: 'main' // Same tag, should use within-tag logic
 		}
 
 		await moveAction(options)
@@ -765,8 +765,8 @@ describe('Cross-Tag Move CLI Integration', () => {
 	it('should fail when both tags are the same but no destination is provided', async () => {
 		const options = {
 			from: '1',
-			fromTag: 'master',
-			toTag: 'master' // Same tag but no destination
+			fromTag: 'main',
+			toTag: 'main' // Same tag but no destination
 		}
 
 		const { errorMessages, logMessages, restore } = captureConsoleAndExit()

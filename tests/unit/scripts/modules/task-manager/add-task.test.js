@@ -30,7 +30,7 @@ jest.unstable_mockModule('../../../../../scripts/modules/utils.js', () => ({
 		}
 		return allTasks.find((task) => String(task.id) === String(id))
 	}),
-	getCurrentTag: jest.fn(() => 'master'),
+	getCurrentTag: jest.fn(() => 'main'),
 	ensureTagMetadata: jest.fn((tagObj) => tagObj),
 	flattenTasksWithSubtasks: jest.fn((tasks) => {
 		const allTasks = []
@@ -219,14 +219,14 @@ describe('addTask', () => {
 		const context = {
 			mcpLog: createMcpLogMock(),
 			projectRoot: '/mock/project/root',
-			tag: 'master'
+			tag: 'main'
 		}
 
 		// Act
 		const result = await addTask('tasks/tasks.json', prompt, [], 'medium', context, 'json')
 
 		// Assert
-		expect(readJSON).toHaveBeenCalledWith('tasks/tasks.json', '/mock/project/root', 'master')
+		expect(readJSON).toHaveBeenCalledWith('tasks/tasks.json', '/mock/project/root', 'main')
 		expect(generateObjectService).toHaveBeenCalledWith(expect.any(Object))
 		expect(writeJSON).toHaveBeenCalledWith(
 			'tasks/tasks.json',
@@ -242,7 +242,7 @@ describe('addTask', () => {
 				})
 			}),
 			'/mock/project/root', // projectRoot parameter
-			'master' // tag parameter
+			'main' // tag parameter
 		)
 		expect(result).toEqual(
 			expect.objectContaining({
@@ -259,7 +259,7 @@ describe('addTask', () => {
 		const context = {
 			mcpLog: createMcpLogMock(),
 			projectRoot: '/mock/project/root',
-			tag: 'master'
+			tag: 'main'
 		}
 
 		// Act
@@ -286,7 +286,7 @@ describe('addTask', () => {
 				})
 			}),
 			'/mock/project/root', // projectRoot parameter
-			'master' // tag parameter
+			'main' // tag parameter
 		)
 	})
 
@@ -297,7 +297,7 @@ describe('addTask', () => {
 		const context = {
 			mcpLog: createMcpLogMock(),
 			projectRoot: '/mock/project/root',
-			tag: 'master'
+			tag: 'main'
 		}
 
 		// Act
@@ -324,7 +324,7 @@ describe('addTask', () => {
 				})
 			}),
 			'/mock/project/root', // projectRoot parameter
-			'master' // tag parameter
+			'main' // tag parameter
 		)
 		expect(context.mcpLog.warn).toHaveBeenCalledWith(
 			expect.stringContaining('The following dependencies do not exist or are invalid: 999')
@@ -338,7 +338,7 @@ describe('addTask', () => {
 		const context = {
 			mcpLog: createMcpLogMock(),
 			projectRoot: '/mock/project/root',
-			tag: 'master'
+			tag: 'main'
 		}
 
 		// Act
@@ -357,7 +357,7 @@ describe('addTask', () => {
 				})
 			}),
 			'/mock/project/root', // projectRoot parameter
-			'master' // tag parameter
+			'main' // tag parameter
 		)
 	})
 
@@ -368,7 +368,7 @@ describe('addTask', () => {
 		const context = {
 			mcpLog: createMcpLogMock(),
 			projectRoot: '/mock/project/root',
-			tag: 'master'
+			tag: 'main'
 		}
 
 		// Act
@@ -388,7 +388,7 @@ describe('addTask', () => {
 				})
 			}),
 			'/mock/project/root', // projectRoot parameter
-			'master' // tag parameter
+			'main' // tag parameter
 		)
 	})
 
@@ -399,7 +399,7 @@ describe('addTask', () => {
 		const context = {
 			mcpLog: createMcpLogMock(),
 			projectRoot: '/mock/project/root',
-			tag: 'master'
+			tag: 'main'
 		}
 
 		// Act
@@ -417,7 +417,7 @@ describe('addTask', () => {
 		const context = {
 			mcpLog: createMcpLogMock(),
 			projectRoot: '/mock/project/root',
-			tag: 'master'
+			tag: 'main'
 		}
 
 		// Act & Assert
@@ -435,7 +435,7 @@ describe('addTask', () => {
 		const context = {
 			mcpLog: createMcpLogMock(),
 			projectRoot: '/mock/project/root',
-			tag: 'master'
+			tag: 'main'
 		}
 
 		// Act & Assert
@@ -453,7 +453,7 @@ describe('addTask', () => {
 		const context = {
 			mcpLog: createMcpLogMock(),
 			projectRoot: '/mock/project/root',
-			tag: 'master'
+			tag: 'main'
 		}
 
 		// Act & Assert

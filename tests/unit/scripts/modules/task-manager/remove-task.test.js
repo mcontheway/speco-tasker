@@ -75,7 +75,7 @@ describe('removeTask', () => {
 		readJSON.mockImplementation(() => {
 			return {
 				...getFreshData().master,
-				tag: 'master',
+				tag: 'main',
 				_rawTaggedData: getFreshData()
 			}
 		})
@@ -85,7 +85,7 @@ describe('removeTask', () => {
 	})
 
 	test('removes a main task and cleans dependencies across tags', async () => {
-		const result = await removeTask('tasks/tasks.json', '1', { tag: 'master' })
+		const result = await removeTask('tasks/tasks.json', '1', { tag: 'main' })
 
 		// Expect success true
 		expect(result.success).toBe(true)
@@ -103,7 +103,7 @@ describe('removeTask', () => {
 
 	test('removes a subtask only and leaves parent intact', async () => {
 		const result = await removeTask('tasks/tasks.json', '3.1', {
-			tag: 'master'
+			tag: 'main'
 		})
 
 		expect(result.success).toBe(true)
@@ -118,7 +118,7 @@ describe('removeTask', () => {
 
 	test('handles non-existent task gracefully', async () => {
 		const result = await removeTask('tasks/tasks.json', '42', {
-			tag: 'master'
+			tag: 'main'
 		})
 		expect(result.success).toBe(false)
 		expect(result.error).toContain('not found')

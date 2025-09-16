@@ -18,7 +18,7 @@ jest.unstable_mockModule('../../../../../scripts/modules/utils.js', () => ({
 	truncate: jest.fn((text) => text),
 	isSilentMode: jest.fn(() => false),
 	findTaskById: jest.fn(),
-	getCurrentTag: jest.fn(() => 'master'),
+	getCurrentTag: jest.fn(() => 'main'),
 	ensureTagMetadata: jest.fn((tagObj) => tagObj),
 	flattenTasksWithSubtasks: jest.fn((tasks) => tasks),
 	findProjectRoot: jest.fn(() => '/mock/project/root')
@@ -147,7 +147,7 @@ describe('updateTasks', () => {
 		// Configure mocks - readJSON should return the resolved view with tasks at top level
 		readJSON.mockReturnValue({
 			...mockInitialTasks.master,
-			tag: 'master',
+			tag: 'main',
 			_rawTaggedData: mockInitialTasks
 		})
 		generateTextService.mockResolvedValue(mockApiResponse)
@@ -158,13 +158,13 @@ describe('updateTasks', () => {
 			mockFromId,
 			mockPrompt,
 			false, // research
-			{ projectRoot: '/mock/path', tag: 'master' }, // context
+			{ projectRoot: '/mock/path', tag: 'main' }, // context
 			'json' // output format
 		)
 
 		// Assert
 		// 1. Read JSON called
-		expect(readJSON).toHaveBeenCalledWith(mockTasksPath, '/mock/path', 'master')
+		expect(readJSON).toHaveBeenCalledWith(mockTasksPath, '/mock/path', 'main')
 
 		// 2. AI Service called with correct args
 		expect(generateTextService).toHaveBeenCalledWith(expect.any(Object))
@@ -184,7 +184,7 @@ describe('updateTasks', () => {
 				})
 			}),
 			'/mock/path',
-			'master'
+			'main'
 		)
 
 		// 4. Check return value
@@ -214,7 +214,7 @@ describe('updateTasks', () => {
 		// Configure mocks - readJSON should return the resolved view with tasks at top level
 		readJSON.mockReturnValue({
 			...mockInitialTasks.master,
-			tag: 'master',
+			tag: 'main',
 			_rawTaggedData: mockInitialTasks
 		})
 
@@ -224,12 +224,12 @@ describe('updateTasks', () => {
 			mockFromId,
 			mockPrompt,
 			false,
-			{ projectRoot: '/mock/path', tag: 'master' },
+			{ projectRoot: '/mock/path', tag: 'main' },
 			'json'
 		)
 
 		// Assert
-		expect(readJSON).toHaveBeenCalledWith(mockTasksPath, '/mock/path', 'master')
+		expect(readJSON).toHaveBeenCalledWith(mockTasksPath, '/mock/path', 'main')
 		expect(generateTextService).not.toHaveBeenCalled()
 		expect(writeJSON).not.toHaveBeenCalled()
 		expect(log).toHaveBeenCalledWith('info', expect.stringContaining('No tasks to update'))
@@ -298,7 +298,7 @@ describe('updateTasks', () => {
 		// Configure mocks - readJSON returns resolved view for main tag
 		readJSON.mockReturnValue({
 			...mockTaggedData.master,
-			tag: 'master',
+			tag: 'main',
 			_rawTaggedData: mockTaggedData
 		})
 
@@ -313,7 +313,7 @@ describe('updateTasks', () => {
 			mockFromId,
 			mockPrompt,
 			false, // research
-			{ projectRoot: '/mock/project/root', tag: 'master' },
+			{ projectRoot: '/mock/project/root', tag: 'main' },
 			'json'
 		)
 
@@ -340,7 +340,7 @@ describe('updateTasks', () => {
 				})
 			}),
 			'/mock/project/root',
-			'master'
+			'main'
 		)
 
 		expect(result.success).toBe(true)

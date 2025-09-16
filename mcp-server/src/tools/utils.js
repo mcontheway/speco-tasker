@@ -64,13 +64,13 @@ function getTagInfo(projectRoot, log) {
 	try {
 		if (!projectRoot) {
 			log.warn('No project root provided for tag information')
-			return { currentTag: 'master', availableTags: ['master'] }
+			return { currentTag: 'main', availableTags: ['main'] }
 		}
 
 		const currentTag = getCurrentTag(projectRoot)
 
 		// Read available tags from tasks.json
-		let availableTags = ['master'] // Default fallback
+		let availableTags = ['main'] // Default fallback
 		try {
 			const tasksJsonPath = path.join(projectRoot, '.taskmaster', 'tasks', 'tasks.json')
 			if (fs.existsSync(tasksJsonPath)) {
@@ -94,12 +94,12 @@ function getTagInfo(projectRoot, log) {
 		}
 
 		return {
-			currentTag: currentTag || 'master',
+			currentTag: currentTag || 'main',
 			availableTags: availableTags
 		}
 	} catch (error) {
 		log.warn(`Error getting tag information: ${error.message}`)
-		return { currentTag: 'master', availableTags: ['master'] }
+		return { currentTag: 'main', availableTags: ['main'] }
 	}
 }
 

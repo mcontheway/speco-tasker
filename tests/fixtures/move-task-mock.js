@@ -3,6 +3,8 @@
  * Provides mock implementations for testing scenarios
  */
 
+import { jest } from '@jest/globals'
+
 // Mock the moveTask function from the core module
 const mockMoveTask = jest
 	.fn()

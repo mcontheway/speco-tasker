@@ -22,8 +22,8 @@ jest.mock('../../scripts/modules/utils.js', () => ({
 	markMigrationForNotice: jest.fn(),
 	performCompleteTagMigration: jest.fn(),
 	isSilentMode: jest.fn(() => false),
-	getCurrentTag: jest.fn(() => 'master'),
-	slugifyTagForFilePath: jest.fn(() => 'master')
+	getCurrentTag: jest.fn(() => 'main'),
+	slugifyTagForFilePath: jest.fn(() => 'main')
 }))
 
 // Store original path methods to restore them after tests
@@ -67,7 +67,7 @@ describe('任务历史功能验证', () => {
 				timestamp: new Date().toISOString(),
 				user: 'test-user',
 				details: '任务状态从待处理变更为进行中',
-				tag: 'master',
+				tag: 'main',
 				version: '1.0.0'
 			}
 
@@ -132,7 +132,7 @@ describe('任务历史功能验证', () => {
 					timestamp: new Date().toISOString(),
 					user: 'test-user',
 					details: type.description,
-					tag: 'master',
+					tag: 'main',
 					version: '1.0.0'
 				}
 
@@ -146,7 +146,7 @@ describe('任务历史功能验证', () => {
 				id: 'hist_tag_001',
 				taskId: 5,
 				action: 'tag_changed',
-				oldValue: 'master',
+				oldValue: 'main',
 				newValue: 'feature-branch',
 				timestamp: new Date().toISOString(),
 				user: 'test-user',
@@ -156,7 +156,7 @@ describe('任务历史功能验证', () => {
 			}
 
 			expect(taggedHistory.action).toBe('tag_changed')
-			expect(taggedHistory.oldValue).toBe('master')
+			expect(taggedHistory.oldValue).toBe('main')
 			expect(taggedHistory.newValue).toBe('feature-branch')
 			expect(taggedHistory.tag).toBe('feature-branch')
 			expect(taggedHistory.details).toContain('标签从 master 变更为 feature-branch')
@@ -173,7 +173,7 @@ describe('任务历史功能验证', () => {
 					timestamp: '2024-01-01T10:00:00Z',
 					user: 'user1',
 					details: '任务创建',
-					tag: 'master'
+					tag: 'main'
 				},
 				{
 					id: 'hist_002',
@@ -182,7 +182,7 @@ describe('任务历史功能验证', () => {
 					timestamp: '2024-01-01T11:00:00Z',
 					user: 'user1',
 					details: '状态变更',
-					tag: 'master'
+					tag: 'main'
 				},
 				{
 					id: 'hist_003',
@@ -191,7 +191,7 @@ describe('任务历史功能验证', () => {
 					timestamp: '2024-01-01T12:00:00Z',
 					user: 'user2',
 					details: '任务创建',
-					tag: 'master'
+					tag: 'main'
 				}
 			]
 
@@ -214,7 +214,7 @@ describe('任务历史功能验证', () => {
 					timestamp: '2024-01-01T08:00:00Z',
 					user: 'user1',
 					details: '早上创建任务',
-					tag: 'master'
+					tag: 'main'
 				},
 				{
 					id: 'hist_002',
@@ -223,7 +223,7 @@ describe('任务历史功能验证', () => {
 					timestamp: '2024-01-01T14:00:00Z',
 					user: 'user1',
 					details: '下午状态变更',
-					tag: 'master'
+					tag: 'main'
 				},
 				{
 					id: 'hist_003',
@@ -232,7 +232,7 @@ describe('任务历史功能验证', () => {
 					timestamp: '2024-01-01T18:00:00Z',
 					user: 'user1',
 					details: '晚上完成任务',
-					tag: 'master'
+					tag: 'main'
 				}
 			]
 
@@ -258,7 +258,7 @@ describe('任务历史功能验证', () => {
 					timestamp: '2024-01-01T10:00:00Z',
 					user: 'user1',
 					details: '任务创建',
-					tag: 'master'
+					tag: 'main'
 				},
 				{
 					id: 'hist_002',
@@ -267,7 +267,7 @@ describe('任务历史功能验证', () => {
 					timestamp: '2024-01-01T11:00:00Z',
 					user: 'user1',
 					details: '状态变更',
-					tag: 'master'
+					tag: 'main'
 				},
 				{
 					id: 'hist_003',
@@ -276,7 +276,7 @@ describe('任务历史功能验证', () => {
 					timestamp: '2024-01-01T12:00:00Z',
 					user: 'user2',
 					details: '任务创建',
-					tag: 'master'
+					tag: 'main'
 				},
 				{
 					id: 'hist_004',
@@ -285,7 +285,7 @@ describe('任务历史功能验证', () => {
 					timestamp: '2024-01-01T13:00:00Z',
 					user: 'user2',
 					details: '状态变更',
-					tag: 'master'
+					tag: 'main'
 				}
 			]
 
@@ -307,7 +307,7 @@ describe('任务历史功能验证', () => {
 				timestamp: new Date().toISOString(),
 				user: 'test-user',
 				details: '任务创建',
-				tag: 'master',
+				tag: 'main',
 				version: '1.0.0'
 			}
 
@@ -335,7 +335,7 @@ describe('任务历史功能验证', () => {
 							timestamp: '2024-01-01T10:00:00Z',
 							user: 'user1',
 							details: '任务创建',
-							tag: 'master'
+							tag: 'main'
 						},
 						{
 							id: 'hist_002',
@@ -344,7 +344,7 @@ describe('任务历史功能验证', () => {
 							timestamp: '2024-01-01T11:00:00Z',
 							user: 'user2',
 							details: '任务创建',
-							tag: 'master'
+							tag: 'main'
 						}
 					],
 					lastUpdated: '2024-01-01T11:00:00Z'
@@ -355,7 +355,7 @@ describe('任务历史功能验证', () => {
 			const { readJSON } = require('../../scripts/modules/utils.js')
 			readJSON.mockReturnValue(mockHistoryData)
 
-			const result = readJSON('/mock/history.json', '/mock/project', 'master')
+			const result = readJSON('/mock/history.json', '/mock/project', 'main')
 			expect(result).toEqual(mockHistoryData)
 			expect(result.master.entries).toHaveLength(2)
 			expect(result.master.lastUpdated).toBe('2024-01-01T11:00:00Z')
@@ -369,7 +369,7 @@ describe('任务历史功能验证', () => {
 				timestamp: new Date(2024, 0, 1, index).toISOString(),
 				user: `user${(index % 3) + 1}`,
 				details: `历史记录 ${index + 1}`,
-				tag: 'master'
+				tag: 'main'
 			}))
 
 			const pageSize = 10
@@ -395,7 +395,7 @@ describe('任务历史功能验证', () => {
 					timestamp: '2024-01-01T10:00:00Z', // 过期
 					user: 'user1',
 					details: '旧记录',
-					tag: 'master'
+					tag: 'main'
 				},
 				{
 					id: 'hist_002',
@@ -404,7 +404,7 @@ describe('任务历史功能验证', () => {
 					timestamp: '2024-12-01T10:00:00Z', // 当前
 					user: 'user1',
 					details: '新记录',
-					tag: 'master'
+					tag: 'main'
 				}
 			]
 
@@ -426,7 +426,7 @@ describe('任务历史功能验证', () => {
 				timestamp: new Date(2024, 0, index + 1).toISOString(),
 				user: `user${(index % 3) + 1}`,
 				details: `历史记录 ${index + 1}`,
-				tag: 'master'
+				tag: 'main'
 			}))
 
 			const maxRecords = 100
@@ -445,7 +445,7 @@ describe('任务历史功能验证', () => {
 				timestamp: new Date().toISOString(),
 				user: 'test-user',
 				details: '有效的历史记录',
-				tag: 'master',
+				tag: 'main',
 				version: '1.0.0'
 			}
 
@@ -456,7 +456,7 @@ describe('任务历史功能验证', () => {
 				timestamp: 'invalid-date', // 无效时间戳
 				user: '',
 				details: '',
-				tag: 'master'
+				tag: 'main'
 			}
 
 			// 验证有效记录

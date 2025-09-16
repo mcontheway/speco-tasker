@@ -167,8 +167,8 @@ node node_modules/claude-task-master/scripts/init.js
 Or clone the repository and run:
 
 ```bash
-git clone https://github.com/mcontheway/taskmaster-no-ai.git
-cd taskmaster-no-ai
+git clone https://github.com/mcontheway/speco-tasker.git
+cd speco-tasker
 node scripts/init.js
 ```
 

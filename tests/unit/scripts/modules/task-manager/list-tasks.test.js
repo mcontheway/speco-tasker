@@ -149,11 +149,11 @@ describe('listTasks', () => {
 
 		// Act
 		const result = listTasks(tasksPath, null, null, false, 'json', {
-			tag: 'master'
+			tag: 'main'
 		})
 
 		// Assert
-		expect(readJSON).toHaveBeenCalledWith(tasksPath, undefined, 'master')
+		expect(readJSON).toHaveBeenCalledWith(tasksPath, undefined, 'main')
 		expect(result).toEqual(
 			expect.objectContaining({
 				tasks: expect.arrayContaining([
@@ -174,11 +174,11 @@ describe('listTasks', () => {
 
 		// Act
 		const result = listTasks(tasksPath, statusFilter, null, false, 'json', {
-			tag: 'master'
+			tag: 'main'
 		})
 
 		// Assert
-		expect(readJSON).toHaveBeenCalledWith(tasksPath, undefined, 'master')
+		expect(readJSON).toHaveBeenCalledWith(tasksPath, undefined, 'main')
 
 		// Verify only pending tasks are returned
 		expect(result.tasks).toHaveLength(1)
@@ -193,7 +193,7 @@ describe('listTasks', () => {
 
 		// Act
 		const result = listTasks(tasksPath, statusFilter, null, false, 'json', {
-			tag: 'master'
+			tag: 'main'
 		})
 
 		// Assert
@@ -209,7 +209,7 @@ describe('listTasks', () => {
 
 		// Act
 		const result = listTasks(tasksPath, statusFilter, null, false, 'json', {
-			tag: 'master'
+			tag: 'main'
 		})
 
 		// Assert
@@ -225,7 +225,7 @@ describe('listTasks', () => {
 
 		// Act
 		const result = listTasks(tasksPath, null, null, true, 'json', {
-			tag: 'master'
+			tag: 'main'
 		})
 
 		// Assert
@@ -242,7 +242,7 @@ describe('listTasks', () => {
 
 		// Act
 		const result = listTasks(tasksPath, null, null, false, 'json', {
-			tag: 'master'
+			tag: 'main'
 		})
 
 		// Assert
@@ -262,7 +262,7 @@ describe('listTasks', () => {
 
 		// Act
 		const result = listTasks(tasksPath, statusFilter, null, false, 'json', {
-			tag: 'master'
+			tag: 'main'
 		})
 
 		// Assert
@@ -279,7 +279,7 @@ describe('listTasks', () => {
 
 		// Act & Assert
 		expect(() => {
-			listTasks(tasksPath, null, null, false, 'json', { tag: 'master' })
+			listTasks(tasksPath, null, null, false, 'json', { tag: 'main' })
 		}).toThrow('File not found')
 	})
 
@@ -288,10 +288,10 @@ describe('listTasks', () => {
 		const tasksPath = 'tasks/tasks.json'
 
 		// Act
-		listTasks(tasksPath, null, null, false, 'json', { tag: 'master' })
+		listTasks(tasksPath, null, null, false, 'json', { tag: 'main' })
 
 		// Assert
-		expect(readJSON).toHaveBeenCalledWith(tasksPath, undefined, 'master')
+		expect(readJSON).toHaveBeenCalledWith(tasksPath, undefined, 'main')
 		// Note: validateAndFixDependencies is not called by listTasks function
 		// This test just verifies the function runs without error
 	})
@@ -302,7 +302,7 @@ describe('listTasks', () => {
 
 		// Act
 		const result = listTasks(tasksPath, 'pending', null, true, 'json', {
-			tag: 'master'
+			tag: 'main'
 		})
 
 		// Assert
@@ -323,7 +323,7 @@ describe('listTasks', () => {
 
 		// Act
 		const result = listTasks(tasksPath, statusFilter, null, false, 'json', {
-			tag: 'master'
+			tag: 'main'
 		})
 
 		// Assert
@@ -339,7 +339,7 @@ describe('listTasks', () => {
 
 		// Act
 		const result = listTasks(tasksPath, statusFilter, null, false, 'json', {
-			tag: 'master'
+			tag: 'main'
 		})
 
 		// Assert
@@ -354,7 +354,7 @@ describe('listTasks', () => {
 
 		// Act
 		const result = listTasks(tasksPath, null, null, false, 'json', {
-			tag: 'master'
+			tag: 'main'
 		})
 
 		// Assert
@@ -382,11 +382,11 @@ describe('listTasks', () => {
 
 			// Act
 			const result = listTasks(tasksPath, statusFilter, null, false, 'json', {
-				tag: 'master'
+				tag: 'main'
 			})
 
 			// Assert
-			expect(readJSON).toHaveBeenCalledWith(tasksPath, undefined, 'master')
+			expect(readJSON).toHaveBeenCalledWith(tasksPath, undefined, 'main')
 
 			// Should return tasks with 'done' or 'pending' status
 			expect(result.tasks).toHaveLength(2)
@@ -400,7 +400,7 @@ describe('listTasks', () => {
 
 			// Act
 			const result = listTasks(tasksPath, statusFilter, null, false, 'json', {
-				tag: 'master'
+				tag: 'main'
 			})
 
 			// Assert
@@ -424,7 +424,7 @@ describe('listTasks', () => {
 
 			// Act
 			const result = listTasks(tasksPath, statusFilter, null, false, 'json', {
-				tag: 'master'
+				tag: 'main'
 			})
 
 			// Assert
@@ -441,7 +441,7 @@ describe('listTasks', () => {
 
 			// Act
 			const result = listTasks(tasksPath, statusFilter, null, false, 'json', {
-				tag: 'master'
+				tag: 'main'
 			})
 
 			// Assert
@@ -458,7 +458,7 @@ describe('listTasks', () => {
 
 			// Act
 			const result = listTasks(tasksPath, statusFilter, null, false, 'json', {
-				tag: 'master'
+				tag: 'main'
 			})
 
 			// Assert
@@ -475,7 +475,7 @@ describe('listTasks', () => {
 
 			// Act
 			const result = listTasks(tasksPath, statusFilter, null, false, 'json', {
-				tag: 'master'
+				tag: 'main'
 			})
 
 			// Assert
@@ -490,7 +490,7 @@ describe('listTasks', () => {
 
 			// Act
 			const result = listTasks(tasksPath, statusFilter, null, false, 'json', {
-				tag: 'master'
+				tag: 'main'
 			})
 
 			// Assert
@@ -506,7 +506,7 @@ describe('listTasks', () => {
 
 			// Act
 			const result = listTasks(tasksPath, statusFilter, null, false, 'json', {
-				tag: 'master'
+				tag: 'main'
 			})
 
 			// Assert
@@ -521,7 +521,7 @@ describe('listTasks', () => {
 
 			// Act
 			const result = listTasks(tasksPath, statusFilter, null, false, 'json', {
-				tag: 'master'
+				tag: 'main'
 			})
 
 			// Assert
@@ -537,7 +537,7 @@ describe('listTasks', () => {
 
 			// Act
 			const result = listTasks(tasksPath, statusFilter, null, false, 'json', {
-				tag: 'master'
+				tag: 'main'
 			})
 
 			// Assert
@@ -554,7 +554,7 @@ describe('listTasks', () => {
 
 			// Act
 			const result = listTasks(tasksPath, statusFilter, null, false, 'json', {
-				tag: 'master'
+				tag: 'main'
 			})
 
 			// Assert
@@ -576,7 +576,7 @@ describe('listTasks', () => {
 			const tasksPath = 'tasks/tasks.json'
 
 			await listTasks(tasksPath, null, null, false, 'compact', {
-				tag: 'master'
+				tag: 'main'
 			})
 
 			expect(consoleSpy).toHaveBeenCalled()
@@ -596,7 +596,7 @@ describe('listTasks', () => {
 			const tasksPath = 'tasks/tasks.json'
 
 			await listTasks(tasksPath, null, null, false, 'compact', {
-				tag: 'master'
+				tag: 'main'
 			})
 
 			expect(consoleSpy).toHaveBeenCalled()
@@ -619,7 +619,7 @@ describe('listTasks', () => {
 				null,
 				true, // withSubtasks = true
 				'compact',
-				{ tag: 'master' }
+				{ tag: 'main' }
 			)
 
 			expect(consoleSpy).toHaveBeenCalled()
@@ -640,7 +640,7 @@ describe('listTasks', () => {
 			const tasksPath = 'tasks/tasks.json'
 
 			await listTasks(tasksPath, null, null, false, 'compact', {
-				tag: 'master'
+				tag: 'main'
 			})
 
 			expect(consoleSpy).toHaveBeenCalledWith('No tasks found')
@@ -681,7 +681,7 @@ describe('listTasks', () => {
 			const tasksPath = 'tasks/tasks.json'
 
 			await listTasks(tasksPath, null, null, false, 'compact', {
-				tag: 'master'
+				tag: 'main'
 			})
 
 			expect(consoleSpy).toHaveBeenCalled()

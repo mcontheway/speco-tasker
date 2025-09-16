@@ -19,7 +19,17 @@ jest.mock('../../../../mcp-server/src/core/task-master-core.js', () => ({
 }))
 
 const mockHandleApiResult = jest.fn((result) => result)
-const mockWithNormalizedProjectRoot = jest.fn((fn) => fn)
+const mockWithNormalizedProjectRoot = jest.fn((fn) => {
+	// Return a wrapped function that normalizes projectRoot and calls the original
+	return async (args, context) => {
+		// Ensure projectRoot is normalized (this is what the real wrapper does)
+		const normalizedArgs = {
+			...args,
+			projectRoot: args.projectRoot || '/default/project/root'
+		}
+		return await fn(normalizedArgs, context)
+	}
+})
 const mockCreateErrorResponse = jest.fn((msg) => ({
 	success: false,
 	error: { code: 'ERROR', message: msg }
@@ -67,7 +77,7 @@ const registerRemoveTaskTool = (server) => {
 		description: 'Remove a task or subtask permanently from the tasks list',
 		parameters: mockZod,
 
-		// Create a simplified mock of the execute function
+		// Set execute function directly
 		execute: mockWithNormalizedProjectRoot(async (args, context) => {
 			const { log, session } = context
 
@@ -90,7 +100,7 @@ const registerRemoveTaskTool = (server) => {
 						tasksJsonPath: tasksJsonPath,
 						id: args.id,
 						projectRoot: args.projectRoot,
-						tag: args.tag
+						tag: args.tag || 'main'
 					},
 					log,
 					{ session }
@@ -139,7 +149,7 @@ describe('MCP Tool: remove-task', () => {
 	const multipleTaskArgs = {
 		id: '5,6.1,7',
 		projectRoot: '/mock/project/root',
-		tag: 'master'
+		tag: 'main'
 	}
 
 	// Standard responses
@@ -175,13 +185,13 @@ describe('MCP Tool: remove-task', () => {
 				{ id: 7, title: 'Task 7', status: 'in-progress' }
 			],
 			messages: [
-				"Successfully removed task 5 from tag 'master'",
-				"Successfully removed subtask 6.1 from tag 'master'",
-				"Successfully removed task 7 from tag 'master'"
+				"Successfully removed task 5 from tag 'main'",
+				"Successfully removed subtask 6.1 from tag 'main'",
+				"Successfully removed task 7 from tag 'main'"
 			],
 			errors: [],
 			tasksPath: '/mock/project/tasks.json',
-			tag: 'master'
+			tag: 'main'
 		}
 	}
 
@@ -205,19 +215,38 @@ describe('MCP Tool: remove-task', () => {
 		// Reset all mocks
 		jest.clearAllMocks()
 
+		// Re-establish the mockWithNormalizedProjectRoot implementation after clearAllMocks
+		mockWithNormalizedProjectRoot.mockImplementation((fn) => {
+			// Return a wrapped function that normalizes projectRoot and calls the original
+			return async (args, context) => {
+				// Ensure projectRoot is normalized (this is what the real wrapper does)
+				const normalizedArgs = {
+					...args,
+					projectRoot: args.projectRoot || '/default/project/root'
+				}
+				return await fn(normalizedArgs, context)
+			}
+		})
+
+		// Setup default successful response first
+		mockRemoveTaskDirect.mockResolvedValue(successResponse)
+		mockFindTasksPath.mockReturnValue('/mock/project/tasks.json')
+
 		// Create mock server
 		mockServer = {
 			addTool: jest.fn((config) => {
 				executeFunction = config.execute
+				return config
 			})
 		}
 
-		// Setup default successful response
-		mockRemoveTaskDirect.mockResolvedValue(successResponse)
-		mockFindTasksPath.mockReturnValue('/mock/project/tasks.json')
-
 		// Register the tool
 		registerRemoveTaskTool(mockServer)
+
+		// Verify executeFunction was set
+		if (!executeFunction) {
+			throw new Error('executeFunction was not set by registerRemoveTaskTool')
+		}
 	})
 
 	test('should register the tool correctly', () => {
@@ -297,7 +326,7 @@ describe('MCP Tool: remove-task', () => {
 		expect(mockRemoveTaskDirect).toHaveBeenCalledWith(
 			expect.objectContaining({
 				id: '5,6.1,7',
-				tag: 'master'
+				tag: 'main'
 			}),
 			mockLogger,
 			expect.any(Object)
@@ -333,7 +362,7 @@ describe('MCP Tool: remove-task', () => {
 			expect.objectContaining({
 				id: '5',
 				projectRoot: '/mock/project/root',
-				tag: undefined // Should be undefined when not provided
+				tag: 'main' // Default tag when not specified
 			}),
 			mockLogger,
 			expect.any(Object)

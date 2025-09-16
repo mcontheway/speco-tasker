@@ -163,7 +163,7 @@ function isValidBranchForTag(branchName) {
 	}
 
 	// Check if it's a reserved branch name that shouldn't become tags
-	const reservedBranches = ['main', 'master', 'develop', 'dev', 'HEAD']
+	const reservedBranches = ['main', 'main', 'develop', 'dev', 'HEAD']
 	if (reservedBranches.includes(branchName.toLowerCase())) {
 		return false
 	}
@@ -237,7 +237,7 @@ async function getDefaultBranch(projectRoot) {
 		return stdout.replace('refs/remotes/origin/', '').trim()
 	} catch (error) {
 		// Final fallback - common default branch names
-		const commonDefaults = ['main', 'master']
+		const commonDefaults = ['main', 'main']
 		const branches = await getLocalBranches(projectRoot)
 
 		for (const defaultName of commonDefaults) {

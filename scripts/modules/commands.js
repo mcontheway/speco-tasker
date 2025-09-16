@@ -1,6 +1,6 @@
 /**
  * commands.js
- * Command-line interface for the Task Master CLI
+ * Command-line interface for the Speco Tasker CLI
  */
 
 import fs from 'fs'
@@ -1555,7 +1555,7 @@ function registerCommands(programInstance) {
 	// init command (Directly calls the implementation from init.js)
 	programInstance
 		.command('init')
-		.description('使用Task Master结构初始化新项目')
+		.description('使用Speco Tasker结构初始化新项目')
 		.option('-y, --yes', '跳过提示并使用默认值')
 		.option('-n, --name <name>', '项目名称')
 		.option('-d, --description <description>', '项目描述')
@@ -2610,17 +2610,17 @@ async function runCLI(argv = process.argv) {
  * Resolve the final complexity-report path.
  * Rules:
  *  1. If caller passes --output, always respect it.
- *  2. If no explicit output AND tag === 'master' → default report file
- *  3. If no explicit output AND tag !== 'master' → append _<tag>.json
+ *  2. If no explicit output AND tag === 'main' → default report file
+ *  3. If no explicit output AND tag !== 'main' → append _<tag>.json
  *
  * @param {string|undefined} outputOpt  --output value from CLI (may be undefined)
- * @param {string} targetTag            resolved tag (defaults to 'master')
+ * @param {string} targetTag            resolved tag (defaults to 'main')
  * @param {string} projectRoot          absolute project root
  * @returns {string} absolute path for the report
  */
 export function resolveComplexityReportPath({
 	projectRoot,
-	tag = 'master',
+	tag = 'main',
 	output // may be undefined
 }) {
 	// 1. user knows best
@@ -2630,7 +2630,7 @@ export function resolveComplexityReportPath({
 
 	// 2. default naming
 	const base = path.join(projectRoot, COMPLEXITY_REPORT_FILE)
-	return tag !== 'master' ? base.replace('.json', `_${tag}.json`) : base
+	return tag !== 'main' ? base.replace('.json', `_${tag}.json`) : base
 }
 
 export {

@@ -66,7 +66,7 @@ function displayBanner() {
 	if (isSilentMode()) return
 
 	console.clear()
-	const bannerText = figlet.textSync('Task Master AI', {
+	const bannerText = figlet.textSync('Speco Tasker', {
 		font: 'Standard',
 		horizontalLayout: 'default',
 		verticalLayout: 'default'
@@ -76,7 +76,7 @@ function displayBanner() {
 
 	// Add creator credit line below the banner
 	console.log(
-		chalk.dim('by ') + chalk.cyan.underline('https://github.com/mcontheway/taskmaster-no-ai')
+		chalk.dim('by ') + chalk.cyan.underline('https://github.com/mcontheway/speco-tasker')
 	)
 
 	console.log(
@@ -158,19 +158,19 @@ function addShellAliases() {
 		// Check if aliases already exist
 		const configContent = fs.readFileSync(shellConfigFile, 'utf8')
 		if (configContent.includes("alias tm='task-master'")) {
-			log('info', 'Task Master aliases already exist in shell config.')
+			log('info', 'Speco Tasker aliases already exist in shell config.')
 			return true
 		}
 
 		// Add aliases to the shell config file
 		const aliasBlock = `
-# Task Master aliases added on ${new Date().toLocaleDateString()}
+# Speco Tasker aliases added on ${new Date().toLocaleDateString()}
 alias tm='task-master'
 alias taskmaster='task-master'
 `
 
 		fs.appendFileSync(shellConfigFile, aliasBlock)
-		log('success', `Added Task Master aliases to ${shellConfigFile}`)
+		log('success', `Added Speco Tasker aliases to ${shellConfigFile}`)
 		log('info', `To use the aliases in your current terminal, run: source ${shellConfigFile}`)
 
 		return true
@@ -192,7 +192,7 @@ function createInitialStateFile(targetDir) {
 
 	// Create initial state configuration
 	const initialState = {
-		currentTag: 'master',
+		currentTag: 'main',
 		lastSwitched: new Date().toISOString(),
 		branchTagMapping: {},
 		migrationNoticeShown: false
@@ -381,7 +381,7 @@ async function initializeProject(options = {}) {
 
 		// Use provided options or dynamically get project name
 		const projectName = options.name || (await getDynamicProjectName(projectRoot))
-		const projectDescription = options.description || 'A project managed with Task Master AI'
+		const projectDescription = options.description || 'A project managed with Speco Tasker'
 		const projectVersion = options.version || '0.1.0'
 		const authorName = options.author || 'Vibe coder'
 		const dryRun = options.dryRun || false
@@ -394,7 +394,7 @@ async function initializeProject(options = {}) {
 
 		if (dryRun) {
 			log('info', 'DRY RUN MODE: No files will be modified')
-			log('info', 'Would initialize Task Master project')
+			log('info', 'Would initialize Speco Tasker project')
 			log('info', 'Would create/update necessary project files')
 
 			// Show flag-specific behavior
@@ -475,7 +475,7 @@ async function initializeProject(options = {}) {
 			log('info', `Project name set to: ${options.name}`)
 
 			// Confirm settings...
-			console.log('\nTask Master Project settings:')
+			console.log('\nSpeco Tasker Project settings:')
 			console.log(chalk.blue('Project Name:'), chalk.white(options.name))
 			console.log(
 				chalk.blue('Add shell aliases (so you can use "tm" instead of "task-master"):'),
@@ -507,7 +507,7 @@ async function initializeProject(options = {}) {
 
 			if (dryRun) {
 				log('info', 'DRY RUN MODE: No files will be modified')
-				log('info', 'Would initialize Task Master project')
+				log('info', 'Would initialize Speco Tasker project')
 				log('info', 'Would create/update necessary project files')
 
 				// Show flag-specific behavior

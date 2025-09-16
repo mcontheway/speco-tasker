@@ -20,4 +20,4 @@ Welcome to the Task Master documentation. Use the links below to navigate to the
 
 ## Need More Help?
 
-If you can't find what you're looking for in these docs, please check the [main README](../README.md) or visit our [GitHub repository](https://github.com/mcontheway/taskmaster-no-ai).
+If you can't find what you're looking for in these docs, please check the [main README](../README.md) or visit our [GitHub repository](https://github.com/mcontheway/speco-tasker).

@@ -1,5 +1,5 @@
 {
-	"name": "taskmaster-no-ai",
+	"name": "speco-tasker",
 	"version": "1.0.15",
 	"description": "A pure manual task management system for efficient development workflows, designed to work seamlessly with any development environment.",
 	"main": "index.js",
@@ -7,7 +7,7 @@
 	"bin": {
 		"task-master": "bin/task-master.js",
 		"task-master-mcp": "mcp-server/server.js",
-		"taskmaster-no-ai": "mcp-server/server.js"
+		"speco-tasker": "mcp-server/server.js"
 	},
 	"workspaces": ["apps/docs", "."],
 	"scripts": {

@@ -27,7 +27,7 @@ jest.unstable_mockModule('../../../../../scripts/modules/utils.js', () => ({
 	disableSilentMode: jest.fn(),
 	flattenTasksWithSubtasks: jest.fn((tasks) => tasks),
 	getTagAwareFilePath: jest.fn((basePath, tag, projectRoot) => {
-		if (tag && tag !== 'master') {
+		if (tag && tag !== 'main') {
 			const dir = path.dirname(basePath)
 			const ext = path.extname(basePath)
 			const name = path.basename(basePath, ext)
@@ -56,7 +56,7 @@ jest.unstable_mockModule('../../../../../scripts/modules/utils.js', () => ({
 	addComplexityToTask: jest.fn((task, complexity) => ({ ...task, complexity })),
 	aggregateTelemetry: jest.fn((telemetryArray) => telemetryArray[0] || {}),
 	ensureTagMetadata: jest.fn((tagObj) => tagObj),
-	getCurrentTag: jest.fn(() => 'master'),
+	getCurrentTag: jest.fn(() => 'main'),
 	markMigrationForNotice: jest.fn(),
 	performCompleteTagMigration: jest.fn(),
 	setTasksForTag: jest.fn(),
@@ -74,7 +74,7 @@ jest.unstable_mockModule('../../../../../scripts/modules/utils.js', () => ({
 		return tagName.replace(/[^a-zA-Z0-9_-]/g, '-').toLowerCase()
 	}),
 	createTagAwareFilePath: jest.fn((basePath, tag, projectRoot) => {
-		if (tag && tag !== 'master') {
+		if (tag && tag !== 'main') {
 			const dir = path.dirname(basePath)
 			const ext = path.extname(basePath)
 			const name = path.basename(basePath, ext)
@@ -97,7 +97,7 @@ jest.unstable_mockModule('../../../../../scripts/modules/ai-services-unified.js'
 		if (commandName === 'analyze-complexity') {
 			// Check if this is for a specific tag test by looking at the prompt
 			const isFeatureTag = params?.prompt?.includes('feature') || params?.role === 'feature'
-			const isMasterTag = params?.prompt?.includes('master') || params?.role === 'master'
+			const isMasterTag = params?.prompt?.includes('main') || params?.role === 'main'
 
 			let taskTitle = 'Test Task'
 			if (isFeatureTag) {
@@ -476,7 +476,7 @@ describe('Complexity Report Tag Isolation', () => {
 			}
 
 			let filename = 'task-complexity-report.json'
-			if (tag && tag !== 'master') {
+			if (tag && tag !== 'main') {
 				// Use slugified tag for cross-platform compatibility
 				const slugifiedTag = tag.replace(/[^a-zA-Z0-9_-]/g, '-').toLowerCase()
 				filename = `task-complexity-report_${slugifiedTag}.json`
@@ -493,7 +493,7 @@ describe('Complexity Report Tag Isolation', () => {
 			}
 
 			let filename = 'task-complexity-report.json'
-			if (tag && tag !== 'master') {
+			if (tag && tag !== 'main') {
 				filename = `task-complexity-report_${tag}.json`
 			}
 
@@ -504,7 +504,7 @@ describe('Complexity Report Tag Isolation', () => {
 	describe('Path Resolution Tag Isolation', () => {
 		test('should resolve main tag to default filename', () => {
 			const result = resolveComplexityReportOutputPath(null, {
-				tag: 'master',
+				tag: 'main',
 				projectRoot
 			})
 			expect(result).toBe(
@@ -545,7 +545,7 @@ describe('Complexity Report Tag Isolation', () => {
 				file: 'tasks/tasks.json',
 				threshold: '5',
 				projectRoot,
-				tag: 'master'
+				tag: 'main'
 			}
 
 			await analyzeTaskComplexity(options, {
@@ -562,7 +562,7 @@ describe('Complexity Report Tag Isolation', () => {
 			expect(resolveComplexityReportOutputPath).toHaveBeenCalledWith(
 				undefined,
 				expect.objectContaining({
-					tag: 'master',
+					tag: 'main',
 					projectRoot
 				}),
 				expect.any(Function)
@@ -616,7 +616,7 @@ describe('Complexity Report Tag Isolation', () => {
 				file: 'tasks/tasks.json',
 				threshold: '5',
 				projectRoot,
-				tag: 'master'
+				tag: 'main'
 			}
 
 			await analyzeTaskComplexity(masterOptions, {
@@ -681,7 +681,7 @@ describe('Complexity Report Tag Isolation', () => {
 				file: 'tasks/tasks.json',
 				threshold: '5',
 				projectRoot,
-				tag: 'master'
+				tag: 'main'
 			}
 
 			await analyzeTaskComplexity(options, {
@@ -829,7 +829,7 @@ describe('Complexity Report Tag Isolation', () => {
 				'', // additionalContext
 				{
 					projectRoot,
-					tag: 'master',
+					tag: 'main',
 					complexityReportPath: path.join(
 						projectRoot,
 						'.taskmaster/reports',
@@ -903,7 +903,7 @@ describe('Complexity Report Tag Isolation', () => {
 				file: 'tasks/tasks.json',
 				threshold: '5',
 				projectRoot,
-				tag: 'master'
+				tag: 'main'
 			}
 
 			await analyzeTaskComplexity(masterOptions, {

@@ -1,8 +1,8 @@
 {
 	"mcpServers": {
-		"taskmaster-no-ai": {
+		"speco-tasker": {
 			"command": "npx",
-			"args": ["taskmaster-no-ai"]
+			"args": ["speco-tasker"]
 		}
 	}
 }

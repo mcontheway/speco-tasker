@@ -16,13 +16,13 @@ jest.unstable_mockModule('../../../../../scripts/modules/utils.js', () => ({
 	writeJSON: jest.fn(),
 	log: jest.fn(),
 	findProjectRoot: jest.fn(() => '/mock/project/root'),
-	getCurrentTag: jest.fn(() => 'master'),
+	getCurrentTag: jest.fn(() => 'main'),
 	taskExists: jest.fn(() => true),
 	formatTaskId: jest.fn((id) => id),
 	findCycles: jest.fn(() => []),
 	traverseDependencies: jest.fn((sourceTasks, allTasks, options = {}) => []),
 	isSilentMode: jest.fn(() => true),
-	resolveTag: jest.fn(() => 'master'),
+	resolveTag: jest.fn(() => 'main'),
 	getTasksForTag: jest.fn(() => []),
 	setTasksForTag: jest.fn(),
 	enableSilentMode: jest.fn(),
@@ -84,7 +84,7 @@ describe('fixDependenciesCommand tag preservation', () => {
 	it('calls writeJSON with projectRoot and tag parameters when changes are made', async () => {
 		const tasksPath = '/mock/tasks.json'
 		const projectRoot = '/mock/project/root'
-		const tag = 'master'
+		const tag = 'main'
 
 		// Mock data WITH dependency issues to trigger writeJSON
 		const tasksDataWithIssues = {
@@ -100,7 +100,7 @@ describe('fixDependenciesCommand tag preservation', () => {
 					dependencies: []
 				}
 			],
-			tag: 'master',
+			tag: 'main',
 			_rawTaggedData: {
 				master: {
 					tasks: [
@@ -143,7 +143,7 @@ describe('fixDependenciesCommand tag preservation', () => {
 	it('does not call writeJSON when no changes are needed', async () => {
 		const tasksPath = '/mock/tasks.json'
 		const projectRoot = '/mock/project/root'
-		const tag = 'master'
+		const tag = 'main'
 
 		// Mock data WITHOUT dependency issues (no changes needed)
 		const cleanTasksData = {
@@ -154,7 +154,7 @@ describe('fixDependenciesCommand tag preservation', () => {
 					dependencies: [] // Clean, no issues
 				}
 			],
-			tag: 'master'
+			tag: 'main'
 		}
 
 		readJSON.mockReturnValue(cleanTasksData)
@@ -181,7 +181,7 @@ describe('fixDependenciesCommand tag preservation', () => {
 		readJSON.mockReturnValue(null)
 
 		await fixDependenciesCommand(tasksPath, {
-			context: { projectRoot: '/mock', tag: 'master' }
+			context: { projectRoot: '/mock', tag: 'main' }
 		})
 
 		// Verify readJSON was called
