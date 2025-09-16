@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-<b>TaskMaster No-AI</b> - 纯净的手动任务管理系统，为高效的开发工作流程而设计，可无缝集成到任何开发环境。
+<b>Speco Tasker</b> - 纯净的手动任务管理系统，为高效的开发工作流程而设计，可无缝集成到任何开发环境。
 </p>
 
 <p align="center">
@@ -25,7 +25,7 @@
 
 ## 🎯 项目简介
 
-**TaskMaster No-AI** 是一个专注于手动任务管理的系统，完全不依赖任何AI服务。它提供了27个核心功能，帮助开发者高效地组织和管理开发工作流程。
+**Speco Tasker** 是一个专注于手动任务管理的系统，完全不依赖任何AI服务。它提供了27个核心功能，帮助开发者高效地组织和管理开发工作流程。
 
 ### ✨ 核心特性
 
@@ -40,9 +40,9 @@
 
 ### 🆚 与 TaskMaster-AI 的关系
 
-**TaskMaster No-AI** 是 **TaskMaster-AI** 的纯净版本，完全移除了所有AI功能：
+**Speco Tasker** 是 **TaskMaster-AI** 的纯净版本，完全移除了所有AI功能：
 
-| 特性 | TaskMaster-AI | TaskMaster No-AI |
+| 特性 | TaskMaster-AI | Speco Tasker |
 |------|---------------|------------------|
 | AI任务生成 | ✅ 支持 | ❌ 已移除 |
 | 智能分析 | ✅ 支持 | ❌ 已移除 |
@@ -53,7 +53,7 @@
 | MCP集成 | ✅ 支持 | ✅ **完整保留** |
 | 外部依赖 | 多项AI服务 | 零外部依赖 |
 
-**选择 TaskMaster No-AI 的理由：**
+**选择 Speco Tasker 的理由：**
 - 🚀 **性能更佳** - 无AI调用延迟
 - 🔒 **隐私保护** - 不发送任何数据到外部服务
 - 💰 **成本为零** - 无API调用费用
@@ -62,7 +62,7 @@
 
 ## 📚 文档
 
-以下文档可帮助您更好地使用 TaskMaster No-AI：
+以下文档可帮助您更好地使用 Speco Tasker：
 
 - [使用教程](docs/tutorial.md) - 快速入门指南
 - [命令参考](docs/command-reference.md) - 完整命令列表
@@ -73,11 +73,11 @@
 
 ### 🔧 MCP 集成 (推荐)
 
-TaskMaster No-AI 支持通过 MCP (Model Context Protocol) 与您的编辑器集成，提供无缝的使用体验。
+Speco Tasker 支持通过 MCP (Model Context Protocol) 与您的编辑器集成，提供无缝的使用体验。
 
 ## ⚡ 系统要求
 
-TaskMaster No-AI 是一个纯手动任务管理系统，无需任何外部API密钥或AI服务，完全离线工作。
+Speco Tasker 是一个纯手动任务管理系统，无需任何外部API密钥或AI服务，完全离线工作。
 
 **最低系统要求：**
 - Node.js 18.0.0 或更高版本
@@ -164,7 +164,7 @@ npx speco-tasker --help
 
 ### 方法一：MCP 集成 (推荐)
 
-通过 MCP (Model Context Protocol)，您可以在编辑器中直接使用 TaskMaster No-AI。
+通过 MCP (Model Context Protocol)，您可以在编辑器中直接使用 Speco Tasker。
 
 #### 自动配置 (推荐)
 
@@ -215,7 +215,7 @@ npm run install-mcp
 在聊天中输入：
 
 ```
-初始化 TaskMaster No-AI 项目
+初始化 Speco Tasker 项目
 ```
 
 #### 4. 准备项目文档 (推荐)
@@ -308,7 +308,7 @@ task-master validate-dependencies
 
 ## 🔧 27个核心功能
 
-TaskMaster No-AI 提供完整的任务管理功能，完全不需要AI支持：
+Speco Tasker 提供完整的任务管理功能，完全不需要AI支持：
 
 ### 📋 任务管理
 - ✅ **任务创建与编辑** - 手动创建、编辑任务内容
@@ -360,9 +360,9 @@ node scripts/init.js
 
 ### 常见问题
 
-**Q: 为什么选择 TaskMaster No-AI 而不是 AI 版本？**
+**Q: 为什么选择 Speco Tasker 而不是 AI 版本？**
 
-A: TaskMaster No-AI 提供以下优势：
+A: Speco Tasker 提供以下优势：
 - 🚀 **更快的响应速度** - 无AI调用延迟
 - 🔒 **完全隐私保护** - 数据完全本地存储
 - 💰 **零成本运行** - 无API调用费用
@@ -371,7 +371,7 @@ A: TaskMaster No-AI 提供以下优势：
 
 **Q: 如何从 TaskMaster-AI 迁移？**
 
-A: 由于 TaskMaster No-AI 完全移除了AI功能，不支持直接从AI版本迁移。请在新项目中重新初始化，或手动创建任务。
+A: 由于 Speco Tasker 完全移除了AI功能，不支持直接从AI版本迁移。请在新项目中重新初始化，或手动创建任务。
 
 **Q: 支持哪些编辑器？**
 
@@ -383,20 +383,20 @@ A: 通过MCP协议，支持所有主流编辑器：
 
 ## 📄 许可证
 
-TaskMaster No-AI 使用 MIT 许可证配合 Commons Clause 进行授权。这意味着您可以：
+Speco Tasker 使用 MIT 许可证配合 Commons Clause 进行授权。这意味着您可以：
 
 ### ✅ 允许的行为
 
-- 将 TaskMaster 用于任何目的（个人、商业、学术）
+- 将 Speco Tasker 用于任何目的（个人、商业、学术）
 - 修改代码
 - 分发副本
-- 使用 TaskMaster 创建和销售产品
+- 使用 Speco Tasker 创建和销售产品
 
 ### ❌ 不允许的行为
 
-- 销售 TaskMaster 本身
-- 提供 TaskMaster 作为托管服务
-- 基于 TaskMaster 创建竞争产品
+- 销售 Speco Tasker 本身
+- 提供 Speco Tasker 作为托管服务
+- 基于 Speco Tasker 创建竞争产品
 
 查看 [LICENSE](LICENSE) 文件了解完整的许可证文本和 [许可证详情](docs/licensing.md) 获取更多信息。
 
@@ -404,7 +404,7 @@ TaskMaster No-AI 使用 MIT 许可证配合 Commons Clause 进行授权。这意
 
 ## 🤝 贡献
 
-欢迎为 TaskMaster No-AI 项目做出贡献！请查看我们的 [贡献指南](CONTRIBUTING.md) 了解如何参与。
+欢迎为 Speco Tasker 项目做出贡献！请查看我们的 [贡献指南](CONTRIBUTING.md) 了解如何参与。
 
 ## 📈 开发路线图
 
@@ -424,4 +424,4 @@ TaskMaster No-AI 使用 MIT 许可证配合 Commons Clause 进行授权。这意
 
 ---
 
-**TaskMaster No-AI** - 让手动任务管理变得简单而强大！ 🚀
+**Speco Tasker** - 让手动任务管理变得简单而强大！ 🚀
