@@ -770,7 +770,9 @@ function withNormalizedProjectRoot(executeFn) {
 
 			// Final fallback: use current working directory
 			if (!normalizedRoot) {
-				log.warn('All project root resolution methods failed, using current working directory as fallback')
+				log.warn(
+					'All project root resolution methods failed, using current working directory as fallback'
+				)
 				normalizedRoot = process.cwd()
 				rootSource = 'current working directory (fallback)'
 				log.info(`Using fallback project root: ${normalizedRoot}`)

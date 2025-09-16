@@ -1,5 +1,4 @@
 import { z } from 'zod'
-import { RULE_PROFILES } from '../../../src/constants/profiles.js'
 import { initializeProjectDirect } from '../core/task-master-core.js'
 import {
 	createErrorResponse,
@@ -18,13 +17,11 @@ const initializeProjectParameterHelp = generateParameterHelp(
 		{ name: 'addAliases', description: '是否添加shell别名' },
 		{ name: 'initGit', description: '是否初始化Git仓库' },
 		{ name: 'storeTasksInGit', description: '是否在Git中存储任务' },
-		{ name: 'yes', description: '是否跳过确认提示' },
-		{ name: 'rules', description: '要包含的规则配置列表' }
+		{ name: 'yes', description: '是否跳过确认提示' }
 	],
 	[
 		'{"projectRoot": "/path/to/project"}',
-		'{"projectRoot": "/path/to/project", "addAliases": true, "initGit": true}',
-		'{"projectRoot": "/path/to/project", "rules": ["cursor"], "yes": true}'
+		'{"projectRoot": "/path/to/project", "addAliases": true, "initGit": true}'
 	]
 )
 
@@ -65,12 +62,6 @@ export function registerInitializeProjectTool(server) {
 				.string()
 				.describe(
 					'The root directory for the project. ALWAYS SET THIS TO THE PROJECT ROOT DIRECTORY. IF NOT SET, THE TOOL WILL NOT WORK.'
-				),
-			rules: z
-				.array(z.enum(RULE_PROFILES))
-				.optional()
-				.describe(
-					`List of rule profiles to include at initialization. If omitted, defaults to Cursor profile only. Available options: ${RULE_PROFILES.join(', ')}`
 				)
 		}),
 		execute: withNormalizedProjectRoot(async (args, context) => {

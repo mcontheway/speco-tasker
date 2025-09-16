@@ -153,7 +153,7 @@ This will:
 
 - Parse your PRD document
 - Generate a structured `tasks.json` file with tasks, dependencies, priorities, and test strategies
-- The agent will understand this process due to the Cursor rules
+- The agent will understand this process through its configuration
 
 ### Generate Individual Task Files
 
@@ -173,7 +173,7 @@ This creates individual task files in the `tasks/` directory (e.g., `task_001.tx
 
 ## AI-Driven Development Workflow
 
-The Cursor agent is pre-configured (via the rules file) to follow this workflow:
+The Cursor agent is configured to follow this workflow:
 
 ### 1. Task Discovery and Selection
 

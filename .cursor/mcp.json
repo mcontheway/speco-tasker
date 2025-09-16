@@ -1,8 +1,8 @@
 {
-  "mcpServers": {
-    "taskmaster-no-ai": {
-      "command": "npx",
-      "args": ["taskmaster-no-ai"]
-    }
-  }
+	"mcpServers": {
+		"taskmaster-no-ai": {
+			"command": "npx",
+			"args": ["taskmaster-no-ai"]
+		}
+	}
 }

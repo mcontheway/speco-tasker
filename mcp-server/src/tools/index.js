@@ -23,7 +23,6 @@ import { registerRemoveDependencyTool } from './remove-dependency.js'
 import { registerRemoveSubtaskTool } from './remove-subtask.js'
 import { registerRemoveTaskTool } from './remove-task.js'
 import { registerRenameTagTool } from './rename-tag.js'
-import { registerRulesTool } from './rules.js'
 import { registerSetTaskStatusTool } from './set-task-status.js'
 import { registerUseTagTool } from './use-tag.js'
 import { registerValidateDependenciesTool } from './validate-dependencies.js'
@@ -39,7 +38,7 @@ export function registerTaskMasterTools(server) {
 		// Group 1: Initialization & Setup
 		registerInitializeProjectTool(server)
 		// Models tool removed (AI functionality)
-		registerRulesTool(server)
+		// Rules tool removed (rules functionality)
 		// AI-based PRD parsing tool removed in phase 3.3
 
 		// Group 2: Task Analysis & Expansion

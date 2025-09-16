@@ -244,7 +244,6 @@ function getDebugFlag(explicitRoot = null) {
 	return getGlobalConfig(explicitRoot).debug === true
 }
 
-
 function getDefaultNumTasks(explicitRoot = null) {
 	const val = getGlobalConfig(explicitRoot).defaultNumTasks
 	const parsedVal = parseInt(val, 10)

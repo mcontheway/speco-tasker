@@ -5,8 +5,6 @@ import {
 	enableSilentMode
 	// isSilentMode // Not used directly here
 } from '../../../../scripts/modules/utils.js'
-import { RULE_PROFILES } from '../../../../src/constants/profiles.js'
-import { convertAllRulesToProfileRules } from '../../../../src/utils/rule-transformer.js'
 
 /**
  * Direct function wrapper for initializing a project.
@@ -35,7 +33,9 @@ export async function initializeProjectDirect(args, log, context = {}) {
 		targetDirectory === '/' ||
 		targetDirectory === homeDir
 	) {
-		log.error(`Invalid target directory received from tool layer: '${targetDirectory}' (type: ${typeof targetDirectory})`)
+		log.error(
+			`Invalid target directory received from tool layer: '${targetDirectory}' (type: ${typeof targetDirectory})`
+		)
 		const errorDetails = {
 			receivedProjectRoot: args.projectRoot,
 			receivedProjectRootType: typeof args.projectRoot,

@@ -7,7 +7,13 @@ import { z } from 'zod'
 import { resolveTag } from '../../../scripts/modules/utils.js'
 import { showTaskDirect } from '../core/task-master-core.js'
 import { findComplexityReportPath, findTasksPath } from '../core/utils/path-utils.js'
-import { createErrorResponse, generateParameterHelp, getTagInfo, handleApiResult, withNormalizedProjectRoot } from './utils.js'
+import {
+	createErrorResponse,
+	generateParameterHelp,
+	getTagInfo,
+	handleApiResult,
+	withNormalizedProjectRoot
+} from './utils.js'
 
 /**
  * Custom processor function that removes allTasks from the response
@@ -146,7 +152,13 @@ export function registerShowTaskTool(server) {
 				// Get tag info for better error context
 				const tagInfo = args.projectRoot ? getTagInfo(args.projectRoot, log) : null
 
-				return createErrorResponse(errorMessage, undefined, tagInfo, 'GET_TASK_FAILED', getTaskParameterHelp)
+				return createErrorResponse(
+					errorMessage,
+					undefined,
+					tagInfo,
+					'GET_TASK_FAILED',
+					getTaskParameterHelp
+				)
 			}
 		})
 	})

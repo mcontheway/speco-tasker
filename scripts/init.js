@@ -22,8 +22,6 @@ import boxen from 'boxen'
 import chalk from 'chalk'
 import figlet from 'figlet'
 import gradient from 'gradient-string'
-import { RULE_PROFILES } from '../src/constants/profiles.js'
-import { convertAllRulesToProfileRules, getRulesProfile } from '../src/utils/rule-transformer.js'
 import { updateConfigMaxTokens } from './modules/update-config-tokens.js'
 import { isSilentMode } from './modules/utils.js'
 import { insideGitWorkTree } from './modules/utils/git-utils.js'
@@ -238,29 +236,34 @@ function createInitialTasksFile(targetDir) {
 async function getDynamicProjectName(projectRoot) {
 	try {
 		// Try to get from Git remote URL
-		const gitUrl = execSync('git config --get remote.origin.url', { cwd: projectRoot, stdio: 'pipe' }).toString().trim();
+		const gitUrl = execSync('git config --get remote.origin.url', {
+			cwd: projectRoot,
+			stdio: 'pipe'
+		})
+			.toString()
+			.trim()
 		if (gitUrl) {
-			const parts = gitUrl.split('/');
-			let repoName = parts[parts.length - 1];
+			const parts = gitUrl.split('/')
+			let repoName = parts[parts.length - 1]
 			if (repoName.endsWith('.git')) {
-				repoName = repoName.slice(0, -4);
+				repoName = repoName.slice(0, -4)
 			}
-			log('debug', `从 Git 获取项目名称: ${repoName}`);
-			return repoName;
+			log('debug', `从 Git 获取项目名称: ${repoName}`)
+			return repoName
 		}
 	} catch (error) {
-		log('debug', `无法从 Git 获取项目名称: ${error.message}`);
+		log('debug', `无法从 Git 获取项目名称: ${error.message}`)
 	}
 
 	// Fallback to directory name
-	const fsName = path.basename(projectRoot);
+	const fsName = path.basename(projectRoot)
 	if (fsName && fsName !== '.') {
-		log('debug', `从文件系统获取项目名称: ${fsName}`);
-		return fsName;
+		log('debug', `从文件系统获取项目名称: ${fsName}`)
+		return fsName
 	}
 
-	log('debug', '使用兜底项目名称: MyProject');
-	return "MyProject"; // Default fallback
+	log('debug', '使用兜底项目名称: MyProject')
+	return 'MyProject' // Default fallback
 }
 
 // Function to copy a file from the package to the target directory
@@ -302,7 +305,6 @@ function copyTemplateFile(templateName, targetPath, replacements = {}) {
 	// Handle special files that should be merged instead of overwritten
 	if (fs.existsSync(targetPath)) {
 		const filename = path.basename(targetPath)
-
 
 		// Handle README.md - offer to preserve or create a different file
 		if (filename === 'README-task-master.md') {
@@ -370,22 +372,6 @@ async function initializeProject(options = {}) {
 	// 	console.log('Skip prompts determined:', skipPrompts);
 	// }
 
-	let selectedRuleProfiles
-	if (options.rulesExplicitlyProvided) {
-		// If --rules flag was used, always respect it.
-		log('info', `Using rule profiles provided via command line: ${options.rules.join(', ')}`)
-		selectedRuleProfiles = options.rules
-	} else if (skipPrompts) {
-		// If non-interactive (e.g., --yes) and no rules specified, default to ALL.
-		log('info', `No rules specified in non-interactive mode, defaulting to all profiles.`)
-		selectedRuleProfiles = RULE_PROFILES
-	} else {
-		// If interactive and no rules specified, default to NONE.
-		// The 'rules --setup' wizard will handle selection.
-		log('info', 'No rules specified; interactive setup will be launched to select profiles.')
-		selectedRuleProfiles = []
-	}
-
 	const projectRoot = process.cwd() // Get current working directory as project root
 
 	if (skipPrompts) {
@@ -430,14 +416,7 @@ async function initializeProject(options = {}) {
 			}
 		}
 
-		createProjectStructure(
-			addAliases,
-			initGit,
-			storeTasksInGit,
-			dryRun,
-			options,
-			selectedRuleProfiles
-		)
+		createProjectStructure(addAliases, initGit, storeTasksInGit, dryRun, options)
 	} else {
 		// Interactive logic
 		log('info', 'Required options not provided, proceeding with prompts.')
@@ -486,21 +465,18 @@ async function initializeProject(options = {}) {
 			}
 
 			// Get dynamic project name for default prompt
-			const defaultProjectName = await getDynamicProjectName(projectRoot);
+			const defaultProjectName = await getDynamicProjectName(projectRoot)
 			const projectNameInput = await promptQuestion(
 				rl,
 				chalk.cyan(`Project name (${defaultProjectName}): `)
-			);
-			options.name = projectNameInput.trim() || defaultProjectName;
+			)
+			options.name = projectNameInput.trim() || defaultProjectName
 
-			log('info', `Project name set to: ${options.name}`);
+			log('info', `Project name set to: ${options.name}`)
 
 			// Confirm settings...
 			console.log('\nTask Master Project settings:')
-			console.log(
-				chalk.blue('Project Name:'),
-				chalk.white(options.name)
-			)
+			console.log(chalk.blue('Project Name:'), chalk.white(options.name))
 			console.log(
 				chalk.blue('Add shell aliases (so you can use "tm" instead of "task-master"):'),
 				chalk.white(addAliasesPrompted ? 'Yes' : 'No')
@@ -525,14 +501,6 @@ async function initializeProject(options = {}) {
 				log('info', 'Project initialization cancelled by user')
 				process.exit(0)
 				return
-			}
-
-			// Only run interactive rules if rules flag not provided via command line
-			if (options.rulesExplicitlyProvided) {
-				log(
-					'info',
-					`Using rule profiles provided via command line: ${selectedRuleProfiles.join(', ')}`
-				)
 			}
 
 			const dryRun = options.dryRun || false
@@ -562,14 +530,7 @@ async function initializeProject(options = {}) {
 			}
 
 			// Create structure using only necessary values
-			createProjectStructure(
-				addAliasesPrompted,
-				initGitPrompted,
-				storeGitPrompted,
-				dryRun,
-				options,
-				selectedRuleProfiles
-			)
+			createProjectStructure(addAliasesPrompted, initGitPrompted, storeGitPrompted, dryRun, options)
 			rl.close()
 		} catch (error) {
 			if (rl) {
@@ -591,14 +552,7 @@ function promptQuestion(rl, question) {
 }
 
 // Function to create the project structure
-function createProjectStructure(
-	addAliases,
-	initGit,
-	storeTasksInGit,
-	dryRun,
-	options,
-	selectedRuleProfiles = RULE_PROFILES
-) {
+function createProjectStructure(addAliases, initGit, storeTasksInGit, dryRun, options) {
 	const targetDir = process.cwd()
 	log('info', `Initializing project in ${targetDir}`)
 
@@ -615,19 +569,10 @@ function createProjectStructure(
 	// Copy template files with replacements
 	const replacements = {
 		year: new Date().getFullYear(),
-		projectName: options.name || "MyProject" // Use resolved name from options
+		projectName: options.name || 'MyProject' // Use resolved name from options
 	}
 
 	// Helper function to create rule profiles
-	function _processSingleProfile(profileName) {
-		const profile = getRulesProfile(profileName)
-		if (profile) {
-			convertAllRulesToProfileRules(targetDir, profile)
-			// Also triggers MCP config setup (if applicable)
-		} else {
-			log('warn', `Unknown rule profile: ${profileName}`)
-		}
-	}
 
 	// Skip .env.example - not needed for minimal initialization
 
@@ -643,7 +588,6 @@ function createProjectStructure(
 	} else {
 		log('warn', 'Could not update maxTokens in config')
 	}
-
 
 	// Skip example_prd.txt - not needed for minimal initialization
 
@@ -673,15 +617,6 @@ function createProjectStructure(
 		log('warn', 'Git not available, skipping repository initialization')
 	}
 
-	// Only run the manual transformer if rules were provided via flags.
-	// The interactive `rules --setup` wizard handles its own installation.
-	if (options.rulesExplicitlyProvided || options.yes) {
-		log('info', 'Generating profile rules from command-line flags...')
-		for (const profileName of selectedRuleProfiles) {
-			_processSingleProfile(profileName)
-		}
-	}
-
 	// Add shell aliases if requested
 	if (addAliases) {
 		addShellAliases()
@@ -709,38 +644,6 @@ function createProjectStructure(
 			})
 		)
 	}
-
-	// === Add Rule Profiles Setup Step ===
-	if (!isSilentMode() && !dryRun && !options?.yes && !options.rulesExplicitlyProvided) {
-		console.log(
-			boxen(chalk.cyan('Configuring Rule Profiles...'), {
-				padding: 0.5,
-				margin: { top: 1, bottom: 0.5 },
-				borderStyle: 'round',
-				borderColor: 'blue'
-			})
-		)
-		log('info', 'Running interactive rules setup. Please select which rule profiles to include.')
-		try {
-			// Correct command confirmed by you.
-			execSync('npx task-master rules --setup', {
-				stdio: 'inherit',
-				cwd: targetDir
-			})
-			log('success', 'Rule profiles configured.')
-		} catch (error) {
-			log('error', 'Failed to configure rule profiles:', error.message)
-			log('warn', 'You may need to run "task-master rules --setup" manually.')
-		}
-	} else if (isSilentMode() || dryRun || options?.yes) {
-		// This branch can log why setup was skipped, similar to the model setup logic.
-		if (options.rulesExplicitlyProvided) {
-			log('info', 'Skipping interactive rules setup because --rules flag was used.')
-		} else {
-			log('info', 'Skipping interactive rules setup in non-interactive mode.')
-		}
-	}
-	// =====================================
 
 	// === Add Response Language Step ===
 	if (!isSilentMode() && !dryRun && !options?.yes) {
