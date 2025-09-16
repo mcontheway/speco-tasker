@@ -3,7 +3,7 @@
   "changelog": [
     "@changesets/changelog-github",
     {
-      "repo": "mcontheway/taskmaster-no-ai"
+      "repo": "mcontheway/speco-tasker"
     }
   ],
   "commit": false,
