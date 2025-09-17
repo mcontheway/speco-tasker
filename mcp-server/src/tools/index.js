@@ -86,5 +86,5 @@ export function registerSpecoTaskerTools(server) {
 }
 
 export default {
-	registerTaskMasterTools
+	registerSpecoTaskerTools
 }

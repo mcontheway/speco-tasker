@@ -285,7 +285,6 @@ speco-tasker/
 ├── tests/                 # Test files
 ├── docs/                  # Documentation
 └── .cursor/               # Cursor IDE rules and configuration
-└── assets/							   # Assets like rules and configuration for all IDEs
 ```
 
 ### Key Areas for Contribution

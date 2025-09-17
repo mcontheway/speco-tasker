@@ -94,9 +94,18 @@ export async function initializeProjectDirect(args, log, context = {}) {
 		const result = await initializeProject(options) // Call core logic
 
 		resultData = {
-			message: 'Project initialized successfully.',
-			next_step:
-				'Now that the project is initialized, the next step is to create the tasks by parsing a PRD. This will create the tasks folder and the initial task files (tasks folder will be created when parse-prd is run). The parse-prd tool will require a prd.txt file as input (typically found in .taskmaster/docs/ directory). You can create a prd.txt file by asking the user about their idea, and then using the .taskmaster/templates/example_prd.txt file as a template to generate a prd.txt file in .taskmaster/docs/. You may skip all of this if the user already has a prd.txt file. You can THEN use the parse-prd tool to create the tasks. So: step 1 after initialization is to create a prd.txt file in .taskmaster/docs/prd.txt or confirm the user already has one. Step 2 is to use the parse-prd tool to create the tasks. Do not bother looking for tasks after initialization, just use the parse-prd tool to create the tasks after creating a prd.txt from which to parse the tasks. You do NOT need to reinitialize the project to parse-prd.',
+			message: '项目初始化成功完成。',
+			next_steps: [
+				'创建您的第一个任务：task-master add-task --title="任务标题" --description="任务描述"',
+				'查看任务列表：task-master list',
+				'查看下一个要处理的任务：task-master next',
+				'开始处理任务：task-master set-status --id=<id> --status=in-progress',
+				'为复杂任务添加子任务：task-master add-subtask --parent=<id> --title="子任务标题"',
+				'管理任务依赖关系：task-master add-dependency --id=<id> --depends-on=<dependency-id>',
+				'生成任务文件：task-master generate',
+				'使用标签组织任务：task-master add-tag <tag-name>',
+				'完成任务后标记为完成：task-master set-status --id=<id> --status=done'
+			],
 			...result
 		}
 		success = true

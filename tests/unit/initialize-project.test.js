@@ -101,7 +101,7 @@ describe('initializeProject – Git / Alias flag logic', () => {
 		mockFs.mkdirSync.mockImplementation(() => {})
 		mockFs.writeFileSync.mockImplementation(() => {})
 		mockFs.readFileSync.mockImplementation((filePath) => {
-			if (filePath.includes('assets') || filePath.includes('.cursor/rules')) {
+			if (filePath.includes('.cursor/rules')) {
 				return 'mock template content'
 			}
 			if (filePath.includes('.zshrc') || filePath.includes('.bashrc')) {
@@ -112,7 +112,7 @@ describe('initializeProject – Git / Alias flag logic', () => {
 		mockFs.appendFileSync.mockImplementation(() => {})
 		mockFs.existsSync.mockImplementation((filePath) => {
 			// Template source files exist
-			if (filePath.includes('assets') || filePath.includes('.cursor/rules')) {
+			if (filePath.includes('.cursor/rules')) {
 				return true
 			}
 			// Shell config files exist by default
@@ -272,7 +272,7 @@ describe('initializeProject – Git / Alias flag logic', () => {
 				if (filePath.includes('.zshrc') || filePath.includes('.bashrc')) {
 					return false
 				}
-				if (filePath.includes('assets') || filePath.includes('.cursor/rules')) {
+				if (filePath.includes('.cursor/rules')) {
 					return true
 				}
 				return false

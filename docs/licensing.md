@@ -16,3 +16,7 @@ Speco Tasker 采用 MIT 许可证加 Commons Clause 进行许可。这意味着�
 - 基于 Speco Tasker 创建竞争产品
 
 请查看 [LICENSE](../LICENSE) 文件以获取完整的许可证文本。
+
+---
+
+*最后更新：2025年09月17日*

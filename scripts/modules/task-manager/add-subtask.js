@@ -110,27 +110,7 @@ async function addSubtask(
 				parentTask.subtasks.length > 0 ? Math.max(...parentTask.subtasks.map((st) => st.id)) : 0
 			const newSubtaskId = highestSubtaskId + 1
 
-			// Inherit fields from parent task if not explicitly provided
-			const inheritedData = {
-				priority: newSubtaskData.priority || parentTask.priority,
-				testStrategy: newSubtaskData.testStrategy || parentTask.testStrategy,
-				spec_files: newSubtaskData.spec_files && newSubtaskData.spec_files.length > 0
-					? newSubtaskData.spec_files
-					: parentTask.spec_files ? [...parentTask.spec_files] : []
-			}
-
-			// Log inheritance if fields were inherited
-			if (newSubtaskData.priority !== inheritedData.priority && inheritedData.priority) {
-				log('info', `Subtask inherited priority '${inheritedData.priority}' from parent task`)
-			}
-			if (newSubtaskData.testStrategy !== inheritedData.testStrategy && inheritedData.testStrategy) {
-				log('info', `Subtask inherited test strategy from parent task`)
-			}
-			if (inheritedData.spec_files.length > 0 && (!newSubtaskData.spec_files || newSubtaskData.spec_files.length === 0)) {
-				log('info', `Subtask inherited ${inheritedData.spec_files.length} spec file(s) from parent task`)
-			}
-
-			// Create the new subtask object with inheritance
+			// Create the new subtask object (no inheritance for spec_files)
 			newSubtask = {
 				id: newSubtaskId,
 				title: newSubtaskData.title,
@@ -138,11 +118,19 @@ async function addSubtask(
 				details: newSubtaskData.details,
 				status: newSubtaskData.status || 'pending',
 				dependencies: newSubtaskData.dependencies || [],
-				priority: inheritedData.priority,
-				testStrategy: inheritedData.testStrategy,
-				spec_files: inheritedData.spec_files,
+				priority: newSubtaskData.priority || parentTask.priority,
+				testStrategy: newSubtaskData.testStrategy || parentTask.testStrategy,
+				spec_files: newSubtaskData.spec_files || [], // Use provided spec_files or empty array (no inheritance)
 				logs: newSubtaskData.logs || '',
 				parentTaskId: parentIdNum
+			}
+
+			// Log inheritance for other fields (excluding spec_files)
+			if (!newSubtaskData.priority && parentTask.priority) {
+				log('info', `子任务继承了优先级 '${parentTask.priority}'`)
+			}
+			if (!newSubtaskData.testStrategy && parentTask.testStrategy) {
+				log('info', `子任务继承了测试策略`)
 			}
 
 			// Add to parent's subtasks

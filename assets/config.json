@@ -1,9 +1,0 @@
-{
-	"global": {
-		"logLevel": "info",
-		"debug": false,
-		"defaultPriority": "medium",
-		"projectName": "{{projectName}}",
-		"defaultTag": "main"
-	}
-}

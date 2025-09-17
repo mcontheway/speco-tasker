@@ -88,7 +88,9 @@ async function updateSubtaskManually(tasksPath, parentId, subtaskId, fieldsToUpd
 
 				case 'spec_files':
 					const parsedSpecFiles = parseSpecFiles(newValue, projectRoot)
-					const specValidation = validateSpecFiles(parsedSpecFiles, projectRoot)
+					// For subtasks, spec_files validation is optional, for main tasks it's required
+					// Since this is update-subtask-manually, we know it's always a subtask
+					const specValidation = validateSpecFiles(parsedSpecFiles, projectRoot, consoleLog, true)
 					if (specValidation.errors.length > 0) {
 						consoleLog('warn', `Spec files validation errors for ${field}: ${specValidation.errors.join(', ')}`)
 					}

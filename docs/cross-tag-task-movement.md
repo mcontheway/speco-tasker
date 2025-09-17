@@ -283,3 +283,7 @@ task-master move --from=5 --from-tag=backlog --to-tag=in-progress
 # 选项 2：连带所有子任务移动父任务
 task-master move --from=5 --from-tag=backlog --to-tag=in-progress --with-dependencies
 ```
+
+---
+
+*最后更新：2025年09月17日*

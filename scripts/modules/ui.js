@@ -1996,59 +1996,9 @@ function displayModelConfiguration(configData, allAvailableModels = []) {
  * Displays the list of available models not currently configured.
  * @param {AvailableModel[]} availableModels - List of available models.
  */
-function displayAvailableModels(availableModels) {
-	if (!availableModels || availableModels.length === 0) {
-		console.log(chalk.gray('\n(No other models available or all are configured)'))
-		return
-	}
-
-	console.log(chalk.cyan.bold('\nOther Available Models:'))
-	const availableTable = new Table({
-		head: ['Provider', 'Model ID', 'SWE Score', 'Cost ($/1M tkns)'].map((h) => chalk.cyan.bold(h)),
-		colWidths: [15, 40, 18, 25],
-		style: { head: ['cyan', 'bold'] }
-	})
-
-	availableModels.forEach((model) => {
-		availableTable.push([
-			model.provider,
-			model.modelId,
-			formatSweScoreWithTertileStars(model.sweScore, availableModels), // Pass itself for comparison
-			formatCost(model.cost)
-		])
-	})
-	console.log(availableTable.toString())
-
-	// --- Suggested Actions Section (moved here from models command) ---
-	console.log(
-		boxen(
-			chalk.white.bold('Next Steps:') +
-				'\n' +
-				chalk.cyan(
-					`1. Set main model: ${chalk.yellow('task-master models --set-main <model_id>')}`
-				) +
-				'\n' +
-				chalk.cyan(
-					`2. Set research model: ${chalk.yellow('task-master models --set-research <model_id>')}`
-				) +
-				'\n' +
-				chalk.cyan(
-					`3. Set fallback model: ${chalk.yellow('task-master models --set-fallback <model_id>')}`
-				) +
-				'\n' +
-				chalk.cyan(`4. Run interactive setup: ${chalk.yellow('task-master models --setup')}`) +
-				'\n' +
-				chalk.cyan(
-					`5. Use custom ollama/openrouter models: ${chalk.yellow('task-master models --openrouter|ollama --set-main|research|fallback <model_id>')}`
-				),
-			{
-				padding: 1,
-				borderColor: 'yellow',
-				borderStyle: 'round',
-				margin: { top: 1 }
-			}
-		)
-	)
+// displayAvailableModels function removed - models command no longer exists in manual mode
+function displayAvailableModels() {
+	// Stub function for compatibility
 }
 
 /**

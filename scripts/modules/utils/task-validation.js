@@ -20,8 +20,13 @@ export function validateSpecFiles(task, projectRoot, report, isSubtask = false) 
 	const taskType = isSubtask ? '子任务' : '任务'
 	const taskId = isSubtask ? `${task.parentTaskId}.${task.id}` : task.id
 
-	// Check if spec_files field exists
-	if (!task.hasOwnProperty('spec_files')) {
+	// For subtasks, spec_files is optional - skip validation if not provided
+	if (isSubtask && !task.hasOwnProperty('spec_files')) {
+		return result
+	}
+
+	// For main tasks, spec_files is still required
+	if (!isSubtask && !task.hasOwnProperty('spec_files')) {
 		result.isValid = false
 		result.errors.push(`缺少必填字段 'spec_files'，请先完成规范文档`)
 		return result
@@ -34,8 +39,9 @@ export function validateSpecFiles(task, projectRoot, report, isSubtask = false) 
 		return result
 	}
 
-	// Check if spec_files is empty
-	if (task.spec_files.length === 0) {
+	// For main tasks, spec_files cannot be empty
+	// For subtasks, empty spec_files is allowed
+	if (!isSubtask && task.spec_files.length === 0) {
 		result.isValid = false
 		result.errors.push(`'spec_files' 字段不能为空，请至少关联一个规范文档`)
 		return result

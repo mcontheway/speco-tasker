@@ -10,7 +10,6 @@
 		"task-master-mcp": "mcp-server/server.js"
 	},
 	"workspaces": [
-		"apps/docs",
 		"."
 	],
 	"scripts": {
@@ -94,7 +93,6 @@
 	},
 	"files": [
 		"scripts/**",
-		"assets/**",
 		".cursor/**",
 		"README*.md",
 		"index.js",

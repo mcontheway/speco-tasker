@@ -266,33 +266,27 @@ async function getDynamicProjectName(projectRoot) {
 
 // Function to copy a file from the package to the target directory
 function copyTemplateFile(templateName, targetPath, replacements = {}) {
-	// Get the file content from the appropriate source directory
-	let sourcePath
+	let content
 
-	// Map template names to their actual source paths
-	switch (templateName) {
-		// case 'scripts_README.md':
-		// 	sourcePath = path.join(__dirname, '..', 'assets', 'scripts_README.md');
-		// 	break;
-		// case 'README-task-master.md':
-		// 	sourcePath = path.join(__dirname, '..', 'README-task-master.md');
-		// 	break;
-		default:
-			// For other files like env.example, gitignore, etc. that don't have direct equivalents
-			sourcePath = path.join(__dirname, '..', 'assets', templateName)
+	// Handle different template types
+	if (templateName === 'config.json') {
+		// Create default config.json content inline
+		content = JSON.stringify({
+			"global": {
+				"logLevel": "info",
+				"debug": false,
+				"defaultNumTasks": 10,
+				"defaultSubtasks": 5,
+				"defaultPriority": "medium",
+				"projectName": "{{projectName}}",
+				"userId": "{{userId}}",
+				"defaultTag": "main"
+			}
+		}, null, '\t')
+	} else {
+		log('error', `Unknown template: ${templateName}`)
+		return
 	}
-
-	// Check if the source file exists
-	if (!fs.existsSync(sourcePath)) {
-		// Fall back to templates directory for files that might not have been moved yet
-		sourcePath = path.join(__dirname, '..', 'assets', templateName)
-		if (!fs.existsSync(sourcePath)) {
-			log('error', `Source file not found: ${sourcePath}`)
-			return
-		}
-	}
-
-	let content = fs.readFileSync(sourcePath, 'utf8')
 
 	// Replace placeholders with actual values
 	Object.entries(replacements).forEach(([key, value]) => {
@@ -713,35 +707,35 @@ function createProjectStructure(addAliases, initGit, storeTasksInGit, dryRun, op
 	if (!isSilentMode()) {
 		console.log(
 			boxen(
-				`${chalk.cyan.bold('Things you should do next:')}\n\n${chalk.white('1. ')}${chalk.yellow(
-					'Configure AI models (if needed) and add API keys to `.env`'
-				)}\n${chalk.white('   ├─ ')}${chalk.dim('Models: Use `task-master models` commands')}\n${chalk.white('   └─ ')}${chalk.dim(
-					'Keys: Add provider API keys to .env (or inside the MCP config file i.e. .cursor/mcp.json)'
-				)}\n${chalk.white('2. ')}${chalk.yellow(
-					'Discuss your idea with AI and ask for a PRD using example_prd.txt, and save it to scripts/PRD.txt'
-				)}\n${chalk.white('3. ')}${chalk.yellow(
-					'Ask Cursor Agent (or run CLI) to parse your PRD and generate initial tasks:'
-				)}\n${chalk.white('   └─ ')}${chalk.dim('MCP Tool: ')}${chalk.cyan('parse_prd')}${chalk.dim(' | CLI: ')}${chalk.cyan('task-master parse-prd scripts/prd.txt')}\n${chalk.white('4. ')}${chalk.yellow(
-					'Manually review and organize your tasks as needed'
-				)}\n${chalk.white('   └─ ')}${chalk.dim('MCP Tool: ')}${chalk.cyan('analyze_project_complexity')}${chalk.dim(' | CLI: ')}${chalk.cyan('task-master analyze-complexity')}\n${chalk.white('5. ')}${chalk.yellow(
-					'Manually add subtasks to your tasks as needed'
-				)}\n${chalk.white('6. ')}${chalk.yellow('Ask Cursor to begin working on the next task')}\n${chalk.white('7. ')}${chalk.yellow(
-					'Add new tasks anytime using the add-task command or MCP tool'
-				)}\n${chalk.white('8. ')}${chalk.yellow(
-					'Ask Cursor to set the status of one or many tasks/subtasks at a time. Use the task id from the task lists.'
-				)}\n${chalk.white('9. ')}${chalk.yellow(
-					'Ask Cursor to update all tasks from a specific task id based on new learnings or pivots in your project.'
-				)}\n${chalk.white('10. ')}${chalk.green.bold('Ship it!')}\n\n${chalk.dim(
-					'* Review the README.md file to learn how to use other commands via Cursor Agent.'
+				`${chalk.cyan.bold('接下来您可以做的事情:')}\n\n${chalk.white('1. ')}${chalk.yellow(
+					'创建您的第一个任务'
+				)}\n${chalk.white('   └─ ')}${chalk.dim('使用: task-master add-task --title="任务标题" --description="任务描述"')}\n${chalk.white('2. ')}${chalk.yellow(
+					'查看所有任务列表'
+				)}\n${chalk.white('   └─ ')}${chalk.dim('使用: task-master list')}\n${chalk.white('3. ')}${chalk.yellow(
+					'查看下一个要处理的任务'
+				)}\n${chalk.white('   └─ ')}${chalk.dim('使用: task-master next')}\n${chalk.white('4. ')}${chalk.yellow(
+					'开始处理任务并更新状态'
+				)}\n${chalk.white('   └─ ')}${chalk.dim('使用: task-master set-status --id=<id> --status=in-progress')}\n${chalk.white('5. ')}${chalk.yellow(
+					'为复杂任务添加子任务'
+				)}\n${chalk.white('   └─ ')}${chalk.dim('使用: task-master add-subtask --parent=<id> --title="子任务标题"')}\n${chalk.white('6. ')}${chalk.yellow(
+					'管理任务依赖关系'
+				)}\n${chalk.white('   └─ ')}${chalk.dim('使用: task-master add-dependency --id=<id> --depends-on=<dependency-id>')}\n${chalk.white('7. ')}${chalk.yellow(
+					'使用标签组织不同功能的任务'
+				)}\n${chalk.white('   └─ ')}${chalk.dim('使用: task-master add-tag <tag-name> --description="标签描述"')}\n${chalk.white('8. ')}${chalk.yellow(
+					'生成任务文件以便查看和管理'
+				)}\n${chalk.white('   └─ ')}${chalk.dim('使用: task-master generate')}\n${chalk.white('9. ')}${chalk.yellow(
+					'完成任务后标记为完成'
+				)}\n${chalk.white('   └─ ')}${chalk.dim('使用: task-master set-status --id=<id> --status=done')}\n${chalk.white('10. ')}${chalk.green.bold('开始您的开发工作流程!')}\n\n${chalk.dim(
+					'💡 提示: 使用 task-master --help 查看所有可用命令'
 				)}\n${chalk.dim(
-					'* Use the task-master command without arguments to see all available commands.'
+					'📖 文档: 查看 docs/tutorial.md 了解完整的使用指南'
 				)}`,
 				{
 					padding: 1,
 					margin: 1,
 					borderStyle: 'round',
 					borderColor: 'yellow',
-					title: 'Getting Started',
+					title: '开始使用 Speco Tasker',
 					titleAlignment: 'center'
 				}
 			)

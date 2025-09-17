@@ -799,7 +799,7 @@ function registerCommands(programInstance) {
 		.option('--details <text>', '更新子任务实现细节，支持--append增量更新')
 		.option('--test-strategy <text>', '更新子任务测试策略，支持--append增量更新')
 		.option('--dependencies <ids>', '更新子任务依赖关系，用逗号分隔的ID列表')
-		.option('--spec-files <files>', '更新子任务规范文档文件路径，用逗号分隔')
+		.option('--spec-files <files>', '更新子任务规范文档文件路径，用逗号分隔（可选，可设置为空）')
 		.option('--logs <text>', '添加子任务日志，支持--append增量更新')
 		.option('--append', '追加到描述/细节/测试策略/日志字段而不是替换')
 		.option('--tag <tag>', '选择要处理的任务分组')
@@ -963,9 +963,9 @@ function registerCommands(programInstance) {
 		.option('-s, --status <status>', '新子任务的状态', 'pending')
 		.option('--priority <priority>', '新子任务的优先级（high, medium, low）')
 		.option('--test-strategy <text>', '新子任务的测试策略')
-		.option('--spec-files <files>', '新子任务的规范文档文件路径，用逗号分隔')
+		.option('--spec-files <files>', '新子任务的规范文档文件路径，用逗号分隔（可选）')
 		.option('--logs <text>', '新子任务的日志信息')
-		.option('--inherit-parent', '继承父任务的优先级、测试策略和规范文档')
+		.option('--inherit-parent', '继承父任务的优先级和测试策略（不包含规范文档）')
 		.option('--generate', '添加子任务后重新生成任务文件')
 		.option('--tag <tag>', '选择要处理的任务分组')
 		.action(async (options) => {
@@ -1025,7 +1025,7 @@ function registerCommands(programInstance) {
 					// Create new subtask with provided data
 					console.log(chalk.blue(`Creating new subtask for parent task ${parentId}...`))
 
-					// Prepare subtask data with inheritance from parent task
+					// Prepare subtask data (no inheritance for spec_files)
 					let subtaskData = {
 						title: options.title,
 						description: options.description || '',
@@ -1041,18 +1041,18 @@ function registerCommands(programInstance) {
 							title: trimmed.split('/').pop() || 'Specification Document',
 							file: trimmed
 						};
-					}) : [],
+					}) : [], // Use provided spec_files or empty array (no inheritance)
 						logs: options.logs || ''
 					}
 
-					// Inherit from parent task if requested
+					// Inherit from parent task for other fields if requested (excluding spec_files)
 					if (options.inheritParent) {
 						console.log(chalk.blue('Inheriting fields from parent task...'))
 						try {
 							const data = readJSON(taskMaster.getTasksPath(), taskMaster.getProjectRoot(), tag)
 							const parentTask = data.tasks.find(t => t.id === parentId)
 							if (parentTask) {
-								// Inherit fields if not explicitly provided
+								// Inherit fields if not explicitly provided (excluding spec_files)
 								if (!subtaskData.priority && parentTask.priority) {
 									subtaskData.priority = parentTask.priority
 									console.log(chalk.gray(`  Inherited priority: ${parentTask.priority}`))
@@ -1061,10 +1061,7 @@ function registerCommands(programInstance) {
 									subtaskData.testStrategy = parentTask.testStrategy
 									console.log(chalk.gray(`  Inherited test strategy: ${parentTask.testStrategy.substring(0, 50)}...`))
 								}
-								if (subtaskData.spec_files.length === 0 && parentTask.spec_files && parentTask.spec_files.length > 0) {
-									subtaskData.spec_files = [...parentTask.spec_files]
-									console.log(chalk.gray(`  Inherited spec files: ${parentTask.spec_files.join(', ')}`))
-								}
+								// Note: spec_files inheritance removed - subtasks are independent
 							}
 						} catch (error) {
 							console.warn(chalk.yellow(`Warning: Could not inherit from parent task: ${error.message}`))
@@ -1086,24 +1083,28 @@ function registerCommands(programInstance) {
 					// Display success message and suggested next steps
 					console.log(
 						boxen(
-							chalk.white.bold(`Subtask ${parentId}.${subtask.id} Added Successfully`) +
+							chalk.white.bold(`子任务 ${parentId}.${subtask.id} 添加成功`) +
 								'\n\n' +
-								chalk.white(`Title: ${subtask.title}`) +
+								chalk.white(`标题: ${subtask.title}`) +
 								'\n' +
-								chalk.white(`Status: ${getStatusWithColor(subtask.status)}`) +
+								chalk.white(`状态: ${getStatusWithColor(subtask.status)}`) +
 								'\n' +
 								(dependencies.length > 0
-									? chalk.white(`Dependencies: ${dependencies.join(', ')}`) + '\n'
+									? chalk.white(`依赖关系: ${dependencies.join(', ')}`) + '\n'
 									: '') +
 								'\n' +
-								chalk.white.bold('Next Steps:') +
+								chalk.white.bold('下一步操作:') +
 								'\n' +
 								chalk.cyan(
-									`1. Run ${chalk.yellow(`task-master show ${parentId}`)} to see the parent task with all subtasks`
+									`1. 查看父任务详情: ${chalk.yellow(`task-master show ${parentId}`)}`
 								) +
 								'\n' +
 								chalk.cyan(
-									`2. Run ${chalk.yellow(`task-master set-status --id=${parentId}.${subtask.id} --status=in-progress`)} to start working on it`
+									`2. 开始处理子任务: ${chalk.yellow(`task-master set-status --id=${parentId}.${subtask.id} --status=in-progress`)}`
+								) +
+								'\n' +
+								chalk.cyan(
+									`3. 查看所有任务: ${chalk.yellow(`task-master list --with-subtasks`)}`
 								),
 							{
 								padding: 1,
@@ -1218,22 +1219,26 @@ function registerCommands(programInstance) {
 						// Display success message and next steps for converted task
 						console.log(
 							boxen(
-								chalk.white.bold(`Subtask ${subtaskId} Converted to Task #${result.id}`) +
+								chalk.white.bold(`子任务 ${subtaskId} 已转换为独立任务 #${result.id}`) +
 									'\n\n' +
-									chalk.white(`Title: ${result.title}`) +
+									chalk.white(`标题: ${result.title}`) +
 									'\n' +
-									chalk.white(`Status: ${getStatusWithColor(result.status)}`) +
+									chalk.white(`状态: ${getStatusWithColor(result.status)}`) +
 									'\n' +
-									chalk.white(`Dependencies: ${result.dependencies.join(', ')}`) +
+									chalk.white(`依赖关系: ${result.dependencies.join(', ')}`) +
 									'\n\n' +
-									chalk.white.bold('Next Steps:') +
+									chalk.white.bold('下一步操作:') +
 									'\n' +
 									chalk.cyan(
-										`1. Run ${chalk.yellow(`task-master show ${result.id}`)} to see details of the new task`
+										`1. 查看新任务详情: ${chalk.yellow(`task-master show ${result.id}`)}`
 									) +
 									'\n' +
 									chalk.cyan(
-										`2. Run ${chalk.yellow(`task-master set-status --id=${result.id} --status=in-progress`)} to start working on it`
+										`2. 开始处理任务: ${chalk.yellow(`task-master set-status --id=${result.id} --status=in-progress`)}`
+									) +
+									'\n' +
+									chalk.cyan(
+										`3. 查看任务列表: ${chalk.yellow(`task-master list`)}`
 									),
 								{
 									padding: 1,
@@ -1247,9 +1252,19 @@ function registerCommands(programInstance) {
 						// Display success message for deleted subtask
 						console.log(
 							boxen(
-								chalk.white.bold(`Subtask ${subtaskId} Removed`) +
+								chalk.white.bold(`子任务 ${subtaskId} 已删除`) +
 									'\n\n' +
-									chalk.white('The subtask has been successfully deleted.'),
+									chalk.white('子任务已被成功删除。') +
+									'\n\n' +
+									chalk.white.bold('下一步操作:') +
+									'\n' +
+									chalk.cyan(
+										`1. 查看父任务: ${chalk.yellow(`task-master show ${parentId}`)}`
+									) +
+									'\n' +
+									chalk.cyan(
+										`2. 查看所有任务: ${chalk.yellow(`task-master list --with-subtasks`)}`
+									),
 								{
 									padding: 1,
 									borderColor: 'green',
@@ -1770,7 +1785,7 @@ function registerCommands(programInstance) {
 
 				// Print any tips returned from the move operation (e.g., after ignoring dependencies)
 				if (Array.isArray(result.tips) && result.tips.length > 0) {
-					console.log('\n' + chalk.yellow.bold('Next Steps:'))
+					console.log('\n' + chalk.yellow.bold('提示:'))
 					result.tips.forEach((t) => console.log(chalk.white(`  • ${t}`)))
 				}
 

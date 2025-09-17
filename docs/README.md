@@ -11,7 +11,7 @@
 
 - [命令参考](command-reference.md) - 所有可用命令的完整列表（包括研究和多任务查看）
 - [任务结构](task-structure.md) - 理解任务格式和功能
-- [可用模型](models.md) - 支持的 AI 模型和提供商的完整列表
+- [配置指南](configuration-zh.md) - AI 模型配置和提供商设置
 
 ## 示例和许可
 

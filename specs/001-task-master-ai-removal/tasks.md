@@ -206,7 +206,7 @@
 ### 文档更新
 - [x] T068 [P] 更新 README.md 移除AI功能相关内容
 - [x] T069 [P] 更新 docs/ 目录下的文档文件
-- [x] T070 [P] 更新 assets/ 目录下的文档和示例
+- [x] T070 [P] 移除不再使用的 assets/ 目录
 - [x] T071 [P] 更新 specs/ 目录下的规格文档
 - [x] T072 [P] 创建迁移指南文档
 
@@ -302,7 +302,7 @@ task-master add-task --title "修复Jest测试框架配置和模块加载问题"
 ### 文档更新
 - [ ] T083 [P] 更新 README.md 移除AI相关描述和功能介绍
 - [ ] T084 [P] 更新 docs/ 目录下的所有文档文件
-- [ ] T085 [P] 更新 assets/ 目录下的文档和示例
+- [x] T085 [P] 移除不再使用的 assets/ 目录
 - [ ] T086 [P] 更新 .cursor/rules/ 目录下的规则文件
 
 ### MCP服务器重新配置
@@ -383,7 +383,7 @@ task-master add-task --title "验证AI移除" --priority high
 
 ### 🔄 下一阶段：3.5完善
 - **性能测试**：启动时间、内存使用、响应时间测试
-- **文档更新**：README.md、docs/目录、assets/文档
+- **文档更新**：README.md、docs/目录
 - **回归验证**：完整测试套件运行和覆盖率报告
 
 ### 🎯 最终目标

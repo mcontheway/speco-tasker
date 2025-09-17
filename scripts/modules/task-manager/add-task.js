@@ -595,18 +595,22 @@ async function addTask(
 						dependencyDisplay +
 						dependencyAnalysis +
 						'\n' +
-						chalk.white.bold('Next Steps:') +
+						chalk.white.bold('下一步操作:') +
 						'\n' +
 						chalk.cyan(
-							`1. Run ${chalk.yellow(`task-master show ${newTaskId}`)} to see complete task details`
+							`1. 查看任务详情: ${chalk.yellow(`task-master show ${newTaskId}`)}`
 						) +
 						'\n' +
 						chalk.cyan(
-							`2. Run ${chalk.yellow(`task-master set-status --id=${newTaskId} --status=in-progress`)} to start working on it`
+							`2. 开始处理任务: ${chalk.yellow(`task-master set-status --id=${newTaskId} --status=in-progress`)}`
 						) +
 						'\n' +
 						chalk.cyan(
-							`3. Run ${chalk.yellow(`task-master add-subtask --parent=${newTaskId} --title="Subtask title"`)} to add subtasks`
+							`3. 添加子任务: ${chalk.yellow(`task-master add-subtask --parent=${newTaskId} --title="子任务标题"`)}`
+						) +
+						'\n' +
+						chalk.cyan(
+							`4. 查看所有任务: ${chalk.yellow(`task-master list`)}`
 						),
 					{ padding: 1, borderColor: 'green', borderStyle: 'round' }
 				)
