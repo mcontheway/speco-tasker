@@ -18,14 +18,17 @@ jest.mock("../../../scripts/modules/task-manager/generate-task-files.js", () => 
 	default: mockGenerateTaskFiles,
 }));
 
-// Mock specific functions from utils
-jest.mock("../../../scripts/modules/utils.js", () => ({
+// Mock utils module with manual mock setup
+const mockUtils = {
 	log: mockLog,
 	readJSON: jest.fn(),
 	writeJSON: jest.fn(),
-	findProjectRoot: jest.fn(() => "/test/project/root"),
-	getCurrentTag: jest.fn(() => "main"),
-}));
+	findProjectRoot: jest.fn(),
+	getCurrentTag: jest.fn(),
+};
+
+// Mock the entire utils module
+jest.mock("../../../scripts/modules/utils.js", () => mockUtils);
 
 // --- Mock chalk for consistent output formatting ---
 const mockChalk = {
@@ -70,10 +73,13 @@ describe("Cross-Tag Move CLI Integration", () => {
 		fs.mkdirSync(".taskmaster/tasks", { recursive: true });
 		fs.writeFileSync("package.json", JSON.stringify({ name: "test-project" }));
 
+		// Import modules after setting up the test environment
 		moveTaskModule = require("../../../scripts/modules/task-manager/move-task.js");
 		generateTaskFilesModule = require("../../../scripts/modules/task-manager/generate-task-files.js");
 		utilsModule = require("../../../scripts/modules/utils.js");
 		chalk = require("chalk");
+
+		// No need for findProjectRoot mock since we use tempDir directly
 	});
 
 	afterAll(() => {
@@ -163,7 +169,7 @@ describe("Cross-Tag Move CLI Integration", () => {
 			}
 
 			const tasksPath = path.join(
-				utilsModule.findProjectRoot(),
+				tempDir,
 				".taskmaster",
 				"tasks",
 				"tasks.json",

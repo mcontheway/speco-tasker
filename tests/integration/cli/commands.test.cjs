@@ -41,7 +41,7 @@ jest.unstable_mockModule("../../../scripts/modules/config-manager.js", () => ({
 	VALID_PROVIDERS: ["anthropic", "openai"],
 }));
 
-jest.unstable_mockModule("../scripts/modules/ui.js", () => ({
+jest.unstable_mockModule("../../../scripts/modules/ui.js", () => ({
 	displayHelp: mockDisplayHelp,
 	displayBanner: mockDisplayBanner,
 	log: mockLog,
@@ -88,9 +88,9 @@ let chalk;
 describe("CLI Models Command (Action Handler Test)", () => {
 	// Setup dynamic imports before tests run
 	beforeAll(async () => {
-		configManager = await import("../scripts/modules/config-manager.js");
-		ui = await import("../scripts/modules/ui.js");
-		chalk = (await import("chalk")).default;
+		configManager = await import("../../../scripts/modules/config-manager.js");
+		ui = await import("../../../scripts/modules/ui.js");
+		chalk = require("chalk");
 	});
 
 	// --- Replicate the action handler logic from commands.js ---
