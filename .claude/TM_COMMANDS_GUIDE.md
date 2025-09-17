@@ -36,12 +36,9 @@ Commands are organized hierarchically to match Task Master's CLI:
 - `/project:tm/setup/quick-install` - One-line install
 - `/project:tm/init` - Initialize project
 - `/project:tm/init/quick` - Quick init with -y
-- `/project:tm/models` - View AI config
-- `/project:tm/models/setup` - Configure AI
 
 ### Task Generation
 - `/project:tm/parse-prd` - Generate from PRD
-- `/project:tm/parse-prd/with-research` - Enhanced parsing
 - `/project:tm/generate` - Create task files
 
 ### Task Management
@@ -62,10 +59,6 @@ Commands are organized hierarchically to match Task Master's CLI:
 - `/project:tm/set-status/to-cancelled <id>`
 
 ### Task Analysis
-- `/project:tm/analyze-complexity` - AI analysis
-- `/project:tm/complexity-report` - View report
-- `/project:tm/expand <id>` - Break down task
-- `/project:tm/expand/all` - Expand all complex
 
 ### Dependencies
 - `/project:tm/add-dependency` - Add dependency
@@ -76,7 +69,6 @@ Commands are organized hierarchically to match Task Master's CLI:
 ### Workflows
 - `/project:tm/workflows/smart-flow` - Adaptive workflows
 - `/project:tm/workflows/pipeline` - Chain commands
-- `/project:tm/workflows/auto-implement` - AI implementation
 
 ### Utilities
 - `/project:tm/status` - Project dashboard
@@ -126,8 +118,7 @@ Commands analyze project state and provide intelligent suggestions based on:
 
 ### Sprint Planning
 ```
-/project:tm/analyze-complexity
-/project:tm/workflows/pipeline init → expand/all → status
+/project:tm/workflows/pipeline init → status
 ```
 
 ## Migration from Old Commands

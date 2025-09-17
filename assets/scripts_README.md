@@ -22,16 +22,14 @@ Task Master 配置现在通过两种主要方法进行管理：
 
 1.  **`.taskmaster/config.json` 文件（项目根目录 - 主要配置）**
 
-    - 存储 AI 模型选择（`main`、`research`、`fallback`）、模型参数（`maxTokens`、`temperature`）、`logLevel`、`defaultSubtasks`、`defaultPriority`、`projectName` 等。
-    - 使用 `task-master models --setup` 命令或 `models` MCP 工具进行管理。
+    - 存储项目配置信息，包括 `logLevel`、`defaultSubtasks`、`defaultPriority`、`projectName` 等。
     - 这是大多数设置的主要配置文件。
 
-2.  **环境变量（`.env` 文件 - 仅用于 API 密钥）**
-    - **仅用于**敏感的 **API 密钥**（例如 `ANTHROPIC_API_KEY`、`PERPLEXITY_API_KEY`）。
+2.  **环境变量（`.env` 文件）**
+    - 用于可选的环境变量配置。
     - 在项目根目录创建 `.env` 文件以供 CLI 使用。
-    - 请查看 `assets/env.example` 获取所需的密钥名称。
 
-**重要提示：**像 `MODEL`、`MAX_TOKENS`、`TEMPERATURE`、`TASKMASTER_LOG_LEVEL` 等设置**不再通过 `.env` 设置**。请使用 `task-master models --setup` 代替。
+**重要提示：**像 `TASKMASTER_LOG_LEVEL` 等设置可以通过配置文件进行管理。
 
 ## 工作原理
 
@@ -161,14 +159,6 @@ task-master clear-subtasks --all
 - 可以与 `expand` 命令结合使用，以立即生成新的子任务
 - 适用于父任务和单个子任务
 
-## AI 集成（已更新）
-
-- 该脚本现在使用统一的 AI 服务层（`ai-services-unified.js`）。
-- 模型选择（例如，用于 `--research` 的 Claude 与 Perplexity）根据 `.taskmaster/config.json` 中的配置和请求的 `role`（`main` 或 `research`）来确定。
-- API 密钥会自动从您的 `.env` 文件（用于 CLI）或 MCP 会话环境中解析。
-- 要使用研究功能（例如 `expand --research`），请确保您已：
-  1. 使用 `task-master models --setup` 为 `research` 角色配置模型（推荐使用 Perplexity 模型）。
-  2. 将相应的 API 密钥（例如 `PERPLEXITY_API_KEY`）添加到您的 `.env` 文件中。
 
 ## 日志记录
 

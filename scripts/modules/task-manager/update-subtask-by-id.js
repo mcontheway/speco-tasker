@@ -1,45 +1,20 @@
 import fs from "node:fs";
-import path from "node:path";
-import boxen from "boxen";
-import chalk from "chalk";
-import Table from "cli-table3";
-
-import { getDebugFlag } from "../config-manager.js";
-import {
-	displayAiUsageSummary,
-	getStatusWithColor,
-	startLoadingIndicator,
-	stopLoadingIndicator,
-} from "../ui.js";
 import {
 	log as consoleLog,
 	findProjectRoot,
-	flattenTasksWithSubtasks,
-	isSilentMode,
 	readJSON,
-	truncate,
 	writeJSON,
 } from "../utils.js";
-import { ContextGatherer } from "../utils/contextGatherer.js";
-import { FuzzyTaskSearch } from "../utils/fuzzyTaskSearch.js";
-import {
-	formatValidationError,
-	validateTaskData,
-} from "../utils/task-validation.js";
-import generateTaskFiles from "./generate-task-files.js";
 
 /**
- * Update a subtask by appending additional timestamped information using the unified AI service.
+ * Manually update a subtask by appending timestamped information.
  * @param {string} tasksPath - Path to the tasks.json file
  * @param {string} subtaskId - ID of the subtask to update in format "parentId.subtaskId"
- * @param {string} prompt - Prompt for generating additional information
- * @param {boolean} [useResearch=false] - Deprecated: Research functionality removed.
- * @param {Object} context - Context object containing session and mcpLog.
- * @param {Object} [context.session] - Session object from MCP server.
- * @param {Object} [context.mcpLog] - MCP logger object.
- * @param {string} [context.projectRoot] - Project root path (needed for AI service key resolution).
+ * @param {string} prompt - Information to append to the subtask
+ * @param {Object} context - Context object containing projectRoot and tag.
+ * @param {string} [context.projectRoot] - Project root path.
  * @param {string} [context.tag] - Tag for the task
- * @param {string} [outputFormat='text'] - Output format ('text' or 'json'). Automatically 'json' if mcpLog is present.
+ * @param {string} [outputFormat='text'] - Output format ('text' or 'json').
  * @returns {Promise<Object|null>} - The updated subtask or null if update failed.
  */
 async function updateSubtaskById(
@@ -47,26 +22,15 @@ async function updateSubtaskById(
 	subtaskId,
 	prompt,
 	context = {},
-	outputFormat = context.mcpLog ? "json" : "text",
+	outputFormat = "text",
 ) {
-	const { session, mcpLog, projectRoot: providedProjectRoot, tag } = context;
-	const logFn = mcpLog || consoleLog;
-	const isMCP = !!mcpLog;
-
-	// Report helper
-	const report = (level, ...args) => {
-		if (isMCP) {
-			if (typeof logFn[level] === "function") logFn[level](...args);
-			else logFn.info(...args);
-		} else if (!isSilentMode()) {
-			logFn(level, ...args);
-		}
-	};
-
-	let loadingIndicator = null;
+	const { projectRoot: providedProjectRoot, tag } = context;
 
 	try {
-		report("info", `Updating subtask ${subtaskId} with prompt: "${prompt}"`);
+		consoleLog(
+			"info",
+			`Updating subtask ${subtaskId} with information: "${prompt}"`,
+		);
 
 		if (
 			!subtaskId ||
@@ -80,7 +44,7 @@ async function updateSubtaskById(
 
 		if (!prompt || typeof prompt !== "string" || prompt.trim() === "") {
 			throw new Error(
-				"Prompt cannot be empty. Please provide context for the subtask update.",
+				"Information cannot be empty. Please provide context for the subtask update.",
 			);
 		}
 
@@ -137,243 +101,32 @@ async function updateSubtaskById(
 
 		const subtask = parentTask.subtasks[subtaskIndex];
 
-		// --- Context Gathering (Removed - AI functionality removed) ---
-		let gatheredContext = "";
-		// Manual context gathering is no longer available
+		// Append the information to the subtask
+		const timestamp = new Date().toISOString();
+		const formattedEntry = `[${timestamp}] ${prompt}`;
 
-		if (outputFormat === "text") {
-			const table = new Table({
-				head: [
-					chalk.cyan.bold("ID"),
-					chalk.cyan.bold("Title"),
-					chalk.cyan.bold("Status"),
-				],
-				colWidths: [10, 55, 10],
-			});
-			table.push([
-				subtaskId,
-				truncate(subtask.title, 52),
-				getStatusWithColor(subtask.status),
-			]);
-			console.log(
-				boxen(chalk.white.bold(`Updating Subtask #${subtaskId}`), {
-					padding: 1,
-					borderColor: "blue",
-					borderStyle: "round",
-					margin: { top: 1, bottom: 0 },
-				}),
-			);
-			console.log(table.toString());
-			loadingIndicator = startLoadingIndicator("Updating subtask manually...");
-		}
-
-		let generatedContentString = "";
-		let newlyAddedSnippet = "";
-
-		try {
-			const parentContext = {
-				id: parentTask.id,
-				title: parentTask.title,
-			};
-			const prevSubtask =
-				subtaskIndex > 0
-					? {
-							id: `${parentTask.id}.${parentTask.subtasks[subtaskIndex - 1].id}`,
-							title: parentTask.subtasks[subtaskIndex - 1].title,
-							status: parentTask.subtasks[subtaskIndex - 1].status,
-						}
-					: undefined;
-			const nextSubtask =
-				subtaskIndex < parentTask.subtasks.length - 1
-					? {
-							id: `${parentTask.id}.${parentTask.subtasks[subtaskIndex + 1].id}`,
-							title: parentTask.subtasks[subtaskIndex + 1].title,
-							status: parentTask.subtasks[subtaskIndex + 1].status,
-						}
-					: undefined;
-
-			// Manual prompt creation without PromptManager
-			const systemPrompt = "You are a subtask update assistant.";
-			const userPrompt = `Update the following subtask:
-
-Parent Task: ${parentContext.title}
-Subtask: ${subtask.title}
-Current Details: ${subtask.details || "(No existing details)"}
-Update Request: ${prompt}
-${gatheredContext ? `Context: ${gatheredContext}` : ""}`;
-
-			report("info", "Manual subtask update prompt created.");
-
-			// Use provided prompt directly as content (no AI processing)
-			generatedContentString = prompt?.trim()
-				? prompt.trim()
-				: "No content provided for update.";
-
-			if (outputFormat === "text" && loadingIndicator) {
-				stopLoadingIndicator(loadingIndicator);
-				loadingIndicator = null;
-			}
-		} catch (aiError) {
-			report("error", `AI service call failed: ${aiError.message}`);
-			if (outputFormat === "text" && loadingIndicator) {
-				stopLoadingIndicator(loadingIndicator);
-				loadingIndicator = null;
-			}
-			throw aiError;
-		}
-
-		if (generatedContentString?.trim()) {
-			// Check if the string is not empty
-			const timestamp = new Date().toISOString();
-			const formattedBlock = `<info added on ${timestamp}>\n${generatedContentString.trim()}\n</info added on ${timestamp}>`;
-			newlyAddedSnippet = formattedBlock; // <--- ADD THIS LINE: Store for display
-
-			subtask.details =
-				(subtask.details ? `${subtask.details}\n` : "") + formattedBlock;
+		if (subtask.details) {
+			subtask.details += `\n\n${formattedEntry}`;
 		} else {
-			report(
-				"warn",
-				"AI response was empty or whitespace after trimming. Original details remain unchanged.",
-			);
-			newlyAddedSnippet = "No new details were added by the AI.";
+			subtask.details = formattedEntry;
 		}
 
-		const updatedSubtask = parentTask.subtasks[subtaskIndex];
-
-		// Validate updated subtask data
-		const validationResult = validateTaskData(
-			updatedSubtask,
-			projectRoot,
-			report,
-			true,
-		);
-		if (!validationResult.isValid) {
-			const errorMessage = formatValidationError(
-				validationResult,
-				subtaskId,
-				true,
-			);
-			report("error", errorMessage);
-			throw new Error(errorMessage);
-		}
-
-		if (outputFormat === "text" && getDebugFlag(session)) {
-			console.log(
-				">>> DEBUG: Subtask details AFTER AI update:",
-				updatedSubtask.details,
-			);
-		}
-
-		if (updatedSubtask.description) {
-			if (prompt.length < 100) {
-				if (outputFormat === "text" && getDebugFlag(session)) {
-					console.log(
-						">>> DEBUG: Subtask description BEFORE append:",
-						updatedSubtask.description,
-					);
-				}
-				updatedSubtask.description += ` [Updated: ${new Date().toLocaleDateString()}]`;
-				if (outputFormat === "text" && getDebugFlag(session)) {
-					console.log(
-						">>> DEBUG: Subtask description AFTER append:",
-						updatedSubtask.description,
-					);
-				}
-			}
-		}
-
-		if (outputFormat === "text" && getDebugFlag(session)) {
-			console.log(">>> DEBUG: About to call writeJSON with updated data...");
-		}
+		// Save the updated data
 		writeJSON(tasksPath, data, projectRoot, tag);
-		if (outputFormat === "text" && getDebugFlag(session)) {
-			console.log(">>> DEBUG: writeJSON call completed.");
-		}
 
-		report("success", `Successfully updated subtask ${subtaskId}`);
-		// Updated  function call to make sure if uncommented it will generate the task files for the updated subtask based on the tag
-		// await generateTaskFiles(tasksPath, path.dirname(tasksPath), {
-		// 	tag: tag,
-		// 	projectRoot: projectRoot
-		// });
-
-		if (outputFormat === "text") {
-			if (loadingIndicator) {
-				stopLoadingIndicator(loadingIndicator);
-				loadingIndicator = null;
-			}
-			console.log(
-				boxen(
-					`${chalk.green(`Successfully updated subtask #${subtaskId}`)}\n\n${chalk.white.bold("Title:")} ${updatedSubtask.title}\n\n${chalk.white.bold("Newly Added Snippet:")}\n${chalk.white(newlyAddedSnippet)}`,
-					{ padding: 1, borderColor: "green", borderStyle: "round" },
-				),
-			);
-		}
-
-		if (outputFormat === "text" && aiServiceResponse.telemetryData) {
-			displayAiUsageSummary(aiServiceResponse.telemetryData, "cli");
-		}
+		consoleLog("info", `Successfully updated subtask ${subtaskId}`);
 
 		return {
-			updatedSubtask: updatedSubtask,
-			telemetryData: aiServiceResponse.telemetryData,
-			tagInfo: aiServiceResponse.tagInfo,
+			subtask: subtask,
+			message: `Subtask ${subtaskId} updated successfully`,
 		};
 	} catch (error) {
-		if (outputFormat === "text" && loadingIndicator) {
-			stopLoadingIndicator(loadingIndicator);
-			loadingIndicator = null;
-		}
-		report("error", `Error updating subtask: ${error.message}`);
-		if (outputFormat === "text") {
-			console.error(chalk.red(`Error: ${error.message}`));
-			if (error.message?.includes("ANTHROPIC_API_KEY")) {
-				console.log(
-					chalk.yellow("\nTo fix this issue, set your Anthropic API key:"),
-				);
-				console.log("  export ANTHROPIC_API_KEY=your_api_key_here");
-			} else if (error.message?.includes("PERPLEXITY_API_KEY")) {
-				console.log(chalk.yellow("\nTo fix this issue:"));
-				console.log(
-					"  1. Set your Perplexity API key: export PERPLEXITY_API_KEY=your_api_key_here",
-				);
-				console.log(
-					'  2. The manual update-subtask command should work without API keys: task-master update-subtask --id=<id> --prompt="..."',
-				);
-			} else if (error.message?.includes("overloaded")) {
-				console.log(
-					chalk.yellow(
-						"\nAI model overloaded, and fallback failed or was unavailable:",
-					),
-				);
-				console.log("  1. Try again in a few minutes.");
-				console.log("  2. Ensure PERPLEXITY_API_KEY is set for fallback.");
-			} else if (error.message?.includes("not found")) {
-				console.log(chalk.yellow("\nTo fix this issue:"));
-				console.log(
-					"  1. Run task-master list --with-subtasks to see all available subtask IDs",
-				);
-				console.log(
-					'  2. Use a valid subtask ID with the --id parameter in format "parentId.subtaskId"',
-				);
-			} else if (
-				error.message?.includes("empty stream response") ||
-				error.message?.includes("AI did not return a valid text string")
-			) {
-				console.log(
-					chalk.yellow(
-						"\nThe AI model returned an empty or invalid response. This might be due to the prompt or API issues. Try rephrasing or trying again later.",
-					),
-				);
-			}
-			if (getDebugFlag(session)) {
-				console.error(error);
-			}
-		} else {
-			throw error;
-		}
-		return null;
+		consoleLog("error", `Error updating subtask manually: ${error.message}`);
+		return {
+			success: false,
+			error: { message: error.message },
+		};
 	}
 }
 
-export default updateSubtaskById;
+export { updateSubtaskById };

@@ -21,9 +21,7 @@ import {
 } from "../../../src/constants/task-priority.js";
 import { getDefaultPriority } from "../config-manager.js";
 import {
-	displayAiUsageSummary,
 	displayBanner,
-	displayContextAnalysis,
 	failLoadingIndicator,
 	getStatusWithColor,
 	startLoadingIndicator,
@@ -39,7 +37,6 @@ import {
 	truncate,
 	writeJSON,
 } from "../utils.js";
-import ContextGatherer from "../utils/contextGatherer.js";
 import {
 	formatValidationError,
 	validateTaskData,
@@ -124,7 +121,7 @@ function getAllTasks(rawData) {
  * @param {string} [context.tag] - Tag for the task (optional)
  * @param {string} outputFormat - Output format (text or json)
  * @param {Object} manualTaskData - Manual task data (required for spec-driven development)
- * @returns {Promise<object>} An object containing newTaskId and telemetryData
+ * @returns {Promise<object>} An object containing newTaskId
  */
 async function addTask(
 	tasksPath,
@@ -673,14 +670,9 @@ async function addTask(
 			// No AI usage summary to display in manual mode
 		}
 
-		report(
-			`DEBUG: Returning new task ID: ${newTaskId} and telemetry.`,
-			"debug",
-		);
+		report(`DEBUG: Returning new task ID: ${newTaskId}.`, "debug");
 		return {
 			newTaskId: newTaskId,
-			telemetryData: null, // No AI telemetry for manual task creation
-			tagInfo: null,
 		};
 	} catch (error) {
 		// Stop any loading indicator on error

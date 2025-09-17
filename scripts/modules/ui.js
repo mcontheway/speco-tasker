@@ -1661,17 +1661,12 @@ async function displayComplexityReport(reportPath) {
 		rl.close();
 
 		if (answer.toLowerCase() === "y" || answer.toLowerCase() === "yes") {
-			// Call the analyze-complexity command
-			console.log(chalk.blue("Generating complexity report..."));
-			const tasksPath = TASKMASTER_TASKS_FILE;
-			if (!fs.existsSync(tasksPath)) {
-				console.error(
-					'❌ No tasks.json file found. Please run "task-master init" or create a tasks.json file.',
-				);
-				return null;
-			}
-
-			// Complexity analysis is not available for this task
+			console.log(
+				chalk.yellow("Complexity analysis feature has been removed."),
+			);
+			console.log(
+				chalk.cyan("Manual task management is now the primary workflow."),
+			);
 			return null;
 		}
 		console.log(chalk.yellow("Report generation cancelled."));
@@ -1865,45 +1860,6 @@ async function displayComplexityReport(reportPath) {
 }
 
 /**
- * Generate a prompt for complexity analysis
- * @param {Object} tasksData - Tasks data object containing tasks array
- * @returns {string} Generated prompt
- */
-function generateComplexityAnalysisPrompt(tasksData) {
-	const defaultSubtasks = 5; // Default subtask count
-	return `Analyze the complexity of the following tasks and provide recommendations for subtask breakdown:
-
-${tasksData.tasks
-	.map(
-		(task) => `
-Task ID: ${task.id}
-Title: ${task.title}
-Description: ${task.description}
-Details: ${task.details}
-Dependencies: ${JSON.stringify(task.dependencies || [])}
-Priority: ${task.priority || "medium"}
-`,
-	)
-	.join("\n---\n")}
-
-Analyze each task and return a JSON array with the following structure for each task:
-[
-  {
-    "taskId": number,
-    "taskTitle": string,
-    "complexityScore": number (1-10),
-    "recommendedSubtasks": number (${Math.max(3, defaultSubtasks - 1)}-${Math.min(8, defaultSubtasks + 2)}),
-    "expansionPrompt": string (a specific prompt for generating good subtasks),
-    "reasoning": string (brief explanation of your assessment)
-  },
-  ...
-]
-
-IMPORTANT: Make sure to include an analysis for EVERY task listed above, with the correct taskId matching each task's ID.
-`;
-}
-
-/**
  * Confirm overwriting existing tasks.json file
  * @param {string} tasksPath - Path to the tasks.json file
  * @returns {Promise<boolean>} - Promise resolving to true if user confirms, false otherwise
@@ -1981,109 +1937,7 @@ function displayApiKeyStatus(statusReport) {
 
 // --- Formatting Helpers (Potentially move some to utils.js if reusable) ---
 
-const formatSweScoreWithTertileStars = (score, allModels) => {
-	// ... (Implementation from previous version or refine) ...
-	if (score === null || score === undefined || score <= 0) return "N/A";
-	const formattedPercentage = `${(score * 100).toFixed(1)}%`;
-
-	const validScores = allModels
-		.map((m) => m.sweScore)
-		.filter((s) => s !== null && s !== undefined && s > 0);
-	const sortedScores = [...validScores].sort((a, b) => b - a);
-	const n = sortedScores.length;
-	let stars = chalk.gray("☆☆☆");
-
-	if (n > 0) {
-		const topThirdIndex = Math.max(0, Math.floor(n / 3) - 1);
-		const midThirdIndex = Math.max(0, Math.floor((2 * n) / 3) - 1);
-		if (score >= sortedScores[topThirdIndex]) stars = chalk.yellow("★★★");
-		else if (score >= sortedScores[midThirdIndex])
-			stars = chalk.yellow("★★") + chalk.gray("☆");
-		else stars = chalk.yellow("★") + chalk.gray("☆☆");
-	}
-	return `${formattedPercentage} ${stars}`;
-};
-
-const formatCost = (costObj) => {
-	// ... (Implementation from previous version or refine) ...
-	if (!costObj) return "N/A";
-	if (costObj.input === 0 && costObj.output === 0) {
-		return chalk.green("Free");
-	}
-	const formatSingleCost = (costValue) => {
-		if (costValue === null || costValue === undefined) return "N/A";
-		const isInteger = Number.isInteger(costValue);
-		return `$${costValue.toFixed(isInteger ? 0 : 2)}`;
-	};
-	return `${formatSingleCost(costObj.input)} in, ${formatSingleCost(costObj.output)} out`;
-};
-
 // --- Display Functions ---
-
-/**
- * Displays the currently configured active models.
- * @param {ConfigData} configData - The active configuration data.
- * @param {AvailableModel[]} allAvailableModels - Needed for SWE score tertiles.
- */
-function displayModelConfiguration(configData, allAvailableModels = []) {
-	console.log(chalk.cyan.bold("\nActive Model Configuration:"));
-	const active = configData.activeModels;
-	const activeTable = new Table({
-		head: [
-			"Role",
-			"Provider",
-			"Model ID",
-			"SWE Score",
-			"Cost ($/1M tkns)",
-			// 'API Key Status' // Removed, handled by separate displayApiKeyStatus
-		].map((h) => chalk.cyan.bold(h)),
-		colWidths: [10, 14, 30, 18, 20 /*, 28 */], // Adjusted widths
-		style: { head: ["cyan", "bold"] },
-	});
-
-	activeTable.push([
-		chalk.white("Main"),
-		active.main.provider,
-		active.main.modelId,
-		formatSweScoreWithTertileStars(active.main.sweScore, allAvailableModels),
-		formatCost(active.main.cost),
-		// getCombinedStatus(active.main.keyStatus) // Removed
-	]);
-	activeTable.push([
-		chalk.white("Research"),
-		active.research.provider,
-		active.research.modelId,
-		formatSweScoreWithTertileStars(
-			active.research.sweScore,
-			allAvailableModels,
-		),
-		formatCost(active.research.cost),
-		// getCombinedStatus(active.research.keyStatus) // Removed
-	]);
-	if (active.fallback?.provider && active.fallback.modelId) {
-		activeTable.push([
-			chalk.white("Fallback"),
-			active.fallback.provider,
-			active.fallback.modelId,
-			formatSweScoreWithTertileStars(
-				active.fallback.sweScore,
-				allAvailableModels,
-			),
-			formatCost(active.fallback.cost),
-			// getCombinedStatus(active.fallback.keyStatus) // Removed
-		]);
-	} else {
-		activeTable.push([
-			chalk.white("Fallback"),
-			chalk.gray("-"),
-			chalk.gray("(Not Set)"),
-			chalk.gray("-"),
-			chalk.gray("-"),
-			// chalk.gray('-') // Removed
-		]);
-	}
-	console.log(activeTable.toString());
-}
 
 /**
  * Displays the list of available models not currently configured.
@@ -2092,51 +1946,6 @@ function displayModelConfiguration(configData, allAvailableModels = []) {
 // displayAvailableModels function removed - models command no longer exists in manual mode
 function displayAvailableModels() {
 	// Stub function for compatibility
-}
-
-/**
- * Displays AI usage telemetry summary in the CLI.
- * @param {object} telemetryData - The telemetry data object.
- * @param {string} outputType - 'cli' or 'mcp' (though typically only called for 'cli').
- */
-function displayAiUsageSummary(telemetryData, outputType = "cli") {
-	if (
-		(outputType !== "cli" && outputType !== "text") ||
-		!telemetryData ||
-		isSilentMode()
-	) {
-		return; // Only display for CLI and if data exists and not in silent mode
-	}
-
-	const {
-		modelUsed,
-		providerName,
-		inputTokens,
-		outputTokens,
-		totalTokens,
-		totalCost,
-		commandName,
-	} = telemetryData;
-
-	let summary = `${chalk.bold.blue("AI Usage Summary:")}\n`;
-	summary += chalk.gray(`  Command: ${commandName}\n`);
-	summary += chalk.gray(`  Provider: ${providerName}\n`);
-	summary += chalk.gray(`  Model: ${modelUsed}\n`);
-	summary += chalk.gray(
-		`  Tokens: ${totalTokens} (Input: ${inputTokens}, Output: ${outputTokens})\n`,
-	);
-	summary += chalk.gray(`  Est. Cost: $${totalCost.toFixed(6)}`);
-
-	console.log(
-		boxen(summary, {
-			padding: 1,
-			margin: { top: 1 },
-			borderColor: "blue",
-			borderStyle: "round",
-			title: "💡 Telemetry",
-			titleAlignment: "center",
-		}),
-	);
 }
 
 /**
@@ -2493,91 +2302,6 @@ async function displayMultipleTasksSummary(
 	}
 }
 
-/**
- * Display context analysis results with beautiful formatting
- * @param {Object} analysisData - Analysis data from ContextGatherer
- * @param {string} semanticQuery - The original query used for semantic search
- * @param {number} contextSize - Size of gathered context in characters
- */
-function displayContextAnalysis(analysisData, semanticQuery, contextSize) {
-	if (isSilentMode() || !analysisData) return;
-
-	const { highRelevance, mediumRelevance, recentTasks, allRelevantTasks } =
-		analysisData;
-
-	// Create the context analysis display
-	let analysisContent = `${chalk.white.bold("Context Analysis")}\n\n`;
-
-	// Query info
-	analysisContent += `${chalk.gray("Query: ") + chalk.white(`"${semanticQuery}"`)}\n`;
-	analysisContent += `${
-		chalk.gray("Context size: ") +
-		chalk.cyan(`${contextSize.toLocaleString()} characters`)
-	}\n`;
-	analysisContent += `${
-		chalk.gray("Tasks found: ") +
-		chalk.yellow(`${allRelevantTasks.length} relevant tasks`)
-	}\n\n`;
-
-	// High relevance matches
-	if (highRelevance.length > 0) {
-		analysisContent += `${chalk.green.bold("🎯 High Relevance Matches:")}\n`;
-		highRelevance.slice(0, 3).forEach((task) => {
-			analysisContent += `${chalk.green(`  • Task ${task.id}: ${truncate(task.title, 50)}`)}\n`;
-		});
-		if (highRelevance.length > 3) {
-			analysisContent += `${chalk.green(
-				`  • ... and ${highRelevance.length - 3} more high relevance tasks`,
-			)}\n`;
-		}
-		analysisContent += "\n";
-	}
-
-	// Medium relevance matches
-	if (mediumRelevance.length > 0) {
-		analysisContent += `${chalk.yellow.bold("📋 Medium Relevance Matches:")}\n`;
-		mediumRelevance.slice(0, 3).forEach((task) => {
-			analysisContent += `${chalk.yellow(`  • Task ${task.id}: ${truncate(task.title, 50)}`)}\n`;
-		});
-		if (mediumRelevance.length > 3) {
-			analysisContent += `${chalk.yellow(
-				`  • ... and ${mediumRelevance.length - 3} more medium relevance tasks`,
-			)}\n`;
-		}
-		analysisContent += "\n";
-	}
-
-	// Recent tasks (if they contributed)
-	const recentTasksNotInRelevance = recentTasks.filter(
-		(task) =>
-			!highRelevance.some((hr) => hr.id === task.id) &&
-			!mediumRelevance.some((mr) => mr.id === task.id),
-	);
-
-	if (recentTasksNotInRelevance.length > 0) {
-		analysisContent += `${chalk.cyan.bold("🕒 Recent Tasks (for context):")}\n`;
-		recentTasksNotInRelevance.slice(0, 2).forEach((task) => {
-			analysisContent += `${chalk.cyan(`  • Task ${task.id}: ${truncate(task.title, 50)}`)}\n`;
-		});
-		if (recentTasksNotInRelevance.length > 2) {
-			analysisContent += `${chalk.cyan(
-				`  • ... and ${recentTasksNotInRelevance.length - 2} more recent tasks`,
-			)}\n`;
-		}
-	}
-
-	console.log(
-		boxen(analysisContent, {
-			padding: { top: 1, bottom: 1, left: 2, right: 2 },
-			margin: { top: 1, bottom: 0 },
-			borderStyle: "round",
-			borderColor: "blue",
-			title: chalk.blue("🔍 Context Gathering"),
-			titleAlignment: "center",
-		}),
-	);
-}
-
 // Export UI functions
 export {
 	displayBanner,
@@ -2592,18 +2316,14 @@ export {
 	displayNextTask,
 	displayTaskById,
 	displayComplexityReport,
-	generateComplexityAnalysisPrompt,
 	confirmTaskOverwrite,
 	displayApiKeyStatus,
-	displayModelConfiguration,
 	displayAvailableModels,
-	displayAiUsageSummary,
 	displayMultipleTasksSummary,
 	succeedLoadingIndicator,
 	failLoadingIndicator,
 	warnLoadingIndicator,
 	infoLoadingIndicator,
-	displayContextAnalysis,
 	displayCurrentTagIndicator,
 	formatTaskIdForDisplay,
 };

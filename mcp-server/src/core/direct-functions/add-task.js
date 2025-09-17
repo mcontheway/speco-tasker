@@ -98,8 +98,6 @@ export async function addTaskDirect(args, log, context = {}) {
 
 		let manualTaskData = null;
 		let newTaskId;
-		let telemetryData;
-		let tagInfo;
 
 		if (isManualCreation) {
 			// Process spec_files into array format for spec-driven development
@@ -134,7 +132,6 @@ export async function addTaskDirect(args, log, context = {}) {
 			// Call the addTask function with manual task data
 			const result = await addTask(
 				tasksPath,
-				null, // prompt is no longer used
 				taskDependencies,
 				taskPriority,
 				{
@@ -149,8 +146,6 @@ export async function addTaskDirect(args, log, context = {}) {
 				manualTaskData, // Pass the manual task data
 			);
 			newTaskId = result.newTaskId;
-			telemetryData = result.telemetryData;
-			tagInfo = result.tagInfo;
 		}
 
 		// Restore normal logging
@@ -161,8 +156,6 @@ export async function addTaskDirect(args, log, context = {}) {
 			data: {
 				taskId: newTaskId,
 				message: `Successfully added new task #${newTaskId}`,
-				telemetryData: telemetryData,
-				tagInfo: tagInfo,
 			},
 		};
 	} catch (error) {

@@ -1,6 +1,6 @@
 /**
  * tools/add-task.js
- * Tool to add a new task using AI
+ * Tool to manually add a new task
  */
 
 import { z } from "zod";

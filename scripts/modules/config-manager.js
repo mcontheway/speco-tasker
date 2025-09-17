@@ -186,46 +186,6 @@ function getConfig(explicitRoot = null, forceReload = false) {
 
 // AI functionality has been removed - no model configuration needed
 
-/**
- * Check if codebase analysis feature flag is enabled across all sources
- * Priority: .env > MCP env > config.json
- * @param {object|null} session - MCP session object (optional)
- * @param {string|null} projectRoot - Project root path (optional)
- * @returns {boolean} True if codebase analysis is enabled
- */
-function isCodebaseAnalysisEnabled(session = null, projectRoot = null) {
-	// Priority 1: Environment variable
-	const envFlag = resolveEnvVariable(
-		"TASKMASTER_ENABLE_CODEBASE_ANALYSIS",
-		session,
-		projectRoot,
-	);
-	if (envFlag !== null && envFlag !== undefined && envFlag !== "") {
-		return envFlag.toLowerCase() === "true" || envFlag === "1";
-	}
-
-	// Priority 2: MCP session environment
-	if (session?.env?.TASKMASTER_ENABLE_CODEBASE_ANALYSIS) {
-		const mcpFlag = session.env.TASKMASTER_ENABLE_CODEBASE_ANALYSIS;
-		return mcpFlag.toLowerCase() === "true" || mcpFlag === "1";
-	}
-
-	// Priority 3: Configuration file
-	const globalConfig = getGlobalConfig(projectRoot);
-	return globalConfig.enableCodebaseAnalysis !== false; // Default to true
-}
-
-/**
- * Check if codebase analysis is available and enabled
- * @param {string|null} projectRoot - Project root path (optional)
- * @param {object|null} session - MCP session object (optional)
- * @returns {boolean} True if codebase analysis is available and enabled
- */
-function hasCodebaseAnalysis(projectRoot = null, session = null) {
-	// AI functionality has been removed - codebase analysis is no longer available
-	return false;
-}
-
 // --- Global Settings Getters ---
 
 function getGlobalConfig(explicitRoot = null) {
@@ -258,31 +218,6 @@ function getDefaultPriority(explicitRoot = null) {
 function getProjectName(explicitRoot = null) {
 	// Directly return value from config
 	return getGlobalConfig(explicitRoot).projectName;
-}
-
-/**
- * Gets the Google Cloud project ID for Vertex AI from configuration
- * @param {string|null} explicitRoot - Optional explicit path to the project root.
- * @returns {string|null} The project ID or null if not configured
- */
-function getVertexProjectId(explicitRoot = null) {
-	// Return value from config
-	return getGlobalConfig(explicitRoot).vertexProjectId;
-}
-
-/**
- * Gets the Google Cloud location for Vertex AI from configuration
- * @param {string|null} explicitRoot - Optional explicit path to the project root.
- * @returns {string} The location or default value of "us-central1"
- */
-function getVertexLocation(explicitRoot = null) {
-	// Return value from config or default
-	return getGlobalConfig(explicitRoot).vertexLocation || "us-central1";
-}
-
-function getCodebaseAnalysisEnabled(explicitRoot = null) {
-	// Directly return value from config
-	return getGlobalConfig(explicitRoot).enableCodebaseAnalysis;
 }
 
 /**
@@ -404,9 +339,5 @@ export {
 	getDefaultNumTasks,
 	getDefaultPriority,
 	getProjectName,
-	getCodebaseAnalysisEnabled,
-	isCodebaseAnalysisEnabled,
 	getUserId,
-	getVertexProjectId,
-	getVertexLocation,
 };

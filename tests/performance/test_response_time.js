@@ -140,11 +140,6 @@ function setupTestData() {
 	const config = {
 		projectName: "Performance Test Project",
 		version: "1.0.0",
-		models: {
-			main: "gpt-4",
-			research: "gpt-4",
-			fallback: "gpt-3.5-turbo",
-		},
 		global: {
 			defaultTag: "main",
 		},

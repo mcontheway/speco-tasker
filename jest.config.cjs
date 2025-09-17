@@ -57,7 +57,6 @@ const config = {
 		"tests/integration/move-task-cross-tag.integration.test.cjs", // Jest redeclaration error
 		"tests/integration/move-task-simple.integration.test.cjs", // Jest redeclaration error
 		"tests/integration/manage-gitignore.test.cjs", // Syntax error
-		"tests/integration/claude-code-optional.test.cjs", // Jest redeclaration error
 		"tests/unit/utils/path-utils.test.cjs", // ES module dependencies
 		"tests/unit/utils/getVersion.test.cjs", // ES module dependencies
 		"tests/unit/es-module-test.mjs", // ES module test

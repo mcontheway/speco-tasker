@@ -22,23 +22,17 @@ task-master init -y
 
 - Project name: Current directory name
 - Description: "Task Master Project"
-- Model config: Existing environment vars
 - Task structure: Standard format
 
 ## Next Steps
 
 After quick init:
-1. Configure AI models if needed:
-   ```
-   /project:tm/models/setup
-   ```
-
-2. Parse PRD if available:
+1. Parse PRD if available:
    ```
    /project:tm/parse-prd <file>
    ```
 
-3. Or create first task:
+2. Or create first task:
    ```
    /project:tm/add-task create initial setup
    ```

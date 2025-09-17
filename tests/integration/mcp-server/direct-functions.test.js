@@ -86,7 +86,6 @@ jest.mock("../scripts/modules/utils.js", () => ({
 	disableSilentMode: mockDisableSilentMode,
 	readComplexityReport: mockReadComplexityReport,
 	CONFIG: {
-		model: "claude-3-7-sonnet-20250219",
 		maxTokens: 8192,
 		temperature: 0.2,
 		defaultSubtasks: 5,
@@ -120,8 +119,6 @@ const mockLogger = {
 // Mock session
 const mockSession = {
 	env: {
-		ANTHROPIC_API_KEY: "mock-api-key",
-		MODEL: "claude-3-sonnet-20240229",
 		MAX_TOKENS: 4000,
 		TEMPERATURE: "0.2",
 	},

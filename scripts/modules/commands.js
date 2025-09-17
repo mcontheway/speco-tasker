@@ -85,7 +85,6 @@ import {
 } from "../../src/ui/confirm.js";
 import {
 	confirmTaskOverwrite,
-	displayAiUsageSummary,
 	displayBanner,
 	displayCrossTagDependencyError,
 	displayCurrentTagIndicator,
@@ -446,7 +445,7 @@ function registerCommands(programInstance) {
 			};
 
 			try {
-				const { newTaskId, telemetryData } = await addTask(
+				const result = await addTask(
 					taskMaster.getTasksPath(),
 					dependenciesArray,
 					options.priority || undefined, // Ensure undefined if not provided
@@ -455,8 +454,7 @@ function registerCommands(programInstance) {
 					manualTaskData,
 				);
 
-				// addTask handles detailed CLI success logging AND telemetry display when outputFormat is 'text'
-				// No need to call displayAiUsageSummary here anymore.
+				// addTask handles detailed CLI success logging
 			} catch (error) {
 				console.error(chalk.red(`Error adding task: ${error.message}`));
 				if (error.details) {

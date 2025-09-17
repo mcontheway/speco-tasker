@@ -47,14 +47,14 @@ function getVersionInfo() {
 		}
 		cachedVersionInfo = {
 			version: "unknown",
-			name: "task-master-ai",
+			name: "speco-tasker",
 		};
 		return cachedVersionInfo;
 	} catch (error) {
 		// Fallback version info if package.json can't be read
 		cachedVersionInfo = {
 			version: "unknown",
-			name: "task-master-ai",
+			name: "speco-tasker",
 		};
 		return cachedVersionInfo;
 	}
@@ -887,20 +887,15 @@ function withNormalizedProjectRoot(executeFn) {
 /**
  * Checks progress reporting capability and returns the validated function or undefined.
  *
- * STANDARD PATTERN for AI-powered, long-running operations (parse-prd, expand-task, expand-all, analyze):
+ * STANDARD PATTERN for long-running operations:
  *
  * This helper should be used as the first step in any MCP tool that performs long-running
- * AI operations. It validates the availability of progress reporting and provides consistent
+ * operations. It validates the availability of progress reporting and provides consistent
  * logging about the capability status.
  *
  * Operations that should use this pattern:
- * - parse-prd: Parsing PRD documents with AI
- * - expand-task: Expanding tasks into subtasks
- * - expand-all: Expanding all tasks in batch
- * - analyze-complexity: Analyzing task complexity
- * - update-task: Updating tasks with AI assistance
- * - add-task: Creating new tasks with AI
- * - Any operation that makes AI service calls
+ * - parse-prd: Parsing PRD documents
+ * - Any operation that may take extended time to complete
  *
  * @example Basic usage in a tool's execute function:
  * ```javascript
@@ -913,7 +908,7 @@ function withNormalizedProjectRoot(executeFn) {
  *   const progressCapability = checkProgressCapability(reportProgress, log);
  *
  *   // Pass to direct function - it handles undefined gracefully
- *   const result = await expandTask(taskId, numSubtasks, {
+ *   const result = await someLongRunningOperation(args, {
  *     session,
  *     reportProgress: progressCapability,
  *     mcpLog: log
