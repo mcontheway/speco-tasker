@@ -27,9 +27,7 @@ import {
 	removeTask,
 	setTaskStatus,
 	taskExists,
-	updateSubtaskById,
-	updateTaskById,
-	updateTasks
+	updateSubtaskById
 } from './task-manager.js'
 import {
 	detectCamelCaseFlags,
@@ -295,22 +293,28 @@ function registerCommands(programInstance) {
 		.command('add-task')
 		.description('添加新任务')
 		.option('-f, --file <file>', '任务文件路径', TASKMASTER_TASKS_FILE)
-		.option('-p, --prompt <prompt>', '要添加任务的描述，不使用手动字段时必需')
-		.option('-t, --title <title>', '任务标题，用于手动创建任务')
-		.option('-d, --description <description>', '任务描述，用于手动创建任务')
-		.option('--details <details>', '实现细节，用于手动创建任务')
+		.option('-t, --title <title>', '任务标题（必需）')
+		.option('-d, --description <description>', '任务描述（必需）')
+		.option('--details <details>', '实现细节（必需）')
 		.option('--dependencies <dependencies>', '此任务依赖的任务ID列表，用逗号分隔')
 		.option('--priority <priority>', '任务优先级（high, medium, low）', 'medium')
+		.option('--test-strategy <text>', '测试策略（必需）')
+		.option('--spec-files <files>', '规范文档文件路径，用逗号分隔（必需，至少一个文档）')
 		// Research option removed - functionality no longer available
 		.option('--tag <tag>', '选择要处理的任务分组')
 		.action(async (options) => {
-			const isManualCreation = options.title && options.description
+			const isManualCreation = options.title && options.description && options.details && options.testStrategy && options.specFiles
 
-			// Validate that either prompt or title+description are provided
-			if (!options.prompt && !isManualCreation) {
+			// Validate that all required fields are provided for spec-driven development
+			if (!isManualCreation) {
 				console.error(
-					chalk.red('Error: Either --prompt or both --title and --description must be provided')
+					chalk.red('Error: All required fields must be provided for spec-driven development:')
 				)
+				console.error(chalk.red('  --title: Task title (required)'))
+				console.error(chalk.red('  --description: Task description (required)'))
+				console.error(chalk.red('  --details: Implementation details (required)'))
+				console.error(chalk.red('  --test-strategy: Test strategy (required)'))
+				console.error(chalk.red('  --spec-files: Specification document files (required, at least one)'))
 				process.exit(1)
 			}
 
@@ -343,13 +347,18 @@ function registerCommands(programInstance) {
 					title: options.title,
 					description: options.description,
 					details: options.details || '',
-					testStrategy: options.testStrategy || ''
+					testStrategy: options.testStrategy || '',
+					spec_files: options.specFiles ? options.specFiles.split(',').map(f => {
+						const trimmed = f.trim();
+						return {
+							type: 'spec',
+							title: trimmed.split('/').pop() || 'Specification Document',
+							file: trimmed
+						};
+					}) : []
 				}
 				// Restore specific logging for manual creation
 				console.log(chalk.blue(`Creating task manually with title: "${options.title}"`))
-			} else {
-				// Restore specific logging for manual creation
-				console.log(chalk.blue(`Creating task manually with prompt: "${options.prompt}"`))
 			}
 
 			// Log dependencies and priority if provided (restored)
@@ -373,9 +382,8 @@ function registerCommands(programInstance) {
 			try {
 				const { newTaskId, telemetryData } = await addTask(
 					taskMaster.getTasksPath(),
-					options.prompt,
 					dependenciesArray,
-					options.priority,
+					options.priority || undefined, // Ensure undefined if not provided
 					context,
 					'text',
 					manualTaskData
@@ -646,7 +654,10 @@ function registerCommands(programInstance) {
 		.option('-p, --priority <priority>', '更新任务优先级（high, medium, low）')
 		.option('--details <text>', '更新任务实现细节，支持--append增量更新')
 		.option('--test-strategy <text>', '更新任务测试策略，支持--append增量更新')
-		.option('--append', '追加到描述/细节/测试策略字段而不是替换')
+		.option('--dependencies <ids>', '更新任务依赖关系，用逗号分隔的ID列表')
+		.option('--spec-files <files>', '更新任务规范文档文件路径，用逗号分隔')
+		.option('--logs <text>', '添加任务日志，支持--append增量更新')
+		.option('--append', '追加到描述/细节/测试策略/日志字段而不是替换')
 		.option('--tag <tag>', '选择要处理的任务分组')
 		.action(async (options) => {
 			try {
@@ -692,7 +703,17 @@ function registerCommands(programInstance) {
 						status: options.status,
 						priority: options.priority,
 						details: options.details,
-						testStrategy: options.testStrategy
+						testStrategy: options.testStrategy,
+						dependencies: options.dependencies ? options.dependencies.split(',').map(id => id.trim()) : undefined,
+						spec_files: options.specFiles ? options.specFiles.split(',').map(f => {
+							const trimmed = f.trim();
+							return {
+								type: 'spec',
+								title: trimmed.split('/').pop() || 'Specification Document',
+								file: trimmed
+							};
+						}) : undefined,
+						logs: options.logs
 					},
 					appendMode: options.append || false
 				}
@@ -774,8 +795,13 @@ function registerCommands(programInstance) {
 		.option('-t, --title <text>', '更新子任务标题')
 		.option('-d, --description <text>', '更新子任务描述，支持--append增量更新')
 		.option('-s, --status <status>', '更新子任务状态（pending, in-progress, done）')
+		.option('-p, --priority <priority>', '更新子任务优先级（high, medium, low）')
 		.option('--details <text>', '更新子任务实现细节，支持--append增量更新')
-		.option('--append', '追加到描述/细节字段而不是替换')
+		.option('--test-strategy <text>', '更新子任务测试策略，支持--append增量更新')
+		.option('--dependencies <ids>', '更新子任务依赖关系，用逗号分隔的ID列表')
+		.option('--spec-files <files>', '更新子任务规范文档文件路径，用逗号分隔')
+		.option('--logs <text>', '添加子任务日志，支持--append增量更新')
+		.option('--append', '追加到描述/细节/测试策略/日志字段而不是替换')
 		.option('--tag <tag>', '选择要处理的任务分组')
 		.action(async (options) => {
 			try {
@@ -842,7 +868,19 @@ function registerCommands(programInstance) {
 						title: options.title,
 						description: options.description,
 						status: options.status,
-						details: options.details
+						priority: options.priority,
+						details: options.details,
+						testStrategy: options.testStrategy,
+						dependencies: options.dependencies ? options.dependencies.split(',').map(id => id.trim()) : undefined,
+						spec_files: options.specFiles ? options.specFiles.split(',').map(f => {
+							const trimmed = f.trim();
+							return {
+								type: 'spec',
+								title: trimmed.split('/').pop() || 'Specification Document',
+								file: trimmed
+							};
+						}) : undefined,
+						logs: options.logs
 					},
 					appendMode: options.append || false
 				}
@@ -923,6 +961,11 @@ function registerCommands(programInstance) {
 		.option('--details <text>', '新子任务的实现细节')
 		.option('--dependencies <ids>', '新子任务的依赖ID列表，用逗号分隔')
 		.option('-s, --status <status>', '新子任务的状态', 'pending')
+		.option('--priority <priority>', '新子任务的优先级（high, medium, low）')
+		.option('--test-strategy <text>', '新子任务的测试策略')
+		.option('--spec-files <files>', '新子任务的规范文档文件路径，用逗号分隔')
+		.option('--logs <text>', '新子任务的日志信息')
+		.option('--inherit-parent', '继承父任务的优先级、测试策略和规范文档')
 		.option('--generate', '添加子任务后重新生成任务文件')
 		.option('--tag <tag>', '选择要处理的任务分组')
 		.action(async (options) => {
@@ -982,13 +1025,53 @@ function registerCommands(programInstance) {
 					// Create new subtask with provided data
 					console.log(chalk.blue(`Creating new subtask for parent task ${parentId}...`))
 
-					const newSubtaskData = {
+					// Prepare subtask data with inheritance from parent task
+					let subtaskData = {
 						title: options.title,
 						description: options.description || '',
 						details: options.details || '',
 						status: options.status || 'pending',
-						dependencies: dependencies
+						dependencies: dependencies,
+						priority: options.priority,
+						testStrategy: options.testStrategy,
+						spec_files: options.specFiles ? options.specFiles.split(',').map(f => {
+						const trimmed = f.trim();
+						return {
+							type: 'spec',
+							title: trimmed.split('/').pop() || 'Specification Document',
+							file: trimmed
+						};
+					}) : [],
+						logs: options.logs || ''
 					}
+
+					// Inherit from parent task if requested
+					if (options.inheritParent) {
+						console.log(chalk.blue('Inheriting fields from parent task...'))
+						try {
+							const data = readJSON(taskMaster.getTasksPath(), taskMaster.getProjectRoot(), tag)
+							const parentTask = data.tasks.find(t => t.id === parentId)
+							if (parentTask) {
+								// Inherit fields if not explicitly provided
+								if (!subtaskData.priority && parentTask.priority) {
+									subtaskData.priority = parentTask.priority
+									console.log(chalk.gray(`  Inherited priority: ${parentTask.priority}`))
+								}
+								if (!subtaskData.testStrategy && parentTask.testStrategy) {
+									subtaskData.testStrategy = parentTask.testStrategy
+									console.log(chalk.gray(`  Inherited test strategy: ${parentTask.testStrategy.substring(0, 50)}...`))
+								}
+								if (subtaskData.spec_files.length === 0 && parentTask.spec_files && parentTask.spec_files.length > 0) {
+									subtaskData.spec_files = [...parentTask.spec_files]
+									console.log(chalk.gray(`  Inherited spec files: ${parentTask.spec_files.join(', ')}`))
+								}
+							}
+						} catch (error) {
+							console.warn(chalk.yellow(`Warning: Could not inherit from parent task: ${error.message}`))
+						}
+					}
+
+					const newSubtaskData = subtaskData
 
 					const subtask = await addSubtask(
 						taskMaster.getTasksPath(),

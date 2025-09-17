@@ -110,7 +110,27 @@ async function addSubtask(
 				parentTask.subtasks.length > 0 ? Math.max(...parentTask.subtasks.map((st) => st.id)) : 0
 			const newSubtaskId = highestSubtaskId + 1
 
-			// Create the new subtask object
+			// Inherit fields from parent task if not explicitly provided
+			const inheritedData = {
+				priority: newSubtaskData.priority || parentTask.priority,
+				testStrategy: newSubtaskData.testStrategy || parentTask.testStrategy,
+				spec_files: newSubtaskData.spec_files && newSubtaskData.spec_files.length > 0
+					? newSubtaskData.spec_files
+					: parentTask.spec_files ? [...parentTask.spec_files] : []
+			}
+
+			// Log inheritance if fields were inherited
+			if (newSubtaskData.priority !== inheritedData.priority && inheritedData.priority) {
+				log('info', `Subtask inherited priority '${inheritedData.priority}' from parent task`)
+			}
+			if (newSubtaskData.testStrategy !== inheritedData.testStrategy && inheritedData.testStrategy) {
+				log('info', `Subtask inherited test strategy from parent task`)
+			}
+			if (inheritedData.spec_files.length > 0 && (!newSubtaskData.spec_files || newSubtaskData.spec_files.length === 0)) {
+				log('info', `Subtask inherited ${inheritedData.spec_files.length} spec file(s) from parent task`)
+			}
+
+			// Create the new subtask object with inheritance
 			newSubtask = {
 				id: newSubtaskId,
 				title: newSubtaskData.title,
@@ -118,9 +138,9 @@ async function addSubtask(
 				details: newSubtaskData.details,
 				status: newSubtaskData.status || 'pending',
 				dependencies: newSubtaskData.dependencies || [],
-				priority: newSubtaskData.priority,
-				testStrategy: newSubtaskData.testStrategy,
-				spec_files: newSubtaskData.spec_files || [],
+				priority: inheritedData.priority,
+				testStrategy: inheritedData.testStrategy,
+				spec_files: inheritedData.spec_files,
 				logs: newSubtaskData.logs || '',
 				parentTaskId: parentIdNum
 			}

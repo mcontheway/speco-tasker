@@ -113,15 +113,15 @@ export async function updateSubtaskByIdDirect(args, log, context = {}) {
 
 		try {
 			// Parse subtask ID to get parent and subtask IDs
-			const [parentIdStr, subtaskIdStr] = subtaskIdStr.split('.')
+			const [parentIdStr, actualSubtaskIdStr] = subtaskIdStr.split('.')
 			const parentId = parseInt(parentIdStr, 10)
-			const subtaskId = parseInt(subtaskIdStr, 10)
+			const actualSubtaskId = parseInt(actualSubtaskIdStr, 10)
 
 			// Execute core updateSubtaskManually function
 			const coreResult = await updateSubtaskManually(
 				tasksPath,
 				parentId,
-				subtaskId,
+				actualSubtaskId,
 				fieldsToUpdate,
 				{
 					projectRoot,
@@ -138,8 +138,8 @@ export async function updateSubtaskByIdDirect(args, log, context = {}) {
 					success: true,
 					data: {
 						message: successMessage,
-						subtaskId: subtaskIdStr,
-						parentId: parentId.toString(),
+						subtaskId: actualSubtaskId,
+						parentId: parentId,
 						tasksPath,
 						updated: true,
 						updatedFields: coreResult.updatedFields

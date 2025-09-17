@@ -11,9 +11,8 @@ import { createLogWrapper } from '../../tools/utils.js'
  * Direct function wrapper for adding a new task with error handling.
  *
  * @param {Object} args - Command arguments
- * @param {string} [args.prompt] - Description of the task to add (required if not using manual fields)
- * @param {string} [args.title] - Task title (for manual task creation)
- * @param {string} [args.description] - Task description (for manual task creation)
+ * @param {string} args.title - Task title (required)
+ * @param {string} args.description - Task description (required)
  * @param {string} [args.details] - Implementation details (for manual task creation)
  * @param {string} [args.testStrategy] - Test strategy (for manual task creation)
  * @param {string} [args.dependencies] - Comma-separated list of task IDs this task depends on
@@ -28,7 +27,7 @@ import { createLogWrapper } from '../../tools/utils.js'
  */
 export async function addTaskDirect(args, log, context = {}) {
 	// Destructure expected args
-	const { tasksJsonPath, prompt, dependencies, priority, projectRoot, tag } = args
+	const { tasksJsonPath, dependencies, priority, projectRoot, tag, spec_files, logs } = args
 	const { session } = context // Destructure session from context
 
 	// Enable silent mode to prevent console logs from interfering with JSON response
@@ -54,19 +53,19 @@ export async function addTaskDirect(args, log, context = {}) {
 		// Use provided path
 		const tasksPath = tasksJsonPath
 
-		// Check if this is manual task creation or AI-driven task creation
-		const isManualCreation = args.title && args.description
+		// Check if this is manual task creation with all required fields for spec-driven development
+		const isManualCreation = args.title && args.description && args.details && args.testStrategy && args.spec_files
 
-		// Check required parameters
-		if (!args.prompt && !isManualCreation) {
-			log.error('Missing required parameters: either prompt or title+description must be provided')
+		// Check required parameters for spec-driven development
+		if (!isManualCreation) {
+			log.error('Missing required parameters for spec-driven development')
 			disableSilentMode()
 			return {
 				success: false,
 				error: {
 					code: 'MISSING_PARAMETER',
 					message:
-						'Either the prompt parameter or both title and description parameters are required for adding a task'
+						'All required fields must be provided for spec-driven development: title, description, details, testStrategy, spec_files'
 				}
 			}
 		}
@@ -87,22 +86,39 @@ export async function addTaskDirect(args, log, context = {}) {
 		let tagInfo
 
 		if (isManualCreation) {
-			// Create manual task data object
+			// Process spec_files into array format for spec-driven development
+			let processedSpecFiles = []
+			if (typeof args.spec_files === 'string') {
+				processedSpecFiles = args.spec_files.split(',').map(f => {
+					const trimmed = f.trim()
+					return {
+						type: 'spec',
+						title: trimmed.split('/').pop() || 'Specification Document',
+						file: trimmed
+					}
+				})
+			} else if (Array.isArray(args.spec_files)) {
+				processedSpecFiles = args.spec_files
+			}
+
+			// Create manual task data object with all required fields for spec-driven development
 			manualTaskData = {
 				title: args.title,
 				description: args.description,
-				details: args.details || '',
-				testStrategy: args.testStrategy || ''
+				details: args.details,
+				testStrategy: args.testStrategy,
+				spec_files: processedSpecFiles,
+				logs: logs || ''
 			}
 
 			log.info(
-				`Adding new task manually with title: "${args.title}", dependencies: [${taskDependencies.join(', ')}], priority: ${priority}`
+				`Adding new task manually with title: "${args.title}", dependencies: [${taskDependencies.join(', ')}], priority: ${taskPriority}`
 			)
 
 			// Call the addTask function with manual task data
 			const result = await addTask(
 				tasksPath,
-				null, // prompt is null for manual creation
+				null, // prompt is no longer used
 				taskDependencies,
 				taskPriority,
 				{
@@ -114,34 +130,7 @@ export async function addTaskDirect(args, log, context = {}) {
 					tag
 				},
 				'json', // outputFormat
-				manualTaskData, // Pass the manual task data
-				false // research flag is false for manual creation
-			)
-			newTaskId = result.newTaskId
-			telemetryData = result.telemetryData
-			tagInfo = result.tagInfo
-		} else {
-			// AI-driven task creation
-			log.info(
-				`Adding new task with prompt: "${prompt}", dependencies: [${taskDependencies.join(', ')}], priority: ${taskPriority}`
-			)
-
-			// Call the addTask function
-			const result = await addTask(
-				tasksPath,
-				prompt, // Use the prompt for manual creation
-				taskDependencies,
-				taskPriority,
-				{
-					session,
-					mcpLog,
-					projectRoot,
-					commandName: 'add-task',
-					outputType: 'mcp',
-					tag
-				},
-				'json', // outputFormat
-				null // manualTaskData is null for manual creation
+				manualTaskData // Pass the manual task data
 			)
 			newTaskId = result.newTaskId
 			telemetryData = result.telemetryData

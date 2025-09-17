@@ -800,7 +800,7 @@ function displayHelp() {
 				chalk.white('task-master next') +
 				'\n' +
 				chalk.cyan('4. Add New Task: ') +
-				chalk.white('task-master add-task --prompt="Your task description"'),
+				chalk.white('task-master add-task --title="Task Title" --description="Task description"'),
 			{
 				padding: 1,
 				borderColor: 'yellow',

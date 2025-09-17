@@ -144,4 +144,155 @@ describe('addSubtask function', () => {
 			'Cannot create circular dependency: task 1 is already a subtask or dependent of task 2'
 		)
 	})
+
+	describe('Subtask inheritance functionality', () => {
+		test('should inherit priority, testStrategy, and spec_files from parent task', async () => {
+			// Arrange
+			const parentTask = {
+				id: 1,
+				title: 'Parent Task',
+				description: 'Parent description',
+				priority: 'high',
+				testStrategy: 'Unit tests and integration tests',
+				spec_files: [
+					{ type: 'spec', title: 'Requirements', file: 'docs/requirements.md' },
+					{ type: 'design', title: 'Architecture', file: 'docs/architecture.md' }
+				],
+				subtasks: []
+			}
+			const mockData = {
+				master: {
+					tasks: [parentTask],
+					metadata: { description: 'Master tasks' }
+				}
+			}
+			mockUtils.readJSON.mockReturnValue(mockData)
+
+			const newSubtaskData = {
+				title: 'New Subtask',
+				description: 'Subtask description',
+				details: 'Implementation details',
+				status: 'pending'
+				// Note: no priority, testStrategy, or spec_files provided - should inherit
+			}
+
+			const context = { projectRoot: '/fake/root', tag: 'master' }
+
+			// Act
+			const result = await addSubtask('tasks.json', '1', null, newSubtaskData, false, context)
+
+			// Assert
+			expect(result).toBeDefined()
+			expect(result.id).toBe(1) // First subtask
+			expect(result.priority).toBe('high') // Inherited from parent
+			expect(result.testStrategy).toBe('Unit tests and integration tests') // Inherited
+			expect(result.spec_files).toEqual([
+				{ type: 'spec', title: 'Requirements', file: 'docs/requirements.md' },
+				{ type: 'design', title: 'Architecture', file: 'docs/architecture.md' }
+			]) // Inherited
+
+			// Verify the subtask was added to parent
+			expect(mockUtils.writeJSON).toHaveBeenCalledWith(
+				'tasks.json',
+				expect.objectContaining({
+					master: expect.objectContaining({
+						tasks: expect.arrayContaining([
+							expect.objectContaining({
+								id: 1,
+								subtasks: expect.arrayContaining([
+									expect.objectContaining({
+										id: 1,
+										title: 'New Subtask',
+										priority: 'high',
+										testStrategy: 'Unit tests and integration tests'
+									})
+								])
+							})
+						])
+					})
+				}),
+				'/fake/root',
+				'master'
+			)
+		})
+
+		test('should override inherited fields when explicitly provided', async () => {
+			// Arrange
+			const parentTask = {
+				id: 2,
+				title: 'Parent Task',
+				description: 'Parent description',
+				priority: 'medium',
+				testStrategy: 'Basic unit tests',
+				spec_files: [{ type: 'spec', title: 'Default Spec', file: 'docs/default.md' }],
+				subtasks: []
+			}
+			const mockData = {
+				master: {
+					tasks: [parentTask],
+					metadata: { description: 'Master tasks' }
+				}
+			}
+			mockUtils.readJSON.mockReturnValue(mockData)
+
+			const newSubtaskData = {
+				title: 'Custom Subtask',
+				description: 'Custom description',
+				details: 'Custom implementation',
+				priority: 'high', // Override parent's medium priority
+				testStrategy: 'Comprehensive testing with mocks', // Override parent's strategy
+				spec_files: [{ type: 'spec', title: 'Custom Spec', file: 'docs/custom.md' }] // Override parent's spec files
+			}
+
+			const context = { projectRoot: '/fake/root', tag: 'master' }
+
+			// Act
+			const result = await addSubtask('tasks.json', '2', null, newSubtaskData, false, context)
+
+			// Assert
+			expect(result.priority).toBe('high') // Explicit override
+			expect(result.testStrategy).toBe('Comprehensive testing with mocks') // Explicit override
+			expect(result.spec_files).toEqual([
+				{ type: 'spec', title: 'Custom Spec', file: 'docs/custom.md' }
+			]) // Explicit override
+		})
+
+		test('should handle partial inheritance when some fields are provided', async () => {
+			// Arrange
+			const parentTask = {
+				id: 3,
+				title: 'Parent Task',
+				priority: 'low',
+				testStrategy: 'Minimal testing',
+				spec_files: [{ type: 'spec', title: 'Parent Spec', file: 'docs/parent.md' }],
+				subtasks: []
+			}
+			const mockData = {
+				master: {
+					tasks: [parentTask],
+					metadata: { description: 'Master tasks' }
+				}
+			}
+			mockUtils.readJSON.mockReturnValue(mockData)
+
+			const newSubtaskData = {
+				title: 'Partial Override Subtask',
+				description: 'Description provided',
+				details: 'Details provided',
+				priority: 'high' // Only override priority, inherit others
+			}
+
+			const context = { projectRoot: '/fake/root', tag: 'master' }
+
+			// Act
+			const result = await addSubtask('tasks.json', '3', null, newSubtaskData, false, context)
+
+			// Assert
+			expect(result.priority).toBe('high') // Explicitly provided
+			expect(result.testStrategy).toBe('Minimal testing') // Inherited
+			expect(result.spec_files).toEqual([
+				{ type: 'spec', title: 'Parent Spec', file: 'docs/parent.md' }
+			]) // Inherited
+		})
+	})
 })

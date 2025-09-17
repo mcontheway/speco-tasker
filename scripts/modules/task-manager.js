@@ -19,16 +19,12 @@ import taskExists from './task-manager/task-exists.js'
 import updateSingleTaskStatus from './task-manager/update-single-task-status.js'
 import updateSubtaskById from './task-manager/update-subtask-by-id.js'
 import { updateSubtaskManually } from './task-manager/update-subtask-manually.js'
-import updateTaskById from './task-manager/update-task-by-id.js'
 import { updateTaskManually } from './task-manager/update-task-manually.js'
-import updateTasks from './task-manager/update-tasks.js'
 import { findTaskById } from './utils.js'
 import { readComplexityReport } from './utils.js'
 
 // Export task manager functions
 export {
-	updateTasks,
-	updateTaskById,
 	updateSubtaskById,
 	updateTaskManually,
 	updateSubtaskManually,

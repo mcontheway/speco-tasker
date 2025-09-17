@@ -4,6 +4,14 @@ import chalk from 'chalk'
 import Table from 'cli-table3'
 import Fuse from 'fuse.js' // Import Fuse.js for advanced fuzzy search
 import { z } from 'zod'
+import {
+	parseSpecFiles,
+	validateSpecFiles,
+	parseDependencies,
+	parseLogs,
+	validateFieldUpdatePermission,
+	findProjectRoot
+} from '../utils.js'
 
 import {
 	DEFAULT_TASK_PRIORITY,
@@ -35,9 +43,11 @@ import ContextGatherer from '../utils/contextGatherer.js'
 import { formatValidationError, validateTaskData } from '../utils/task-validation.js'
 import generateTaskFiles from './generate-task-files.js'
 
-// Define Zod schema for the expected AI output object
-const AiTaskDataSchema = z.object({
-	title: z.string().describe('Clear, concise title for the task'),
+// Define Zod schema for manual task validation (strict validation for spec-driven development)
+const TaskDataSchema = z.object({
+	title: z.string()
+		.min(1, 'Title is required and cannot be empty')
+		.describe('Clear, concise title for the task'),
 	description: z
 		.string()
 		.min(1, 'Description is required and cannot be empty')
@@ -95,33 +105,26 @@ function getAllTasks(rawData) {
 }
 
 /**
- * Add a new task manually or with AI
+ * Add a new task manually (spec-driven development)
  * @param {string} tasksPath - Path to the tasks.json file
- * @param {string|null} [prompt=null] - Description of the task to add (optional, for backward compatibility)
  * @param {Array} dependencies - Task dependencies
  * @param {string} priority - Task priority
- * @param {function} reportProgress - Function to report progress to MCP server (optional)
- * @param {Object} mcpLog - MCP logger object (optional)
- * @param {Object} session - Session object from MCP server (optional)
- * @param {string} outputFormat - Output format (text or json)
- * @param {Object} customEnv - Custom environment variables (optional) - Note: manual params override deprecated
- * @param {Object} manualTaskData - Manual task data (optional, for direct task creation without AI)
- * @param {boolean} useResearch - Deprecated: Research functionality removed
  * @param {Object} context - Context object containing session and potentially projectRoot
  * @param {string} [context.projectRoot] - Project root path (for MCP/env fallback)
  * @param {string} [context.commandName] - The name of the command being executed (for telemetry)
  * @param {string} [context.outputType] - The output type ('cli' or 'mcp', for telemetry)
  * @param {string} [context.tag] - Tag for the task (optional)
+ * @param {string} outputFormat - Output format (text or json)
+ * @param {Object} manualTaskData - Manual task data (required for spec-driven development)
  * @returns {Promise<object>} An object containing newTaskId and telemetryData
  */
 async function addTask(
 	tasksPath,
-	prompt = null, // Made optional for manual mode
 	dependencies = [],
 	priority = null,
 	context = {},
 	outputFormat = 'text', // Default to text for CLI
-	manualTaskData = null
+	manualTaskData // Required for spec-driven development
 ) {
 	const { session, mcpLog, projectRoot, commandName, outputType, tag } = context
 	const isMCP = !!mcpLog
@@ -158,7 +161,7 @@ async function addTask(
 	}
 
 	logFn.info(
-		`Adding new task with prompt: "${prompt}", Priority: ${effectivePriority}, Dependencies: ${dependencies.join(', ') || 'None'}, ProjectRoot: ${projectRoot}`
+		`Adding new task manually, Priority: ${effectivePriority}, Dependencies: ${dependencies.join(', ') || 'None'}, ProjectRoot: ${projectRoot}`
 	)
 	if (tag) {
 		logFn.info(`Using tag context: ${tag}`)
@@ -328,23 +331,17 @@ async function addTask(
 			)
 		}
 
-		// Validate dependencies before proceeding
-		const invalidDeps = dependencies.filter((depId) => {
-			// Ensure depId is parsed as a number for comparison
-			const numDepId = parseInt(depId, 10)
-			return Number.isNaN(numDepId) || !allTasks.some((t) => t.id === numDepId)
-		})
+		// Parse and validate dependencies using utility function
+		const dependenciesResult = parseDependencies(dependencies, allTasks)
+		const numericDependencies = dependenciesResult.dependencies
 
-		if (invalidDeps.length > 0) {
-			report(
-				`The following dependencies do not exist or are invalid: ${invalidDeps.join(', ')}`,
-				'warn'
-			)
-			report('Removing invalid dependencies...', 'info')
-			dependencies = dependencies.filter((depId) => !invalidDeps.includes(depId))
+		// Log dependency parsing results
+		if (dependenciesResult.errors.length > 0) {
+			report(`Dependency parsing errors: ${dependenciesResult.errors.join(', ')}`, 'warn')
 		}
-		// Ensure dependencies are numbers
-		const numericDependencies = dependencies.map((dep) => parseInt(dep, 10))
+		if (dependenciesResult.warnings.length > 0) {
+			report(`Dependency warnings: ${dependenciesResult.warnings.join(', ')}`, 'warn')
+		}
 
 		// Build dependency graphs for explicitly specified dependencies
 		const dependencyGraphs = []
@@ -366,99 +363,91 @@ async function addTask(
 
 		let taskData
 
-		// Check if manual task data is provided
-		if (manualTaskData) {
-			report('Using manually provided task data', 'info')
-			taskData = manualTaskData
-			report('DEBUG: Taking MANUAL task data path.', 'debug')
+		// Check if manual task data is provided (required now)
+		if (!manualTaskData) {
+			throw new Error('Manual task data is required for task creation.')
+		}
 
-			// Basic validation for manual data
-			if (
-				!taskData.title ||
-				typeof taskData.title !== 'string' ||
-				!taskData.description ||
-				typeof taskData.description !== 'string'
-			) {
-				throw new Error('Manual task data must include at least a title and description.')
-			}
-		} else {
-			report('DEBUG: Taking manual task creation path.', 'debug')
-			// --- Manual Task Creation ---
-			report(`Creating task data manually with prompt:\n${prompt}`, 'info')
+		report('Using manually provided task data', 'info')
+		taskData = manualTaskData
+		report('DEBUG: Taking MANUAL task data path.', 'debug')
 
-			// --- Use the new ContextGatherer ---
-			const contextGatherer = new ContextGatherer(projectRoot, tag)
-			const gatherResult = await contextGatherer.gather({
-				semanticQuery: prompt,
-				dependencyTasks: numericDependencies,
-				format: 'research'
-			})
+		// Basic validation for manual data
+		if (
+			!taskData.title ||
+			typeof taskData.title !== 'string' ||
+			!taskData.description ||
+			typeof taskData.description !== 'string'
+		) {
+			throw new Error('Manual task data must include at least a title and description.')
+		}
 
-			const gatheredContext = gatherResult.context
-			const analysisData = gatherResult.analysisData
+		// Manual task creation without AI - use provided field values directly
+		if (outputFormat === 'text') {
+			loadingIndicator = startLoadingIndicator('Creating new task manually... \n')
+		}
 
-			// Display context analysis if not in silent mode
-			if (outputFormat === 'text' && analysisData) {
-				displayContextAnalysis(analysisData, prompt, gatheredContext.length)
-			}
+		try {
+			report('DEBUG: Creating task data manually...', 'debug')
 
-			// Add any manually provided details to the prompt for context
-			let contextFromArgs = ''
-			if (manualTaskData?.title) contextFromArgs += `\n- Suggested Title: "${manualTaskData.title}"`
-			if (manualTaskData?.description)
-				contextFromArgs += `\n- Suggested Description: "${manualTaskData.description}"`
-			if (manualTaskData?.details)
-				contextFromArgs += `\n- Additional Details Context: "${manualTaskData.details}"`
-			if (manualTaskData?.testStrategy)
-				contextFromArgs += `\n- Additional Test Strategy Context: "${manualTaskData.testStrategy}"`
+			// Parse and validate spec_files using utility function
+			let processedSpecFiles = []
+			if (manualTaskData.spec_files) {
+				const parsedSpecFiles = parseSpecFiles(manualTaskData.spec_files, projectRoot)
+				const validationResult = validateSpecFiles(parsedSpecFiles, projectRoot)
+				processedSpecFiles = parsedSpecFiles
 
-			// Manual task creation without AI - use provided field values directly
-			if (outputFormat === 'text') {
-				loadingIndicator = startLoadingIndicator('Creating new task manually... \n')
-			}
-
-			try {
-				report('DEBUG: Creating task data manually...', 'debug')
-
-				// Use provided field values directly (no AI processing)
-				taskData = {
-					title: manualTaskData?.title,
-					description: manualTaskData?.description,
-					details: manualTaskData?.details,
-					testStrategy: manualTaskData?.testStrategy,
-					dependencies: [], // Required array for dependencies
-					priority: manualTaskData?.priority || effectivePriority
+				// Log validation results
+				if (validationResult.errors.length > 0) {
+					report(`Spec files validation errors: ${validationResult.errors.join(', ')}`, 'warn')
 				}
-
-				// Validate the task data structure
-				const validationResult = AiTaskDataSchema.safeParse(taskData)
-				if (!validationResult.success) {
-					throw new Error(`Invalid task data structure: ${validationResult.error.message}`)
-				}
-
-				report('Successfully created task data manually.', 'success')
-
-				// Success! Show checkmark
-				if (loadingIndicator) {
-					succeedLoadingIndicator(loadingIndicator, 'Task created successfully')
-					loadingIndicator = null // Clear it
-				}
-			} catch (error) {
-				// Failure! Show X
-				if (loadingIndicator) {
-					failLoadingIndicator(loadingIndicator, 'Manual task creation failed')
-					loadingIndicator = null
-				}
-				report(`DEBUG: Manual task creation error: ${error.message}`, 'debug')
-				report(`Error creating task: ${error.message}`, 'error')
-				throw error // Re-throw error after logging
-			} finally {
-				// Clean up if somehow still running
-				if (loadingIndicator) {
-					stopLoadingIndicator(loadingIndicator)
+				if (validationResult.warnings.length > 0) {
+					report(`Spec files warnings: ${validationResult.warnings.join(', ')}`, 'warn')
 				}
 			}
-			// --- End Manual Task Creation ---
+
+			// Parse logs using utility function
+			const processedLogs = parseLogs(manualTaskData.logs || '')
+
+			// Use provided field values directly (no AI processing)
+			taskData = {
+				title: manualTaskData.title,
+				description: manualTaskData.description,
+				details: manualTaskData.details || '',
+				testStrategy: manualTaskData.testStrategy || '',
+				dependencies: [], // Required array for dependencies
+				priority: manualTaskData.priority || effectivePriority,
+				spec_files: processedSpecFiles,
+				logs: processedLogs
+			}
+
+			// Validate the task data structure using strict schema for spec-driven development
+			const validationResult = TaskDataSchema.safeParse(taskData)
+			if (!validationResult.success) {
+				throw new Error(`Invalid task data structure: ${validationResult.error.message}`)
+			}
+
+			report('Successfully created task data manually.', 'success')
+
+			// Success! Show checkmark
+			if (loadingIndicator) {
+				succeedLoadingIndicator(loadingIndicator, 'Task created successfully')
+				loadingIndicator = null // Clear it
+			}
+		} catch (error) {
+			// Failure! Show X
+			if (loadingIndicator) {
+				failLoadingIndicator(loadingIndicator, 'Manual task creation failed')
+				loadingIndicator = null
+			}
+			report(`DEBUG: Manual task creation error: ${error.message}`, 'debug')
+			report(`Error creating task: ${error.message}`, 'error')
+			throw error // Re-throw error after logging
+		} finally {
+			// Clean up if somehow still running
+			if (loadingIndicator) {
+				stopLoadingIndicator(loadingIndicator)
+			}
 		}
 
 		// Create the new task object
@@ -476,8 +465,8 @@ async function addTask(
 			subtasks: [] // Initialize with empty subtasks array
 		}
 
-		// Validate the new task data
-		const validationResult = validateTaskData(newTask, projectRoot, report, false)
+			// Validate the new task data (strict validation for spec-driven development)
+			const validationResult = validateTaskData(newTask, projectRoot, report, false)
 		if (!validationResult.isValid) {
 			const errorMessage = formatValidationError(validationResult, newTaskId, false)
 			report('error', errorMessage)

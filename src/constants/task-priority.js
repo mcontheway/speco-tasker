@@ -35,5 +35,5 @@ export function isValidTaskPriority(priority) {
 export function normalizeTaskPriority(priority) {
 	if (!priority) return null
 	const normalized = priority.toLowerCase()
-	return isValidTaskPriority(normalized) ? normalized : null
+	return TASK_PRIORITY_OPTIONS.includes(normalized) ? normalized : null
 }

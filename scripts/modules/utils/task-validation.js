@@ -95,7 +95,7 @@ export function validateLogs(task, report, isSubtask = false) {
 }
 
 /**
- * Validates required fields for tasks and subtasks
+ * Validates required fields for tasks and subtasks (strict validation)
  * @param {Object} task - Task object to validate
  * @param {boolean} isSubtask - Whether this is a subtask validation
  * @param {Function} report - Report function for logging
@@ -143,7 +143,7 @@ export function validateRequiredFields(task, report, isSubtask = false) {
 }
 
 /**
- * Comprehensive validation for task data
+ * Comprehensive validation for task data (strict validation for spec-driven development)
  * @param {Object} task - Task object to validate
  * @param {boolean} isSubtask - Whether this is a subtask validation
  * @param {string} projectRoot - Project root directory

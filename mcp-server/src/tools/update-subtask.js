@@ -28,9 +28,14 @@ export function registerUpdateSubtaskTool(server) {
 			title: z.string().optional().describe('更新子任务标题'),
 			description: z.string().optional().describe('更新子任务描述，支持追加模式'),
 			status: z.string().optional().describe('更新子任务状态，支持pending, in-progress, done'),
+			priority: z.string().optional().describe('更新子任务优先级，支持high, medium, low'),
 			details: z.string().optional().describe('更新子任务实现细节，支持追加模式'),
+			testStrategy: z.string().optional().describe('更新子任务测试策略，支持追加模式'),
+			dependencies: z.string().optional().describe('更新子任务依赖关系，依赖的子任务ID列表，用逗号分隔'),
+			spec_files: z.string().optional().describe('更新子任务规范文档文件路径列表，用逗号分隔'),
+			logs: z.string().optional().describe('更新子任务相关的日志信息，支持追加模式'),
 			// Update mode
-			append: z.boolean().optional().describe('追加到描述/细节字段而不是替换，默认为false'),
+			append: z.boolean().optional().describe('追加到描述/细节/测试策略/日志字段而不是替换，默认为false'),
 			file: z.string().optional().describe('任务文件的绝对路径'),
 			projectRoot: z.string().describe('项目目录，必须是绝对路径'),
 			tag: z.string().optional().describe('选择要处理的任务分组')
@@ -59,7 +64,12 @@ export function registerUpdateSubtaskTool(server) {
 						title: args.title,
 						description: args.description,
 						status: args.status,
-						details: args.details
+						priority: args.priority,
+						details: args.details,
+						testStrategy: args.testStrategy,
+						dependencies: args.dependencies,
+						spec_files: args.spec_files,
+						logs: args.logs
 					},
 					appendMode: args.append || false
 				}

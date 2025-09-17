@@ -89,6 +89,319 @@ function getTagAwareFilePath(basePath, tag, projectRoot = '.') {
 	return path.join(projectRoot, relativePath)
 }
 
+// --- Parameter Processing Utilities ---
+
+/**
+ * 解析和验证 spec_files 参数
+ * 支持多种输入格式：
+ * 1. JSON 字符串: '[{"type":"spec","title":"API Spec","file":"docs/api.yaml"}]'
+ * 2. 简化语法: "docs/api.yaml,docs/db-schema.md" 或 "docs/api.yaml"
+ * 3. 对象数组（内部使用）
+ * @param {string|Array} input - 输入的 spec_files 参数
+ * @param {string} [projectRoot='.'] - 项目根目录
+ * @returns {Array} 标准化的 spec_files 数组
+ */
+function parseSpecFiles(input, projectRoot = '.') {
+	try {
+		if (!input) {
+			return []
+		}
+
+		// 如果已经是数组，直接返回（内部使用）
+		if (Array.isArray(input)) {
+			return input
+		}
+
+		// 如果是字符串，尝试解析
+		if (typeof input === 'string') {
+			// 尝试解析为 JSON
+			try {
+				const parsed = JSON.parse(input)
+				if (Array.isArray(parsed)) {
+					// 验证每个元素的结构
+					return parsed.map(item => {
+						if (typeof item === 'object' && item.file) {
+							return {
+								type: item.type || 'spec',
+								title: item.title || path.basename(item.file),
+								file: item.file
+							}
+						} else if (typeof item === 'string') {
+							// 处理字符串数组格式
+							return {
+								type: 'spec',
+								title: path.basename(item),
+								file: item
+							}
+						}
+						throw new Error('Invalid spec file format')
+					})
+				}
+			} catch (jsonError) {
+				// JSON 解析失败，尝试简化语法
+			}
+
+			// 处理简化语法：逗号分隔的文件路径
+			const files = input.split(',').map(f => f.trim()).filter(f => f.length > 0)
+			return files.map(file => ({
+				type: 'spec',
+				title: path.basename(file),
+				file: file
+			}))
+		}
+
+		return []
+	} catch (error) {
+		log('warn', `Error parsing spec_files: ${error.message}`)
+		return []
+	}
+}
+
+/**
+ * 验证 spec_files 的文件存在性
+ * @param {Array} specFiles - 标准化的 spec_files 数组
+ * @param {string} [projectRoot='.'] - 项目根目录
+ * @returns {Object} 验证结果 {isValid: boolean, errors: Array, warnings: Array}
+ */
+function validateSpecFiles(specFiles, projectRoot = '.') {
+	const errors = []
+	const warnings = []
+
+	if (!Array.isArray(specFiles)) {
+		errors.push('spec_files must be an array')
+		return { isValid: false, errors, warnings }
+	}
+
+	specFiles.forEach((spec, index) => {
+		if (!spec || typeof spec !== 'object') {
+			errors.push(`spec_files[${index}]: must be an object`)
+			return
+		}
+
+		if (!spec.file || typeof spec.file !== 'string') {
+			errors.push(`spec_files[${index}]: file path is required`)
+			return
+		}
+
+		// 检查文件是否存在
+		const fullPath = path.isAbsolute(spec.file) ? spec.file : path.join(projectRoot, spec.file)
+		if (!fs.existsSync(fullPath)) {
+			warnings.push(`spec_files[${index}]: file '${spec.file}' does not exist`)
+		}
+
+		// 验证其他字段
+		if (!spec.type || typeof spec.type !== 'string') {
+			spec.type = 'spec' // 设置默认值
+		}
+
+		if (!spec.title || typeof spec.title !== 'string') {
+			spec.title = path.basename(spec.file) // 设置默认值
+		}
+	})
+
+	return {
+		isValid: errors.length === 0,
+		errors,
+		warnings
+	}
+}
+
+/**
+ * 解析和验证 dependencies 参数
+ * 支持多种输入格式：
+ * 1. 逗号分隔的数字字符串: "1,2,3"
+ * 2. 数组格式: [1,2,3] 或 ["1","2","3"]
+ * 3. 混合格式: ["1", 2, "3.1"]
+ * @param {string|Array} input - 输入的 dependencies 参数
+ * @param {Array} [allTasks=[]] - 所有可用任务列表，用于验证
+ * @returns {Object} 解析结果 {dependencies: Array, errors: Array, warnings: Array}
+ */
+function parseDependencies(input, allTasks = []) {
+	const errors = []
+	const warnings = []
+
+	try {
+		let dependencies = []
+
+		if (!input) {
+			return { dependencies: [], errors: [], warnings: [] }
+		}
+
+		// 如果已经是数组，直接使用
+		if (Array.isArray(input)) {
+			dependencies = input
+		} else if (typeof input === 'string') {
+			// 处理逗号分隔的字符串
+			dependencies = input.split(',').map(id => id.trim()).filter(id => id.length > 0)
+		} else {
+			errors.push('dependencies must be a string or array')
+			return { dependencies: [], errors, warnings }
+		}
+
+		// 转换为数字或保持字符串格式（支持子任务ID）
+		const parsedDeps = dependencies.map(dep => {
+			const strDep = String(dep).trim()
+			// 检查是否包含点号（子任务格式）
+			if (strDep.includes('.')) {
+				return strDep // 保持字符串格式
+			}
+			// 转换为数字
+			const numDep = parseInt(strDep, 10)
+			if (isNaN(numDep)) {
+				errors.push(`Invalid dependency ID: ${dep}`)
+				return null
+			}
+			return numDep
+		}).filter(dep => dep !== null)
+
+		// 验证依赖任务存在性
+		if (allTasks.length > 0) {
+			parsedDeps.forEach(dep => {
+				const depExists = allTasks.some(task => {
+					if (typeof dep === 'string' && dep.includes('.')) {
+						// 子任务格式：检查 parentId.subtaskId
+						const [parentId, subtaskId] = dep.split('.').map(id => parseInt(id, 10))
+						const parentTask = allTasks.find(t => t.id === parentId)
+						return parentTask && parentTask.subtasks &&
+							   parentTask.subtasks.some(st => st.id === subtaskId)
+					} else {
+						// 普通任务ID
+						return task.id === dep
+					}
+				})
+
+				if (!depExists) {
+					warnings.push(`Dependency task/subtask '${dep}' does not exist`)
+				}
+			})
+		}
+
+		return {
+			dependencies: parsedDeps,
+			errors,
+			warnings
+		}
+	} catch (error) {
+		errors.push(`Error parsing dependencies: ${error.message}`)
+		return { dependencies: [], errors, warnings }
+	}
+}
+
+/**
+ * 解析和验证 logs 参数
+ * 支持追加模式和时间戳
+ * @param {string} input - 输入的日志内容
+ * @param {boolean} [appendMode=false] - 是否为追加模式
+ * @param {string} [existingLogs=''] - 已存在的日志内容
+ * @returns {string} 处理后的日志内容
+ */
+function parseLogs(input, appendMode = false, existingLogs = '') {
+	try {
+		if (!input || typeof input !== 'string') {
+			return existingLogs || ''
+		}
+
+		const timestamp = new Date().toISOString()
+		const logEntry = `[${timestamp}] ${input.trim()}`
+
+		if (appendMode && existingLogs) {
+			return `${existingLogs}\n\n${logEntry}`
+		}
+
+		return logEntry
+	} catch (error) {
+		log('warn', `Error parsing logs: ${error.message}`)
+		return existingLogs || ''
+	}
+}
+
+/**
+ * 验证任务字段更新的权限
+ * 防止修改不允许的字段
+ * @param {string} fieldName - 要更新的字段名
+ * @param {any} newValue - 新的字段值
+ * @param {Object} currentTask - 当前任务对象
+ * @returns {Object} 验证结果 {isAllowed: boolean, reason?: string}
+ */
+function validateFieldUpdatePermission(fieldName, newValue, currentTask) {
+	const allowedFields = [
+		'title', 'description', 'details', 'status', 'priority',
+		'testStrategy', 'dependencies', 'spec_files', 'logs'
+	]
+
+	const restrictedFields = ['id', 'subtasks', 'created', 'updated']
+
+	// 检查字段是否被允许修改
+	if (!allowedFields.includes(fieldName)) {
+		if (restrictedFields.includes(fieldName)) {
+			return {
+				isAllowed: false,
+				reason: `Field '${fieldName}' is read-only and cannot be modified`
+			}
+		}
+		return {
+			isAllowed: false,
+			reason: `Field '${fieldName}' is not supported for updates`
+		}
+	}
+
+	// 特殊验证逻辑
+	switch (fieldName) {
+		case 'status':
+			const validStatuses = ['pending', 'in-progress', 'done', 'cancelled', 'deferred']
+			if (!validStatuses.includes(newValue)) {
+				return {
+					isAllowed: false,
+					reason: `Invalid status '${newValue}'. Valid statuses: ${validStatuses.join(', ')}`
+				}
+			}
+			break
+
+		case 'priority':
+			const validPriorities = ['high', 'medium', 'low']
+			if (!validPriorities.includes(newValue)) {
+				return {
+					isAllowed: false,
+					reason: `Invalid priority '${newValue}'. Valid priorities: ${validPriorities.join(', ')}`
+				}
+			}
+			break
+
+		case 'dependencies':
+			if (!Array.isArray(newValue)) {
+				return {
+					isAllowed: false,
+					reason: 'Dependencies must be an array of task IDs'
+				}
+			}
+			break
+
+		case 'spec_files':
+			if (!Array.isArray(newValue)) {
+				return {
+					isAllowed: false,
+					reason: 'spec_files must be an array of specification objects'
+				}
+			}
+			break
+
+		case 'title':
+		case 'description':
+		case 'details':
+		case 'testStrategy':
+		case 'logs':
+			if (typeof newValue !== 'string') {
+				return {
+					isAllowed: false,
+					reason: `Field '${fieldName}' must be a string`
+				}
+			}
+			break
+	}
+
+	return { isAllowed: true }
+}
+
 // --- Project Root Finding Utility ---
 /**
  * Recursively searches upwards for project root starting from a given directory.
@@ -1526,5 +1839,11 @@ export {
 	flattenTasksWithSubtasks,
 	ensureTagMetadata,
 	stripAnsiCodes,
-	normalizeTaskIds
+	normalizeTaskIds,
+	// Parameter processing utilities
+	parseSpecFiles,
+	validateSpecFiles,
+	parseDependencies,
+	parseLogs,
+	validateFieldUpdatePermission
 }

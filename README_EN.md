@@ -114,8 +114,8 @@ task-master list
 # View next task
 task-master next
 
-# Create new task
-task-master add-task --prompt "Feature description"
+# Create new task (Spec-driven development)
+task-master add-task --title "User Authentication" --description "Implement JWT user authentication" --details "Use JWT library for token generation and validation" --test-strategy "Unit tests for token generation, integration tests for auth flow" --spec-files "docs/auth-spec.md"
 
 # Update task status
 task-master set-status --id=1 --status=done

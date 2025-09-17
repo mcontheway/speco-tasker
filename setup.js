@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * TaskMaster No-AI 简单安装脚本
+ * Speco Tasker 简单安装脚本
  * 只做最必要的事情：安装依赖，确保配置正确
  */
 
@@ -15,7 +15,7 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
 async function main() {
-	console.log('🚀 TaskMaster No-AI 安装程序\n')
+	console.log('🚀 Speco Tasker 安装程序\n')
 
 	try {
 		// 1. 检查并安装依赖

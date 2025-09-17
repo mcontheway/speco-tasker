@@ -91,6 +91,7 @@ dev-debug.log
 # VS Code extension test files
 .vscode-test/
 apps/extension/.vscode-test/
+**/*.code-workspace
 
 # apps/extension
 apps/extension/vsix-build/

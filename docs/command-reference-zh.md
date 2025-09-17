@@ -71,37 +71,43 @@ task-master show 44,44.1,55,55.2
 ## 更新任务
 
 ```bash
-# 从特定 ID 开始更新任务并提供上下文
-task-master update --from=<id> --prompt="<prompt>"
+# 从特定 ID 开始更新多个任务
+task-master update --from=<id> --description="更新所有相关任务的描述"
 
-# 使用研究角色更新任务
-task-master update --from=<id> --prompt="<prompt>" --research
+# 更新多个任务的测试策略（追加模式）
+task-master update --from=<id> --test-strategy="添加性能测试要求" --append
 ```
 
 ## 更新特定任务
 
 ```bash
-# 通过 ID 更新单个任务并提供新信息
-task-master update-task --id=<id> --prompt="<prompt>"
+# 通过 ID 更新单个任务的多个字段
+task-master update-task --id=<id> --status="in-progress" --details="开始实现API端点"
 
-# 使用研究角色进行更新
-task-master update-task --id=<id> --prompt="<prompt>" --research
+# 更新任务的测试策略和规范文档
+task-master update-task --id=<id> --test-strategy="添加单元测试和集成测试" --spec-files="docs/api-spec.md,docs/test-plan.md"
+
+# 追加模式更新任务详情
+task-master update-task --id=<id> --details="添加错误处理逻辑" --append
 ```
 
 ## 更新子任务
 
 ```bash
-# 向特定子任务追加额外信息
-task-master update-subtask --id=<parentId.subtaskId> --prompt="<prompt>"
+# 更新子任务的状态和详情
+task-master update-subtask --id=<parentId.subtaskId> --status="in-progress" --details="开始实现认证逻辑"
 
 # 示例：为任务 5 的子任务 2 添加 API 速率限制详情
-task-master update-subtask --id=5.2 --prompt="添加每分钟 100 个请求的速率限制"
+task-master update-subtask --id=5.2 --details="添加每分钟 100 个请求的速率限制"
 
-# 使用研究角色进行更新
-task-master update-subtask --id=<parentId.subtaskId> --prompt="<prompt>" --research
+# 追加模式更新子任务（保留历史记录）
+task-master update-subtask --id=5.2 --details="更新：使用 Redis 缓存实现速率限制" --append
+
+# 更新子任务的依赖关系和日志
+task-master update-subtask --id=5.2 --dependencies="5.1,5.3" --logs="2024-01-15: 开始实现速率限制功能"
 ```
 
-与 `update-task` 命令替换任务信息不同，`update-subtask` 命令会_追加_新信息到现有子任务详情中，并标记时间戳。这对于迭代增强子任务很有用，同时保留原始内容。
+与 `update-task` 命令替换任务信息不同，`update-subtask` 命令支持 `--append` 模式，会_追加_新信息到现有子任务详情中，并标记时间戳。这对于迭代增强子任务很有用，同时保留原始内容。
 
 ## 生成任务文件
 
@@ -125,30 +131,23 @@ task-master set-status --id=1.1,1.2 --status=<status>
 
 标记任务为"done"时，所有子任务将自动标记为"done"。
 
-## 展开任务
+## 添加子任务
 
 ```bash
-# 使用子任务展开特定任务
-task-master expand --id=<id> --num=<number>
+# 为现有任务添加新的子任务（继承父任务的规范字段）
+task-master add-subtask --parent=<id> --title="子任务标题" --description="子任务描述" --inherit-parent
 
-# 展开任务以获取动态数量的子任务（忽略复杂度报告）
-task-master expand --id=<id> --num=0
+# 手动指定所有字段创建子任务
+task-master add-subtask --parent=<id> --title="API 实现" --description="实现 REST API 端点" --details="使用 Express.js 实现 CRUD 操作" --test-strategy="单元测试每个端点，集成测试完整流程" --spec-files="docs/api-spec.md"
 
-# 提供额外上下文进行展开
-task-master expand --id=<id> --prompt="<context>"
+# 将现有任务转换为子任务
+task-master add-subtask --parent=<id> --task-id=<existing-task-id>
 
-# 展开所有待处理任务
-task-master expand --all
-
-# 强制重新生成已包含子任务的任务
-task-master expand --all --force
-
-# 为特定任务进行研究支持的子任务生成
-task-master expand --id=<id> --research
-
-# 为所有任务进行研究支持的生成
-task-master expand --all --research
+# 创建具有依赖关系的子任务
+task-master add-subtask --parent=<id> --title="数据库迁移" --description="创建用户表" --dependencies="1.1,1.2"
 ```
+
+子任务会自动继承父任务的 `priority`、`testStrategy` 和 `spec_files` 字段（除非使用 `--inherit-parent=false` 明确禁用）。这确保了子任务符合父任务的规范要求。
 
 ## 清除子任务
 
@@ -240,17 +239,31 @@ task-master move --from=10,11,12 --to=16,17,18
 ## 添加新任务
 
 ```bash
-# 使用 AI（主角色）添加新任务
-task-master add-task --prompt="新任务的描述"
-
-# 使用 AI（研究角色）添加新任务
-task-master add-task --prompt="新任务的描述" --research
+# 使用规范驱动开发方式添加新任务（所有字段必需）
+task-master add-task \
+  --title="用户认证" \
+  --description="实现JWT用户认证功能" \
+  --details="使用JWT库实现token生成和验证，包含登录、注册、token刷新功能" \
+  --test-strategy="单元测试token生成，集成测试认证流程，端到端测试用户登录" \
+  --spec-files="docs/auth-spec.md,docs/api-spec.yaml"
 
 # 添加具有依赖关系的任务
-task-master add-task --prompt="描述" --dependencies=1,2,3
+task-master add-task \
+  --title="数据库迁移" \
+  --description="创建用户表结构" \
+  --details="使用SQL创建users表，包含id, email, password, created_at字段" \
+  --test-strategy="测试表创建、数据插入、约束验证" \
+  --spec-files="docs/database-schema.md" \
+  --dependencies=1,2,3
 
 # 添加具有优先级设置的任务
-task-master add-task --prompt="描述" --priority=high
+task-master add-task \
+  --title="安全审计" \
+  --description="进行代码安全审计" \
+  --details="使用安全扫描工具检查代码漏洞，审查权限控制" \
+  --test-strategy="验证安全补丁，测试权限控制逻辑" \
+  --spec-files="docs/security-requirements.md" \
+  --priority=high
 ```
 
 ## 标签管理

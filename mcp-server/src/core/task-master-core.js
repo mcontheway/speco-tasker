@@ -29,7 +29,6 @@ import { setTaskStatusDirect } from './direct-functions/set-task-status.js'
 import { showTaskDirect } from './direct-functions/show-task.js'
 import { updateSubtaskByIdDirect } from './direct-functions/update-subtask-by-id.js'
 import { updateTaskByIdDirect } from './direct-functions/update-task-by-id.js'
-import { updateTasksDirect } from './direct-functions/update-tasks.js'
 import { useTagDirect } from './direct-functions/use-tag.js'
 import { validateDependenciesDirect } from './direct-functions/validate-dependencies.js'
 
@@ -40,7 +39,6 @@ export { findTasksPath } from './utils/path-utils.js'
 export const directFunctions = new Map([
 	['listTasksDirect', listTasksDirect],
 	['getCacheStatsDirect', getCacheStatsDirect],
-	['updateTasksDirect', updateTasksDirect],
 	['updateTaskByIdDirect', updateTaskByIdDirect],
 	['updateSubtaskByIdDirect', updateSubtaskByIdDirect],
 	['generateTaskFilesDirect', generateTaskFilesDirect],
@@ -71,7 +69,6 @@ export const directFunctions = new Map([
 export {
 	listTasksDirect,
 	getCacheStatsDirect,
-	updateTasksDirect,
 	updateTaskByIdDirect,
 	updateSubtaskByIdDirect,
 	generateTaskFilesDirect,

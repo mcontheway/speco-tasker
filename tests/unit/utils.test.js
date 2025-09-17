@@ -688,3 +688,222 @@ test('getTagAwareFilePath should use slugified tags in file paths', () => {
 		'/test/project/.taskmaster/reports/complexity-report_feature-branch-test.json'
 	)
 })
+
+describe('Parameter processing functions', () => {
+	const utils = jest.requireActual('../../../scripts/modules/utils.js')
+
+	describe('parseSpecFiles', () => {
+		test('should parse comma-separated spec files string', () => {
+			const input = 'docs/api.md,docs/design.pdf'
+			const projectRoot = '/test/project'
+
+			const result = utils.parseSpecFiles(input, projectRoot)
+
+			expect(result).toEqual([
+				{
+					type: 'spec',
+					title: 'Specification Document',
+					file: 'docs/api.md'
+				},
+				{
+					type: 'spec',
+					title: 'Specification Document',
+					file: 'docs/design.pdf'
+				}
+			])
+		})
+
+		test('should handle single spec file', () => {
+			const input = 'docs/requirements.md'
+			const projectRoot = '/test/project'
+
+			const result = utils.parseSpecFiles(input, projectRoot)
+
+			expect(result).toEqual([
+				{
+					type: 'spec',
+					title: 'Specification Document',
+					file: 'docs/requirements.md'
+				}
+			])
+		})
+
+		test('should handle empty input', () => {
+			const input = ''
+			const projectRoot = '/test/project'
+
+			const result = utils.parseSpecFiles(input, projectRoot)
+
+			expect(result).toEqual([])
+		})
+
+		test('should trim whitespace from file paths', () => {
+			const input = ' docs/api.md , docs/design.pdf '
+			const projectRoot = '/test/project'
+
+			const result = utils.parseSpecFiles(input, projectRoot)
+
+			expect(result).toEqual([
+				{
+					type: 'spec',
+					title: 'Specification Document',
+					file: 'docs/api.md'
+				},
+				{
+					type: 'spec',
+					title: 'Specification Document',
+					file: 'docs/design.pdf'
+				}
+			])
+		})
+	})
+
+	describe('parseDependencies', () => {
+		test('should parse comma-separated dependency IDs', () => {
+			const input = '1,2,3'
+			const allTasks = [
+				{ id: 1, title: 'Task 1' },
+				{ id: 2, title: 'Task 2' },
+				{ id: 3, title: 'Task 3' },
+				{ id: 4, title: 'Task 4' }
+			]
+
+			const result = utils.parseDependencies(input, allTasks)
+
+			expect(result).toEqual({ dependencies: [1, 2, 3], errors: [], warnings: [] })
+		})
+
+		test('should handle single dependency', () => {
+			const input = '5'
+			const allTasks = [
+				{ id: 5, title: 'Task 5' }
+			]
+
+			const result = utils.parseDependencies(input, allTasks)
+
+			expect(result).toEqual({ dependencies: [5], errors: [], warnings: [] })
+		})
+
+		test('should filter out invalid dependencies', () => {
+			const input = '1,invalid,3,999'
+			const allTasks = [
+				{ id: 1, title: 'Task 1' },
+				{ id: 3, title: 'Task 3' }
+			]
+
+			const result = utils.parseDependencies(input, allTasks)
+
+			expect(result.dependencies).toEqual([1, 3]) // Only valid existing tasks
+		})
+
+		test('should handle empty input', () => {
+			const input = ''
+			const allTasks = [{ id: 1, title: 'Task 1' }]
+
+			const result = utils.parseDependencies(input, allTasks)
+
+			expect(result).toEqual({ dependencies: [], errors: [], warnings: [] })
+		})
+
+		test('should trim whitespace from dependency IDs', () => {
+			const input = ' 1 , 2 , 3 '
+			const allTasks = [
+				{ id: 1, title: 'Task 1' },
+				{ id: 2, title: 'Task 2' },
+				{ id: 3, title: 'Task 3' }
+			]
+
+			const result = utils.parseDependencies(input, allTasks)
+
+			expect(result.dependencies).toEqual([1, 2, 3])
+		})
+	})
+
+	describe('parseLogs', () => {
+		test('should parse log string with timestamp', () => {
+			const input = '2024-01-15 10:30: Started implementation'
+
+			const result = utils.parseLogs(input)
+
+			expect(result).toBe('2024-01-15 10:30: Started implementation')
+		})
+
+		test('should handle multi-line logs', () => {
+			const input = '2024-01-15 10:30: Started implementation\n2024-01-15 11:00: Completed first phase'
+
+			const result = utils.parseLogs(input)
+
+			expect(result).toBe('2024-01-15 10:30: Started implementation\n2024-01-15 11:00: Completed first phase')
+		})
+
+		test('should handle empty logs', () => {
+			const input = ''
+
+			const result = utils.parseLogs(input)
+
+			expect(result).toBe('')
+		})
+	})
+
+	describe('validateFieldUpdatePermission', () => {
+		test('should allow updating allowed fields', () => {
+			const allowedFields = ['title', 'description', 'details', 'status', 'priority', 'testStrategy', 'dependencies', 'spec_files', 'logs']
+
+			allowedFields.forEach(field => {
+				const result = utils.validateFieldUpdatePermission(field, 'new value', {})
+				expect(result.isAllowed).toBe(true)
+			})
+		})
+
+		test('should reject updating restricted fields', () => {
+			const restrictedFields = ['id', 'subtasks', 'created', 'updated']
+
+			restrictedFields.forEach(field => {
+				const result = utils.validateFieldUpdatePermission(field, 'new value', {})
+				expect(result.isAllowed).toBe(false)
+				expect(result.reason).toContain('read-only')
+			})
+		})
+
+		test('should reject unknown fields', () => {
+			const result = utils.validateFieldUpdatePermission('unknownField', 'value', {})
+			expect(result.isAllowed).toBe(false)
+			expect(result.reason).toContain('not supported')
+		})
+
+		test('should validate status values', () => {
+			const validStatuses = ['pending', 'in-progress', 'done', 'cancelled', 'deferred']
+
+			validStatuses.forEach(status => {
+				const result = utils.validateFieldUpdatePermission('status', status, {})
+				expect(result.isAllowed).toBe(true)
+			})
+
+			const result = utils.validateFieldUpdatePermission('status', 'invalid-status', {})
+			expect(result.isAllowed).toBe(false)
+			expect(result.reason).toContain('Invalid status')
+		})
+
+		test('should validate priority values', () => {
+			const validPriorities = ['high', 'medium', 'low']
+
+			validPriorities.forEach(priority => {
+				const result = utils.validateFieldUpdatePermission('priority', priority, {})
+				expect(result.isAllowed).toBe(true)
+			})
+
+			const result = utils.validateFieldUpdatePermission('priority', 'invalid-priority', {})
+			expect(result.isAllowed).toBe(false)
+			expect(result.reason).toContain('Invalid priority')
+		})
+
+		test('should validate dependencies as array', () => {
+			const result = utils.validateFieldUpdatePermission('dependencies', [1, 2, 3], {})
+			expect(result.isAllowed).toBe(true)
+
+			const invalidResult = utils.validateFieldUpdatePermission('dependencies', 'not-an-array', {})
+			expect(invalidResult.isAllowed).toBe(false)
+			expect(invalidResult.reason).toContain('must be an array')
+		})
+	})
+})

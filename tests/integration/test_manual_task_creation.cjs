@@ -13,6 +13,8 @@ describe('Manual Task Creation Workflow Integration Test', () => {
       getTasks: jest.fn(),
       setTaskStatus: jest.fn(),
       addSubtask: jest.fn(),
+      updateTask: jest.fn(),
+      updateSubtask: jest.fn(),
       findProjectRoot: jest.fn().mockReturnValue('/mock/project')
     }
 
@@ -399,6 +401,320 @@ describe('Manual Task Creation Workflow Integration Test', () => {
 
       expect(result.success).toBe(false)
       expect(result.error).toBe('File system error')
+    })
+  })
+
+  describe('Advanced manual task creation features', () => {
+    it('should create task with all manual fields including spec_files and dependencies', () => {
+      // Setup mock for complete task creation
+      mockTaskManager.addTask.mockReturnValueOnce({
+        success: true,
+        data: {
+          id: 2,
+          title: 'Complete Task',
+          description: 'A fully configured task',
+          details: 'Implementation details',
+          testStrategy: 'Unit tests and integration tests',
+          spec_files: [
+            { type: 'spec', title: 'API Spec', file: 'docs/api.yaml' },
+            { type: 'design', title: 'UI Design', file: 'docs/ui.pdf' }
+          ],
+          dependencies: [1],
+          priority: 'high',
+          status: 'pending'
+        },
+        message: 'Complete task created successfully'
+      })
+
+      const createResult = mockTaskManager.addTask({
+        title: 'Complete Task',
+        description: 'A fully configured task',
+        details: 'Implementation details',
+        testStrategy: 'Unit tests and integration tests',
+        spec_files: 'docs/api.yaml,docs/ui.pdf',
+        dependencies: [1],
+        priority: 'high'
+      })
+
+      expect(createResult.success).toBe(true)
+      expect(createResult.data.id).toBe(2)
+      expect(createResult.data.spec_files).toHaveLength(2)
+      expect(createResult.data.dependencies).toEqual([1])
+      expect(createResult.data.testStrategy).toBe('Unit tests and integration tests')
+    })
+
+    it('should handle subtask creation with inheritance', () => {
+      // Setup parent task mock
+      mockTaskManager.getTasks.mockReturnValueOnce({
+        success: true,
+        data: [{
+          id: 1,
+          title: 'Parent Task',
+          priority: 'high',
+          testStrategy: 'Comprehensive testing',
+          spec_files: [{ type: 'spec', title: 'Parent Spec', file: 'docs/parent.md' }],
+          subtasks: []
+        }],
+        message: 'Parent task retrieved'
+      })
+
+      // Setup subtask creation mock
+      mockTaskManager.addSubtask.mockReturnValueOnce({
+        success: true,
+        data: {
+          id: 1,
+          title: 'Inherited Subtask',
+          description: 'Subtask with inherited properties',
+          priority: 'high', // Inherited
+          testStrategy: 'Comprehensive testing', // Inherited
+          spec_files: [{ type: 'spec', title: 'Parent Spec', file: 'docs/parent.md' }], // Inherited
+          status: 'pending'
+        },
+        message: 'Subtask created with inheritance'
+      })
+
+      // First get parent task
+      const parentResult = mockTaskManager.getTasks({})
+      expect(parentResult.success).toBe(true)
+
+      // Create subtask with inheritance
+      const subtaskResult = mockTaskManager.addSubtask({
+        parentId: 1,
+        title: 'Inherited Subtask',
+        description: 'Subtask with inherited properties',
+        inheritParent: true
+      })
+
+      expect(subtaskResult.success).toBe(true)
+      expect(subtaskResult.data.priority).toBe('high')
+      expect(subtaskResult.data.testStrategy).toBe('Comprehensive testing')
+      expect(subtaskResult.data.spec_files).toHaveLength(1)
+    })
+
+    it('should handle subtask creation with explicit override', () => {
+      // Setup subtask creation with override
+      mockTaskManager.addSubtask.mockReturnValueOnce({
+        success: true,
+        data: {
+          id: 2,
+          title: 'Override Subtask',
+          description: 'Subtask with explicit properties',
+          priority: 'low', // Override from parent's high
+          testStrategy: 'Minimal testing', // Override
+          spec_files: [{ type: 'spec', title: 'Custom Spec', file: 'docs/custom.md' }], // Override
+          status: 'in-progress'
+        },
+        message: 'Subtask created with overrides'
+      })
+
+      const subtaskResult = mockTaskManager.addSubtask({
+        parentId: 1,
+        title: 'Override Subtask',
+        description: 'Subtask with explicit properties',
+        priority: 'low',
+        testStrategy: 'Minimal testing',
+        spec_files: 'docs/custom.md',
+        status: 'in-progress'
+      })
+
+      expect(subtaskResult.success).toBe(true)
+      expect(subtaskResult.data.priority).toBe('low')
+      expect(subtaskResult.data.testStrategy).toBe('Minimal testing')
+      expect(subtaskResult.data.spec_files[0].file).toBe('docs/custom.md')
+    })
+
+    it('should handle task updates with append mode', () => {
+      // Setup task update mock
+      mockTaskManager.updateTask.mockReturnValueOnce({
+        success: true,
+        data: {
+          id: 1,
+          title: 'Updated Task',
+          description: 'Original description\nAdditional context added via append',
+          details: 'Original details\nAdditional implementation notes',
+          status: 'in-progress',
+          updatedFields: ['description', 'details']
+        },
+        message: 'Task updated with append mode'
+      })
+
+      const updateResult = mockTaskManager.updateTask({
+        id: 1,
+        description: 'Additional context added via append',
+        details: 'Additional implementation notes',
+        append: true
+      })
+
+      expect(updateResult.success).toBe(true)
+      expect(updateResult.data.updatedFields).toContain('description')
+      expect(updateResult.data.updatedFields).toContain('details')
+      expect(updateResult.data.description).toContain('Original description')
+      expect(updateResult.data.details).toContain('Original details')
+    })
+
+    it('should handle subtask updates with field validation', () => {
+      // Setup subtask update mock
+      mockTaskManager.updateSubtask.mockReturnValueOnce({
+        success: true,
+        data: {
+          id: '1.2',
+          title: 'Updated Subtask',
+          status: 'done',
+          logs: '2024-01-15: Task completed successfully',
+          updatedFields: ['status', 'logs']
+        },
+        message: 'Subtask updated successfully'
+      })
+
+      const updateResult = mockTaskManager.updateSubtask({
+        id: '1.2',
+        status: 'done',
+        logs: '2024-01-15: Task completed successfully'
+      })
+
+      expect(updateResult.success).toBe(true)
+      expect(updateResult.data.status).toBe('done')
+      expect(updateResult.data.logs).toContain('2024-01-15')
+      expect(updateResult.data.updatedFields).toContain('logs')
+    })
+
+    it('should validate field update permissions', () => {
+      // Setup mock for field validation failure
+      mockTaskManager.updateTask.mockReturnValueOnce({
+        success: false,
+        error: 'Field \'id\' is read-only and cannot be modified',
+        message: 'Field update validation failed'
+      })
+
+      const updateResult = mockTaskManager.updateTask({
+        id: 1,
+        id: 999 // Trying to update read-only field
+      })
+
+      expect(updateResult.success).toBe(false)
+      expect(updateResult.error).toContain('read-only')
+    })
+
+    it('should handle spec_files parsing and validation', () => {
+      // Setup mock for spec files parsing
+      mockTaskManager.addTask.mockReturnValueOnce({
+        success: true,
+        data: {
+          id: 3,
+          title: 'Spec Task',
+          spec_files: [
+            { type: 'spec', title: 'Specification Document', file: 'docs/api.md' },
+            { type: 'design', title: 'Specification Document', file: 'docs/ui.pdf' }
+          ]
+        },
+        message: 'Task with spec files created'
+      })
+
+      const createResult = mockTaskManager.addTask({
+        title: 'Spec Task',
+        description: 'Task with specification documents',
+        spec_files: 'docs/api.md,docs/ui.pdf'
+      })
+
+      expect(createResult.success).toBe(true)
+      expect(createResult.data.spec_files).toHaveLength(2)
+      expect(createResult.data.spec_files[0].type).toBe('spec')
+      expect(createResult.data.spec_files[0].file).toBe('docs/api.md')
+    })
+
+    it('should handle dependencies parsing and validation', () => {
+      // Setup mock for dependencies parsing
+      mockTaskManager.addTask.mockReturnValueOnce({
+        success: true,
+        data: {
+          id: 4,
+          title: 'Dependency Task',
+          dependencies: [1, 3, 5]
+        },
+        message: 'Task with dependencies created'
+      })
+
+      const createResult = mockTaskManager.addTask({
+        title: 'Dependency Task',
+        description: 'Task that depends on other tasks',
+        dependencies: [1, 3, 5]
+      })
+
+      expect(createResult.success).toBe(true)
+      expect(createResult.data.dependencies).toEqual([1, 3, 5])
+    })
+
+    it('should complete full workflow: create task -> add subtask -> update both -> mark complete', () => {
+      // Step 1: Create main task
+      mockTaskManager.addTask.mockReturnValueOnce({
+        success: true,
+        data: { id: 10, title: 'Main Feature', status: 'pending' },
+        message: 'Main task created'
+      })
+
+      const mainTask = mockTaskManager.addTask({
+        title: 'Main Feature',
+        description: 'Complete feature implementation',
+        priority: 'high'
+      })
+      expect(mainTask.success).toBe(true)
+
+      // Step 2: Add subtask with inheritance
+      mockTaskManager.addSubtask.mockReturnValueOnce({
+        success: true,
+        data: { id: '10.1', title: 'Subtask 1', status: 'pending' },
+        message: 'Subtask created'
+      })
+
+      const subtask = mockTaskManager.addSubtask({
+        parentId: 10,
+        title: 'Subtask 1',
+        description: 'First implementation step',
+        inheritParent: true
+      })
+      expect(subtask.success).toBe(true)
+
+      // Step 3: Update subtask status
+      mockTaskManager.updateSubtask.mockReturnValueOnce({
+        success: true,
+        data: { id: '10.1', status: 'in-progress' },
+        message: 'Subtask updated'
+      })
+
+      const subtaskUpdate = mockTaskManager.updateSubtask({
+        id: '10.1',
+        status: 'in-progress',
+        logs: 'Started implementation'
+      })
+      expect(subtaskUpdate.success).toBe(true)
+
+      // Step 4: Mark subtask complete
+      mockTaskManager.updateSubtask.mockReturnValueOnce({
+        success: true,
+        data: { id: '10.1', status: 'done' },
+        message: 'Subtask completed'
+      })
+
+      const subtaskComplete = mockTaskManager.updateSubtask({
+        id: '10.1',
+        status: 'done',
+        logs: 'Implementation completed successfully'
+      })
+      expect(subtaskComplete.success).toBe(true)
+
+      // Step 5: Update main task
+      mockTaskManager.updateTask.mockReturnValueOnce({
+        success: true,
+        data: { id: 10, status: 'done' },
+        message: 'Main task completed'
+      })
+
+      const mainTaskComplete = mockTaskManager.updateTask({
+        id: 10,
+        status: 'done',
+        logs: 'All subtasks completed, feature ready for release'
+      })
+      expect(mainTaskComplete.success).toBe(true)
     })
   })
 })

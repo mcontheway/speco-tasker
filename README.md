@@ -114,8 +114,8 @@ task-master list
 # 查看下一个任务
 task-master next
 
-# 创建新任务
-task-master add-task --prompt "功能描述"
+# 创建新任务（规范驱动开发）
+task-master add-task --title "用户认证" --description "实现JWT用户认证功能" --details "使用JWT库实现token生成和验证" --test-strategy "单元测试token生成，集成测试认证流程" --spec-files "docs/auth-spec.md"
 
 # 更新任务状态
 task-master set-status --id=1 --status=done

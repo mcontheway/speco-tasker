@@ -13,9 +13,24 @@ jest.unstable_mockModule('../../../../../scripts/modules/utils.js', () => ({
 	ensureTagMetadata: jest.fn((tagObj) => tagObj),
 	getStatusWithColor: jest.fn((status) => status),
 	findCycles: jest.fn(() => []),
-	parseSpecFiles: jest.fn((input) => input ? input.split(',').map(file => ({ type: 'spec', title: 'Specification Document', file: file.trim() })) : []),
+	parseSpecFiles: jest.fn((input) => {
+		if (!input) return []
+		if (Array.isArray(input)) return input
+		if (typeof input === 'string') {
+			return input.split(',').map(file => ({ type: 'spec', title: 'Specification Document', file: file.trim() }))
+		}
+		return []
+	}),
 	validateSpecFiles: jest.fn(() => ({ isValid: true, errors: [], warnings: [] })),
-	parseDependencies: jest.fn((input, tasks) => ({ dependencies: input || [], errors: [], warnings: [] })),
+	parseDependencies: jest.fn((input, tasks) => {
+		// Ensure input is always treated as array
+		const dependencies = Array.isArray(input) ? input : (input ? [input] : [])
+		return {
+			dependencies: dependencies,
+			errors: [],
+			warnings: []
+		}
+	}),
 	parseLogs: jest.fn((input) => input || ''),
 	findProjectRoot: jest.fn(() => '/mock/project'),
 	validateFieldUpdatePermission: jest.fn(() => ({ isAllowed: true })),
@@ -61,8 +76,18 @@ jest.unstable_mockModule('../../../../../scripts/modules/utils/contextGatherer.j
 	}
 }))
 
+// readJSON mock is set up in beforeEach
+
+// Remove duplicate mock - using jest.unstable_mockModule above
+
 // Import the module under test
 const { default: addTask } = await import('../../../../../scripts/modules/task-manager/add-task.js')
+
+// Import parseDependencies to spy on it
+const utilsModule = await import('../../../../../scripts/modules/utils.js')
+
+// Import task validation module
+const taskValidationModule = await import('../../../../../scripts/modules/utils/task-validation.js')
 
 describe('addTask - Manual Mode', () => {
 	const sampleTasks = {
@@ -78,8 +103,38 @@ describe('addTask - Manual Mode', () => {
 
 	beforeEach(() => {
 		jest.clearAllMocks()
-		readJSON.mockReturnValue(sampleTasks)
+		// Setup readJSON to return the correct tagged structure
+		readJSON.mockImplementation((filepath, projectRoot, tag) => {
+			return tag === 'main' ? sampleTasks : sampleTasks
+		})
 		writeJSON.mockResolvedValue()
+
+		// Spy on utility functions and make them return expected objects
+		jest.spyOn(utilsModule, 'parseDependencies').mockImplementation((input, tasks) => ({
+			dependencies: Array.isArray(input) ? input : (input ? [input] : []),
+			errors: [],
+			warnings: []
+		}))
+		jest.spyOn(utilsModule, 'parseSpecFiles').mockImplementation((input) => {
+			if (!input) return []
+			if (Array.isArray(input)) return input
+			if (typeof input === 'string') {
+				return input.split(',').map(file => ({ type: 'spec', title: 'Specification Document', file: file.trim() }))
+			}
+			return []
+		})
+		jest.spyOn(utilsModule, 'validateSpecFiles').mockReturnValue({
+			isValid: true,
+			errors: [],
+			warnings: []
+		})
+
+		// Mock validateTaskData function
+		jest.spyOn(taskValidationModule, 'validateTaskData').mockReturnValue({
+			isValid: true,
+			errors: [],
+			warnings: []
+		})
 	})
 
 	describe('Manual task creation mode', () => {
@@ -108,7 +163,7 @@ describe('addTask - Manual Mode', () => {
 			)
 
 			// Assert
-			expect(result.newTaskId).toBe(1)
+			expect(result.newTaskId).toBe(4) // Next ID after existing tasks 1, 2, 3
 			expect(result.telemetryData).toBeNull() // No AI usage in manual mode
 			expect(writeJSON).toHaveBeenCalledWith(
 				'tasks/tasks.json',
@@ -116,7 +171,7 @@ describe('addTask - Manual Mode', () => {
 					main: expect.objectContaining({
 						tasks: expect.arrayContaining([
 							expect.objectContaining({
-								id: 1,
+								id: 4, // Next ID after existing tasks 1, 2, 3
 								title: 'User Authentication',
 								description: 'Implement JWT-based user authentication',
 								details: 'Use bcrypt for password hashing and JWT for tokens',
@@ -140,7 +195,7 @@ describe('addTask - Manual Mode', () => {
 				description: 'Setup database connection',
 				details: 'Configure PostgreSQL connection',
 				testStrategy: 'Test connection and basic queries',
-				spec_files: []
+				spec_files: [{ type: 'spec', title: 'Database Schema', file: 'docs/db-schema.md' }]
 			}
 			const dependencies = [1, 2] // Pre-parsed dependencies
 			const context = {
@@ -176,17 +231,17 @@ describe('addTask - Manual Mode', () => {
 		})
 
 		test('should validate required fields in manual mode', async () => {
-			// Arrange - missing required fields
+			// Arrange - missing required description
 			const incompleteManualTaskData = {
 				title: 'Incomplete Task',
-				// missing description, details, testStrategy
+				// missing description
 			}
 			const context = {
 				projectRoot: '/mock/project/root',
 				tag: 'main'
 			}
 
-			// Act & Assert
+			// Act & Assert - should fail at basic validation before schema validation
 			await expect(
 				addTask(
 					'tasks/tasks.json',
@@ -196,7 +251,7 @@ describe('addTask - Manual Mode', () => {
 					'text',
 					incompleteManualTaskData
 				)
-			).rejects.toThrow('Invalid task data structure')
+			).rejects.toThrow('Manual task data must include at least a title and description.')
 		})
 
 		test('should handle spec_files parsing and validation', async () => {
@@ -286,7 +341,8 @@ describe('addTask - Manual Mode', () => {
 				title: 'Test Task',
 				description: 'Test description',
 				details: 'Test details',
-				testStrategy: 'Test strategy'
+				testStrategy: 'Test strategy',
+				spec_files: [{ type: 'spec', title: 'Test Spec', file: 'docs/test.md' }]
 			}
 			const context = {
 				projectRoot: '/mock/project/root',

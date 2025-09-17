@@ -17,7 +17,7 @@ task-master show <id>                             # View detailed task informati
 task-master set-status --id=<id> --status=done    # Mark task complete
 
 # Task Management
-task-master add-task --prompt="description" --research        # Add new task with AI assistance
+task-master add-task --title="Feature" --description="Description" --details="Implementation details" --test-strategy="Test strategy" --spec-files="docs/spec.md"  # Add new task (spec-driven)
 task-master expand --id=<id> --research --force              # Break task into subtasks
 task-master update-task --id=<id> --prompt="changes"         # Update specific task
 task-master update --from=<id> --prompt="changes"            # Update multiple tasks from ID onwards
