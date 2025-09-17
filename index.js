@@ -23,10 +23,10 @@
 // This file serves as the main entry point for the package
 // The primary functionality is provided through the CLI commands
 
-import { spawn } from "child_process";
-import { createRequire } from "module";
-import { dirname, resolve } from "path";
-import { fileURLToPath } from "url";
+import { spawn } from "node:child_process";
+import { createRequire } from "node:module";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { Command } from "commander";
 
 const __filename = fileURLToPath(import.meta.url);

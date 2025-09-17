@@ -1,5 +1,4 @@
 #!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
 
 # 检查是否有未处理的 changeset 文件
 if [ -d ".changeset" ] && [ "$(ls -A .changeset/*.md 2>/dev/null)" ]; then

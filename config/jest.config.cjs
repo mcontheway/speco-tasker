@@ -12,7 +12,7 @@ const config = {
 	coverageDirectory: "coverage",
 
 	// A list of paths to directories that Jest should use to search for files in
-	roots: ["<rootDir>/tests", "<rootDir>/scripts"],
+	roots: ["../tests", "../scripts"],
 
 	// The glob patterns Jest uses to detect test files
 	testMatch: [
@@ -39,13 +39,10 @@ const config = {
 	transform: {},
 
 	// Set moduleNameMapper for absolute paths
-	moduleNameMapper: {
-		"^@/(.*)$": "<rootDir>/$1",
-		"^chalk$": "<rootDir>/node_modules/chalk",
-	},
+	// moduleNameMapper: {},
 
 	// Setup module aliases
-	moduleDirectories: ["node_modules", "<rootDir>"],
+	moduleDirectories: ["../node_modules", "node_modules"],
 
 	// Configure test coverage thresholds
 	coverageThreshold: {
@@ -64,7 +61,7 @@ const config = {
 	verbose: true,
 
 	// Setup file - use .cjs extension for CommonJS
-	setupFilesAfterEnv: ["<rootDir>/tests/setup.cjs"],
+	setupFilesAfterEnv: ["../tests/setup.cjs"],
 
 	// Properly initialize source-map-support
 	setupFiles: ["source-map-support/register"],
