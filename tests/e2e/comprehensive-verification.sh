@@ -22,12 +22,43 @@ else
     exit 1
 fi
 
-# 运行CLI功能验证
+# 运行CLI功能验证（创建任务并获取任务信息）
 echo ""
 echo "💻 第二阶段：CLI功能完整性验证"
 echo "------------------------------"
-if bash tests/e2e/cli-functionality-test.sh; then
+
+# 创建临时目录用于CLI测试
+CLI_TEST_DIR="/tmp/taskmaster-cli-verification-$(date +%s)"
+mkdir -p "$CLI_TEST_DIR"
+cd "$CLI_TEST_DIR"
+
+# 运行CLI功能验证
+if bash "$OLDPWD/tests/e2e/cli-functionality-test.sh"; then
     echo "✅ CLI功能验证通过"
+
+    # 获取CLI创建的任务信息
+    TASK_ID=$(node -e "
+const fs = require('fs');
+const path = require('path');
+const tasksFile = path.join('.taskmaster', 'tasks', 'tasks.json');
+const tasks = JSON.parse(fs.readFileSync(tasksFile, 'utf8'));
+const taskIds = Object.keys(tasks);
+console.log(taskIds[0]);
+")
+
+    TASK_DATA=$(node -e "
+const fs = require('fs');
+const path = require('path');
+const tasksFile = path.join('.taskmaster', 'tasks', 'tasks.json');
+const tasks = JSON.parse(fs.readFileSync(tasksFile, 'utf8'));
+const task = tasks['$TASK_ID'];
+console.log(JSON.stringify({
+    id: '$TASK_ID',
+    title: task.title,
+    description: task.description,
+    status: task.status
+}));
+")
 else
     echo "❌ CLI功能验证失败"
     exit 1
@@ -37,6 +68,7 @@ fi
 echo ""
 echo "🔌 第三阶段：MCP功能完整性验证"
 echo "------------------------------"
+cd /
 if bash tests/e2e/mcp-functionality-test.sh; then
     echo "✅ MCP功能验证通过"
 else
@@ -48,12 +80,20 @@ fi
 echo ""
 echo "🔄 第四阶段：跨界面一致性验证"
 echo "------------------------------"
-if bash tests/e2e/cross-interface-consistency-test.sh; then
+cd "$CLI_TEST_DIR"
+export CLI_TASK_DATA="$TASK_DATA"
+if bash "$OLDPWD/tests/e2e/cross-interface-consistency-test.sh"; then
     echo "✅ 跨界面一致性验证通过"
 else
     echo "❌ 跨界面一致性验证失败"
     exit 1
 fi
+
+# 清理测试目录
+echo ""
+echo "🧹 清理测试环境..."
+cd /
+rm -rf "$CLI_TEST_DIR"
 
 # 计算总时间
 END_TIME=$(date +%s)

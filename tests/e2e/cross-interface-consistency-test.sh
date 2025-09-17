@@ -167,21 +167,58 @@ async function testConsistency() {
 
         console.log('  ✅ MCP数据与CLI一致');
 
-        // 测试MCP修改数据后CLI是否能看到
-        console.log('  🔄 测试MCP修改数据...');
-        const updateResult = await sendMCPRequest('set_task_status', {
+        // 测试跨界面数据修改：CLI创建任务，MCP修改任务
+        console.log('  🔄 测试跨界面数据修改...');
+
+        // 先通过CLI创建任务（使用环境变量传递任务信息）
+        const cliTaskData = JSON.parse(process.env.CLI_TASK_DATA);
+        console.log('  📝 CLI已创建任务，任务ID:', cliTaskData.id);
+
+        // 用MCP读取CLI创建的任务
+        console.log('  👀 MCP读取CLI创建的任务...');
+        const mcpReadResult = await sendMCPRequest('get_task', {
+            id: cliTaskData.id
+        });
+
+        if (!mcpReadResult.success) {
+            throw new Error('MCP failed to read task created by CLI');
+        }
+
+        const mcpTask = mcpReadResult.data;
+        if (!mcpTask) {
+            throw new Error('Task not found by MCP');
+        }
+
+        // 验证MCP读取的数据与CLI一致
+        if (mcpTask.title !== cliTaskData.title) {
+            throw new Error(`Title mismatch: CLI="${cliTaskData.title}", MCP="${mcpTask.title}"`);
+        }
+
+        if (mcpTask.description !== cliTaskData.description) {
+            throw new Error(`Description mismatch: CLI="${cliTaskData.description}", MCP="${mcpTask.description}"`);
+        }
+
+        console.log('  ✅ MCP成功读取CLI创建的任务');
+
+        // 用MCP修改任务状态
+        console.log('  🔄 MCP修改任务状态...');
+        const mcpUpdateResult = await sendMCPRequest('set_task_status', {
             id: cliTaskData.id,
             status: 'done'
         });
 
-        if (!updateResult.success) {
-            throw new Error('Failed to update task status via MCP');
+        if (!mcpUpdateResult.success) {
+            throw new Error('MCP failed to update task status');
         }
+
+        console.log('  ✅ MCP成功修改任务状态');
 
         // 验证CLI是否能看到MCP的修改
         const cliUpdatedTask = JSON.parse(require('child_process').execSync(`node -e "
 const fs = require('fs');
-const tasks = JSON.parse(fs.readFileSync('.taskmaster/tasks/tasks.json', 'utf8'));
+const path = require('path');
+const tasksFile = path.join('.taskmaster', 'tasks', 'tasks.json');
+const tasks = JSON.parse(fs.readFileSync(tasksFile, 'utf8'));
 const task = tasks['${cliTaskData.id}'];
 console.log(JSON.stringify(task ? { status: task.status } : null));
 "`, { encoding: 'utf8' }));

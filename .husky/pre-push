@@ -25,6 +25,14 @@ else
   echo "    ℹ️  快速验证脚本不存在，跳过"
 fi
 
+# 可选：运行完整功能验证（仅在CI或明确需要时）
+if [ "$RUN_COMPREHENSIVE_VERIFICATION" = "true" ] && [ -f "tests/e2e/comprehensive-verification.sh" ]; then
+  echo "  🎯 运行完整功能验证..."
+  timeout 120s bash tests/e2e/comprehensive-verification.sh || {
+    echo "⚠️  完整验证失败，但允许推送（建议检查功能完整性）"
+  }
+fi
+
 # 检查是否有未处理的 changeset（仅警告，不阻止推送）
 if [ -d ".changeset" ] && [ "$(ls -A .changeset/*.md 2>/dev/null)" ]; then
   echo "⚠️  检测到未处理的 changeset 文件"
