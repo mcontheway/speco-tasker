@@ -4,6 +4,15 @@
 echo "🔍 正在检查暂存文件的代码质量..."
 npx lint-staged
 
-# 运行测试（只运行单元测试以加快速度）
-echo "🧪 正在运行单元测试..."
+# 运行测试（运行核心功能测试以确保质量）
+echo "🧪 正在运行核心功能测试..."
+
+# 运行单元测试（包括MCP核心测试）
+echo "  📦 运行单元测试和MCP核心测试..."
 npm run test:unit
+
+# TODO: 扩展测试覆盖范围
+# 目前只运行核心单元测试，计划逐步添加：
+# - CLI命令集成测试 (tests/integration/cli/)
+# - MCP工具集成测试 (tests/integration/mcp-server/)
+# - 其他功能集成测试
