@@ -21,7 +21,26 @@ async function startServer() {
 	});
 
 	try {
-		await server.start();
+		// Check for port argument to determine transport type
+		const portArg = process.argv.find((arg) => arg.startsWith("--port="));
+		const port = portArg ? parseInt(portArg.split("=")[1]) : null;
+
+		if (port) {
+			// SSE transport mode for testing (HTTP-based)
+			await server.start({
+				transportType: "sse",
+				port: port,
+				endpoint: "/sse",
+				timeout: 120000,
+			});
+			logger.info(`MCP Server started on SSE port ${port}`);
+		} else {
+			// Default stdio transport
+			await server.start({
+				transportType: "stdio",
+				timeout: 120000,
+			});
+		}
 	} catch (error) {
 		logger.error(`Failed to start MCP server: ${error.message}`);
 		process.exit(1);

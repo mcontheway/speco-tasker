@@ -54,8 +54,8 @@ async function setTaskStatus(tasksPath, taskIdInput, newStatus, options = {}) {
 
 		log("info", `Reading tasks from ${tasksPath}...`);
 
-		// Read the raw data without tag resolution to preserve tagged structure
-		let rawData = readJSON(tasksPath, projectRoot, tag); // No tag parameter
+		// Read the raw tagged data structure (don't pass tag to get raw structure)
+		let rawData = readJSON(tasksPath, projectRoot); // No tag parameter to get raw data
 
 		// Handle the case where readJSON returns resolved data with _rawTaggedData
 		if (rawData?._rawTaggedData) {
@@ -63,11 +63,14 @@ async function setTaskStatus(tasksPath, taskIdInput, newStatus, options = {}) {
 			rawData = rawData._rawTaggedData;
 		}
 
+		// Ensure we have a valid tagged structure
+		if (!rawData || typeof rawData !== "object") {
+			throw new Error(`Invalid tasks file structure at ${tasksPath}`);
+		}
+
 		// Ensure the tag exists in the raw data
-		if (!rawData || !rawData[tag] || !Array.isArray(rawData[tag].tasks)) {
-			throw new Error(
-				`Invalid tasks file or tag "${tag}" not found at ${tasksPath}`,
-			);
+		if (!rawData[tag] || !Array.isArray(rawData[tag].tasks)) {
+			throw new Error(`Tag "${tag}" not found or invalid at ${tasksPath}`);
 		}
 
 		// Get the tasks for the current tag

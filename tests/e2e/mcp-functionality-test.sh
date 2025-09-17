@@ -16,7 +16,8 @@ echo "  📁 测试目录: $TEST_DIR"
 
 # 初始化项目
 echo "  🚀 初始化项目..."
-if ! node "$OLDPWD/bin/task-master.js" init --name "MCP Test" --description "Test project for MCP functionality" --yes > /dev/null 2>&1; then
+TASK_MASTER_CLI="/Volumes/Data_SSD/Coding/startkits/Speco-Tasker/bin/task-master.js"
+if ! node "$TASK_MASTER_CLI" init --name "MCP Test" --description "Test project for MCP functionality" --yes > /dev/null 2>&1; then
     echo "❌ 项目初始化失败"
     exit 1
 fi
@@ -28,9 +29,10 @@ cat > mcp-test-client.js << 'EOF'
 const { spawn } = require('child_process');
 const path = require('path');
 
-// 启动MCP服务器
+// 启动MCP服务器（HTTP模式）
 const serverProcess = spawn('node', [
-    path.join(process.env.OLDPWD, 'mcp-server/server.js')
+    '/Volumes/Data_SSD/Coding/startkits/Speco-Tasker/mcp-server/server.js',
+    '--port=8082'
 ], {
     stdio: ['pipe', 'pipe', 'pipe'],
     env: {
@@ -219,7 +221,7 @@ process.on('SIGINT', () => {
 EOF
 
 # 运行MCP测试
-if ! timeout 30s node mcp-test-client.js; then
+if ! node mcp-test-client.js; then
     echo "❌ MCP功能测试失败"
     exit 1
 fi

@@ -54,7 +54,7 @@ class TaskMasterMCPServer {
 	/**
 	 * Start the MCP server
 	 */
-	async start() {
+	async start(options = {}) {
 		if (!this.initialized) {
 			await this.init();
 		}
@@ -70,11 +70,14 @@ class TaskMasterMCPServer {
 			this.registerRemoteProvider(event.session);
 		});
 
-		// Start the FastMCP server with increased timeout
-		await this.server.start({
+		// Start the FastMCP server with provided options or defaults
+		const startOptions = {
 			transportType: "stdio",
 			timeout: 120000, // 2 minutes timeout (in milliseconds)
-		});
+			...options,
+		};
+
+		await this.server.start(startOptions);
 
 		return this;
 	}
@@ -85,18 +88,8 @@ class TaskMasterMCPServer {
 	registerRemoteProvider(session) {
 		// Check if the server has at least one session
 		if (session) {
-			// Make sure session has required capabilities
-			if (!session.clientCapabilities || !session.clientCapabilities.sampling) {
-				session.server.sendLoggingMessage({
-					data: {
-						context: session.context,
-						message:
-							"MCP session missing required sampling capabilities, provider not registered",
-					},
-					level: "info",
-				});
-				return;
-			}
+			// Note: Removed sampling capability requirement since AI features were removed
+			// The server now works as a pure task management interface
 
 			// Register the unified MCP provider (simplified after AI removal)
 			const mcpProvider = new MCPProvider();
