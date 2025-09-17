@@ -809,8 +809,30 @@ function withNormalizedProjectRoot(executeFn) {
 				rootSource = "TASK_MASTER_PROJECT_ROOT session environment variable";
 				log.info(`Using project root from ${rootSource}: ${normalizedRoot}`);
 			}
-			// 2. If no environment variable, try args.projectRoot
-			else if (args.projectRoot) {
+			// 1.5. Try to read projectRoot from config file (new priority)
+			else {
+				try {
+					const configPath = path.join(process.cwd(), ".taskmaster/config.json");
+					if (fs.existsSync(configPath)) {
+						const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+						if (config.global && config.global.projectRoot) {
+							const savedRoot = config.global.projectRoot;
+							// Verify the saved root still exists and is valid
+							if (fs.existsSync(savedRoot)) {
+								normalizedRoot = savedRoot;
+								rootSource = "config file";
+								log.info(`Using project root from ${rootSource}: ${normalizedRoot}`);
+							}
+						}
+					}
+				} catch (error) {
+					// Ignore config reading errors, continue to next fallback
+					log.debug?.(`Could not read project root from config: ${error.message}`);
+				}
+			}
+
+			// 2. If no config or saved root, try args.projectRoot
+			if (!normalizedRoot && args.projectRoot) {
 				normalizedRoot = normalizeProjectRoot(args.projectRoot, log);
 				rootSource = "args.projectRoot";
 				log.info(`Using project root from ${rootSource}: ${normalizedRoot}`);

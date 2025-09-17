@@ -74,7 +74,7 @@ export function registerSetTaskStatusTool(server) {
 				.string()
 				.optional()
 				.describe("复杂度报告文件路径，相对于项目根目录或绝对路径"),
-			projectRoot: z.string().describe("项目目录，必须是绝对路径"),
+			projectRoot: z.string().optional().describe("项目根目录（可选，会自动检测）"),
 			tag: z.string().optional().describe("可选的标签上下文"),
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {

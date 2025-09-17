@@ -290,6 +290,7 @@ function copyTemplateFile(templateName, targetPath, replacements = {}) {
 					projectName: "{{projectName}}",
 					userId: "{{userId}}",
 					defaultTag: "main",
+					projectRoot: "{{projectRoot}}",
 				},
 			},
 			null,
@@ -493,12 +494,13 @@ function createProjectStructure(
 
 	// Skip .env.example - not needed for minimal initialization
 
-	// Copy config.json with project name to NEW location
+	// Copy config.json with project name and root to NEW location
 	copyTemplateFile(
 		"config.json",
 		path.join(targetDir, TASKMASTER_CONFIG_FILE),
 		{
 			...replacements,
+			projectRoot: targetDir, // Save the actual project root directory
 		},
 	);
 
