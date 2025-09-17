@@ -23,14 +23,14 @@ export function registerGenerateTool(server) {
 		name: "generate",
 		description: "基于tasks.json在tasks目录中生成单独的任务文件",
 		parameters: z.object({
-			file: z.string().optional().describe("Absolute path to the tasks file"),
+			file: z.string().optional().describe("任务文件的绝对路径"),
 			output: z
 				.string()
 				.optional()
-				.describe("Output directory (default: same directory as tasks file)"),
+				.describe("输出目录（默认：与任务文件相同目录）"),
 			projectRoot: z
 				.string()
-				.describe("The directory of the project. Must be an absolute path."),
+				.describe("项目目录，必须是绝对路径"),
 			tag: z.string().optional().describe("选择要处理的任务分组"),
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {

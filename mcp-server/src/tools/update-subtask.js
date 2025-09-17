@@ -21,12 +21,12 @@ export function registerUpdateSubtaskTool(server) {
 	server.addTool({
 		name: "update_subtask",
 		description:
-			"Updates a specific subtask by ID with manual field changes. Supports both full replacement and incremental append modes.",
+			"通过ID更新特定子任务的手动字段更改。支持完整替换和增量追加模式。",
 		parameters: z.object({
 			id: z
 				.string()
 				.describe(
-					'ID of the subtask to update in format "parentId.subtaskId" (e.g., "5.2"). Parent ID is the ID of the task that contains the subtask.',
+					'要更新的子任务ID，格式为"父任务ID.子任务ID"（例如："5.2"）。父任务ID是包含该子任务的任务ID。',
 				),
 			// Manual field update parameters
 			title: z.string().optional().describe("更新子任务标题"),
@@ -116,7 +116,7 @@ export function registerUpdateSubtaskTool(server) {
 				);
 				if (!hasUpdates) {
 					return createErrorResponse(
-						"At least one field to update must be provided",
+						"必须至少提供一个要更新的字段",
 						undefined,
 						undefined,
 						"NO_UPDATES_PROVIDED",

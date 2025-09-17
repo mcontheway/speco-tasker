@@ -25,21 +25,21 @@ export function registerRemoveTaskTool(server) {
 			id: z
 				.string()
 				.describe(
-					"ID of the task or subtask to remove (e.g., '5' or '5.2'). Can be comma-separated to update multiple tasks/subtasks at once.",
+					"要删除的任务或子任务ID（例如：'5' 或 '5.2'）。可逗号分隔同时更新多个任务/子任务。",
 				),
-			file: z.string().optional().describe("Absolute path to the tasks file"),
+			file: z.string().optional().describe("任务文件的绝对路径"),
 			projectRoot: z
 				.string()
-				.describe("The directory of the project. Must be an absolute path."),
+				.describe("项目目录，必须是绝对路径"),
 			confirm: z
 				.boolean()
 				.optional()
-				.describe("Whether to skip confirmation prompt (default: false)"),
+				.describe("是否跳过确认提示（默认：false）"),
 			tag: z
 				.string()
 				.optional()
 				.describe(
-					"Specify which tag context to operate on. Defaults to the current active tag.",
+					"指定要操作的标签上下文。默认为当前活动的标签。",
 				),
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {

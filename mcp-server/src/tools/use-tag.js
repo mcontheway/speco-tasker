@@ -38,14 +38,14 @@ export function registerUseTagTool(server) {
 		name: "use_tag",
 		description: "切换到不同的标签上下文进行任务操作",
 		parameters: z.object({
-			name: z.string().describe("Name of the tag to switch to"),
+			name: z.string().describe("要切换到的标签名称"),
 			file: z
 				.string()
 				.optional()
-				.describe("Path to the tasks file (default: tasks/tasks.json)"),
+				.describe("任务文件路径（默认：tasks/tasks.json）"),
 			projectRoot: z
 				.string()
-				.describe("The directory of the project. Must be an absolute path."),
+				.describe("项目目录，必须是绝对路径"),
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
 			try {

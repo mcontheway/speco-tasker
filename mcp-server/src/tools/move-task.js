@@ -29,13 +29,13 @@ export function registerMoveTaskTool(server) {
 			from: z
 				.string()
 				.describe(
-					'ID of the task/subtask to move (e.g., "5" or "5.2"). Can be comma-separated to move multiple tasks (e.g., "5,6,7")',
+					'要移动的任务或子任务ID（例如："5" 或 "5.2"）。可逗号分隔同时移动多个任务（例如："5,6,7"）',
 				),
 			to: z
 				.string()
 				.optional()
 				.describe(
-					'ID of the destination (e.g., "7" or "7.3"). Required for within-tag moves. For cross-tag moves, if omitted, task will be moved to the target tag maintaining its ID',
+					'目标ID（例如："7" 或 "7.3"）。标签内移动时必需。跨标签移动时，如果省略，任务将移动到目标标签并保持其原有ID',
 				),
 			file: z.string().optional().describe("自定义tasks.json文件路径"),
 			projectRoot: z.string().describe("项目根目录，通常从会话中获取"),
@@ -60,10 +60,10 @@ export function registerMoveTaskTool(server) {
 				if (isCrossTagMove) {
 					// Cross-tag move logic
 					if (!args.from) {
-						return createErrorResponse(
-							"Source IDs are required for cross-tag moves",
-							"MISSING_SOURCE_IDS",
-						);
+					return createErrorResponse(
+						"跨标签移动需要源ID",
+						"MISSING_SOURCE_IDS",
+					);
 					}
 
 					// Warn if 'to' parameter is provided for cross-tag moves
@@ -103,7 +103,7 @@ export function registerMoveTaskTool(server) {
 				// Within-tag move logic (existing functionality)
 				if (!args.to) {
 					return createErrorResponse(
-						"Destination ID is required for within-tag moves",
+						"标签内移动需要目标ID",
 						"MISSING_DESTINATION_ID",
 					);
 				}

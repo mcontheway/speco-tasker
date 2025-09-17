@@ -112,7 +112,7 @@ export function registerUpdateTaskTool(server) {
 				);
 				if (!hasUpdates) {
 					return createErrorResponse(
-						"At least one field to update must be provided",
+						"必须至少提供一个要更新的字段",
 						undefined,
 						undefined,
 						"NO_UPDATES_PROVIDED",

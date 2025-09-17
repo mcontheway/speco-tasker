@@ -21,12 +21,12 @@ export function registerValidateDependenciesTool(server) {
 	server.addTool({
 		name: "validate_dependencies",
 		description:
-			"Check tasks for dependency issues (like circular references or links to non-existent tasks) without making changes.",
+			"检查任务的依赖关系问题（如循环引用或指向不存在的任务），不进行任何修改。",
 		parameters: z.object({
-			file: z.string().optional().describe("Absolute path to the tasks file"),
+			file: z.string().optional().describe("任务文件的绝对路径"),
 			projectRoot: z
 				.string()
-				.describe("The directory of the project. Must be an absolute path."),
+				.describe("项目目录，必须是绝对路径"),
 			tag: z.string().optional().describe("选择要处理的任务分组"),
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {

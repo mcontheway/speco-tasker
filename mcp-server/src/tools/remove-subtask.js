@@ -37,15 +37,15 @@ export function registerRemoveSubtaskTool(server) {
 				.string()
 				.optional()
 				.describe(
-					"Absolute path to the tasks file (default: tasks/tasks.json)",
+					"任务文件的绝对路径（默认：tasks/tasks.json）",
 				),
 			skipGenerate: z
 				.boolean()
 				.optional()
-				.describe("Skip regenerating task files"),
+				.describe("跳过重新生成任务文件"),
 			projectRoot: z
 				.string()
-				.describe("The directory of the project. Must be an absolute path."),
+				.describe("项目目录，必须是绝对路径"),
 			tag: z.string().optional().describe("选择要处理的任务分组"),
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {

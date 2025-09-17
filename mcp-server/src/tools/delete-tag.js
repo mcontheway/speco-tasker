@@ -21,18 +21,18 @@ export function registerDeleteTagTool(server) {
 		name: "delete_tag",
 		description: "删除现有标签及其所有任务",
 		parameters: z.object({
-			name: z.string().describe("Name of the tag to delete"),
+			name: z.string().describe("要删除的标签名称"),
 			yes: z
 				.boolean()
 				.optional()
-				.describe("Skip confirmation prompts (default: true for MCP)"),
+				.describe("跳过确认提示（默认：MCP下为true）"),
 			file: z
 				.string()
 				.optional()
-				.describe("Path to the tasks file (default: tasks/tasks.json)"),
+				.describe("任务文件路径（默认：tasks/tasks.json）"),
 			projectRoot: z
 				.string()
-				.describe("The directory of the project. Must be an absolute path."),
+				.describe("项目目录，必须是绝对路径"),
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
 			try {

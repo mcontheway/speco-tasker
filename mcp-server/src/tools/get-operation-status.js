@@ -12,7 +12,7 @@ export function registerGetOperationStatusTool(server, asyncManager) {
 		name: "get_operation_status",
 		description: "获取后台操作的状态和结果或错误信息",
 		parameters: z.object({
-			operationId: z.string().describe("The ID of the operation to check."),
+			operationId: z.string().describe("要检查的操作ID"),
 		}),
 		execute: async (args, { log }) => {
 			try {

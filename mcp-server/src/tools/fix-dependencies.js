@@ -21,10 +21,10 @@ export function registerFixDependenciesTool(server) {
 		name: "fix_dependencies",
 		description: "自动修复任务中的无效依赖关系",
 		parameters: z.object({
-			file: z.string().optional().describe("Absolute path to the tasks file"),
+			file: z.string().optional().describe("任务文件的绝对路径"),
 			projectRoot: z
 				.string()
-				.describe("The directory of the project. Must be an absolute path."),
+				.describe("项目目录，必须是绝对路径"),
 			tag: z.string().optional().describe("选择要处理的任务分组"),
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
