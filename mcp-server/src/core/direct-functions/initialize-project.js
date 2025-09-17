@@ -71,27 +71,12 @@ export async function initializeProjectDirect(args, log, context = {}) {
 
 	enableSilentMode();
 	try {
-		// Construct options ONLY from the relevant flags in args
-		// The core initializeProject operates in the current CWD, which we just set
+		// Use intelligent defaults - no complex configuration needed
 		const options = {
-			addAliases: args.addAliases,
-			initGit: args.initGit,
-			storeTasksInGit: args.storeTasksInGit,
-			skipInstall: args.skipInstall,
-			yes: true, // Force yes mode
+			yes: true, // Force yes mode for MCP (no interactive prompts)
+			rules: ["cursor"], // Default to Cursor profile for MCP
+			rulesExplicitlyProvided: true,
 		};
-
-		// Handle rules option with MCP-specific defaults
-		if (Array.isArray(args.rules) && args.rules.length > 0) {
-			options.rules = args.rules;
-			options.rulesExplicitlyProvided = true;
-			log.info(`Including rules: ${args.rules.join(", ")}`);
-		} else {
-			// For MCP initialization, default to Cursor profile only
-			options.rules = ["cursor"];
-			options.rulesExplicitlyProvided = true;
-			log.info("No rule profiles specified, defaulting to: Cursor");
-		}
 
 		log.info(`Initializing project with options: ${JSON.stringify(options)}`);
 		const result = await initializeProject(options); // Call core logic

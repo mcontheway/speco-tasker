@@ -1745,27 +1745,14 @@ function registerCommands(programInstance) {
 	// init command (Directly calls the implementation from init.js)
 	programInstance
 		.command("init")
-		.description("使用Speco Tasker结构初始化新项目")
-		.option("-y, --yes", "跳过提示并使用默认值")
-		.option("-n, --name <name>", "项目名称")
-		.option("-d, --description <description>", "项目描述")
-		.option("-v, --version <version>", "项目版本", "0.1.0") // Set default here
-		.option("-a, --author <author>", "作者名称")
-		.option("--skip-install", "跳过安装依赖")
-		.option("--dry-run", "显示将要执行的操作但不进行更改")
-		.option("--aliases", "添加shell别名（tm, taskmaster）")
-		.option("--no-aliases", "跳过shell别名（tm, taskmaster）")
-		.option("--git", "初始化Git仓库")
-		.option("--no-git", "跳过Git仓库初始化")
-		.option("--git-tasks", "在Git中存储任务")
-		.option("--no-git-tasks", "不在Git中存储任务")
-		.action(async (cmdOptions) => {
-			// cmdOptions contains parsed arguments
-
+		.description("初始化 Speco Tasker 项目（自动检测配置）")
+		.action(async () => {
 			try {
-				// Directly call the initializeProject function, passing the parsed options
-				await initializeProject(cmdOptions);
-				// initializeProject handles its own flow, including potential process.exit()
+				// Use intelligent defaults - no complex configuration needed
+				const options = {
+					yes: false, // CLI mode allows interactive prompts for better UX
+				};
+				await initializeProject(options);
 			} catch (error) {
 				console.error(
 					chalk.red(`Error during initialization: ${error.message}`),

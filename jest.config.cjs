@@ -32,6 +32,11 @@ const config = {
 	// Setup files
 	setupFilesAfterEnv: ["<rootDir>/tests/setup.cjs"],
 
+	// Mock graceful-fs to prevent process.cwd() issues
+	moduleNameMapper: {
+		'^graceful-fs$': '<rootDir>/tests/mocks/graceful-fs.mock.js'
+	},
+
 	// Module file extensions
 	moduleFileExtensions: ["js", "cjs", "mjs", "json"],
 

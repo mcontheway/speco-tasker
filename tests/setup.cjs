@@ -7,7 +7,14 @@
 const path = require("node:path");
 
 // Capture the actual original working directory before any changes
-const originalWorkingDirectory = process.cwd();
+let originalWorkingDirectory;
+try {
+	originalWorkingDirectory = process.cwd();
+} catch (error) {
+	// Fallback for environments where process.cwd() might fail
+	originalWorkingDirectory = "/tmp";
+	console.warn("Warning: Could not get current working directory, using fallback:", originalWorkingDirectory);
+}
 
 // Store original working directory and project root
 const projectRoot = path.resolve(__dirname, "..");

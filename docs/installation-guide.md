@@ -48,9 +48,15 @@ Once the MCP server is configured, initialize Speco Tasker in the user's project
 
 > 你能在我的项目中初始化Speco Tasker吗？ | Can you initialize Speco Tasker in my project?
 
-这将运行`initialize_project`工具来设置基本文件结构。
+这将自动检测项目配置并设置基本文件结构。Speco Tasker 会智能地：
+- 自动检测项目名称（从 Git 仓库或目录名）
+- 自动检测 Git 状态（有 Git 则使用，无 Git 则初始化）
+- 创建必要的配置文件和目录结构
 
-This will run the `initialize_project` tool to set up the basic file structure.
+This will automatically detect project configuration and set up the basic file structure. Speco Tasker will intelligently:
+- Auto-detect project name (from Git repository or directory name)
+- Auto-detect Git status (use existing Git, or initialize if none)
+- Create necessary configuration files and directory structure
 
 ### 步骤4：创建初始任务 | Step 4: Create Initial Tasks
 

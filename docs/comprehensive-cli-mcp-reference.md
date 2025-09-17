@@ -2,9 +2,10 @@
 
 ## 概述
 
-Speco Tasker 是一个纯净的手动任务管理系统，完全移除了AI功能，专注于高效的手动任务管理。本文档提供了所有 CLI 命令和 MCP 工具的完整参考。
+Speco Tasker 是一个纯净的手动任务管理系统，完全移除了AI功能，专注于高效的手动任务管理。本文档提供了所有 CLI 命令和 MCP 工具的完整参考，支持智能自动检测配置的简化初始化体验。
 
 **重要说明：**
+- **智能初始化**：一键自动检测配置，无需复杂参数设置
 - **CLI 命令**：用于终端直接交互或作为 MCP 的备选方案
 - **MCP 工具**：用于 Cursor 等集成工具的程序化交互，推荐使用
 - **🏷️ 标签系统**：支持多上下文任务管理，默认使用 "main" 标签
@@ -16,45 +17,27 @@ Speco Tasker 是一个纯净的手动任务管理系统，完全移除了AI功�
 
 ### 初始化项目 (initialize_project / init)
 
-设置 Speco Tasker 的基本文件结构和配置。
+自动检测项目配置并设置 Speco Tasker 的基本文件结构。
 
 **CLI 命令：**
 ```bash
-# 基础初始化
+# 智能初始化（推荐）
 task-master init
-
-# 带项目信息初始化
-task-master init --name="我的项目" --description="项目描述"
-
-# 跳过依赖安装
-task-master init --skip-install
-
-# 添加 shell 别名
-task-master init --add-aliases
-
-# 静默模式（使用默认设置）
-task-master init --yes
 ```
 
 **MCP 工具参数：**
-- `projectName`: 项目名称
-- `projectDescription`: 项目描述
-- `projectVersion`: 版本号（如 "0.1.0"）
-- `authorName`: 作者名称
-- `skipInstall`: 跳过依赖安装
-- `addAliases`: 添加 shell 别名
-- `noGit`: 跳过 Git 初始化
-- `yes`: 使用默认设置跳过提示
+- `projectRoot`: 项目根目录（可选，会自动检测）
 
 **使用示例：**
 ```json
-{
-  "projectName": "电商平台",
-  "projectDescription": "基于 Node.js 的电商平台",
-  "projectVersion": "1.0.0",
-  "authorName": "开发者"
-}
+{}  // 自动检测，无需参数
 ```
+
+**特性说明：**
+- 自动检测项目名称（从 Git 仓库或目录名）
+- 智能 Git 状态检测（有 Git 用现有，无 Git 初始化）
+- 自动选择最佳配置，无需手动设置
+- MCP 模式下完全自动化
 
 ---
 
@@ -719,7 +702,7 @@ Speco Tasker 主要使用配置文件，通常不需要额外的环境变量配�
 
 ### 任务管理流程
 
-1. **初始化**: `task-master init`
+1. **智能初始化**: `task-master init`（自动检测配置）
 2. **查看任务**: `task-master list`
 3. **开始工作**: `task-master next`
 4. **查看详情**: `task-master show <id>`
@@ -728,7 +711,8 @@ Speco Tasker 主要使用配置文件，通常不需要额外的环境变量配�
 
 ### MCP 工具使用
 
-- **项目根目录**: 始终提供 `projectRoot` 参数
+- **智能初始化**: `initialize_project` 无需参数，自动检测项目配置
+- **项目根目录**: 可选提供 `projectRoot`，会自动检测当前工作目录
 - **标签上下文**: 使用 `tag` 参数指定任务上下文
 - **批量操作**: 支持逗号分隔的多个 ID
 - **错误处理**: 检查返回结果的 `success` 字段
@@ -760,9 +744,9 @@ Speco Tasker 主要使用配置文件，通常不需要额外的环境变量配�
 ## 版本信息
 
 - **当前版本**: 基于 Speco Tasker 纯净版
-- **最后更新**: 2025年09月17日
-- **文档版本**: 1.1
+- **最后更新**: 2025年09月17日（简化版更新）
+- **文档版本**: 1.2
 
 ---
 
-*此文档提供了 Speco Tasker 所有 CLI 命令和 MCP 工具的完整参考。如有问题，请参考项目文档或提交 Issue。*
+*此文档提供了 Speco Tasker 所有 CLI 命令和 MCP 工具的完整参考。初始化功能已大幅简化，支持智能自动检测配置。如有问题，请参考项目文档或提交 Issue。*

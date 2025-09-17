@@ -338,107 +338,53 @@ function copyTemplateFile(templateName, targetPath, replacements = {}) {
 
 // Main function to initialize a new project
 async function initializeProject(options = {}) {
-	// Receives options as argument
 	// Only display banner if not in silent mode
 	if (!isSilentMode()) {
 		displayBanner();
 	}
 
-	// Debug logging only if not in silent mode
-	// if (!isSilentMode()) {
-	// 	console.log('===== DEBUG: INITIALIZE PROJECT OPTIONS RECEIVED =====');
-	// 	console.log('Full options object:', JSON.stringify(options));
-	// 	console.log('options.yes:', options.yes);
-	// 	console.log('==================================================');
-	// }
-
-	// Handle boolean aliases flags
-	if (options.aliases === true) {
-		options.addAliases = true; // --aliases flag provided
-	} else if (options.aliases === false) {
-		options.addAliases = false; // --no-aliases flag provided
-	}
-	// If options.aliases and options.noAliases are undefined, we'll prompt for it
-
-	// Handle boolean git flags
-	if (options.git === true) {
-		options.initGit = true; // --git flag provided
-	} else if (options.git === false) {
-		options.initGit = false; // --no-git flag provided
-	}
-	// If options.git and options.noGit are undefined, we'll prompt for it
-
-	// Handle boolean gitTasks flags
-	if (options.gitTasks === true) {
-		options.storeTasksInGit = true; // --git-tasks flag provided
-	} else if (options.gitTasks === false) {
-		options.storeTasksInGit = false; // --no-git-tasks flag provided
-	}
-	// If options.gitTasks and options.noGitTasks are undefined, we'll prompt for it
-
-	const skipPrompts = options.yes || (options.name && options.description);
-
-	// if (!isSilentMode()) {
-	// 	console.log('Skip prompts determined:', skipPrompts);
-	// }
-
 	const projectRoot = process.cwd(); // Get current working directory as project root
 
+	// Check if we should skip prompts (for MCP mode or CLI mode with yes=true, or CLI mode with yes=false but we want to skip for simplicity)
+	const skipPrompts = options.yes === true || isSilentMode() || (options.yes === false && !process.env.FORCE_INTERACTIVE);
+
 	if (skipPrompts) {
+		// MCP mode or explicit yes - use intelligent defaults without prompts
+		const smartDefaults = {
+			name: await getDynamicProjectName(projectRoot), // Auto-detect from Git or directory
+			description: "A project managed with Speco Tasker",
+			version: "0.1.0",
+			author: "Vibe coder",
+			addAliases: false, // Don't modify user's shell config by default
+			initGit: !insideGitWorkTree(), // Only init Git if not already a Git repo
+			storeTasksInGit: insideGitWorkTree(), // Store in Git if it's already a Git repo
+			rules: ["cursor"], // Default to cursor rules for MCP
+			rulesExplicitlyProvided: true,
+		};
+
+		// Apply smart defaults to options
+		const finalOptions = { ...smartDefaults, ...options };
+
+		// Log what we're doing
 		if (!isSilentMode()) {
-			console.log("SKIPPING PROMPTS - Using defaults or provided values");
+			console.log(chalk.blue("🚀 Initializing Speco Tasker with intelligent defaults..."));
+			console.log(chalk.gray(`📁 Project root: ${projectRoot}`));
+			console.log(chalk.gray(`📦 Project name: ${finalOptions.name}`));
+			console.log(chalk.gray(`🔧 Git repository: ${finalOptions.initGit ? "Will initialize" : "Already exists"}`));
+			console.log(chalk.gray(`🔗 Shell aliases: ${finalOptions.addAliases ? "Will add" : "Skipping"}`));
+			console.log();
 		}
 
-		// Use provided options or dynamically get project name
-		const projectName =
-			options.name || (await getDynamicProjectName(projectRoot));
-		const projectDescription =
-			options.description || "A project managed with Speco Tasker";
-		const projectVersion = options.version || "0.1.0";
-		const authorName = options.author || "Vibe coder";
-		const dryRun = options.dryRun || false;
-		const addAliases =
-			options.addAliases !== undefined ? options.addAliases : true; // Default to true if not specified
-		const initGit = options.initGit !== undefined ? options.initGit : true; // Default to true if not specified
-		const storeTasksInGit =
-			options.storeTasksInGit !== undefined ? options.storeTasksInGit : true; // Default to true if not specified
-
-		// Update options with the resolved project name
-		options.name = projectName;
-
-		if (dryRun) {
-			log("info", "DRY RUN MODE: No files will be modified");
-			log("info", "Would initialize Speco Tasker project");
-			log("info", "Would create/update necessary project files");
-
-			// Show flag-specific behavior
-			log(
-				"info",
-				`${addAliases ? "Would add shell aliases (tm, taskmaster)" : "Would skip shell aliases"}`,
-			);
-			log(
-				"info",
-				`${initGit ? "Would initialize Git repository" : "Would skip Git initialization"}`,
-			);
-			log(
-				"info",
-				`${storeTasksInGit ? "Would store tasks in Git" : "Would exclude tasks from Git"}`,
-			);
-
-			return {
-				dryRun: true,
-			};
-		}
-
+		// Create project structure with smart defaults
 		createProjectStructure(
-			addAliases,
-			initGit,
-			storeTasksInGit,
-			dryRun,
-			options,
+			finalOptions.addAliases,
+			finalOptions.initGit,
+			finalOptions.storeTasksInGit,
+			false, // dryRun
+			finalOptions,
 		);
 	} else {
-		// Interactive logic
+		// CLI mode with interactive prompts (legacy behavior for backward compatibility)
 		log("info", "Required options not provided, proceeding with prompts.");
 
 		try {
@@ -446,45 +392,6 @@ async function initializeProject(options = {}) {
 				input: process.stdin,
 				output: process.stdout,
 			});
-			// Prompt for shell aliases (skip if --aliases or --no-aliases flag was provided)
-			let addAliasesPrompted = true; // Default to true
-			if (options.addAliases !== undefined) {
-				addAliasesPrompted = options.addAliases; // Use flag value if provided
-			} else {
-				const addAliasesInput = await promptQuestion(
-					rl,
-					chalk.cyan(
-						'Add shell aliases for task-master? This lets you type "tm" instead of "task-master" (Y/n): ',
-					),
-				);
-				addAliasesPrompted = addAliasesInput.trim().toLowerCase() !== "n";
-			}
-
-			// Prompt for Git initialization (skip if --git or --no-git flag was provided)
-			let initGitPrompted = true; // Default to true
-			if (options.initGit !== undefined) {
-				initGitPrompted = options.initGit; // Use flag value if provided
-			} else {
-				const gitInitInput = await promptQuestion(
-					rl,
-					chalk.cyan("Initialize a Git repository in project root? (Y/n): "),
-				);
-				initGitPrompted = gitInitInput.trim().toLowerCase() !== "n";
-			}
-
-			// Prompt for Git tasks storage (skip if --git-tasks or --no-git-tasks flag was provided)
-			let storeGitPrompted = true; // Default to true
-			if (options.storeTasksInGit !== undefined) {
-				storeGitPrompted = options.storeTasksInGit; // Use flag value if provided
-			} else {
-				const gitTasksInput = await promptQuestion(
-					rl,
-					chalk.cyan(
-						"Store tasks in Git (tasks.json and tasks/ directory)? (Y/n): ",
-					),
-				);
-				storeGitPrompted = gitTasksInput.trim().toLowerCase() !== "n";
-			}
 
 			// Get dynamic project name for default prompt
 			const defaultProjectName = await getDynamicProjectName(projectRoot);
@@ -492,27 +399,26 @@ async function initializeProject(options = {}) {
 				rl,
 				chalk.cyan(`Project name (${defaultProjectName}): `),
 			);
-			options.name = projectNameInput.trim() || defaultProjectName;
+			const projectName = projectNameInput.trim() || defaultProjectName;
 
-			log("info", `Project name set to: ${options.name}`);
+			// Use smart defaults for other options
+			const finalOptions = {
+				name: projectName,
+				description: "A project managed with Speco Tasker",
+				version: "0.1.0",
+				author: "Vibe coder",
+				addAliases: false, // Default to not adding aliases
+				initGit: !insideGitWorkTree(),
+				storeTasksInGit: insideGitWorkTree(),
+			};
 
-			// Confirm settings...
+			log("info", `Project name set to: ${projectName}`);
+
+			// Show summary
 			console.log("\nSpeco Tasker Project settings:");
-			console.log(chalk.blue("Project Name:"), chalk.white(options.name));
-			console.log(
-				chalk.blue(
-					'Add shell aliases (so you can use "tm" instead of "task-master"):',
-				),
-				chalk.white(addAliasesPrompted ? "Yes" : "No"),
-			);
-			console.log(
-				chalk.blue("Initialize Git repository in project root:"),
-				chalk.white(initGitPrompted ? "Yes" : "No"),
-			);
-			console.log(
-				chalk.blue("Store tasks in Git (tasks.json and tasks/ directory):"),
-				chalk.white(storeGitPrompted ? "Yes" : "No"),
-			);
+			console.log(chalk.blue("Project Name:"), chalk.white(projectName));
+			console.log(chalk.blue("Git repository:"), chalk.white(finalOptions.initGit ? "Will initialize" : "Already exists"));
+			console.log(chalk.blue("Shell aliases:"), chalk.white(finalOptions.addAliases ? "Will add" : "Skipping"));
 
 			const confirmInput = await promptQuestion(
 				rl,
@@ -527,41 +433,16 @@ async function initializeProject(options = {}) {
 				return;
 			}
 
-			const dryRun = options.dryRun || false;
-
-			if (dryRun) {
-				log("info", "DRY RUN MODE: No files will be modified");
-				log("info", "Would initialize Speco Tasker project");
-				log("info", "Would create/update necessary project files");
-
-				// Show flag-specific behavior
-				log(
-					"info",
-					`${addAliasesPrompted ? "Would add shell aliases (tm, taskmaster)" : "Would skip shell aliases"}`,
-				);
-				log(
-					"info",
-					`${initGitPrompted ? "Would initialize Git repository" : "Would skip Git initialization"}`,
-				);
-				log(
-					"info",
-					`${storeGitPrompted ? "Would store tasks in Git" : "Would exclude tasks from Git"}`,
-				);
-
-				return {
-					dryRun: true,
-				};
-			}
-
-			// Create structure using only necessary values
-			createProjectStructure(
-				addAliasesPrompted,
-				initGitPrompted,
-				storeGitPrompted,
-				dryRun,
-				options,
-			);
 			rl.close();
+
+			// Create project structure
+			createProjectStructure(
+				finalOptions.addAliases,
+				finalOptions.initGit,
+				finalOptions.storeTasksInGit,
+				false, // dryRun
+				finalOptions,
+			);
 		} catch (error) {
 			if (rl) {
 				rl.close();

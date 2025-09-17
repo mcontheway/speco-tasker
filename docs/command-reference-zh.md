@@ -7,14 +7,8 @@ This is a complete reference of all available commands. Speco Tasker is a pure m
 ## 项目初始化 | Project Initialization
 
 ```bash
-# 初始化新项目 | Initialize new project
+# 初始化新项目（自动检测配置） | Initialize new project (auto-detect configuration)
 task-master init
-
-# 初始化项目并添加shell别名 | Initialize project and add shell aliases
-task-master init --add-aliases
-
-# 跳过依赖安装的初始化 | Initialize skipping dependency installation
-task-master init --skip-install
 ```
 
 ## 列出任务 | List Tasks

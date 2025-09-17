@@ -96,9 +96,9 @@ task-master init
 npx task-master init
 ```
 
-这将提示您输入项目详细信息，并使用必要的文件和结构设置新项目。
+这将自动检测项目配置并使用必要的文件和结构设置新项目。
 
-This will prompt you for project details and set up the new project with the necessary files and structure.
+This will automatically detect project configuration and set up the new project with the necessary files and structure.
 
 ## 常用命令 | Common Commands
 

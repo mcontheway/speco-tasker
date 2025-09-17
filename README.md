@@ -83,7 +83,7 @@ Built-in Agents in AI editors like Cursor and Windsurf have natural advantages:
 npm install -g speco-tasker
 
 # 初始化项目 | Initialize Project
-task-master init
+task-master init  # 自动检测配置，一键完成
 ```
 
 ### MCP 配置 | MCP Configuration
