@@ -25,6 +25,22 @@ const config = {
 	// Module file extensions
 	moduleFileExtensions: ["js", "cjs", "mjs", "json"],
 
+	// Test file patterns - include .cjs files
+	testMatch: [
+		"**/__tests__/**/*.js",
+		"**/__tests__/**/*.cjs",
+		"**/?(*.)+(spec|test).js",
+		"**/?(*.)+(spec|test).cjs",
+		"**/contract/**/*.js",
+		"**/contract/**/*.cjs",
+		"**/integration/**/*.js",
+		"**/integration/**/*.cjs",
+		"**/unit/**/*.js",
+		"**/unit/**/*.cjs",
+		"**/performance/**/*.js",
+		"**/performance/**/*.cjs",
+	],
+
 	// Isolate modules to prevent cross-test contamination
 	resetModules: true,
 	resetMocks: true,
