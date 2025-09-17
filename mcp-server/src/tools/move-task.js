@@ -99,92 +99,77 @@ export function registerMoveTaskTool(server) {
 						undefined,
 						args.projectRoot,
 					);
-				} else {
-					// Within-tag move logic (existing functionality)
-					if (!args.to) {
-						return createErrorResponse(
-							"Destination ID is required for within-tag moves",
-							"MISSING_DESTINATION_ID",
-						);
-					}
+				}
+				// Within-tag move logic (existing functionality)
+				if (!args.to) {
+					return createErrorResponse(
+						"Destination ID is required for within-tag moves",
+						"MISSING_DESTINATION_ID",
+					);
+				}
 
-					const resolvedTag = resolveTag({
-						projectRoot: args.projectRoot,
-						tag: args.tag,
-					});
+				const resolvedTag = resolveTag({
+					projectRoot: args.projectRoot,
+					tag: args.tag,
+				});
 
-					// Find tasks.json path if not provided
-					let tasksJsonPath = args.file;
-					if (!tasksJsonPath) {
-						tasksJsonPath = findTasksPath(args, log);
-					}
+				// Find tasks.json path if not provided
+				let tasksJsonPath = args.file;
+				if (!tasksJsonPath) {
+					tasksJsonPath = findTasksPath(args, log);
+				}
 
-					// Parse comma-separated IDs
-					const fromIds = args.from.split(",").map((id) => id.trim());
-					const toIds = args.to.split(",").map((id) => id.trim());
+				// Parse comma-separated IDs
+				const fromIds = args.from.split(",").map((id) => id.trim());
+				const toIds = args.to.split(",").map((id) => id.trim());
 
-					// Validate matching IDs count
-					if (fromIds.length !== toIds.length) {
-						if (fromIds.length > 1) {
-							const results = [];
-							const skipped = [];
-							// Move tasks one by one, only generate files on the last move
-							for (let i = 0; i < fromIds.length; i++) {
-								const fromId = fromIds[i];
-								const toId = toIds[i];
+				// Validate matching IDs count
+				if (fromIds.length !== toIds.length) {
+					if (fromIds.length > 1) {
+						const results = [];
+						const skipped = [];
+						// Move tasks one by one, only generate files on the last move
+						for (let i = 0; i < fromIds.length; i++) {
+							const fromId = fromIds[i];
+							const toId = toIds[i];
 
-								// Skip if source and destination are the same
-								if (fromId === toId) {
-									log.info(`Skipping ${fromId} -> ${toId} (same ID)`);
-									skipped.push({ fromId, toId, reason: "same ID" });
-									continue;
-								}
-
-								const shouldGenerateFiles = i === fromIds.length - 1;
-								const result = await moveTaskDirect(
-									{
-										sourceId: fromId,
-										destinationId: toId,
-										tasksJsonPath,
-										projectRoot: args.projectRoot,
-										tag: resolvedTag,
-										generateFiles: shouldGenerateFiles,
-									},
-									log,
-									{ session },
-								);
-
-								if (!result.success) {
-									log.error(
-										`Failed to move ${fromId} to ${toId}: ${result.error.message}`,
-									);
-								} else {
-									results.push(result.data);
-								}
+							// Skip if source and destination are the same
+							if (fromId === toId) {
+								log.info(`Skipping ${fromId} -> ${toId} (same ID)`);
+								skipped.push({ fromId, toId, reason: "same ID" });
+								continue;
 							}
 
-							return handleApiResult(
+							const shouldGenerateFiles = i === fromIds.length - 1;
+							const result = await moveTaskDirect(
 								{
-									success: true,
-									data: {
-										moves: results,
-										skipped: skipped.length > 0 ? skipped : undefined,
-										message: `Successfully moved ${results.length} tasks${skipped.length > 0 ? `, skipped ${skipped.length}` : ""}`,
-									},
+									sourceId: fromId,
+									destinationId: toId,
+									tasksJsonPath,
+									projectRoot: args.projectRoot,
+									tag: resolvedTag,
+									generateFiles: shouldGenerateFiles,
 								},
 								log,
-								"Error moving multiple tasks",
-								undefined,
-								args.projectRoot,
+								{ session },
 							);
+
+							if (!result.success) {
+								log.error(
+									`Failed to move ${fromId} to ${toId}: ${result.error.message}`,
+								);
+							} else {
+								results.push(result.data);
+							}
 						}
+
 						return handleApiResult(
 							{
 								success: true,
 								data: {
 									moves: results,
-									skippedMoves: skippedMoves,
-									message: `Successfully moved ${results.length} tasks${skippedMoves.length > 0 ? `, skipped ${skippedMoves.length} moves` : ""}`,
+									skipped: skipped.length > 0 ? skipped : undefined,
+									message: `Successfully moved ${results.length} tasks${skipped.length > 0 ? `, skipped ${skipped.length}` : ""}`,
 								},
 							},
 							log,
@@ -192,28 +177,41 @@ export function registerMoveTaskTool(server) {
 							undefined,
 							args.projectRoot,
 						);
-					} else {
-						// Moving a single task
-						return handleApiResult(
-							await moveTaskDirect(
-								{
-									sourceId: args.from,
-									destinationId: args.to,
-									tasksJsonPath,
-									projectRoot: args.projectRoot,
-									tag: resolvedTag,
-									generateFiles: true,
-								},
-								log,
-								{ session },
-							),
-							log,
-							"Error moving task",
-							undefined,
-							args.projectRoot,
-						);
 					}
+					return handleApiResult(
+						{
+							success: true,
+							data: {
+								moves: results,
+								skippedMoves: skippedMoves,
+								message: `Successfully moved ${results.length} tasks${skippedMoves.length > 0 ? `, skipped ${skippedMoves.length} moves` : ""}`,
+							},
+						},
+						log,
+						"Error moving multiple tasks",
+						undefined,
+						args.projectRoot,
+					);
 				}
+				// Moving a single task
+				return handleApiResult(
+					await moveTaskDirect(
+						{
+							sourceId: args.from,
+							destinationId: args.to,
+							tasksJsonPath,
+							projectRoot: args.projectRoot,
+							tag: resolvedTag,
+							generateFiles: true,
+						},
+						log,
+						{ session },
+					),
+					log,
+					"Error moving task",
+					undefined,
+					args.projectRoot,
+				);
 			} catch (error) {
 				const errorMessage = `Failed to move task: ${error.message || "Unknown error"}`;
 				log.error(`[move-task tool] ${errorMessage}`);

@@ -1,4 +1,4 @@
-import path from "path";
+import path from "node:path";
 import boxen from "boxen";
 import chalk from "chalk";
 import Table from "cli-table3";
@@ -128,10 +128,10 @@ function getAllTasks(rawData) {
  */
 async function addTask(
 	tasksPath,
-	dependencies = [],
-	priority = null,
-	context = {},
-	outputFormat = "text", // Default to text for CLI
+	dependencies,
+	priority,
+	context,
+	outputFormat, // Default to text for CLI
 	manualTaskData, // Required for spec-driven development
 ) {
 	const { session, mcpLog, projectRoot, commandName, outputType, tag } =
@@ -254,7 +254,7 @@ async function addTask(
 		let rawData = readJSON(tasksPath, projectRoot, tag); // No tag parameter
 
 		// Handle the case where readJSON returns resolved data with _rawTaggedData
-		if (rawData && rawData._rawTaggedData) {
+		if (rawData?._rawTaggedData) {
 			// Use the raw tagged data and discard the resolved view
 			rawData = rawData._rawTaggedData;
 		}
@@ -325,7 +325,7 @@ async function addTask(
 			rawData[targetTag].metadata = {
 				created: new Date().toISOString(),
 				updated: new Date().toISOString(),
-				description: ``,
+				description: "",
 			};
 		}
 
@@ -616,81 +616,56 @@ async function addTask(
 			// Prepare dependency display string
 			let dependencyDisplay = "";
 			if (newTask.dependencies.length > 0) {
-				dependencyDisplay = chalk.white("Dependencies:") + "\n";
+				dependencyDisplay = `${chalk.white("Dependencies:")}\n`;
 				newTask.dependencies.forEach((dep) => {
 					const isAdded = addedDeps.includes(dep);
 					const depType = isAdded ? chalk.yellow(" (automatically added)") : "";
-					dependencyDisplay +=
-						chalk.white(
-							`  - ${dep}: ${depTitles[dep] || "Unknown task"}${depType}`,
-						) + "\n";
+					dependencyDisplay += `${chalk.white(
+						`  - ${dep}: ${depTitles[dep] || "Unknown task"}${depType}`,
+					)}\n`;
 				});
 			} else {
-				dependencyDisplay = chalk.white("Dependencies: None") + "\n";
+				dependencyDisplay = `${chalk.white("Dependencies: None")}\n`;
 			}
 
 			// Add info about removed dependencies if any
 			if (removedDeps.length > 0) {
-				dependencyDisplay +=
-					chalk.gray("\nUser-specified dependencies that were not used:") +
-					"\n";
+				dependencyDisplay += `${chalk.gray("\nUser-specified dependencies that were not used:")}\n`;
 				removedDeps.forEach((dep) => {
 					const depTask = allTasks.find((t) => t.id === dep);
 					const title = depTask ? truncate(depTask.title, 30) : "Unknown task";
-					dependencyDisplay += chalk.gray(`  - ${dep}: ${title}`) + "\n";
+					dependencyDisplay += `${chalk.gray(`  - ${dep}: ${title}`)}\n`;
 				});
 			}
 
 			// Add dependency analysis summary
 			let dependencyAnalysis = "";
 			if (addedDeps.length > 0 || removedDeps.length > 0) {
-				dependencyAnalysis =
-					"\n" + chalk.white.bold("Dependency Analysis:") + "\n";
+				dependencyAnalysis = `\n${chalk.white.bold("Dependency Analysis:")}\n`;
 				if (addedDeps.length > 0) {
-					dependencyAnalysis +=
-						chalk.green(
-							`System identified ${addedDeps.length} additional dependencies`,
-						) + "\n";
+					dependencyAnalysis += `${chalk.green(
+						`System identified ${addedDeps.length} additional dependencies`,
+					)}\n`;
 				}
 				if (removedDeps.length > 0) {
-					dependencyAnalysis +=
-						chalk.yellow(
-							`System excluded ${removedDeps.length} user-provided dependencies`,
-						) + "\n";
+					dependencyAnalysis += `${chalk.yellow(
+						`System excluded ${removedDeps.length} user-provided dependencies`,
+					)}\n`;
 				}
 			}
 
 			// Show success message box
 			console.log(
 				boxen(
-					chalk.white.bold(`Task ${newTaskId} Created Successfully`) +
-						"\n\n" +
-						chalk.white(`Title: ${newTask.title}`) +
-						"\n" +
-						chalk.white(`Status: ${getStatusWithColor(newTask.status)}`) +
-						"\n" +
-						chalk.white(
-							`Priority: ${chalk[getPriorityColor(newTask.priority)](newTask.priority)}`,
-						) +
-						"\n\n" +
-						dependencyDisplay +
-						dependencyAnalysis +
-						"\n" +
-						chalk.white.bold("下一步操作:") +
-						"\n" +
-						chalk.cyan(
-							`1. 查看任务详情: ${chalk.yellow(`task-master show ${newTaskId}`)}`,
-						) +
-						"\n" +
-						chalk.cyan(
-							`2. 开始处理任务: ${chalk.yellow(`task-master set-status --id=${newTaskId} --status=in-progress`)}`,
-						) +
-						"\n" +
-						chalk.cyan(
-							`3. 添加子任务: ${chalk.yellow(`task-master add-subtask --parent=${newTaskId} --title="子任务标题"`)}`,
-						) +
-						"\n" +
-						chalk.cyan(`4. 查看所有任务: ${chalk.yellow(`task-master list`)}`),
+					`${chalk.white.bold(`Task ${newTaskId} Created Successfully`)}\n\n${chalk.white(`Title: ${newTask.title}`)}\n${chalk.white(`Status: ${getStatusWithColor(newTask.status)}`)}\n${chalk.white(
+						`Priority: ${chalk[getPriorityColor(newTask.priority)](newTask.priority)}`,
+					)}\n\n${dependencyDisplay}${dependencyAnalysis}\n${chalk.white.bold("下一步操作:")}\n${chalk.cyan(
+						`1. 查看任务详情: ${chalk.yellow(`task-master show ${newTaskId}`)}`,
+					)}\n${chalk.cyan(
+						`2. 开始处理任务: ${chalk.yellow(`task-master set-status --id=${newTaskId} --status=in-progress`)}`,
+					)}\n${chalk.cyan(
+						`3. 添加子任务: ${chalk.yellow(`task-master add-subtask --parent=${newTaskId} --title="子任务标题"`)}`,
+					)}\n${chalk.cyan(`4. 查看所有任务: ${chalk.yellow("task-master list")}`)}`,
 					{ padding: 1, borderColor: "green", borderStyle: "round" },
 				),
 			);

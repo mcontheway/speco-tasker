@@ -1,4 +1,4 @@
-import path from "path";
+import path from "node:path";
 import { PROJECT_MARKERS } from "../../../../src/constants/paths.js";
 import {
 	findComplexityReportPath as coreFindComplexityReportPath,

@@ -1,5 +1,5 @@
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 import chalk from "chalk";
 import { getProjectName } from "./config-manager.js";
 import listTasks from "./task-manager/list-tasks.js";
@@ -65,9 +65,7 @@ function createStartMarker(options) {
 		`🔗 Powered by [Task Master](${createTaskMasterUrl(projectRoot)})`;
 
 	// Create a markdown box using code blocks and emojis to mimic our UI style
-	const boxContent =
-		`<!-- TASKMASTER_EXPORT_START -->\n` +
-		`> ${exportInfo.split("\n").join("\n> ")}\n\n`;
+	const boxContent = `<!-- TASKMASTER_EXPORT_START -->\n> ${exportInfo.split("\n").join("\n> ")}\n\n`;
 
 	return boxContent;
 }
@@ -78,8 +76,8 @@ function createStartMarker(options) {
  */
 function createEndMarker() {
 	return (
-		`\n> 📋 **End of Taskmaster Export** - Tasks are synced from your project using the \`sync-readme\` command.\n` +
-		`<!-- TASKMASTER_EXPORT_END -->\n`
+		"\n> 📋 **End of Taskmaster Export** - Tasks are synced from your project using the `sync-readme` command.\n" +
+		"<!-- TASKMASTER_EXPORT_END -->\n"
 	);
 }
 
@@ -115,8 +113,7 @@ export async function syncTasksToReadme(projectRoot = null, options = {}) {
 		}
 
 		// Generate timestamp and metadata
-		const timestamp =
-			new Date().toISOString().replace("T", " ").substring(0, 19) + " UTC";
+		const timestamp = `${new Date().toISOString().replace("T", " ").substring(0, 19)} UTC`;
 		const projectName = getProjectName(actualProjectRoot);
 
 		// Create the export markers with metadata
@@ -161,7 +158,7 @@ export async function syncTasksToReadme(projectRoot = null, options = {}) {
 			updatedContent = beforeTasks + taskSection + afterTasks;
 		} else {
 			// Append to end of README
-			updatedContent = readmeContent + "\n" + taskSection;
+			updatedContent = `${readmeContent}\n${taskSection}`;
 		}
 
 		// Write updated content to README

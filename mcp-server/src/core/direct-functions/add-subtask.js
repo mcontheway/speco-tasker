@@ -128,37 +128,36 @@ export async function addSubtaskDirect(args, log) {
 			};
 		}
 		// Case 2: Create new subtask
-		else {
-			log.info(`Creating new subtask for parent task ${parentId}`);
 
-			const newSubtaskData = {
-				title: title,
-				description: description || "",
-				details: details || "",
-				status: status || "pending",
-				dependencies: dependencies,
-			};
+		log.info(`Creating new subtask for parent task ${parentId}`);
 
-			const result = await addSubtask(
-				tasksPath,
-				parentId,
-				null,
-				newSubtaskData,
-				generateFiles,
-				context,
-			);
+		const newSubtaskData = {
+			title: title,
+			description: description || "",
+			details: details || "",
+			status: status || "pending",
+			dependencies: dependencies,
+		};
 
-			// Restore normal logging
-			disableSilentMode();
+		const result = await addSubtask(
+			tasksPath,
+			parentId,
+			null,
+			newSubtaskData,
+			generateFiles,
+			context,
+		);
 
-			return {
-				success: true,
-				data: {
-					message: `New subtask ${parentId}.${result.id} successfully created`,
-					subtask: result,
-				},
-			};
-		}
+		// Restore normal logging
+		disableSilentMode();
+
+		return {
+			success: true,
+			data: {
+				message: `New subtask ${parentId}.${result.id} successfully created`,
+				subtask: result,
+			},
+		};
 	} catch (error) {
 		// Make sure to restore normal logging even if there's an error
 		disableSilentMode();

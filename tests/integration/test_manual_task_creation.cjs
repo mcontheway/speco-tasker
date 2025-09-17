@@ -600,7 +600,6 @@ describe("Manual Task Creation Workflow Integration Test", () => {
 			});
 
 			const updateResult = mockTaskManager.updateTask({
-				id: 1,
 				id: 999, // Trying to update read-only field
 			});
 

@@ -105,7 +105,7 @@ export class BaseProgressTracker {
 	 * @returns {string} Format string for the time/tokens bar.
 	 */
 	_getTimeTokensBarFormat() {
-		return `{clock} {elapsed} | Tokens (I/O): {in}/{out} | Est: {remaining}`;
+		return "{clock} {elapsed} | Tokens (I/O): {in}/{out} | Est: {remaining}";
 	}
 
 	/**

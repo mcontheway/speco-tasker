@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-async function githubRequest(endpoint, token, method = "GET", body) {
+async function githubRequest(endpoint, token, method, body) {
 	const response = await fetch(`https://api.github.com${endpoint}`, {
 		method,
 		headers: {

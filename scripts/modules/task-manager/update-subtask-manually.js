@@ -1,5 +1,5 @@
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 
 import {
 	log as consoleLog,
@@ -92,7 +92,7 @@ async function updateSubtaskManually(
 
 				// Special processing for specific fields
 				switch (field) {
-					case "dependencies":
+					case "dependencies": {
 						const depResult = parseDependencies(newValue);
 						if (depResult.errors.length > 0) {
 							consoleLog(
@@ -108,8 +108,9 @@ async function updateSubtaskManually(
 						}
 						processedValue = depResult.dependencies;
 						break;
+					}
 
-					case "spec_files":
+					case "spec_files": {
 						const parsedSpecFiles = parseSpecFiles(newValue, projectRoot);
 						// For subtasks, spec_files validation is optional, for main tasks it's required
 						// Since this is update-subtask-manually, we know it's always a subtask
@@ -133,6 +134,7 @@ async function updateSubtaskManually(
 						}
 						processedValue = parsedSpecFiles;
 						break;
+					}
 
 					case "logs":
 						processedValue = parseLogs(newValue, appendMode, subtask[field]);

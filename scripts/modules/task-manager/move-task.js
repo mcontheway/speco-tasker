@@ -1,4 +1,4 @@
-import path from "path";
+import path from "node:path";
 import {
 	findCrossTagDependencies,
 	getDependentTaskIds,
@@ -161,7 +161,7 @@ async function moveTask(
 	let rawData = readJSON(tasksPath, projectRoot, tag);
 
 	// Handle the case where readJSON returns resolved data with _rawTaggedData
-	if (rawData && rawData._rawTaggedData) {
+	if (rawData?._rawTaggedData) {
 		// Use the raw tagged data and discard the resolved view
 		rawData = rawData._rawTaggedData;
 	}
@@ -478,10 +478,9 @@ function moveTaskToTask(tasks, sourceId, destinationId) {
 			MOVE_ERROR_CODES.TASK_ALREADY_EXISTS,
 			`Task with ID ${destTaskId} already exists. Use a different destination ID.`,
 		);
-	} else {
-		// Destination doesn't exist - create new task ID
-		return moveTaskToNewId(tasks, sourceTaskIndex, sourceTask, destTaskId);
 	}
+	// Destination doesn't exist - create new task ID
+	return moveTaskToNewId(tasks, sourceTaskIndex, sourceTask, destTaskId);
 }
 
 function moveSubtaskToAnotherParent(
@@ -537,16 +536,13 @@ function moveTaskToNewId(tasks, sourceTaskIndex, sourceTask, destTaskId) {
 
 	// Update any dependencies that reference the old task ID
 	tasks.forEach((task) => {
-		if (task.dependencies && task.dependencies.includes(sourceTask.id)) {
+		if (task.dependencies?.includes(sourceTask.id)) {
 			const depIndex = task.dependencies.indexOf(sourceTask.id);
 			task.dependencies[depIndex] = destTaskId;
 		}
 		if (task.subtasks) {
 			task.subtasks.forEach((subtask) => {
-				if (
-					subtask.dependencies &&
-					subtask.dependencies.includes(sourceTask.id)
-				) {
+				if (subtask.dependencies?.includes(sourceTask.id)) {
 					const depIndex = subtask.dependencies.indexOf(sourceTask.id);
 					subtask.dependencies[depIndex] = destTaskId;
 				}
@@ -639,7 +635,7 @@ async function validateMove(tasksPath, taskIds, sourceTag, targetTag, context) {
 	let rawData = readJSON(tasksPath, projectRoot, sourceTag);
 
 	// Handle the case where readJSON returns resolved data with _rawTaggedData
-	if (rawData && rawData._rawTaggedData) {
+	if (rawData?._rawTaggedData) {
 		rawData = rawData._rawTaggedData;
 	}
 
@@ -810,19 +806,18 @@ async function resolveDependencies(
 					conflicts: crossTagDependencies,
 				},
 			};
-		} else {
-			// Block move and show error
-			throw new MoveTaskError(
-				MOVE_ERROR_CODES.CROSS_TAG_DEPENDENCY_CONFLICTS,
-				`Cannot move tasks: ${crossTagDependencies.length} cross-tag dependency conflicts found`,
-				{
-					conflicts: crossTagDependencies,
-					sourceTag,
-					targetTag,
-					taskIds,
-				},
-			);
 		}
+		// Block move and show error
+		throw new MoveTaskError(
+			MOVE_ERROR_CODES.CROSS_TAG_DEPENDENCY_CONFLICTS,
+			`Cannot move tasks: ${crossTagDependencies.length} cross-tag dependency conflicts found`,
+			{
+				conflicts: crossTagDependencies,
+				sourceTag,
+				targetTag,
+				taskIds,
+			},
+		);
 	}
 
 	return {

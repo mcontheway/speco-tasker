@@ -2,7 +2,7 @@
  * Direct function wrapper for validateDependenciesCommand
  */
 
-import fs from "fs";
+import fs from "node:fs";
 import { validateDependenciesCommand } from "../../../../scripts/modules/dependency-manager.js";
 import {
 	disableSilentMode,

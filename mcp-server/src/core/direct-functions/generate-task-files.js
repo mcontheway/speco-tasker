@@ -79,7 +79,7 @@ export async function generateTaskFilesDirect(args, log) {
 		return {
 			success: true,
 			data: {
-				message: `Successfully generated task files`,
+				message: "Successfully generated task files",
 				tasksPath: tasksPath,
 				outputDir: resolvedOutputDir,
 				taskFiles:

@@ -1,4 +1,4 @@
-import os from "os"; // Import os module for home directory check
+import os from "node:os"; // Import os module for home directory check
 import { initializeProject } from "../../../../scripts/init.js"; // Import core function and its logger if needed separately
 import {
 	disableSilentMode,
@@ -49,7 +49,8 @@ export async function initializeProjectDirect(args, log, context = {}) {
 			success: false,
 			error: {
 				code: "INVALID_TARGET_DIRECTORY",
-				message: `Cannot initialize project: Invalid target directory received. Please provide a valid projectRoot argument (absolute path to your project directory).`,
+				message:
+					"Cannot initialize project: Invalid target directory received. Please provide a valid projectRoot argument (absolute path to your project directory).",
 				details: JSON.stringify(errorDetails, null, 2),
 			},
 		};
@@ -89,7 +90,7 @@ export async function initializeProjectDirect(args, log, context = {}) {
 			// For MCP initialization, default to Cursor profile only
 			options.rules = ["cursor"];
 			options.rulesExplicitlyProvided = true;
-			log.info(`No rule profiles specified, defaulting to: Cursor`);
+			log.info("No rule profiles specified, defaulting to: Cursor");
 		}
 
 		log.info(`Initializing project with options: ${JSON.stringify(options)}`);
@@ -130,7 +131,6 @@ export async function initializeProjectDirect(args, log, context = {}) {
 
 	if (success) {
 		return { success: true, data: resultData };
-	} else {
-		return { success: false, error: errorResult };
 	}
+	return { success: false, error: errorResult };
 }

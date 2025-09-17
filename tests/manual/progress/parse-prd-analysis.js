@@ -9,9 +9,9 @@
  * Uses tests/fixtures/sample-prd.txt for consistent testing across all scenarios.
  */
 
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import chalk from "chalk";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -307,7 +307,7 @@ async function main() {
 			case "all":
 				console.log(chalk.yellow("Running all detailed tests...\n"));
 				await testProgressAccuracy();
-				console.log("\n" + "=".repeat(60) + "\n");
+				console.log(`\n${"=".repeat(60)}\n`);
 				await testStreamingComplexity();
 				break;
 

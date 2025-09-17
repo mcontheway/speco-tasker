@@ -3,10 +3,10 @@
  * Utility functions for Task Master CLI integration
  */
 
-import { spawnSync } from "child_process";
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
+import { spawnSync } from "node:child_process";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { getCurrentTag } from "../../../scripts/modules/utils.js";
 import { contextManager } from "../core/context-manager.js"; // Import the singleton
 
@@ -261,7 +261,7 @@ function getProjectRootFromSession(session, log) {
 
 		// Fallback 1: Use server path deduction (Cursor IDE)
 		const serverPath = process.argv[1];
-		if (serverPath && serverPath.includes("mcp-server")) {
+		if (serverPath?.includes("mcp-server")) {
 			const mcpServerIndex = serverPath.indexOf("mcp-server");
 			if (mcpServerIndex !== -1) {
 				const projectRoot = path.dirname(
@@ -520,7 +520,7 @@ function processMCPResponseData(
 		};
 	}
 	// Check if the input is likely a single task object (add more checks if needed)
-	else if (
+	if (
 		typeof taskOrData === "object" &&
 		taskOrData !== null &&
 		"id" in taskOrData &&
@@ -529,7 +529,7 @@ function processMCPResponseData(
 		return processSingleTask(taskOrData);
 	}
 	// Check if the input is an array of tasks directly (less common but possible)
-	else if (Array.isArray(taskOrData)) {
+	if (Array.isArray(taskOrData)) {
 		return processArrayOfTasks(taskOrData);
 	}
 
@@ -761,7 +761,7 @@ function getRawProjectRootFromSession(session, log) {
 			return session.roots[0].uri;
 		}
 		// Check alternate location
-		else if (session?.roots?.roots?.[0]?.uri) {
+		if (session?.roots?.roots?.[0]?.uri) {
 			return session.roots.roots[0].uri;
 		}
 		return null; // Not found in expected session locations

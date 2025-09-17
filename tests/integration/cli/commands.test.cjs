@@ -81,7 +81,9 @@ jest.unstable_mockModule("chalk", () => ({
 }));
 
 // --- Import modules (AFTER mock setup) ---
-let configManager, ui, chalk;
+let configManager;
+let ui;
+let chalk;
 
 describe("CLI Models Command (Action Handler Test)", () => {
 	// Setup dynamic imports before tests run
@@ -129,7 +131,7 @@ describe("CLI Models Command (Action Handler Test)", () => {
 					);
 					modelSetAction = true;
 				} else {
-					console.error(chalk.red(`Failed to set main model.`));
+					console.error(chalk.red("Failed to set main model."));
 					process.exit(1);
 				}
 			}
@@ -159,7 +161,7 @@ describe("CLI Models Command (Action Handler Test)", () => {
 					);
 					modelSetAction = true;
 				} else {
-					console.error(chalk.red(`Failed to set research model.`));
+					console.error(chalk.red("Failed to set research model."));
 					process.exit(1);
 				}
 			}
@@ -189,7 +191,7 @@ describe("CLI Models Command (Action Handler Test)", () => {
 					);
 					modelSetAction = true;
 				} else {
-					console.error(chalk.red(`Failed to set fallback model.`));
+					console.error(chalk.red("Failed to set fallback model."));
 					process.exit(1);
 				}
 			}

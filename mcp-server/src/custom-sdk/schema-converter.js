@@ -138,7 +138,7 @@ export function enhancePromptForJSON(prompt, jsonInstructions) {
 		const currentContent = enhancedPrompt[systemMessageIndex].content;
 		enhancedPrompt[systemMessageIndex] = {
 			...enhancedPrompt[systemMessageIndex],
-			content: currentContent + "\n\n" + jsonInstructions,
+			content: `${currentContent}\n\n${jsonInstructions}`,
 		};
 	} else {
 		// Add new system message at the beginning

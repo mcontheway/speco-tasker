@@ -60,19 +60,7 @@ async function confirmRemoveAllRemainingProfiles(profiles, remainingProfiles) {
 	console.log(
 		boxen(
 			chalk.red.bold(
-				`⚠️  CRITICAL WARNING: REMOVING ALL TASK MASTER RULE PROFILES ⚠️\n\n` +
-					`You are about to remove Task Master components for: ${profileList}\n` +
-					`This will leave your project with NO Task Master rule profiles remaining!\n\n` +
-					`What will be removed:\n` +
-					`• All Task Master specific rule files\n` +
-					`• Task Master MCP server configurations\n` +
-					`• Profile directories (only if completely empty after removal)\n\n` +
-					`What will be preserved:\n` +
-					`• Your existing custom rule files\n` +
-					`• Other MCP server configurations\n` +
-					`• Profile directories with custom content\n\n` +
-					`This could impact Task Master functionality but will preserve your custom configurations.\n\n` +
-					`Are you absolutely sure you want to proceed?`,
+				`⚠️  CRITICAL WARNING: REMOVING ALL TASK MASTER RULE PROFILES ⚠️\n\nYou are about to remove Task Master components for: ${profileList}\nThis will leave your project with NO Task Master rule profiles remaining!\n\nWhat will be removed:\n• All Task Master specific rule files\n• Task Master MCP server configurations\n• Profile directories (only if completely empty after removal)\n\nWhat will be preserved:\n• Your existing custom rule files\n• Other MCP server configurations\n• Profile directories with custom content\n\nThis could impact Task Master functionality but will preserve your custom configurations.\n\nAre you absolutely sure you want to proceed?`,
 			),
 			{
 				padding: 1,

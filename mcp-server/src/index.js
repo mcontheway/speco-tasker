@@ -1,6 +1,6 @@
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { FastMCP } from "fastmcp";
 import logger from "./logger.js";
 import { MCPProvider } from "./providers/mcp-provider.js";
@@ -90,7 +90,8 @@ class TaskMasterMCPServer {
 				session.server.sendLoggingMessage({
 					data: {
 						context: session.context,
-						message: `MCP session missing required sampling capabilities, provider not registered`,
+						message:
+							"MCP session missing required sampling capabilities, provider not registered",
 					},
 					level: "info",
 				});
@@ -104,7 +105,7 @@ class TaskMasterMCPServer {
 			session.server.sendLoggingMessage({
 				data: {
 					context: session.context,
-					message: `MCP Server connected - Speco Tasker tools available`,
+					message: "MCP Server connected - Speco Tasker tools available",
 				},
 				level: "info",
 			});
@@ -112,7 +113,7 @@ class TaskMasterMCPServer {
 			session.server.sendLoggingMessage({
 				data: {
 					context: session.context,
-					message: `No MCP sessions available, provider not registered`,
+					message: "No MCP sessions available, provider not registered",
 				},
 				level: "warn",
 			});

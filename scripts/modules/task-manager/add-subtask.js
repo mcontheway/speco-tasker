@@ -1,4 +1,4 @@
-import path from "path";
+import path from "node:path";
 
 import { isTaskDependentOn } from "../task-manager.js";
 import { getCurrentTag, log, readJSON, writeJSON } from "../utils.js";
@@ -77,7 +77,7 @@ async function addSubtask(
 
 			// Check for circular dependency
 			if (existingTaskIdNum === parentIdNum) {
-				throw new Error(`Cannot make a task a subtask of itself`);
+				throw new Error("Cannot make a task a subtask of itself");
 			}
 
 			// Check if parent task is a subtask of the task we're converting
@@ -142,7 +142,7 @@ async function addSubtask(
 				log("info", `子任务继承了优先级 '${parentTask.priority}'`);
 			}
 			if (!newSubtaskData.testStrategy && parentTask.testStrategy) {
-				log("info", `子任务继承了测试策略`);
+				log("info", "子任务继承了测试策略");
 			}
 
 			// Add to parent's subtasks

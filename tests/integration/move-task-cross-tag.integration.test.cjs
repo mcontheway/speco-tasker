@@ -1,6 +1,6 @@
-const fs = require('fs')
-const path = require('path')
-const { fileURLToPath } = require('url')
+const fs = require('node:fs')
+const path = require('node:path')
+const { fileURLToPath } = require('node:url')
 const { jest } = require('@jest/globals')
 
 const __filename = fileURLToPath(import.meta.url)
@@ -26,7 +26,7 @@ const mockUtils = {
 				}
 			})
 			return result
-		} else if (direction === 'reverse') {
+		}if (direction === 'reverse') {
 			// Return tasks that depend on the source tasks
 			const sourceIds = sourceTasks.map((t) => t.id)
 			const normalizedSourceIds = sourceIds.map((id) => String(id))
@@ -76,7 +76,7 @@ jest.unstable_mockModule('../scripts/modules/dependency-manager.js', () => ({
 
 			task.dependencies.forEach((depId) => {
 				const normalizedDepId = typeof depId === 'string' ? Number.parseInt(depId, 10) : depId
-				if (!isNaN(normalizedDepId) && normalizedDepId !== taskId) {
+				if (!Number.isNaN(normalizedDepId) && normalizedDepId !== taskId) {
 					dependentIds.add(normalizedDepId)
 					findAllDependencies(normalizedDepId)
 				}
@@ -84,7 +84,7 @@ jest.unstable_mockModule('../scripts/modules/dependency-manager.js', () => ({
 		}
 
 		sourceTasks.forEach((sourceTask) => {
-			if (sourceTask && sourceTask.id) {
+			if (sourceTask?.id) {
 				findAllDependencies(sourceTask.id)
 			}
 		})

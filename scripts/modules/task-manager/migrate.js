@@ -1,6 +1,6 @@
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import chalk from "chalk";
 import { createLogWrapper } from "../../../mcp-server/src/tools/utils.js";
 import {
@@ -64,7 +64,7 @@ export async function migrateProject(options = {}) {
 
 	// Confirm migration
 	if (!options.yes) {
-		const readline = await import("readline");
+		const readline = await import("node:readline");
 		const rl = readline.createInterface({
 			input: process.stdin,
 			output: process.stdout,

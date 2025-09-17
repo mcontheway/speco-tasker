@@ -49,7 +49,8 @@ function processTaskResponse(data) {
 	if (typeof data === "object" && data !== null && data.id && data.title) {
 		// If the data itself looks like the task object, return it
 		return data;
-	} else if (data.task) {
+	}
+	if (data.task) {
 		return data.task;
 	}
 

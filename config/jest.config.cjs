@@ -1,7 +1,4 @@
 const config = {
-	// Root directory for the project (relative to config directory)
-	rootDir: "../",
-
 	// Use Node.js environment for testing
 	testEnvironment: "node",
 

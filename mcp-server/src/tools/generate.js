@@ -3,7 +3,7 @@
  * Tool to generate individual task files from tasks.json
  */
 
-import path from "path";
+import path from "node:path";
 import { z } from "zod";
 import { resolveTag } from "../../../scripts/modules/utils.js";
 import { generateTaskFilesDirect } from "../core/task-master-core.js";

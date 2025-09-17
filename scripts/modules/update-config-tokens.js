@@ -3,10 +3,10 @@
  * Updates config.json with correct maxTokens values from supported-models.json
  */
 
-import fs from "fs";
-import path from "path";
-import { dirname } from "path";
-import { fileURLToPath } from "url";
+import fs from "node:fs";
+import path from "node:path";
+import { dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -31,7 +31,7 @@ export function updateConfigMaxTokens(configPath) {
 		const roles = ["main", "research", "fallback"];
 
 		for (const role of roles) {
-			if (config.models && config.models[role]) {
+			if (config.models?.[role]) {
 				const provider = config.models[role].provider;
 				const modelId = config.models[role].modelId;
 
@@ -40,7 +40,7 @@ export function updateConfigMaxTokens(configPath) {
 					const modelData = supportedModels[provider].find(
 						(m) => m.id === modelId,
 					);
-					if (modelData && modelData.max_tokens) {
+					if (modelData?.max_tokens) {
 						config.models[role].maxTokens = modelData.max_tokens;
 					}
 				}

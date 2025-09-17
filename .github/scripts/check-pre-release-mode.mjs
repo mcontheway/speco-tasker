@@ -92,7 +92,7 @@ function checkPreReleaseMode() {
 		console.log("✅ Not in active pre-release mode - safe to proceed");
 		process.exit(0);
 	} catch (error) {
-		console.error(`❌ ERROR: Unable to parse .changeset/pre.json – aborting.`);
+		console.error("❌ ERROR: Unable to parse .changeset/pre.json – aborting.");
 		console.error(`Error details: ${error.message}`);
 		process.exit(1);
 	}

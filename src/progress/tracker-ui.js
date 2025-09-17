@@ -119,7 +119,7 @@ export class ProgressTableBuilder {
 		];
 
 		const cols = columns || defaultColumns;
-		const headerText = " " + cols.map((c) => c.text).join(" | ") + " ";
+		const headerText = ` ${cols.map((c) => c.text).join(" | ")} `;
 		const borderLine = this.createBorderLine(cols.map((c) => c.width));
 
 		this.factory.createHeader(headerText, borderLine);
@@ -143,7 +143,7 @@ export class ProgressTableBuilder {
 		this.factory.createRow(format, { title });
 
 		// Add separator after each row
-		const borderLine = "------+-----+" + "─".repeat(64);
+		const borderLine = `------+-----+${"─".repeat(64)}`;
 		this.factory.createBorder(borderLine);
 		return this;
 	}

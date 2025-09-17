@@ -2,8 +2,8 @@
  * Direct function wrapper for clearSubtasks
  */
 
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 import { clearSubtasks } from "../../../../scripts/modules/task-manager.js";
 import {
 	disableSilentMode,

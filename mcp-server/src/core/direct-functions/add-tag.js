@@ -131,57 +131,56 @@ export async function addTagDirect(args, log, context = {}) {
 					message: `Successfully created tag "${result.tagName}" from git branch "${result.branchName}"`,
 				},
 			};
-		} else {
-			// Check required parameters for regular tag creation
-			if (!name || typeof name !== "string") {
-				log.error("Missing required parameter: name");
-				disableSilentMode();
-				return {
-					success: false,
-					error: {
-						code: "MISSING_PARAMETER",
-						message: "Tag name is required and must be a string",
-					},
-				};
-			}
-
-			log.info(`Creating new tag: ${name}`);
-
-			// Prepare options
-			const options = {
-				copyFromCurrent,
-				copyFromTag,
-				description,
-			};
-
-			// Call the createTag function
-			const result = await createTag(
-				tasksJsonPath,
-				name,
-				options,
-				{
-					session,
-					mcpLog,
-					projectRoot,
-				},
-				"json", // outputFormat - use 'json' to suppress CLI UI
-			);
-
-			// Restore normal logging
+		}
+		// Check required parameters for regular tag creation
+		if (!name || typeof name !== "string") {
+			log.error("Missing required parameter: name");
 			disableSilentMode();
-
 			return {
-				success: true,
-				data: {
-					tagName: result.tagName,
-					created: result.created,
-					tasksCopied: result.tasksCopied,
-					sourceTag: result.sourceTag,
-					description: result.description,
-					message: `Successfully created tag "${result.tagName}"`,
+				success: false,
+				error: {
+					code: "MISSING_PARAMETER",
+					message: "Tag name is required and must be a string",
 				},
 			};
 		}
+
+		log.info(`Creating new tag: ${name}`);
+
+		// Prepare options
+		const options = {
+			copyFromCurrent,
+			copyFromTag,
+			description,
+		};
+
+		// Call the createTag function
+		const result = await createTag(
+			tasksJsonPath,
+			name,
+			options,
+			{
+				session,
+				mcpLog,
+				projectRoot,
+			},
+			"json", // outputFormat - use 'json' to suppress CLI UI
+		);
+
+		// Restore normal logging
+		disableSilentMode();
+
+		return {
+			success: true,
+			data: {
+				tagName: result.tagName,
+				created: result.created,
+				tasksCopied: result.tasksCopied,
+				sourceTag: result.sourceTag,
+				description: result.description,
+				message: `Successfully created tag "${result.tagName}"`,
+			},
+		};
 	} catch (error) {
 		// Make sure to restore normal logging even if there's an error
 		disableSilentMode();

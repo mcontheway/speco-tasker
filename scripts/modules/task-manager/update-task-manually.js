@@ -1,5 +1,5 @@
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 
 import {
 	log as consoleLog,
@@ -65,7 +65,7 @@ async function updateTaskManually(
 
 				// Special processing for specific fields
 				switch (field) {
-					case "dependencies":
+					case "dependencies": {
 						const depResult = parseDependencies(newValue);
 						if (depResult.errors.length > 0) {
 							consoleLog(
@@ -81,8 +81,9 @@ async function updateTaskManually(
 						}
 						processedValue = depResult.dependencies;
 						break;
+					}
 
-					case "spec_files":
+					case "spec_files": {
 						const parsedSpecFiles = parseSpecFiles(newValue, projectRoot);
 						const specValidation = validateSpecFiles(
 							parsedSpecFiles,
@@ -102,6 +103,7 @@ async function updateTaskManually(
 						}
 						processedValue = parsedSpecFiles;
 						break;
+					}
 
 					case "logs":
 						processedValue = parseLogs(newValue, appendMode, task[field]);

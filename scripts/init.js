@@ -13,11 +13,11 @@
  * For the full license text, see the LICENSE file in the root directory.
  */
 
-import fs from "fs";
-import path from "path";
-import { dirname } from "path";
-import readline from "readline";
-import { fileURLToPath } from "url";
+import fs from "node:fs";
+import path from "node:path";
+import { dirname } from "node:path";
+import readline from "node:readline";
+import { fileURLToPath } from "node:url";
 import boxen from "boxen";
 import chalk from "chalk";
 import figlet from "figlet";
@@ -26,7 +26,7 @@ import { updateConfigMaxTokens } from "./modules/update-config-tokens.js";
 import { isSilentMode } from "./modules/utils.js";
 import { insideGitWorkTree } from "./modules/utils/git-utils.js";
 
-import { execSync } from "child_process";
+import { execSync } from "node:child_process";
 import {
 	ENV_EXAMPLE_FILE,
 	EXAMPLE_PRD_FILE,

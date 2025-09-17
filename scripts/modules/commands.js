@@ -3,10 +3,10 @@
  * Command-line interface for the Speco Tasker CLI
  */
 
-import fs from "fs";
-import http from "http";
-import https from "https";
-import path from "path";
+import fs from "node:fs";
+import http from "node:http";
+import https from "node:https";
+import path from "node:path";
 import search from "@inquirer/search";
 import boxen from "boxen";
 import chalk from "chalk";
@@ -1267,29 +1267,17 @@ function registerCommands(programInstance) {
 					// Display success message and suggested next steps
 					console.log(
 						boxen(
-							chalk.white.bold(`子任务 ${parentId}.${subtask.id} 添加成功`) +
-								"\n\n" +
-								chalk.white(`标题: ${subtask.title}`) +
-								"\n" +
-								chalk.white(`状态: ${getStatusWithColor(subtask.status)}`) +
-								"\n" +
-								(dependencies.length > 0
-									? chalk.white(`依赖关系: ${dependencies.join(", ")}`) + "\n"
-									: "") +
-								"\n" +
-								chalk.white.bold("下一步操作:") +
-								"\n" +
-								chalk.cyan(
-									`1. 查看父任务详情: ${chalk.yellow(`task-master show ${parentId}`)}`,
-								) +
-								"\n" +
-								chalk.cyan(
-									`2. 开始处理子任务: ${chalk.yellow(`task-master set-status --id=${parentId}.${subtask.id} --status=in-progress`)}`,
-								) +
-								"\n" +
-								chalk.cyan(
-									`3. 查看所有任务: ${chalk.yellow(`task-master list --with-subtasks`)}`,
-								),
+							`${chalk.white.bold(`子任务 ${parentId}.${subtask.id} 添加成功`)}\n\n${chalk.white(`标题: ${subtask.title}`)}\n${chalk.white(`状态: ${getStatusWithColor(subtask.status)}`)}\n${
+								dependencies.length > 0
+									? `${chalk.white(`依赖关系: ${dependencies.join(", ")}`)}\n`
+									: ""
+							}\n${chalk.white.bold("下一步操作:")}\n${chalk.cyan(
+								`1. 查看父任务详情: ${chalk.yellow(`task-master show ${parentId}`)}`,
+							)}\n${chalk.cyan(
+								`2. 开始处理子任务: ${chalk.yellow(`task-master set-status --id=${parentId}.${subtask.id} --status=in-progress`)}`,
+							)}\n${chalk.cyan(
+								`3. 查看所有任务: ${chalk.yellow("task-master list --with-subtasks")}`,
+							)}`,
 							{
 								padding: 1,
 								borderColor: "green",
@@ -1304,20 +1292,11 @@ function registerCommands(programInstance) {
 					);
 					console.log(
 						boxen(
-							chalk.white.bold("Usage Examples:") +
-								"\n\n" +
-								chalk.white("Convert existing task to subtask:") +
-								"\n" +
-								chalk.yellow(
-									`  task-master add-subtask --parent=5 --task-id=8`,
-								) +
-								"\n\n" +
-								chalk.white("Create new subtask:") +
-								"\n" +
-								chalk.yellow(
-									`  task-master add-subtask --parent=5 --title="Implement login UI" --description="Create the login form"`,
-								) +
-								"\n\n",
+							`${chalk.white.bold("Usage Examples:")}\n\n${chalk.white("Convert existing task to subtask:")}\n${chalk.yellow(
+								"  task-master add-subtask --parent=5 --task-id=8",
+							)}\n\n${chalk.white("Create new subtask:")}\n${chalk.yellow(
+								`  task-master add-subtask --parent=5 --title="Implement login UI" --description="Create the login form"`,
+							)}\n\n`,
 							{ padding: 1, borderColor: "blue", borderStyle: "round" },
 						),
 					);
@@ -1414,29 +1393,15 @@ function registerCommands(programInstance) {
 						// Display success message and next steps for converted task
 						console.log(
 							boxen(
-								chalk.white.bold(
+								`${chalk.white.bold(
 									`子任务 ${subtaskId} 已转换为独立任务 #${result.id}`,
-								) +
-									"\n\n" +
-									chalk.white(`标题: ${result.title}`) +
-									"\n" +
-									chalk.white(`状态: ${getStatusWithColor(result.status)}`) +
-									"\n" +
-									chalk.white(`依赖关系: ${result.dependencies.join(", ")}`) +
-									"\n\n" +
-									chalk.white.bold("下一步操作:") +
-									"\n" +
-									chalk.cyan(
-										`1. 查看新任务详情: ${chalk.yellow(`task-master show ${result.id}`)}`,
-									) +
-									"\n" +
-									chalk.cyan(
-										`2. 开始处理任务: ${chalk.yellow(`task-master set-status --id=${result.id} --status=in-progress`)}`,
-									) +
-									"\n" +
-									chalk.cyan(
-										`3. 查看任务列表: ${chalk.yellow(`task-master list`)}`,
-									),
+								)}\n\n${chalk.white(`标题: ${result.title}`)}\n${chalk.white(`状态: ${getStatusWithColor(result.status)}`)}\n${chalk.white(`依赖关系: ${result.dependencies.join(", ")}`)}\n\n${chalk.white.bold("下一步操作:")}\n${chalk.cyan(
+									`1. 查看新任务详情: ${chalk.yellow(`task-master show ${result.id}`)}`,
+								)}\n${chalk.cyan(
+									`2. 开始处理任务: ${chalk.yellow(`task-master set-status --id=${result.id} --status=in-progress`)}`,
+								)}\n${chalk.cyan(
+									`3. 查看任务列表: ${chalk.yellow("task-master list")}`,
+								)}`,
 								{
 									padding: 1,
 									borderColor: "green",
@@ -1449,19 +1414,11 @@ function registerCommands(programInstance) {
 						// Display success message for deleted subtask
 						console.log(
 							boxen(
-								chalk.white.bold(`子任务 ${subtaskId} 已删除`) +
-									"\n\n" +
-									chalk.white("子任务已被成功删除。") +
-									"\n\n" +
-									chalk.white.bold("下一步操作:") +
-									"\n" +
-									chalk.cyan(
-										`1. 查看父任务: ${chalk.yellow(`task-master show ${parentId}`)}`,
-									) +
-									"\n" +
-									chalk.cyan(
-										`2. 查看所有任务: ${chalk.yellow(`task-master list --with-subtasks`)}`,
-									),
+								`${chalk.white.bold(`子任务 ${subtaskId} 已删除`)}\n\n${chalk.white("子任务已被成功删除。")}\n\n${chalk.white.bold("下一步操作:")}\n${chalk.cyan(
+									`1. 查看父任务: ${chalk.yellow(`task-master show ${parentId}`)}`,
+								)}\n${chalk.cyan(
+									`2. 查看所有任务: ${chalk.yellow("task-master list --with-subtasks")}`,
+								)}`,
 								{
 									padding: 1,
 									borderColor: "green",
@@ -1488,24 +1445,7 @@ function registerCommands(programInstance) {
 	function showRemoveSubtaskHelp() {
 		console.log(
 			boxen(
-				chalk.white.bold("Remove Subtask Command Help") +
-					"\n\n" +
-					chalk.cyan("Usage:") +
-					"\n" +
-					`  task-master remove-subtask --id=<parentId.subtaskId> [options]\n\n` +
-					chalk.cyan("Options:") +
-					"\n" +
-					'  -i, --id <id>       Subtask ID(s) to remove in format "parentId.subtaskId" (can be comma-separated, required)\n' +
-					"  -c, --convert       Convert the subtask to a standalone task instead of deleting it\n" +
-					'  -f, --file <file>   Path to the tasks file (default: "' +
-					TASKMASTER_TASKS_FILE +
-					'")\n' +
-					"  --skip-generate     Skip regenerating task files\n\n" +
-					chalk.cyan("Examples:") +
-					"\n" +
-					"  task-master remove-subtask --id=5.2\n" +
-					"  task-master remove-subtask --id=5.2,6.3,7.1\n" +
-					"  task-master remove-subtask --id=5.2 --convert",
+				`${chalk.white.bold("Remove Subtask Command Help")}\n\n${chalk.cyan("Usage:")}\n  task-master remove-subtask --id=<parentId.subtaskId> [options]\n\n${chalk.cyan("Options:")}\n  -i, --id <id>       Subtask ID(s) to remove in format "parentId.subtaskId" (can be comma-separated, required)\n  -c, --convert       Convert the subtask to a standalone task instead of deleting it\n  -f, --file <file>   Path to the tasks file (default: "${TASKMASTER_TASKS_FILE}")\n  --skip-generate     Skip regenerating task files\n\n${chalk.cyan("Examples:")}\n  task-master remove-subtask --id=5.2\n  task-master remove-subtask --id=5.2,6.3,7.1\n  task-master remove-subtask --id=5.2 --convert`,
 				{ padding: 1, borderColor: "blue", borderStyle: "round" },
 			),
 		);
@@ -1515,26 +1455,7 @@ function registerCommands(programInstance) {
 	function showTagsHelp() {
 		console.log(
 			boxen(
-				chalk.white.bold("Tags Command Help") +
-					"\n\n" +
-					chalk.cyan("Usage:") +
-					"\n" +
-					`  task-master tags [options]\n\n` +
-					chalk.cyan("Options:") +
-					"\n" +
-					'  -f, --file <file>   Path to the tasks file (default: "' +
-					TASKMASTER_TASKS_FILE +
-					'")\n' +
-					"  --show-metadata     Show detailed metadata for each tag\n\n" +
-					chalk.cyan("Examples:") +
-					"\n" +
-					"  task-master tags\n" +
-					"  task-master tags --show-metadata\n\n" +
-					chalk.cyan("Related Commands:") +
-					"\n" +
-					"  task-master add-tag <name>      Create a new tag\n" +
-					"  task-master use-tag <name>      Switch to a tag\n" +
-					"  task-master delete-tag <name>   Delete a tag",
+				`${chalk.white.bold("Tags Command Help")}\n\n${chalk.cyan("Usage:")}\n  task-master tags [options]\n\n${chalk.cyan("Options:")}\n  -f, --file <file>   Path to the tasks file (default: "${TASKMASTER_TASKS_FILE}")\n  --show-metadata     Show detailed metadata for each tag\n\n${chalk.cyan("Examples:")}\n  task-master tags\n  task-master tags --show-metadata\n\n${chalk.cyan("Related Commands:")}\n  task-master add-tag <name>      Create a new tag\n  task-master use-tag <name>      Switch to a tag\n  task-master delete-tag <name>   Delete a tag`,
 				{ padding: 1, borderColor: "blue", borderStyle: "round" },
 			),
 		);
@@ -1544,25 +1465,7 @@ function registerCommands(programInstance) {
 	function showAddTagHelp() {
 		console.log(
 			boxen(
-				chalk.white.bold("Add Tag Command Help") +
-					"\n\n" +
-					chalk.cyan("Usage:") +
-					"\n" +
-					`  task-master add-tag <tagName> [options]\n\n` +
-					chalk.cyan("Options:") +
-					"\n" +
-					'  -f, --file <file>        Path to the tasks file (default: "' +
-					TASKMASTER_TASKS_FILE +
-					'")\n' +
-					"  --copy-from-current      Copy tasks from the current tag to the new tag\n" +
-					"  --copy-from <tag>        Copy tasks from the specified tag to the new tag\n" +
-					"  -d, --description <text> Optional description for the tag\n\n" +
-					chalk.cyan("Examples:") +
-					"\n" +
-					"  task-master add-tag feature-xyz\n" +
-					"  task-master add-tag feature-xyz --copy-from-current\n" +
-					"  task-master add-tag feature-xyz --copy-from master\n" +
-					'  task-master add-tag feature-xyz -d "Feature XYZ development"',
+				`${chalk.white.bold("Add Tag Command Help")}\n\n${chalk.cyan("Usage:")}\n  task-master add-tag <tagName> [options]\n\n${chalk.cyan("Options:")}\n  -f, --file <file>        Path to the tasks file (default: "${TASKMASTER_TASKS_FILE}")\n  --copy-from-current      Copy tasks from the current tag to the new tag\n  --copy-from <tag>        Copy tasks from the specified tag to the new tag\n  -d, --description <text> Optional description for the tag\n\n${chalk.cyan("Examples:")}\n  task-master add-tag feature-xyz\n  task-master add-tag feature-xyz --copy-from-current\n  task-master add-tag feature-xyz --copy-from master\n  task-master add-tag feature-xyz -d "Feature XYZ development"`,
 				{ padding: 1, borderColor: "blue", borderStyle: "round" },
 			),
 		);
@@ -1572,24 +1475,7 @@ function registerCommands(programInstance) {
 	function showDeleteTagHelp() {
 		console.log(
 			boxen(
-				chalk.white.bold("Delete Tag Command Help") +
-					"\n\n" +
-					chalk.cyan("Usage:") +
-					"\n" +
-					`  task-master delete-tag <tagName> [options]\n\n` +
-					chalk.cyan("Options:") +
-					"\n" +
-					'  -f, --file <file>   Path to the tasks file (default: "' +
-					TASKMASTER_TASKS_FILE +
-					'")\n' +
-					"  -y, --yes           Skip confirmation prompts\n\n" +
-					chalk.cyan("Examples:") +
-					"\n" +
-					"  task-master delete-tag feature-xyz\n" +
-					"  task-master delete-tag feature-xyz --yes\n\n" +
-					chalk.yellow("Warning:") +
-					"\n" +
-					"  This will permanently delete the tag and all its tasks!",
+				`${chalk.white.bold("Delete Tag Command Help")}\n\n${chalk.cyan("Usage:")}\n  task-master delete-tag <tagName> [options]\n\n${chalk.cyan("Options:")}\n  -f, --file <file>   Path to the tasks file (default: "${TASKMASTER_TASKS_FILE}")\n  -y, --yes           Skip confirmation prompts\n\n${chalk.cyan("Examples:")}\n  task-master delete-tag feature-xyz\n  task-master delete-tag feature-xyz --yes\n\n${chalk.yellow("Warning:")}\n  This will permanently delete the tag and all its tasks!`,
 				{ padding: 1, borderColor: "blue", borderStyle: "round" },
 			),
 		);
@@ -1599,24 +1485,7 @@ function registerCommands(programInstance) {
 	function showUseTagHelp() {
 		console.log(
 			boxen(
-				chalk.white.bold("Use Tag Command Help") +
-					"\n\n" +
-					chalk.cyan("Usage:") +
-					"\n" +
-					`  task-master use-tag <tagName> [options]\n\n` +
-					chalk.cyan("Options:") +
-					"\n" +
-					'  -f, --file <file>   Path to the tasks file (default: "' +
-					TASKMASTER_TASKS_FILE +
-					'")\n\n' +
-					chalk.cyan("Examples:") +
-					"\n" +
-					"  task-master use-tag feature-xyz\n" +
-					"  task-master use-tag master\n\n" +
-					chalk.cyan("Related Commands:") +
-					"\n" +
-					"  task-master tags                 List all available tags\n" +
-					"  task-master add-tag <name>       Create a new tag",
+				`${chalk.white.bold("Use Tag Command Help")}\n\n${chalk.cyan("Usage:")}\n  task-master use-tag <tagName> [options]\n\n${chalk.cyan("Options:")}\n  -f, --file <file>   Path to the tasks file (default: "${TASKMASTER_TASKS_FILE}")\n\n${chalk.cyan("Examples:")}\n  task-master use-tag feature-xyz\n  task-master use-tag master\n\n${chalk.cyan("Related Commands:")}\n  task-master tags                 List all available tags\n  task-master add-tag <name>       Create a new tag`,
 				{ padding: 1, borderColor: "blue", borderStyle: "round" },
 			),
 		);
@@ -1704,10 +1573,8 @@ function registerCommands(programInstance) {
 								if (taskObject.subtasks && taskObject.subtasks.length > 0) {
 									totalSubtasksToDelete += taskObject.subtasks.length;
 								}
-								const dependentTasks = data.tasks.filter(
-									(t) =>
-										t.dependencies &&
-										t.dependencies.includes(Number.parseInt(taskId, 10)),
+								const dependentTasks = data.tasks.filter((t) =>
+									t.dependencies?.includes(Number.parseInt(taskId, 10)),
 								);
 								if (dependentTasks.length > 0) {
 									dependentTaskMessages.push(
@@ -1930,76 +1797,29 @@ function registerCommands(programInstance) {
 			// Helper function to show move command help - defined in scope for proper encapsulation
 			function showMoveHelp() {
 				console.log(
-					chalk.white.bold("Move Command Help") +
-						"\n\n" +
-						chalk.cyan("Move tasks between tags or reorder within tags.") +
-						"\n\n" +
-						chalk.yellow.bold("Within-Tag Moves:") +
-						"\n" +
-						chalk.white("  task-master move --from=5 --to=7") +
-						"\n" +
-						chalk.white("  task-master move --from=5.2 --to=7.3") +
-						"\n" +
-						chalk.white("  task-master move --from=5,6,7 --to=10,11,12") +
-						"\n\n" +
-						chalk.yellow.bold("Cross-Tag Moves:") +
-						"\n" +
-						chalk.white(
-							"  task-master move --from=5 --from-tag=backlog --to-tag=in-progress",
-						) +
-						"\n" +
-						chalk.white(
-							"  task-master move --from=5,6 --from-tag=backlog --to-tag=done",
-						) +
-						"\n\n" +
-						chalk.yellow.bold("Dependency Resolution:") +
-						"\n" +
-						chalk.white("  # Move with dependencies") +
-						"\n" +
-						chalk.white(
-							"  task-master move --from=5 --from-tag=backlog --to-tag=in-progress --with-dependencies",
-						) +
-						"\n\n" +
-						chalk.white("  # Break dependencies") +
-						"\n" +
-						chalk.white(
-							"  task-master move --from=5 --from-tag=backlog --to-tag=in-progress --ignore-dependencies",
-						) +
-						"\n\n" +
-						"\n" +
-						chalk.yellow.bold("Best Practices:") +
-						"\n" +
-						chalk.white(
-							"  • Use --with-dependencies to move dependent tasks together",
-						) +
-						"\n" +
-						chalk.white(
-							"  • Use --ignore-dependencies to break cross-tag dependencies",
-						) +
-						"\n" +
-						chalk.white(
-							"  • Check dependencies first: task-master validate-dependencies",
-						) +
-						"\n" +
-						chalk.white(
-							"  • Fix dependency issues: task-master fix-dependencies",
-						) +
-						"\n\n" +
-						chalk.yellow.bold("Error Resolution:") +
-						"\n" +
-						chalk.white(
-							"  • Cross-tag dependency conflicts: Use --with-dependencies or --ignore-dependencies",
-						) +
-						"\n" +
-						chalk.white(
-							"  • Subtask movement: Promote subtask first with remove-subtask --convert",
-						) +
-						"\n" +
-						chalk.white(
-							"  • Invalid tags: Check available tags with task-master tags",
-						) +
-						"\n\n" +
-						chalk.gray("For more help, run: task-master move --help"),
+					`${chalk.white.bold("Move Command Help")}\n\n${chalk.cyan("Move tasks between tags or reorder within tags.")}\n\n${chalk.yellow.bold("Within-Tag Moves:")}\n${chalk.white("  task-master move --from=5 --to=7")}\n${chalk.white("  task-master move --from=5.2 --to=7.3")}\n${chalk.white("  task-master move --from=5,6,7 --to=10,11,12")}\n\n${chalk.yellow.bold("Cross-Tag Moves:")}\n${chalk.white(
+						"  task-master move --from=5 --from-tag=backlog --to-tag=in-progress",
+					)}\n${chalk.white(
+						"  task-master move --from=5,6 --from-tag=backlog --to-tag=done",
+					)}\n\n${chalk.yellow.bold("Dependency Resolution:")}\n${chalk.white("  # Move with dependencies")}\n${chalk.white(
+						"  task-master move --from=5 --from-tag=backlog --to-tag=in-progress --with-dependencies",
+					)}\n\n${chalk.white("  # Break dependencies")}\n${chalk.white(
+						"  task-master move --from=5 --from-tag=backlog --to-tag=in-progress --ignore-dependencies",
+					)}\n\n\n${chalk.yellow.bold("Best Practices:")}\n${chalk.white(
+						"  • Use --with-dependencies to move dependent tasks together",
+					)}\n${chalk.white(
+						"  • Use --ignore-dependencies to break cross-tag dependencies",
+					)}\n${chalk.white(
+						"  • Check dependencies first: task-master validate-dependencies",
+					)}\n${chalk.white(
+						"  • Fix dependency issues: task-master fix-dependencies",
+					)}\n\n${chalk.yellow.bold("Error Resolution:")}\n${chalk.white(
+						"  • Cross-tag dependency conflicts: Use --with-dependencies or --ignore-dependencies",
+					)}\n${chalk.white(
+						"  • Subtask movement: Promote subtask first with remove-subtask --convert",
+					)}\n${chalk.white(
+						"  • Invalid tags: Check available tags with task-master tags",
+					)}\n\n${chalk.gray("For more help, run: task-master move --help")}`,
 				);
 			}
 
@@ -2042,7 +1862,7 @@ function registerCommands(programInstance) {
 
 				// Print any tips returned from the move operation (e.g., after ignoring dependencies)
 				if (Array.isArray(result.tips) && result.tips.length > 0) {
-					console.log("\n" + chalk.yellow.bold("提示:"));
+					console.log(`\n${chalk.yellow.bold("提示:")}`);
 					result.tips.forEach((t) => console.log(chalk.white(`  • ${t}`)));
 				}
 
@@ -2347,20 +2167,13 @@ function registerCommands(programInstance) {
 				if (errMsg.includes("already exists in target tag")) {
 					console.error(chalk.red(`Error: ${errMsg}`));
 					console.log(
-						"\n" +
-							chalk.yellow.bold("Conflict: ID already exists in target tag") +
-							"\n" +
-							chalk.white(
-								"  • Choose a different target tag without conflicting IDs",
-							) +
-							"\n" +
-							chalk.white(
-								"  • Move a different set of IDs (avoid existing ones)",
-							) +
-							"\n" +
-							chalk.white(
-								"  • If needed, move within-tag to a new ID first, then cross-tag move",
-							),
+						`\n${chalk.yellow.bold("Conflict: ID already exists in target tag")}\n${chalk.white(
+							"  • Choose a different target tag without conflicting IDs",
+						)}\n${chalk.white(
+							"  • Move a different set of IDs (avoid existing ones)",
+						)}\n${chalk.white(
+							"  • If needed, move within-tag to a new ID first, then cross-tag move",
+						)}`,
 					);
 					process.exit(1);
 				}
@@ -3024,7 +2837,7 @@ async function runCLI(argv = process.argv) {
 				const rawData = fs.readFileSync(tasksPath, "utf8");
 				const parsedData = JSON.parse(rawData);
 
-				if (parsedData && parsedData.master) {
+				if (parsedData?.master) {
 					// Migration has occurred, check if we've shown the notice
 					let stateData = { migrationNoticeShown: false };
 					if (statePath && fs.existsSync(statePath)) {

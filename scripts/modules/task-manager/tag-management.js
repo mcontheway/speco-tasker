@@ -1,5 +1,5 @@
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 import boxen from "boxen";
 import chalk from "chalk";
 import Table from "cli-table3";
@@ -169,13 +169,11 @@ async function createTag(
 		if (outputFormat === "text") {
 			console.log(
 				boxen(
-					chalk.green.bold("✓ Tag Created Successfully") +
-						`\n\nTag Name: ${chalk.cyan(tagName)}` +
-						`\nTasks Copied: ${chalk.yellow(sourceTasks.length)}` +
-						(copyFromCurrent || copyFromTag
+					`${chalk.green.bold("✓ Tag Created Successfully")}\n\nTag Name: ${chalk.cyan(tagName)}\nTasks Copied: ${chalk.yellow(sourceTasks.length)}${
+						copyFromCurrent || copyFromTag
 							? `\nSource Tag: ${chalk.cyan(copyFromTag || getCurrentTag(projectRoot))}`
-							: "") +
-						(description ? `\nDescription: ${chalk.gray(description)}` : ""),
+							: ""
+					}${description ? `\nDescription: ${chalk.gray(description)}` : ""}`,
 					{
 						padding: 1,
 						borderColor: "green",
@@ -297,10 +295,7 @@ async function deleteTag(
 		if (!yes && taskCount > 0 && outputFormat === "text") {
 			console.log(
 				boxen(
-					chalk.yellow.bold("⚠ WARNING: Tag Deletion") +
-						`\n\nYou are about to delete tag "${chalk.cyan(tagName)}"` +
-						`\nThis will permanently delete ${chalk.red.bold(taskCount)} tasks` +
-						"\n\nThis action cannot be undone!",
+					`${chalk.yellow.bold("⚠ WARNING: Tag Deletion")}\n\nYou are about to delete tag "${chalk.cyan(tagName)}"\nThis will permanently delete ${chalk.red.bold(taskCount)} tasks\n\nThis action cannot be undone!`,
 					{
 						padding: 1,
 						borderColor: "yellow",
@@ -385,12 +380,11 @@ async function deleteTag(
 		if (outputFormat === "text") {
 			console.log(
 				boxen(
-					chalk.red.bold("✓ Tag Deleted Successfully") +
-						`\n\nTag Name: ${chalk.cyan(tagName)}` +
-						`\nTasks Deleted: ${chalk.yellow(taskCount)}` +
-						(isCurrentTag
+					`${chalk.red.bold("✓ Tag Deleted Successfully")}\n\nTag Name: ${chalk.cyan(tagName)}\nTasks Deleted: ${chalk.yellow(taskCount)}${
+						isCurrentTag
 							? `\n${chalk.yellow('⚠ Switched current tag to "main"')}`
-							: ""),
+							: ""
+					}`,
 					{
 						padding: 1,
 						borderColor: "red",
@@ -767,11 +761,7 @@ async function useTag(
 
 			console.log(
 				boxen(
-					chalk.green.bold("✓ Tag Switched Successfully") +
-						`\n\nPrevious Tag: ${chalk.cyan(previousTag)}` +
-						`\nCurrent Tag: ${chalk.green.bold(tagName)}` +
-						`\nAvailable Tasks: ${chalk.yellow(taskCount)}` +
-						nextTaskInfo,
+					`${chalk.green.bold("✓ Tag Switched Successfully")}\n\nPrevious Tag: ${chalk.cyan(previousTag)}\nCurrent Tag: ${chalk.green.bold(tagName)}\nAvailable Tasks: ${chalk.yellow(taskCount)}${nextTaskInfo}`,
 					{
 						padding: 1,
 						borderColor: "green",
@@ -930,11 +920,7 @@ async function renameTag(
 		if (outputFormat === "text") {
 			console.log(
 				boxen(
-					chalk.green.bold("✓ Tag Renamed Successfully") +
-						`\n\nOld Name: ${chalk.cyan(oldName)}` +
-						`\nNew Name: ${chalk.green.bold(newName)}` +
-						`\nTasks: ${chalk.yellow(taskCount)}` +
-						(isCurrentTag ? `\n${chalk.green("✓ Current tag updated")}` : ""),
+					`${chalk.green.bold("✓ Tag Renamed Successfully")}\n\nOld Name: ${chalk.cyan(oldName)}\nNew Name: ${chalk.green.bold(newName)}\nTasks: ${chalk.yellow(taskCount)}${isCurrentTag ? `\n${chalk.green("✓ Current tag updated")}` : ""}`,
 					{
 						padding: 1,
 						borderColor: "green",
@@ -1085,11 +1071,7 @@ async function copyTag(
 		if (outputFormat === "text") {
 			console.log(
 				boxen(
-					chalk.green.bold("✓ Tag Copied Successfully") +
-						`\n\nSource Tag: ${chalk.cyan(sourceName)}` +
-						`\nTarget Tag: ${chalk.green.bold(targetName)}` +
-						`\nTasks Copied: ${chalk.yellow(sourceTasks.length)}` +
-						(description ? `\nDescription: ${chalk.gray(description)}` : ""),
+					`${chalk.green.bold("✓ Tag Copied Successfully")}\n\nSource Tag: ${chalk.cyan(sourceName)}\nTarget Tag: ${chalk.green.bold(targetName)}\nTasks Copied: ${chalk.yellow(sourceTasks.length)}${description ? `\nDescription: ${chalk.gray(description)}` : ""}`,
 					{
 						padding: 1,
 						borderColor: "green",
@@ -1413,7 +1395,8 @@ async function autoSwitchTagForBranch(
 				tagName,
 				...createResult,
 			};
-		} else if (tagExists) {
+		}
+		if (tagExists) {
 			// Tag exists, switch to it
 			logFn.info(
 				`Switching to existing tag "${tagName}" for branch "${currentBranch}"`,
@@ -1439,18 +1422,15 @@ async function autoSwitchTagForBranch(
 				tagName,
 				...switchResult,
 			};
-		} else {
-			// Tag doesn't exist and createIfMissing is false
-			logFn.warn(
-				`Tag "${tagName}" for branch "${currentBranch}" does not exist`,
-			);
-			return {
-				switched: false,
-				reason: "tag_not_found",
-				branchName: currentBranch,
-				tagName,
-			};
 		}
+		// Tag doesn't exist and createIfMissing is false
+		logFn.warn(`Tag "${tagName}" for branch "${currentBranch}" does not exist`);
+		return {
+			switched: false,
+			reason: "tag_not_found",
+			branchName: currentBranch,
+			tagName,
+		};
 	} catch (error) {
 		logFn.error(`Error in auto-switch tag for branch: ${error.message}`);
 		throw error;

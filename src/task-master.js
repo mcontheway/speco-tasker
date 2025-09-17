@@ -5,8 +5,8 @@
  * authoritative source for all critical file and directory paths, resolving circular dependencies.
  */
 
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 import {
 	COMPLEXITY_REPORT_FILE,
 	LEGACY_CONFIG_FILE,
@@ -119,7 +119,7 @@ export class TaskMaster {
 			if (fs.existsSync(this.#paths.statePath)) {
 				const rawState = fs.readFileSync(this.#paths.statePath, "utf8");
 				const stateData = JSON.parse(rawState);
-				if (stateData && stateData.currentTag) {
+				if (stateData?.currentTag) {
 					return stateData.currentTag;
 				}
 			}
@@ -132,7 +132,7 @@ export class TaskMaster {
 			if (fs.existsSync(this.#paths.configPath)) {
 				const rawConfig = fs.readFileSync(this.#paths.configPath, "utf8");
 				const configData = JSON.parse(rawConfig);
-				if (configData && configData.global && configData.global.defaultTag) {
+				if (configData?.global?.defaultTag) {
 					return configData.global.defaultTag;
 				}
 			}

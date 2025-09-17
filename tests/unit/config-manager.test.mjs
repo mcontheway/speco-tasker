@@ -4,9 +4,9 @@
  * This file uses ES module syntax (.mjs) to properly handle imports
  */
 
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { jest } from "@jest/globals";
 import { sampleTasks } from "../fixtures/sample-tasks.js";
 
@@ -193,7 +193,8 @@ describe("Config Manager Module", () => {
 			if (baseName === "supported-models.json") {
 				// Return the REAL file content stringified
 				return REAL_SUPPORTED_MODELS_CONTENT;
-			} else if (filePath === MOCK_CONFIG_PATH) {
+			}
+			if (filePath === MOCK_CONFIG_PATH) {
 				// Still mock the .taskmasterconfig reads
 				return JSON.stringify(DEFAULT_CONFIG); // Default behavior
 			}
@@ -464,7 +465,7 @@ describe("Config Manager Module", () => {
 			expect(config).toEqual(DEFAULT_CONFIG);
 			expect(consoleErrorSpy).toHaveBeenCalledWith(
 				expect.stringContaining(
-					`Permission denied. Using default configuration.`,
+					"Permission denied. Using default configuration.",
 				),
 			);
 		});
@@ -554,7 +555,7 @@ describe("Config Manager Module", () => {
 			expect(success).toBe(false);
 			expect(mockWriteFileSync).toHaveBeenCalled();
 			expect(consoleErrorSpy).toHaveBeenCalledWith(
-				expect.stringContaining(`Disk full`),
+				expect.stringContaining("Disk full"),
 			);
 		});
 
@@ -826,9 +827,7 @@ describe("Config Manager Module", () => {
 					// MCP context (resolveEnvVariable uses session.env)
 					const mcpSession = { env: { [envVarName]: keyValue } };
 					mockResolveEnvVariable.mockImplementation((key, sessionArg) => {
-						return sessionArg && sessionArg.env
-							? sessionArg.env[key]
-							: undefined;
+						return sessionArg?.env ? sessionArg.env[key] : undefined;
 					});
 					expect(
 						configManager.isApiKeySet(providerName, mcpSession, null),

@@ -103,15 +103,14 @@ export async function removeSubtaskDirect(args, log) {
 					task: result,
 				},
 			};
-		} else {
-			// Return simple success message for deletion
-			return {
-				success: true,
-				data: {
-					message: `Subtask ${id} successfully removed`,
-				},
-			};
 		}
+		// Return simple success message for deletion
+		return {
+			success: true,
+			data: {
+				message: `Subtask ${id} successfully removed`,
+			},
+		};
 	} catch (error) {
 		// Ensure silent mode is disabled even if an outer error occurs
 		disableSilentMode();

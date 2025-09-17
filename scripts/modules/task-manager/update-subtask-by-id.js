@@ -1,5 +1,5 @@
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 import boxen from "boxen";
 import chalk from "chalk";
 import Table from "cli-table3";
@@ -230,10 +230,9 @@ ${gatheredContext ? `Context: ${gatheredContext}` : ""}`;
 			report("info", "Manual subtask update prompt created.");
 
 			// Use provided prompt directly as content (no AI processing)
-			generatedContentString =
-				prompt && prompt.trim()
-					? prompt.trim()
-					: "No content provided for update.";
+			generatedContentString = prompt?.trim()
+				? prompt.trim()
+				: "No content provided for update.";
 
 			if (outputFormat === "text" && loadingIndicator) {
 				stopLoadingIndicator(loadingIndicator);
@@ -248,14 +247,14 @@ ${gatheredContext ? `Context: ${gatheredContext}` : ""}`;
 			throw aiError;
 		}
 
-		if (generatedContentString && generatedContentString.trim()) {
+		if (generatedContentString?.trim()) {
 			// Check if the string is not empty
 			const timestamp = new Date().toISOString();
 			const formattedBlock = `<info added on ${timestamp}>\n${generatedContentString.trim()}\n</info added on ${timestamp}>`;
 			newlyAddedSnippet = formattedBlock; // <--- ADD THIS LINE: Store for display
 
 			subtask.details =
-				(subtask.details ? subtask.details + "\n" : "") + formattedBlock;
+				(subtask.details ? `${subtask.details}\n` : "") + formattedBlock;
 		} else {
 			report(
 				"warn",
@@ -330,15 +329,7 @@ ${gatheredContext ? `Context: ${gatheredContext}` : ""}`;
 			}
 			console.log(
 				boxen(
-					chalk.green(`Successfully updated subtask #${subtaskId}`) +
-						"\n\n" +
-						chalk.white.bold("Title:") +
-						" " +
-						updatedSubtask.title +
-						"\n\n" +
-						chalk.white.bold("Newly Added Snippet:") +
-						"\n" +
-						chalk.white(newlyAddedSnippet),
+					`${chalk.green(`Successfully updated subtask #${subtaskId}`)}\n\n${chalk.white.bold("Title:")} ${updatedSubtask.title}\n\n${chalk.white.bold("Newly Added Snippet:")}\n${chalk.white(newlyAddedSnippet)}`,
 					{ padding: 1, borderColor: "green", borderStyle: "round" },
 				),
 			);

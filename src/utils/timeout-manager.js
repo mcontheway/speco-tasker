@@ -173,13 +173,14 @@ export class Duration {
 	toString() {
 		if (this.milliseconds < 1000) {
 			return `${this.milliseconds}ms`;
-		} else if (this.milliseconds < 60000) {
-			return `${this.seconds}s`;
-		} else if (this.milliseconds < 3600000) {
-			return `${Math.floor(this.minutes)}m ${Math.floor(this.seconds % 60)}s`;
-		} else {
-			return `${Math.floor(this.hours)}h ${Math.floor(this.minutes % 60)}m`;
 		}
+		if (this.milliseconds < 60000) {
+			return `${this.seconds}s`;
+		}
+		if (this.milliseconds < 3600000) {
+			return `${Math.floor(this.minutes)}m ${Math.floor(this.seconds % 60)}s`;
+		}
+		return `${Math.floor(this.hours)}h ${Math.floor(this.minutes % 60)}m`;
 	}
 
 	_toMilliseconds(value, unit) {

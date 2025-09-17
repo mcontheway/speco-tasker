@@ -3,8 +3,8 @@
  * Utility functions for the Speco Tasker CLI
  */
 
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 import chalk from "chalk";
 import {
 	COMPLEXITY_REPORT_FILE,
@@ -126,7 +126,8 @@ function parseSpecFiles(input, projectRoot = ".") {
 								title: item.title || path.basename(item.file),
 								file: item.file,
 							};
-						} else if (typeof item === "string") {
+						}
+						if (typeof item === "string") {
 							// 处理字符串数组格式
 							return {
 								type: "spec",
@@ -256,7 +257,7 @@ function parseDependencies(input, allTasks = []) {
 				}
 				// 转换为数字
 				const numDep = Number.parseInt(strDep, 10);
-				if (isNaN(numDep)) {
+				if (Number.isNaN(numDep)) {
 					errors.push(`Invalid dependency ID: ${dep}`);
 					return null;
 				}
@@ -275,15 +276,10 @@ function parseDependencies(input, allTasks = []) {
 							.split(".")
 							.map((id) => Number.parseInt(id, 10));
 						const parentTask = allTasks.find((t) => t.id === parentId);
-						return (
-							parentTask &&
-							parentTask.subtasks &&
-							parentTask.subtasks.some((st) => st.id === subtaskId)
-						);
-					} else {
-						// 普通任务ID
-						return task.id === dep;
+						return parentTask?.subtasks?.some((st) => st.id === subtaskId);
 					}
+					// 普通任务ID
+					return task.id === dep;
 				});
 
 				if (depExists) {
@@ -375,7 +371,7 @@ function validateFieldUpdatePermission(fieldName, newValue, currentTask) {
 
 	// 特殊验证逻辑
 	switch (fieldName) {
-		case "status":
+		case "status": {
 			const validStatuses = [
 				"pending",
 				"in-progress",
@@ -390,8 +386,9 @@ function validateFieldUpdatePermission(fieldName, newValue, currentTask) {
 				};
 			}
 			break;
+		}
 
-		case "priority":
+		case "priority": {
 			const validPriorities = ["high", "medium", "low"];
 			if (!validPriorities.includes(newValue)) {
 				return {
@@ -400,6 +397,7 @@ function validateFieldUpdatePermission(fieldName, newValue, currentTask) {
 				};
 			}
 			break;
+		}
 
 		case "dependencies":
 			if (!Array.isArray(newValue)) {
@@ -670,7 +668,7 @@ function readJSON(filepath, projectRoot = null, tag = null) {
 	// If it's not a tasks.json file, return as-is
 	if (!filepath.includes("tasks.json") || !data) {
 		if (isDebug) {
-			console.log(`File is not tasks.json or data is null, returning as-is`);
+			console.log("File is not tasks.json or data is null, returning as-is");
 		}
 		return data;
 	}
@@ -683,7 +681,7 @@ function readJSON(filepath, projectRoot = null, tag = null) {
 		!hasTaggedStructure(data)
 	) {
 		if (isDebug) {
-			console.log(`File is in legacy format, performing migration...`);
+			console.log("File is in legacy format, performing migration...");
 		}
 
 		normalizeTaskIds(data.tasks);
@@ -704,7 +702,7 @@ function readJSON(filepath, projectRoot = null, tag = null) {
 		try {
 			writeJSON(filepath, migratedData);
 			if (isDebug) {
-				console.log(`Successfully migrated legacy format to tagged format`);
+				console.log("Successfully migrated legacy format to tagged format");
 			}
 
 			// Perform complete migration (config.json, state.json)
@@ -738,7 +736,7 @@ function readJSON(filepath, projectRoot = null, tag = null) {
 	if (typeof data === "object" && !data.tasks) {
 		// This is tagged format
 		if (isDebug) {
-			console.log(`File is in tagged format, resolving tag...`);
+			console.log("File is in tagged format, resolving tag...");
 		}
 
 		// Ensure all tags have proper metadata before proceeding
@@ -823,7 +821,7 @@ function readJSON(filepath, projectRoot = null, tag = null) {
 
 			// Get the data for the resolved tag
 			const tagData = data[resolvedTag];
-			if (tagData && tagData.tasks) {
+			if (tagData?.tasks) {
 				normalizeTaskIds(tagData.tasks);
 
 				// Add the _rawTaggedData property and the resolved tag to the returned data
@@ -838,41 +836,39 @@ function readJSON(filepath, projectRoot = null, tag = null) {
 					);
 				}
 				return result;
-			} else {
-				// If the resolved tag doesn't exist, fall back to master
-				const masterData = data.master;
-				if (masterData && masterData.tasks) {
-					normalizeTaskIds(masterData.tasks);
-
-					if (isDebug) {
-						console.log(
-							`Tag '${resolvedTag}' not found, falling back to master with ${masterData.tasks.length} tasks`,
-						);
-					}
-					return {
-						...masterData,
-						tag: "main",
-						_rawTaggedData: originalTaggedData,
-					};
-				} else {
-					if (isDebug) {
-						console.log(`No valid tag data found, returning empty structure`);
-					}
-					// Return empty structure if no valid data
-					return {
-						tasks: [],
-						tag: "main",
-						_rawTaggedData: originalTaggedData,
-					};
-				}
 			}
+			// If the resolved tag doesn't exist, fall back to master
+			const masterData = data.master;
+			if (masterData?.tasks) {
+				normalizeTaskIds(masterData.tasks);
+
+				if (isDebug) {
+					console.log(
+						`Tag '${resolvedTag}' not found, falling back to master with ${masterData.tasks.length} tasks`,
+					);
+				}
+				return {
+					...masterData,
+					tag: "main",
+					_rawTaggedData: originalTaggedData,
+				};
+			}
+			if (isDebug) {
+				console.log("No valid tag data found, returning empty structure");
+			}
+			// Return empty structure if no valid data
+			return {
+				tasks: [],
+				tag: "main",
+				_rawTaggedData: originalTaggedData,
+			};
 		} catch (error) {
 			if (isDebug) {
 				console.log(`Error during tag resolution: ${error.message}`);
 			}
 			// If anything goes wrong, try to return master or empty
 			const masterData = data.master;
-			if (masterData && masterData.tasks) {
+			if (masterData?.tasks) {
 				normalizeTaskIds(masterData.tasks);
 				return {
 					...masterData,
@@ -888,7 +884,7 @@ function readJSON(filepath, projectRoot = null, tag = null) {
 
 	// If we reach here, it's some other format
 	if (isDebug) {
-		console.log(`File format not recognized, returning as-is`);
+		console.log("File format not recognized, returning as-is");
 	}
 	return data;
 }
@@ -1072,7 +1068,7 @@ function writeJSON(filepath, data, projectRoot = null, tag = null) {
 		}
 		// If we have _rawTaggedData, this means we're working with resolved tag data
 		// and need to merge it back into the full tagged structure
-		else if (data && data._rawTaggedData && projectRoot) {
+		else if (data?._rawTaggedData && projectRoot) {
 			const resolvedTag = tag || getCurrentTag(projectRoot);
 
 			// Get the original tagged data
@@ -1401,7 +1397,8 @@ function truncate(text, maxLength) {
 function isEmpty(value) {
 	if (Array.isArray(value)) {
 		return value.length === 0;
-	} else if (typeof value === "object" && value !== null) {
+	}
+	if (typeof value === "object" && value !== null) {
 		return Object.keys(value).length === 0;
 	}
 
@@ -1584,7 +1581,7 @@ function traverseDependencies(sourceTasks, allTasks, options = {}) {
 
 	// Start traversal from each source task
 	sourceTasks.forEach((sourceTask) => {
-		if (sourceTask && sourceTask.id) {
+		if (sourceTask?.id) {
 			traversalFunc(sourceTask.id);
 		}
 	});
@@ -1720,7 +1717,7 @@ function getCurrentTag(projectRoot) {
 		if (fs.existsSync(statePath)) {
 			const rawState = fs.readFileSync(statePath, "utf8");
 			const stateData = JSON.parse(rawState);
-			if (stateData && stateData.currentTag) {
+			if (stateData?.currentTag) {
 				return stateData.currentTag;
 			}
 		}
@@ -1734,7 +1731,7 @@ function getCurrentTag(projectRoot) {
 		if (fs.existsSync(configPath)) {
 			const rawConfig = fs.readFileSync(configPath, "utf8");
 			const configData = JSON.parse(rawConfig);
-			if (configData && configData.global && configData.global.defaultTag) {
+			if (configData?.global?.defaultTag) {
 				return configData.global.defaultTag;
 			}
 		}
@@ -1781,11 +1778,7 @@ function getTasksForTag(data, tagName) {
 	}
 
 	// Handle migrated format: { "main": { "tasks": [...] }, "otherTag": { "tasks": [...] } }
-	if (
-		data[tagName] &&
-		data[tagName].tasks &&
-		Array.isArray(data[tagName].tasks)
-	) {
+	if (data[tagName]?.tasks && Array.isArray(data[tagName].tasks)) {
 		return data[tagName].tasks;
 	}
 

@@ -4,7 +4,7 @@
  * This file is run before each test suite to set up the test environment.
  */
 
-const path = require("path");
+const path = require("node:path");
 
 // Capture the actual original working directory before any changes
 const originalWorkingDirectory = process.cwd();

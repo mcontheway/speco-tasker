@@ -20,10 +20,10 @@
  * Main entry point for globally installed package
  */
 
-import { spawn } from "child_process";
-import { createRequire } from "module";
-import { dirname, resolve } from "path";
-import { fileURLToPath } from "url";
+import { spawn } from "node:child_process";
+import { createRequire } from "node:module";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import chalk from "chalk";
 import { Command } from "commander";
 import { registerCommands } from "../scripts/modules/commands.js";
@@ -47,14 +47,10 @@ function runDevScript(args) {
 	// Debug: Show the transformed arguments when DEBUG=1 is set
 	if (process.env.DEBUG === "1") {
 		console.error("\nDEBUG - CLI Wrapper Analysis:");
-		console.error("- Original command: " + process.argv.join(" "));
-		console.error("- Transformed args: " + args.join(" "));
+		console.error(`- Original command: ${process.argv.join(" ")}`);
+		console.error(`- Transformed args: ${args.join(" ")}`);
 		console.error(
-			"- dev.js will receive: node " +
-				devScriptPath +
-				" " +
-				args.join(" ") +
-				"\n",
+			`- dev.js will receive: node ${devScriptPath} ${args.join(" ")}\n`,
 		);
 	}
 

@@ -85,9 +85,7 @@ class StreamParserConfig {
 	}
 
 	static defaultItemValidator(item) {
-		return (
-			item && item.title && typeof item.title === "string" && item.title.trim()
-		);
+		return item?.title && typeof item.title === "string" && item.title.trim();
 	}
 }
 

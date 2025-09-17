@@ -4,8 +4,8 @@
  * Supports task context, file context, project tree, and custom context
  */
 
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 import Fuse from "fuse.js";
 import {
 	findTaskById,
@@ -124,7 +124,7 @@ export class ContextGatherer {
 		}
 
 		// Add custom context first
-		if (customContext && customContext.trim()) {
+		if (customContext?.trim()) {
 			const formattedCustomContext = this._formatCustomContext(
 				customContext,
 				format,
@@ -361,7 +361,7 @@ export class ContextGatherer {
 				context += `\n- ... and ${indirectDeps.length - 5} more indirect dependencies`;
 		}
 
-		context += `\n\nDetailed information about dependencies:`;
+		context += "\n\nDetailed information about dependencies:";
 		for (const depTask of uniqueDetailedTasks) {
 			const isDirect = taskIds.includes(depTask.id)
 				? " [DIRECT DEPENDENCY]"
@@ -436,7 +436,7 @@ export class ContextGatherer {
 				)
 				.join("");
 		}
-		return "\n" + result;
+		return `\n${result}`;
 	}
 
 	/**
@@ -506,7 +506,7 @@ export class ContextGatherer {
 					}
 				} else if (parsed.type === "subtask") {
 					const parentResult = findTaskById(this.allTasks, parsed.parentId);
-					if (parentResult.task && parentResult.task.subtasks) {
+					if (parentResult.task?.subtasks) {
 						const subtask = parentResult.task.subtasks.find(
 							(st) => st.id === parsed.subtaskId,
 						);

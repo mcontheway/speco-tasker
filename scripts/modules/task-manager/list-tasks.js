@@ -51,7 +51,7 @@ function listTasks(
 		// `reportPath` is already tag-aware (resolved at the CLI boundary).
 		const complexityReport = readComplexityReport(reportPath);
 		// Apply complexity scores to tasks
-		if (complexityReport && complexityReport.complexityAnalysis) {
+		if (complexityReport?.complexityAnalysis) {
 			data.tasks.forEach((task) => addComplexityToTask(task, complexityReport));
 		}
 
@@ -351,36 +351,11 @@ function listTasks(
 		terminalWidth = Math.max(terminalWidth, 80);
 
 		// Create dashboard content
-		const projectDashboardContent =
-			chalk.white.bold("Project Dashboard") +
-			"\n" +
-			`Tasks Progress: ${chalk.greenBright(taskProgressBar)} ${completionPercentage.toFixed(0)}%\n` +
-			`Done: ${chalk.green(doneCount)}  In Progress: ${chalk.blue(inProgressCount)}  Pending: ${chalk.yellow(pendingCount)}  Blocked: ${chalk.red(blockedCount)}  Deferred: ${chalk.gray(deferredCount)}  Cancelled: ${chalk.gray(cancelledCount)}\n\n` +
-			`Subtasks Progress: ${chalk.cyan(subtaskProgressBar)} ${subtaskCompletionPercentage.toFixed(0)}%\n` +
-			`Completed: ${chalk.green(completedSubtasks)}/${totalSubtasks}  In Progress: ${chalk.blue(inProgressSubtasks)}  Pending: ${chalk.yellow(pendingSubtasks)}  Blocked: ${chalk.red(blockedSubtasks)}  Deferred: ${chalk.gray(deferredSubtasks)}  Cancelled: ${chalk.gray(cancelledSubtasks)}\n\n` +
-			chalk.cyan.bold("Priority Breakdown:") +
-			"\n" +
-			`${chalk.red("•")} ${chalk.white("High priority:")} ${data.tasks.filter((t) => t.priority === "high").length}\n` +
-			`${chalk.yellow("•")} ${chalk.white("Medium priority:")} ${data.tasks.filter((t) => t.priority === "medium").length}\n` +
-			`${chalk.green("•")} ${chalk.white("Low priority:")} ${data.tasks.filter((t) => t.priority === "low").length}`;
+		const projectDashboardContent = `${chalk.white.bold("Project Dashboard")}\nTasks Progress: ${chalk.greenBright(taskProgressBar)} ${completionPercentage.toFixed(0)}%\nDone: ${chalk.green(doneCount)}  In Progress: ${chalk.blue(inProgressCount)}  Pending: ${chalk.yellow(pendingCount)}  Blocked: ${chalk.red(blockedCount)}  Deferred: ${chalk.gray(deferredCount)}  Cancelled: ${chalk.gray(cancelledCount)}\n\nSubtasks Progress: ${chalk.cyan(subtaskProgressBar)} ${subtaskCompletionPercentage.toFixed(0)}%\nCompleted: ${chalk.green(completedSubtasks)}/${totalSubtasks}  In Progress: ${chalk.blue(inProgressSubtasks)}  Pending: ${chalk.yellow(pendingSubtasks)}  Blocked: ${chalk.red(blockedSubtasks)}  Deferred: ${chalk.gray(deferredSubtasks)}  Cancelled: ${chalk.gray(cancelledSubtasks)}\n\n${chalk.cyan.bold("Priority Breakdown:")}\n${chalk.red("•")} ${chalk.white("High priority:")} ${data.tasks.filter((t) => t.priority === "high").length}\n${chalk.yellow("•")} ${chalk.white("Medium priority:")} ${data.tasks.filter((t) => t.priority === "medium").length}\n${chalk.green("•")} ${chalk.white("Low priority:")} ${data.tasks.filter((t) => t.priority === "low").length}`;
 
-		const dependencyDashboardContent =
-			chalk.white.bold("Dependency Status & Next Task") +
-			"\n" +
-			chalk.cyan.bold("Dependency Metrics:") +
-			"\n" +
-			`${chalk.green("•")} ${chalk.white("Tasks with no dependencies:")} ${tasksWithNoDeps}\n` +
-			`${chalk.green("•")} ${chalk.white("Tasks ready to work on:")} ${tasksReadyToWork}\n` +
-			`${chalk.yellow("•")} ${chalk.white("Tasks blocked by dependencies:")} ${tasksWithUnsatisfiedDeps}\n` +
-			`${chalk.magenta("•")} ${chalk.white("Most depended-on task:")} ${mostDependedOnTask ? chalk.cyan(`#${mostDependedOnTaskId} (${maxDependents} dependents)`) : chalk.gray("None")}\n` +
-			`${chalk.blue("•")} ${chalk.white("Avg dependencies per task:")} ${avgDependenciesPerTask.toFixed(1)}\n\n` +
-			chalk.cyan.bold("Next Task to Work On:") +
-			"\n" +
-			`ID: ${chalk.cyan(nextItem ? nextItem.id : "N/A")} - ${nextItem ? chalk.white.bold(truncate(nextItem.title, 40)) : chalk.yellow("No task available")}
-` +
-			`Priority: ${nextItem ? chalk.white(nextItem.priority || "medium") : ""}  Dependencies: ${nextItem ? formatDependenciesWithStatus(nextItem.dependencies, data.tasks, true, complexityReport) : ""}
-` +
-			`Complexity: ${nextItem && nextItem.complexityScore ? getComplexityWithColor(nextItem.complexityScore) : chalk.gray("N/A")}`;
+		const dependencyDashboardContent = `${chalk.white.bold("Dependency Status & Next Task")}\n${chalk.cyan.bold("Dependency Metrics:")}\n${chalk.green("•")} ${chalk.white("Tasks with no dependencies:")} ${tasksWithNoDeps}\n${chalk.green("•")} ${chalk.white("Tasks ready to work on:")} ${tasksReadyToWork}\n${chalk.yellow("•")} ${chalk.white("Tasks blocked by dependencies:")} ${tasksWithUnsatisfiedDeps}\n${chalk.magenta("•")} ${chalk.white("Most depended-on task:")} ${mostDependedOnTask ? chalk.cyan(`#${mostDependedOnTaskId} (${maxDependents} dependents)`) : chalk.gray("None")}\n${chalk.blue("•")} ${chalk.white("Avg dependencies per task:")} ${avgDependenciesPerTask.toFixed(1)}\n\n${chalk.cyan.bold("Next Task to Work On:")}\nID: ${chalk.cyan(nextItem ? nextItem.id : "N/A")} - ${nextItem ? chalk.white.bold(truncate(nextItem.title, 40)) : chalk.yellow("No task available")}
+Priority: ${nextItem ? chalk.white(nextItem.priority || "medium") : ""}  Dependencies: ${nextItem ? formatDependenciesWithStatus(nextItem.dependencies, data.tasks, true, complexityReport) : ""}
+Complexity: ${nextItem?.complexityScore ? getComplexityWithColor(nextItem.complexityScore) : chalk.gray("N/A")}`;
 
 		// Calculate width for side-by-side display
 		// Box borders, padding take approximately 4 chars on each side
@@ -606,11 +581,11 @@ function listTasks(
 										// Use consistent color formatting instead of emojis
 										if (isDone) {
 											return chalk.green.bold(`${task.id}.${depId}`);
-										} else if (isInProgress) {
-											return chalk.hex("#FFA500").bold(`${task.id}.${depId}`);
-										} else {
-											return chalk.red.bold(`${task.id}.${depId}`);
 										}
+										if (isInProgress) {
+											return chalk.hex("#FFA500").bold(`${task.id}.${depId}`);
+										}
+										return chalk.red.bold(`${task.id}.${depId}`);
 									}
 								}
 								// Default to regular task dependency
@@ -624,11 +599,11 @@ function listTasks(
 									// Use the same color scheme as in formatDependenciesWithStatus
 									if (isDone) {
 										return chalk.green.bold(`${depId}`);
-									} else if (isInProgress) {
-										return chalk.hex("#FFA500").bold(`${depId}`);
-									} else {
-										return chalk.red.bold(`${depId}`);
 									}
+									if (isInProgress) {
+										return chalk.hex("#FFA500").bold(`${depId}`);
+									}
+									return chalk.red.bold(`${depId}`);
 								}
 								return chalk.cyan(depId.toString());
 							})
@@ -695,8 +670,7 @@ function listTasks(
 				(t) => String(t.id) === String(nextItem.id),
 			); // Find the original task object
 			if (
-				parentTaskForSubtasks &&
-				parentTaskForSubtasks.subtasks &&
+				parentTaskForSubtasks?.subtasks &&
 				parentTaskForSubtasks.subtasks.length > 0
 			) {
 				subtasksSection = `\n\n${chalk.white.bold("Subtasks:")}\n`;
@@ -725,23 +699,10 @@ function listTasks(
 
 			console.log(
 				boxen(
-					chalk.hex("#FF8800").bold(
+					`${chalk.hex("#FF8800").bold(
 						// Use nextItem.id and nextItem.title
 						`🔥 Next Task to Work On: #${nextItem.id} - ${nextItem.title}`,
-					) +
-						"\n\n" +
-						// Use nextItem.priority, nextItem.status, nextItem.dependencies
-						`${chalk.white("Priority:")} ${priorityColors[nextItem.priority || "medium"](nextItem.priority || "medium")}   ${chalk.white("Status:")} ${getStatusWithColor(nextItem.status, true)}\n` +
-						`${chalk.white("Dependencies:")} ${nextItem.dependencies && nextItem.dependencies.length > 0 ? formatDependenciesWithStatus(nextItem.dependencies, data.tasks, true, complexityReport) : chalk.gray("None")}\n\n` +
-						// Use nextTask.description (Note: findNextTask doesn't return description, need to fetch original task/subtask for this)
-						// *** Fetching original item for description and details ***
-						`${chalk.white("Description:")} ${getWorkItemDescription(nextItem, data.tasks)}` +
-						subtasksSection + // <-- Subtasks are handled above now
-						"\n\n" +
-						// Use nextItem.id
-						`${chalk.cyan("Start working:")} ${chalk.yellow(`task-master set-status --id=${nextItem.id} --status=in-progress`)}\n` +
-						// Use nextItem.id
-						`${chalk.cyan("View details:")} ${chalk.yellow(`task-master show ${nextItem.id}`)}`,
+					)}\n\n${chalk.white("Priority:")} ${priorityColors[nextItem.priority || "medium"](nextItem.priority || "medium")}   ${chalk.white("Status:")} ${getStatusWithColor(nextItem.status, true)}\n${chalk.white("Dependencies:")} ${nextItem.dependencies && nextItem.dependencies.length > 0 ? formatDependenciesWithStatus(nextItem.dependencies, data.tasks, true, complexityReport) : chalk.gray("None")}\n\n${chalk.white("Description:")} ${getWorkItemDescription(nextItem, data.tasks)}${subtasksSection}\n\n${chalk.cyan("Start working:")} ${chalk.yellow(`task-master set-status --id=${nextItem.id} --status=in-progress`)}\n${chalk.cyan("View details:")} ${chalk.yellow(`task-master show ${nextItem.id}`)}`,
 					{
 						padding: { left: 2, right: 2, top: 1, bottom: 1 },
 						borderColor: "#FF8800",
@@ -757,9 +718,7 @@ function listTasks(
 		} else {
 			console.log(
 				boxen(
-					chalk.hex("#FF8800").bold("No eligible next task found") +
-						"\n\n" +
-						"All pending tasks have dependencies that are not yet completed, or all tasks are done.",
+					`${chalk.hex("#FF8800").bold("No eligible next task found")}\n\nAll pending tasks have dependencies that are not yet completed, or all tasks are done.`,
 					{
 						padding: 1,
 						borderColor: "#FF8800",
@@ -776,13 +735,7 @@ function listTasks(
 		// Show next steps
 		console.log(
 			boxen(
-				chalk.white.bold("建议的下一步操作:") +
-					"\n\n" +
-					`${chalk.cyan("1.")} 查看下一个要处理的任务: ${chalk.yellow("task-master next")}\n` +
-					`${chalk.cyan("2.")} 查看特定任务详情: ${chalk.yellow("task-master show <id>")}\n` +
-					`${chalk.cyan("3.")} 开始处理任务: ${chalk.yellow("task-master set-status --id=<id> --status=in-progress")}\n` +
-					`${chalk.cyan("4.")} 添加新任务: ${chalk.yellow('task-master add-task --title="任务标题" --description="描述"')}\n` +
-					`${chalk.cyan("5.")} 为任务添加子任务: ${chalk.yellow('task-master add-subtask --parent=<id> --title="子任务"')}`,
+				`${chalk.white.bold("建议的下一步操作:")}\n\n${chalk.cyan("1.")} 查看下一个要处理的任务: ${chalk.yellow("task-master next")}\n${chalk.cyan("2.")} 查看特定任务详情: ${chalk.yellow("task-master show <id>")}\n${chalk.cyan("3.")} 开始处理任务: ${chalk.yellow("task-master set-status --id=<id> --status=in-progress")}\n${chalk.cyan("4.")} 添加新任务: ${chalk.yellow('task-master add-task --title="任务标题" --description="描述"')}\n${chalk.cyan("5.")} 为任务添加子任务: ${chalk.yellow('task-master add-subtask --parent=<id> --title="子任务"')}`,
 				{
 					padding: 1,
 					borderColor: "gray",
@@ -818,11 +771,10 @@ function getWorkItemDescription(item, allTasks) {
 			(st) => `${parent.id}.${st.id}` === item.id,
 		);
 		return subtask?.description || "No description available.";
-	} else {
-		// It's a top-level task
-		const task = allTasks.find((t) => String(t.id) === String(item.id));
-		return task?.description || "No description available.";
 	}
+	// It's a top-level task
+	const task = allTasks.find((t) => String(t.id) === String(item.id));
+	return task?.description || "No description available.";
 }
 
 /**
@@ -888,7 +840,7 @@ function generateMarkdownOutput(data, filteredTasks, stats) {
 	markdown += `| Pending | ${pendingCount} |\n`;
 	markdown += `| Deferred | ${deferredCount} |\n`;
 	markdown += `| Cancelled | ${cancelledCount} |\n`;
-	markdown += `|-|-|\n`;
+	markdown += "|-|-|\n";
 	markdown += `| Subtask Progress | ${subtaskProgressBar} ${Math.round(subtaskCompletionPercentage)}% |\n`;
 	markdown += `| Completed | ${completedSubtasks} |\n`;
 	markdown += `| In Progress | ${inProgressSubtasks} |\n`;
@@ -982,10 +934,9 @@ function formatCompactDependencies(dependencies) {
 	if (dependencies.length > 5) {
 		const visible = dependencies.slice(0, 5).join(",");
 		const remaining = dependencies.length - 5;
-		return ` → ${chalk.cyan(visible)}${chalk.gray("... (+" + remaining + " more)")}`;
-	} else {
-		return ` → ${chalk.cyan(dependencies.join(","))}`;
+		return ` → ${chalk.cyan(visible)}${chalk.gray(`... (+${remaining} more)`)}`;
 	}
+	return ` → ${chalk.cyan(dependencies.join(","))}`;
 }
 
 /**
@@ -1013,7 +964,7 @@ function formatCompactTask(task, maxTitleLength = 50) {
 	// Format dependencies using shared helper
 	const depsText = formatCompactDependencies(task.dependencies);
 
-	return `${chalk.cyan(task.id)} ${coloredStatus} ${chalk.white(title)} ${priorityColor("(" + priority + ")")}${depsText}`;
+	return `${chalk.cyan(task.id)} ${coloredStatus} ${chalk.white(title)} ${priorityColor(`(${priority})`)}${depsText}`;
 }
 
 /**
@@ -1033,7 +984,7 @@ function formatCompactSubtask(subtask, parentId, maxTitleLength = 47) {
 	// Format dependencies using shared helper
 	const depsText = formatCompactDependencies(subtask.dependencies);
 
-	return `  ${chalk.cyan(parentId + "." + subtask.id)} ${coloredStatus} ${chalk.dim(title)}${depsText}`;
+	return `  ${chalk.cyan(`${parentId}.${subtask.id}`)} ${coloredStatus} ${chalk.dim(title)}${depsText}`;
 }
 
 /**

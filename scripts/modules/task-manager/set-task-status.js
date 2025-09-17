@@ -1,4 +1,4 @@
-import path from "path";
+import path from "node:path";
 import boxen from "boxen";
 import chalk from "chalk";
 
@@ -58,7 +58,7 @@ async function setTaskStatus(tasksPath, taskIdInput, newStatus, options = {}) {
 		let rawData = readJSON(tasksPath, projectRoot, tag); // No tag parameter
 
 		// Handle the case where readJSON returns resolved data with _rawTaggedData
-		if (rawData && rawData._rawTaggedData) {
+		if (rawData?._rawTaggedData) {
 			// Use the raw tagged data and discard the resolved view
 			rawData = rawData._rawTaggedData;
 		}
@@ -140,10 +140,7 @@ async function setTaskStatus(tasksPath, taskIdInput, newStatus, options = {}) {
 
 				console.log(
 					boxen(
-						chalk.white.bold(`Successfully updated task ${id} status:`) +
-							"\n" +
-							`From: ${chalk.yellow(oldStatus)}\n` +
-							`To:   ${chalk.green(updatedStatus)}`,
+						`${chalk.white.bold(`Successfully updated task ${id} status:`)}\nFrom: ${chalk.yellow(oldStatus)}\nTo:   ${chalk.green(updatedStatus)}`,
 						{ padding: 1, borderColor: "green", borderStyle: "round" },
 					),
 				);

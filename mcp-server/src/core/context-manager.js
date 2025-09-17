@@ -80,8 +80,8 @@ export class ContextManager {
 	 * @param {Object} updates - Updates to apply to the context
 	 * @returns {Object} Updated context
 	 */
-	async updateContext(contextId, updates) {
-		const context = await this.getContext(contextId);
+	async updateContext(contextId, updates, metadata = {}) {
+		const context = await this.getContext(contextId, metadata);
 
 		// Apply updates to context
 		Object.assign(context.metadata, updates);

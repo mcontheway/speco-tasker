@@ -2,8 +2,8 @@
 
 // Note: We will use dynamic import() inside the async callback due to project being type: module
 
-const readline = require("readline");
-const path = require("path"); // Import path module
+const readline = require("node:readline");
+const path = require("node:path"); // Import path module
 
 let inputData = "";
 
@@ -19,7 +19,9 @@ rl.on("line", (line) => {
 
 // Make the callback async to allow await for dynamic imports
 rl.on("close", async () => {
-	let chalk, boxen, Table;
+	let chalk;
+	let boxen;
+	let Table;
 	try {
 		// Dynamically import libraries
 		chalk = (await import("chalk")).default;
@@ -81,7 +83,7 @@ rl.on("close", async () => {
 		if (logFilePath) {
 			const logBasename = path.basename(logFilePath);
 			const timestampMatch = logBasename.match(/e2e_run_(\d{8}_\d{6})\.log$/);
-			if (timestampMatch && timestampMatch[1]) {
+			if (timestampMatch?.[1]) {
 				const ts = timestampMatch[1]; // YYYYMMDD_HHMMSS
 				// Format into YYYY-MM-DD HH:MM:SS
 				formattedTime = `${ts.substring(0, 4)}-${ts.substring(4, 6)}-${ts.substring(6, 8)} ${ts.substring(9, 11)}:${ts.substring(11, 13)}:${ts.substring(13, 15)}`;
@@ -91,19 +93,17 @@ rl.on("close", async () => {
 
 		// 5. Generate CLI Report (with defensive checks)
 		console.log(
-			"\n" +
-				chalk.cyan.bold(
-					boxen(
-						`TASKMASTER E2E Log Analysis Report\nRun Time: ${chalk.yellow(formattedTime)}`, // Display formatted time
-						{
-							padding: 1,
-							borderStyle: "double",
-							borderColor: "cyan",
-							textAlign: "center", // Center align title
-						},
-					),
-				) +
-				"\n",
+			`\n${chalk.cyan.bold(
+				boxen(
+					`TASKMASTER E2E Log Analysis Report\nRun Time: ${chalk.yellow(formattedTime)}`, // Display formatted time
+					{
+						padding: 1,
+						borderStyle: "double",
+						borderColor: "cyan",
+						textAlign: "center", // Center align title
+					},
+				),
+			)}\n`,
 		);
 
 		// Overall Status
@@ -193,7 +193,7 @@ rl.on("close", async () => {
 				console.log(chalk.gray("  No provider results available."));
 				console.log();
 			}
-			console.log(chalk.white.bold(`  Comparison Summary:`));
+			console.log(chalk.white.bold("  Comparison Summary:"));
 			console.log(chalk.white(`  ${comp.comparison_summary || "N/A"}`));
 		} else {
 			console.log(chalk.gray("  Provider comparison data not found."));

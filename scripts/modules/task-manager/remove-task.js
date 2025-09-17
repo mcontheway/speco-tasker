@@ -1,5 +1,5 @@
-import * as fs from "fs";
-import path from "path";
+import * as fs from "node:fs";
+import path from "node:path";
 import { findTaskById, log, readJSON, writeJSON } from "../utils.js";
 import generateTaskFiles from "./generate-task-files.js";
 import taskExists from "./task-exists.js";

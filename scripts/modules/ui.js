@@ -3,8 +3,8 @@
  * User interface functions for the Speco Tasker CLI
  */
 
-import fs from "fs";
-import readline from "readline";
+import fs from "node:fs";
+import readline from "node:readline";
 import boxen from "boxen";
 import chalk from "chalk";
 import Table from "cli-table3";
@@ -431,11 +431,11 @@ function formatDependenciesWithStatus(
 				if (forConsole) {
 					if (isDone) {
 						return chalk.green.bold(depIdStr);
-					} else if (isInProgress) {
-						return chalk.yellow.bold(depIdStr);
-					} else {
-						return chalk.red.bold(depIdStr);
 					}
+					if (isInProgress) {
+						return chalk.yellow.bold(depIdStr);
+					}
+					return chalk.red.bold(depIdStr);
 				}
 				return depIdStr;
 			}
@@ -467,11 +467,11 @@ function formatDependenciesWithStatus(
 			if (forConsole) {
 				if (isDone) {
 					return chalk.green.bold(depIdStr);
-				} else if (isInProgress) {
-					return chalk.hex("#FFA500").bold(depIdStr);
-				} else {
-					return chalk.red.bold(depIdStr);
 				}
+				if (isInProgress) {
+					return chalk.hex("#FFA500").bold(depIdStr);
+				}
+				return chalk.red.bold(depIdStr);
 			}
 
 			// For plain text output (task files), return just the ID without any formatting or emoji
@@ -509,11 +509,11 @@ function formatDependenciesWithStatus(
 		if (forConsole) {
 			if (isDone) {
 				return chalk.green.bold(depIdStr);
-			} else if (isInProgress) {
-				return chalk.yellow.bold(depIdStr);
-			} else {
-				return chalk.red.bold(depIdStr);
 			}
+			if (isInProgress) {
+				return chalk.yellow.bold(depIdStr);
+			}
+			return chalk.red.bold(depIdStr);
 		}
 
 		// For plain text output (task files), return just the ID without any formatting or emoji
@@ -846,21 +846,9 @@ function displayHelp() {
 	// Show helpful hints
 	console.log(
 		boxen(
-			chalk.white.bold("Quick Start:") +
-				"\n\n" +
-				chalk.cyan("1. Create Project: ") +
-				chalk.white("task-master init") +
-				"\n" +
-				chalk.cyan("2. List Tasks: ") +
-				chalk.white("task-master list") +
-				"\n" +
-				chalk.cyan("3. Find Next Task: ") +
-				chalk.white("task-master next") +
-				"\n" +
-				chalk.cyan("4. Add New Task: ") +
-				chalk.white(
-					'task-master add-task --title="Task Title" --description="Task description"',
-				),
+			`${chalk.white.bold("Quick Start:")}\n\n${chalk.cyan("1. Create Project: ")}${chalk.white("task-master init")}\n${chalk.cyan("2. List Tasks: ")}${chalk.white("task-master list")}\n${chalk.cyan("3. Find Next Task: ")}${chalk.white("task-master next")}\n${chalk.cyan("4. Add New Task: ")}${chalk.white(
+				'task-master add-task --title="Task Title" --description="Task description"',
+			)}`,
 			{
 				padding: 1,
 				borderColor: "yellow",
@@ -892,7 +880,7 @@ function getComplexityWithColor(score) {
 function truncateString(str, maxLength) {
 	if (!str) return "";
 	if (str.length <= maxLength) return str;
-	return str.substring(0, maxLength - 3) + "...";
+	return `${str.substring(0, maxLength - 3)}...`;
 }
 
 /**
@@ -925,8 +913,7 @@ async function displayNextTask(
 	if (!nextTask) {
 		console.log(
 			boxen(
-				chalk.yellow("No eligible tasks found!\n\n") +
-					"All pending tasks have unsatisfied dependencies, or all tasks are completed.",
+				`${chalk.yellow("No eligible tasks found!\n\n")}All pending tasks have unsatisfied dependencies, or all tasks are completed.`,
 				{
 					padding: { top: 0, bottom: 0, left: 1, right: 1 },
 					borderColor: "yellow",
@@ -1003,7 +990,7 @@ async function displayNextTask(
 	if (nextTask.details && nextTask.details.trim().length > 0) {
 		console.log(
 			boxen(
-				chalk.white.bold("Implementation Details:") + "\n\n" + nextTask.details,
+				`${chalk.white.bold("Implementation Details:")}\n\n${nextTask.details}`,
 				{
 					padding: { top: 0, bottom: 0, left: 1, right: 1 },
 					borderColor: "cyan",
@@ -1091,11 +1078,11 @@ async function displayNextTask(
 							// Use consistent color formatting instead of emojis
 							if (isDone) {
 								return chalk.green.bold(`${nextTask.id}.${depId}`);
-							} else if (isInProgress) {
-								return chalk.hex("#FFA500").bold(`${nextTask.id}.${depId}`);
-							} else {
-								return chalk.red.bold(`${nextTask.id}.${depId}`);
 							}
+							if (isInProgress) {
+								return chalk.hex("#FFA500").bold(`${nextTask.id}.${depId}`);
+							}
+							return chalk.red.bold(`${nextTask.id}.${depId}`);
 						}
 						return chalk.red(`${nextTask.id}.${depId} (Not found)`);
 					}
@@ -1124,11 +1111,9 @@ async function displayNextTask(
 	if (!isSubtask && (!nextTask.subtasks || nextTask.subtasks.length === 0)) {
 		console.log(
 			boxen(
-				chalk.yellow("No subtasks found. Consider adding subtasks:") +
-					"\n" +
-					chalk.white(
-						`Run: ${chalk.cyan(`task-master add-subtask --parent=${nextTask.id} --title="Subtask title"`)}`,
-					),
+				`${chalk.yellow("No subtasks found. Consider adding subtasks:")}\n${chalk.white(
+					`Run: ${chalk.cyan(`task-master add-subtask --parent=${nextTask.id} --title="Subtask title"`)}`,
+				)}`,
 				{
 					padding: { top: 0, bottom: 0, left: 1, right: 1 },
 					borderColor: "yellow",
@@ -1140,7 +1125,7 @@ async function displayNextTask(
 	}
 
 	// Show action suggestions
-	let suggestedActionsContent = chalk.white.bold("Suggested Actions:") + "\n";
+	let suggestedActionsContent = `${chalk.white.bold("Suggested Actions:")}\n`;
 	if (isSubtask) {
 		// Suggested actions for a subtask
 		suggestedActionsContent +=
@@ -1149,12 +1134,11 @@ async function displayNextTask(
 			`${chalk.cyan("3.")} View parent task: ${chalk.yellow(`task-master show --id=${nextTask.parentId}`)}`;
 	} else {
 		// Suggested actions for a parent task
-		suggestedActionsContent +=
-			`${chalk.cyan("1.")} Mark as in-progress: ${chalk.yellow(`task-master set-status --id=${nextTask.id} --status=in-progress`)}\n` +
-			`${chalk.cyan("2.")} Mark as done when completed: ${chalk.yellow(`task-master set-status --id=${nextTask.id} --status=done`)}\n` +
-			(nextTask.subtasks && nextTask.subtasks.length > 0
+		suggestedActionsContent += `${chalk.cyan("1.")} Mark as in-progress: ${chalk.yellow(`task-master set-status --id=${nextTask.id} --status=in-progress`)}\n${chalk.cyan("2.")} Mark as done when completed: ${chalk.yellow(`task-master set-status --id=${nextTask.id} --status=done`)}\n${
+			nextTask.subtasks && nextTask.subtasks.length > 0
 				? `${chalk.cyan("3.")} Update subtask status: ${chalk.yellow(`task-master set-status --id=${nextTask.id}.1 --status=done`)}` // Example: first subtask
-				: `${chalk.cyan("3.")} Add subtasks manually: ${chalk.yellow(`task-master add-subtask --parent=${nextTask.id} --title="Subtask title"`)}`);
+				: `${chalk.cyan("3.")} Add subtasks manually: ${chalk.yellow(`task-master add-subtask --parent=${nextTask.id} --title="Subtask title"`)}`
+		}`;
 	}
 
 	console.log(
@@ -1275,7 +1259,7 @@ async function displayTaskById(
 		if (task.details && task.details.trim().length > 0) {
 			console.log(
 				boxen(
-					chalk.white.bold("Implementation Details:") + "\n\n" + task.details,
+					`${chalk.white.bold("Implementation Details:")}\n\n${task.details}`,
 					{
 						padding: { top: 0, bottom: 0, left: 1, right: 1 },
 						borderColor: "cyan",
@@ -1288,11 +1272,7 @@ async function displayTaskById(
 
 		console.log(
 			boxen(
-				chalk.white.bold("Suggested Actions:") +
-					"\n" +
-					`${chalk.cyan("1.")} Mark as in-progress: ${chalk.yellow(`task-master set-status --id=${task.parentTask.id}.${task.id} --status=in-progress`)}\n` +
-					`${chalk.cyan("2.")} Mark as done when completed: ${chalk.yellow(`task-master set-status --id=${task.parentTask.id}.${task.id} --status=done`)}\n` +
-					`${chalk.cyan("3.")} View parent task: ${chalk.yellow(`task-master show --id=${task.parentTask.id}`)}`,
+				`${chalk.white.bold("Suggested Actions:")}\n${chalk.cyan("1.")} Mark as in-progress: ${chalk.yellow(`task-master set-status --id=${task.parentTask.id}.${task.id} --status=in-progress`)}\n${chalk.cyan("2.")} Mark as done when completed: ${chalk.yellow(`task-master set-status --id=${task.parentTask.id}.${task.id} --status=done`)}\n${chalk.cyan("3.")} View parent task: ${chalk.yellow(`task-master show --id=${task.parentTask.id}`)}`,
 				{
 					padding: { top: 0, bottom: 0, left: 1, right: 1 },
 					borderColor: "green",
@@ -1363,7 +1343,7 @@ async function displayTaskById(
 	if (task.details && task.details.trim().length > 0) {
 		console.log(
 			boxen(
-				chalk.white.bold("Implementation Details:") + "\n\n" + task.details,
+				`${chalk.white.bold("Implementation Details:")}\n\n${task.details}`,
 				{
 					padding: { top: 0, bottom: 0, left: 1, right: 1 },
 					borderColor: "cyan",
@@ -1375,7 +1355,7 @@ async function displayTaskById(
 	}
 	if (task.testStrategy && task.testStrategy.trim().length > 0) {
 		console.log(
-			boxen(chalk.white.bold("Test Strategy:") + "\n\n" + task.testStrategy, {
+			boxen(`${chalk.white.bold("Test Strategy:")}\n\n${task.testStrategy}`, {
 				padding: { top: 0, bottom: 0, left: 1, right: 1 },
 				borderColor: "cyan",
 				borderStyle: "round",
@@ -1454,7 +1434,8 @@ async function displayTaskById(
 								? chalk.hex("#FFA500").bold
 								: chalk.red.bold;
 						return color(`${task.id}.${depId}`);
-					} else if (typeof depId === "number" && depId < 100) {
+					}
+					if (typeof depId === "number" && depId < 100) {
 						return chalk.red(`${task.id}.${depId} (Not found)`);
 					}
 					return depId; // Assume it's a top-level task ID if not a number < 100
@@ -1528,11 +1509,9 @@ async function displayTaskById(
 		if (!actualSubtasks || actualSubtasks.length === 0) {
 			console.log(
 				boxen(
-					chalk.yellow("No subtasks found. Consider adding subtasks:") +
-						"\n" +
-						chalk.white(
-							`Run: ${chalk.cyan(`task-master add-subtask --parent=${task.id} --title="Subtask title"`)}`,
-						),
+					`${chalk.yellow("No subtasks found. Consider adding subtasks:")}\n${chalk.white(
+						`Run: ${chalk.cyan(`task-master add-subtask --parent=${task.id} --title="Subtask title"`)}`,
+					)}`,
 					{
 						padding: { top: 0, bottom: 0, left: 1, right: 1 },
 						borderColor: "yellow",
@@ -1600,11 +1579,7 @@ async function displayTaskById(
 
 		console.log(
 			boxen(
-				chalk.white.bold("Subtask Progress:") +
-					"\n\n" +
-					`${chalk.cyan("Completed:")} ${completedSubtasks}/${totalSubtasks} (${completionPercentage.toFixed(1)}%)\n` +
-					`${statusCounts}\n` +
-					`${chalk.cyan("Progress:")} ${createProgressBar(completionPercentage, progressBarLength, statusBreakdown)}`,
+				`${chalk.white.bold("Subtask Progress:")}\n\n${chalk.cyan("Completed:")} ${completedSubtasks}/${totalSubtasks} (${completionPercentage.toFixed(1)}%)\n${statusCounts}\n${chalk.cyan("Progress:")} ${createProgressBar(completionPercentage, progressBarLength, statusBreakdown)}`,
 				{
 					padding: { top: 0, bottom: 0, left: 1, right: 1 },
 					borderColor: "blue",
@@ -1686,7 +1661,7 @@ async function displayTaskById(
 	}
 
 	console.log(
-		boxen(chalk.white.bold("Suggested Actions:") + "\n" + actions.join("\n"), {
+		boxen(`${chalk.white.bold("Suggested Actions:")}\n${actions.join("\n")}`, {
 			padding: { top: 0, bottom: 0, left: 1, right: 1 },
 			borderColor: "green",
 			borderStyle: "round",
@@ -1707,8 +1682,7 @@ async function displayComplexityReport(reportPath) {
 	if (!fs.existsSync(reportPath)) {
 		console.log(
 			boxen(
-				chalk.yellow(`No complexity report found at ${reportPath}\n\n`) +
-					"Would you like to generate one now?",
+				`${chalk.yellow(`No complexity report found at ${reportPath}\n\n`)}Would you like to generate one now?`,
 				{
 					padding: 1,
 					borderColor: "yellow",
@@ -1741,10 +1715,9 @@ async function displayComplexityReport(reportPath) {
 
 			// Complexity analysis is not available for this task
 			return null;
-		} else {
-			console.log(chalk.yellow("Report generation cancelled."));
-			return;
 		}
+		console.log(chalk.yellow("Report generation cancelled."));
+		return;
 	}
 
 	// Read the report
@@ -1833,10 +1806,7 @@ async function displayComplexityReport(reportPath) {
 
 	console.log(
 		boxen(
-			chalk.white.bold("Complexity Distribution\n\n") +
-				`${chalk.green.bold("Low (1-4):")} ${complexityDistribution[0]} tasks (${percentLow}%)\n` +
-				`${chalk.yellow.bold("Medium (5-7):")} ${complexityDistribution[1]} tasks (${percentMedium}%)\n` +
-				`${chalk.red.bold("High (8-10):")} ${complexityDistribution[2]} tasks (${percentHigh}%)`,
+			`${chalk.white.bold("Complexity Distribution\n\n")}${chalk.green.bold("Low (1-4):")} ${complexityDistribution[0]} tasks (${percentLow}%)\n${chalk.yellow.bold("Medium (5-7):")} ${complexityDistribution[1]} tasks (${percentMedium}%)\n${chalk.red.bold("High (8-10):")} ${complexityDistribution[2]} tasks (${percentHigh}%)`,
 			{
 				padding: 1,
 				borderColor: "cyan",
@@ -1925,11 +1895,7 @@ async function displayComplexityReport(reportPath) {
 	// Show action suggestions
 	console.log(
 		boxen(
-			chalk.white.bold("Suggested Actions:") +
-				"\n\n" +
-				`${chalk.cyan("1.")} Add subtasks to complex tasks: ${chalk.yellow(`task-master add-subtask --parent=<id> --title="Subtask title"`)}\n` +
-				`${chalk.cyan("2.")} Add subtasks to specific task: ${chalk.yellow(`task-master add-subtask --parent=<id> --title="Subtask title"`)}\n` +
-				`${chalk.cyan("3.")} View complexity report: ${chalk.yellow(`task-master complexity-report`)}`,
+			`${chalk.white.bold("Suggested Actions:")}\n\n${chalk.cyan("1.")} Add subtasks to complex tasks: ${chalk.yellow(`task-master add-subtask --parent=<id> --title="Subtask title"`)}\n${chalk.cyan("2.")} Add subtasks to specific task: ${chalk.yellow(`task-master add-subtask --parent=<id> --title="Subtask title"`)}\n${chalk.cyan("3.")} View complexity report: ${chalk.yellow("task-master complexity-report")}`,
 			{
 				padding: 1,
 				borderColor: "cyan",
@@ -2136,7 +2102,7 @@ function displayModelConfiguration(configData, allAvailableModels = []) {
 		formatCost(active.research.cost),
 		// getCombinedStatus(active.research.keyStatus) // Removed
 	]);
-	if (active.fallback && active.fallback.provider && active.fallback.modelId) {
+	if (active.fallback?.provider && active.fallback.modelId) {
 		activeTable.push([
 			chalk.white("Fallback"),
 			active.fallback.provider,
@@ -2194,7 +2160,7 @@ function displayAiUsageSummary(telemetryData, outputType = "cli") {
 		commandName,
 	} = telemetryData;
 
-	let summary = chalk.bold.blue("AI Usage Summary:") + "\n";
+	let summary = `${chalk.bold.blue("AI Usage Summary:")}\n`;
 	summary += chalk.gray(`  Command: ${commandName}\n`);
 	summary += chalk.gray(`  Provider: ${providerName}\n`);
 	summary += chalk.gray(`  Model: ${modelUsed}\n`);
@@ -2415,15 +2381,9 @@ async function displayMultipleTasksSummary(
 	if (foundTasks.length > 1) {
 		console.log(
 			boxen(
-				chalk.white.bold("Interactive Options:") +
-					"\n" +
-					chalk.cyan("• Press Enter to view available actions for all tasks") +
-					"\n" +
-					chalk.cyan(
-						'• Type a task ID (e.g., "3" or "3.2") to view that specific task',
-					) +
-					"\n" +
-					chalk.cyan('• Type "q" to quit'),
+				`${chalk.white.bold("Interactive Options:")}\n${chalk.cyan("• Press Enter to view available actions for all tasks")}\n${chalk.cyan(
+					'• Type a task ID (e.g., "3" or "3.2") to view that specific task',
+				)}\n${chalk.cyan('• Type "q" to quit')}`,
 				{
 					padding: { top: 0, bottom: 0, left: 1, right: 1 },
 					borderColor: "green",
@@ -2445,31 +2405,12 @@ async function displayMultipleTasksSummary(
 
 		if (choice.toLowerCase() === "q") {
 			return;
-		} else if (choice.trim() === "") {
+		}
+		if (choice.trim() === "") {
 			// Show action menu for selected tasks
 			console.log(
 				boxen(
-					chalk.white.bold("Available Actions for Selected Tasks:") +
-						"\n" +
-						chalk.cyan("1.") +
-						" Mark all as in-progress" +
-						"\n" +
-						chalk.cyan("2.") +
-						" Mark all as done" +
-						"\n" +
-						chalk.cyan("3.") +
-						" Show next available task" +
-						"\n" +
-						chalk.cyan("4.") +
-						" Add subtasks to tasks" +
-						"\n" +
-						chalk.cyan("5.") +
-						" View dependency relationships" +
-						"\n" +
-						chalk.cyan("6.") +
-						" Generate task files" +
-						"\n" +
-						chalk.gray("Or type a task ID to view details"),
+					`${chalk.white.bold("Available Actions for Selected Tasks:")}\n${chalk.cyan("1.")} Mark all as in-progress\n${chalk.cyan("2.")} Mark all as done\n${chalk.cyan("3.")} Show next available task\n${chalk.cyan("4.")} Add subtasks to tasks\n${chalk.cyan("5.")} View dependency relationships\n${chalk.cyan("6.")} Generate task files\n${chalk.gray("Or type a task ID to view details")}`,
 					{
 						padding: { top: 0, bottom: 0, left: 1, right: 1 },
 						borderColor: "blue",
@@ -2517,7 +2458,7 @@ async function displayMultipleTasksSummary(
 					);
 					break;
 				case "3":
-					console.log(chalk.blue(`\n→ Command: task-master next`));
+					console.log(chalk.blue("\n→ Command: task-master next"));
 					console.log(
 						chalk.green(
 							"✓ Copy and run this command to see the next available task",
@@ -2556,7 +2497,7 @@ async function displayMultipleTasksSummary(
 					break;
 				}
 				case "6":
-					console.log(chalk.blue(`\n→ Command: task-master generate`));
+					console.log(chalk.blue("\n→ Command: task-master generate"));
 					console.log(
 						chalk.green("✓ Copy and run this command to generate task files"),
 					);
@@ -2582,11 +2523,7 @@ async function displayMultipleTasksSummary(
 		const task = foundTasks[0];
 		console.log(
 			boxen(
-				chalk.white.bold("Suggested Actions:") +
-					"\n" +
-					`${chalk.cyan("1.")} View full details: ${chalk.yellow(`task-master show ${task.id}`)}\n` +
-					`${chalk.cyan("2.")} Mark as in-progress: ${chalk.yellow(`task-master set-status --id=${task.id} --status=in-progress`)}\n` +
-					`${chalk.cyan("3.")} Mark as done: ${chalk.yellow(`task-master set-status --id=${task.id} --status=done`)}`,
+				`${chalk.white.bold("Suggested Actions:")}\n${chalk.cyan("1.")} View full details: ${chalk.yellow(`task-master show ${task.id}`)}\n${chalk.cyan("2.")} Mark as in-progress: ${chalk.yellow(`task-master set-status --id=${task.id} --status=in-progress`)}\n${chalk.cyan("3.")} Mark as done: ${chalk.yellow(`task-master set-status --id=${task.id} --status=done`)}`,
 				{
 					padding: { top: 0, bottom: 0, left: 1, right: 1 },
 					borderColor: "green",
@@ -2611,48 +2548,43 @@ function displayContextAnalysis(analysisData, semanticQuery, contextSize) {
 		analysisData;
 
 	// Create the context analysis display
-	let analysisContent = chalk.white.bold("Context Analysis") + "\n\n";
+	let analysisContent = `${chalk.white.bold("Context Analysis")}\n\n`;
 
 	// Query info
-	analysisContent +=
-		chalk.gray("Query: ") + chalk.white(`"${semanticQuery}"`) + "\n";
-	analysisContent +=
+	analysisContent += `${chalk.gray("Query: ") + chalk.white(`"${semanticQuery}"`)}\n`;
+	analysisContent += `${
 		chalk.gray("Context size: ") +
-		chalk.cyan(`${contextSize.toLocaleString()} characters`) +
-		"\n";
-	analysisContent +=
+		chalk.cyan(`${contextSize.toLocaleString()} characters`)
+	}\n`;
+	analysisContent += `${
 		chalk.gray("Tasks found: ") +
-		chalk.yellow(`${allRelevantTasks.length} relevant tasks`) +
-		"\n\n";
+		chalk.yellow(`${allRelevantTasks.length} relevant tasks`)
+	}\n\n`;
 
 	// High relevance matches
 	if (highRelevance.length > 0) {
-		analysisContent += chalk.green.bold("🎯 High Relevance Matches:") + "\n";
+		analysisContent += `${chalk.green.bold("🎯 High Relevance Matches:")}\n`;
 		highRelevance.slice(0, 3).forEach((task) => {
-			analysisContent +=
-				chalk.green(`  • Task ${task.id}: ${truncate(task.title, 50)}`) + "\n";
+			analysisContent += `${chalk.green(`  • Task ${task.id}: ${truncate(task.title, 50)}`)}\n`;
 		});
 		if (highRelevance.length > 3) {
-			analysisContent +=
-				chalk.green(
-					`  • ... and ${highRelevance.length - 3} more high relevance tasks`,
-				) + "\n";
+			analysisContent += `${chalk.green(
+				`  • ... and ${highRelevance.length - 3} more high relevance tasks`,
+			)}\n`;
 		}
 		analysisContent += "\n";
 	}
 
 	// Medium relevance matches
 	if (mediumRelevance.length > 0) {
-		analysisContent += chalk.yellow.bold("📋 Medium Relevance Matches:") + "\n";
+		analysisContent += `${chalk.yellow.bold("📋 Medium Relevance Matches:")}\n`;
 		mediumRelevance.slice(0, 3).forEach((task) => {
-			analysisContent +=
-				chalk.yellow(`  • Task ${task.id}: ${truncate(task.title, 50)}`) + "\n";
+			analysisContent += `${chalk.yellow(`  • Task ${task.id}: ${truncate(task.title, 50)}`)}\n`;
 		});
 		if (mediumRelevance.length > 3) {
-			analysisContent +=
-				chalk.yellow(
-					`  • ... and ${mediumRelevance.length - 3} more medium relevance tasks`,
-				) + "\n";
+			analysisContent += `${chalk.yellow(
+				`  • ... and ${mediumRelevance.length - 3} more medium relevance tasks`,
+			)}\n`;
 		}
 		analysisContent += "\n";
 	}
@@ -2665,16 +2597,14 @@ function displayContextAnalysis(analysisData, semanticQuery, contextSize) {
 	);
 
 	if (recentTasksNotInRelevance.length > 0) {
-		analysisContent += chalk.cyan.bold("🕒 Recent Tasks (for context):") + "\n";
+		analysisContent += `${chalk.cyan.bold("🕒 Recent Tasks (for context):")}\n`;
 		recentTasksNotInRelevance.slice(0, 2).forEach((task) => {
-			analysisContent +=
-				chalk.cyan(`  • Task ${task.id}: ${truncate(task.title, 50)}`) + "\n";
+			analysisContent += `${chalk.cyan(`  • Task ${task.id}: ${truncate(task.title, 50)}`)}\n`;
 		});
 		if (recentTasksNotInRelevance.length > 2) {
-			analysisContent +=
-				chalk.cyan(
-					`  • ... and ${recentTasksNotInRelevance.length - 2} more recent tasks`,
-				) + "\n";
+			analysisContent += `${chalk.cyan(
+				`  • ... and ${recentTasksNotInRelevance.length - 2} more recent tasks`,
+			)}\n`;
 		}
 	}
 
@@ -2736,7 +2666,7 @@ export function displayCrossTagDependencyError(
 	console.log(
 		chalk.red(`\n❌ Cannot move tasks from "${sourceTag}" to "${targetTag}"`),
 	);
-	console.log(chalk.yellow(`\nCross-tag dependency conflicts detected:`));
+	console.log(chalk.yellow("\nCross-tag dependency conflicts detected:"));
 
 	if (conflicts.length > 0) {
 		conflicts.forEach((conflict) => {
@@ -2744,7 +2674,7 @@ export function displayCrossTagDependencyError(
 		});
 	}
 
-	console.log(chalk.cyan(`\nResolution options:`));
+	console.log(chalk.cyan("\nResolution options:"));
 	console.log(
 		`  1. Move with dependencies: task-master move --from=${sourceIds} --from-tag=${sourceTag} --to-tag=${targetTag} --with-dependencies`,
 	);
@@ -2752,7 +2682,7 @@ export function displayCrossTagDependencyError(
 		`  2. Break dependencies: task-master move --from=${sourceIds} --from-tag=${sourceTag} --to-tag=${targetTag} --ignore-dependencies`,
 	);
 	console.log(
-		`  3. Validate and fix dependencies: task-master validate-dependencies && task-master fix-dependencies`,
+		"  3. Validate and fix dependencies: task-master validate-dependencies && task-master fix-dependencies",
 	);
 	if (conflicts.length > 0) {
 		console.log(
@@ -2812,13 +2742,13 @@ export function displaySubtaskMoveError(taskId, sourceTag, targetTag) {
 			`\n❌ Cannot move subtask ${displayTaskId} directly between tags`,
 		),
 	);
-	console.log(chalk.yellow(`\nSubtask movement restriction:`));
-	console.log(`  • Subtasks cannot be moved directly between tags`);
-	console.log(`  • They must be promoted to full tasks first`);
+	console.log(chalk.yellow("\nSubtask movement restriction:"));
+	console.log("  • Subtasks cannot be moved directly between tags");
+	console.log("  • They must be promoted to full tasks first");
 	console.log(`  • Source tag: "${sourceTag}"`);
 	console.log(`  • Target tag: "${targetTag}"`);
 
-	console.log(chalk.cyan(`\nResolution options:`));
+	console.log(chalk.cyan("\nResolution options:"));
 	console.log(
 		`  1. Promote subtask to full task: task-master remove-subtask --id=${displayTaskId} --convert`,
 	);
@@ -2841,18 +2771,18 @@ export function displayInvalidTagCombinationError(
 	targetTag,
 	reason,
 ) {
-	console.log(chalk.red(`\n❌ Invalid tag combination`));
-	console.log(chalk.yellow(`\nError details:`));
+	console.log(chalk.red("\n❌ Invalid tag combination"));
+	console.log(chalk.yellow("\nError details:"));
 	console.log(`  • Source tag: "${sourceTag}"`);
 	console.log(`  • Target tag: "${targetTag}"`);
 	console.log(`  • Reason: ${reason}`);
 
-	console.log(chalk.cyan(`\nResolution options:`));
-	console.log(`  1. Use different tags for cross-tag moves`);
+	console.log(chalk.cyan("\nResolution options:"));
+	console.log("  1. Use different tags for cross-tag moves");
 	console.log(
 		`  2. Use within-tag move: task-master move --from=<id> --to=<id> --tag=${sourceTag}`,
 	);
-	console.log(`  3. Check available tags: task-master tags`);
+	console.log("  3. Check available tags: task-master tags");
 }
 
 /**
@@ -2881,7 +2811,7 @@ export function displayDependencyValidationHints(context = "general") {
 
 	const relevantHints = hints[context] || hints.general;
 
-	console.log(chalk.cyan(`\nHelpful hints:`));
+	console.log(chalk.cyan("\nHelpful hints:"));
 	// Convert to Set to ensure only unique hints are displayed
 	const uniqueHints = new Set(relevantHints);
 	uniqueHints.forEach((hint) => {

@@ -131,7 +131,7 @@ describe.skip('Complex Cross-Tag Scenarios', () => {
 			process.chdir(global.projectRoot || path.resolve(__dirname, '../../..'))
 		} catch (error) {
 			// If we can't change directory, try a known safe directory
-			process.chdir(require('os').homedir())
+			process.chdir(require('node:os').homedir())
 		}
 
 		// Cleanup test directory

@@ -8,9 +8,9 @@
  * Validates token tracking, message formats, and priority indicators across all contexts.
  */
 
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import chalk from "chalk";
 
 // Get current directory
@@ -271,17 +271,15 @@ function verifyTaskResults(testTasksPath) {
 
 		// Verify task structure
 		const firstTask = tasksData.tasks[0];
-		if (firstTask && firstTask.id && firstTask.title && firstTask.description) {
+		if (firstTask?.id && firstTask.title && firstTask.description) {
 			console.log(chalk.green("✅ Task structure is valid"));
 			return true;
-		} else {
-			console.log(chalk.red("❌ Task structure is invalid"));
-			return false;
 		}
-	} else {
-		console.log(chalk.red("❌ Tasks file was not created"));
+		console.log(chalk.red("❌ Task structure is invalid"));
 		return false;
 	}
+	console.log(chalk.red("❌ Tasks file was not created"));
+	return false;
 }
 
 /**
@@ -526,7 +524,7 @@ async function main() {
 					),
 				);
 				const mcpStreamingResult = await testMCPStreaming(numTasks);
-				console.log("\n" + "=".repeat(60) + "\n");
+				console.log(`\n${"=".repeat(60)}\n`);
 				const nonStreamingResult = await testNonStreaming(numTasks);
 				compareResults(mcpStreamingResult, nonStreamingResult);
 				break;
@@ -535,9 +533,9 @@ async function main() {
 			case "all": {
 				console.log(chalk.yellow("Running all test types...\n"));
 				const mcpResult = await testMCPStreaming(numTasks);
-				console.log("\n" + "=".repeat(60) + "\n");
+				console.log(`\n${"=".repeat(60)}\n`);
 				const cliResult = await testCLIStreaming(numTasks);
-				console.log("\n" + "=".repeat(60) + "\n");
+				console.log(`\n${"=".repeat(60)}\n`);
 				const nonStreamResult = await testNonStreaming(numTasks);
 
 				console.log(chalk.cyan("\n=== All Tests Summary ==="));

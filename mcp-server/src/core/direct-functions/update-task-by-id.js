@@ -144,19 +144,18 @@ export async function updateTaskByIdDirect(args, log, context = {}) {
 						updatedFields: coreResult.updatedFields,
 					},
 				};
-			} else {
-				// Update failed
-				const errorMessage =
-					coreResult.error?.message || "Unknown error updating task";
-				logWrapper.error(`Task update failed: ${errorMessage}`);
-				return {
-					success: false,
-					error: {
-						code: "UPDATE_FAILED",
-						message: errorMessage,
-					},
-				};
 			}
+			// Update failed
+			const errorMessage =
+				coreResult.error?.message || "Unknown error updating task";
+			logWrapper.error(`Task update failed: ${errorMessage}`);
+			return {
+				success: false,
+				error: {
+					code: "UPDATE_FAILED",
+					message: errorMessage,
+				},
+			};
 		} catch (error) {
 			logWrapper.error(`Error updating task by ID: ${error.message}`);
 			return {

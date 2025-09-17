@@ -3,8 +3,8 @@
  * Provides centralized path resolution logic for both CLI and MCP use cases
  */
 
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 import {
 	COMPLEXITY_REPORT_FILE,
 	LEGACY_CONFIG_FILE,
@@ -116,11 +116,10 @@ export function findTasksPath(explicitPath = null, args = null, log = null) {
 		if (fs.existsSync(resolvedPath)) {
 			logger.info?.(`Using explicit tasks path: ${resolvedPath}`);
 			return resolvedPath;
-		} else {
-			logger.warn?.(
-				`Explicit tasks path not found: ${resolvedPath}, trying fallbacks`,
-			);
 		}
+		logger.warn?.(
+			`Explicit tasks path not found: ${resolvedPath}, trying fallbacks`,
+		);
 	}
 
 	// 4. Check possible locations in order of preference
@@ -178,11 +177,10 @@ export function findPRDPath(explicitPath = null, args = null, log = null) {
 		if (fs.existsSync(resolvedPath)) {
 			logger.info?.(`Using explicit PRD path: ${resolvedPath}`);
 			return resolvedPath;
-		} else {
-			logger.warn?.(
-				`Explicit PRD path not found: ${resolvedPath}, trying fallbacks`,
-			);
 		}
+		logger.warn?.(
+			`Explicit PRD path not found: ${resolvedPath}, trying fallbacks`,
+		);
 	}
 
 	// 2. Try to get project root from args (MCP) or find it
@@ -250,11 +248,10 @@ export function findComplexityReportPath(
 		if (fs.existsSync(resolvedPath)) {
 			logger.info?.(`Using explicit complexity report path: ${resolvedPath}`);
 			return resolvedPath;
-		} else {
-			logger.warn?.(
-				`Explicit complexity report path not found: ${resolvedPath}, trying fallbacks`,
-			);
 		}
+		logger.warn?.(
+			`Explicit complexity report path not found: ${resolvedPath}, trying fallbacks`,
+		);
 	}
 
 	// 2. Try to get project root from args (MCP) or find it
@@ -426,11 +423,10 @@ export function findConfigPath(explicitPath = null, args = null, log = null) {
 		if (fs.existsSync(resolvedPath)) {
 			logger.info?.(`Using explicit config path: ${resolvedPath}`);
 			return resolvedPath;
-		} else {
-			logger.warn?.(
-				`Explicit config path not found: ${resolvedPath}, trying fallbacks`,
-			);
 		}
+		logger.warn?.(
+			`Explicit config path not found: ${resolvedPath}, trying fallbacks`,
+		);
 	}
 
 	// 2. Try to get project root from args (MCP) or find it

@@ -5,10 +5,10 @@
  * MCP-friendly: All functions require projectRoot parameter
  */
 
-import { exec, execSync } from "child_process";
-import fs from "fs";
-import path from "path";
-import { promisify } from "util";
+import { exec, execSync } from "node:child_process";
+import fs from "node:fs";
+import path from "node:path";
+import { promisify } from "node:util";
 
 const execAsync = promisify(exec);
 
@@ -234,7 +234,7 @@ async function getDefaultBranch(projectRoot) {
 		// Try to get from GitHub first (if gh CLI is available)
 		if (await isGhCliAvailable(projectRoot)) {
 			const repoInfo = await getGitHubRepoInfo(projectRoot);
-			if (repoInfo && repoInfo.defaultBranchRef) {
+			if (repoInfo?.defaultBranchRef) {
 				return repoInfo.defaultBranchRef.name;
 			}
 		}

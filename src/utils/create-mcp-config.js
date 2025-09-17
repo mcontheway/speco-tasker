@@ -1,5 +1,5 @@
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 import { log } from "../../scripts/modules/utils.js";
 
 // Return JSON with existing mcp.json formatting style
@@ -104,7 +104,7 @@ export function setupMCPConfiguration(projectRoot, mcpConfigPath) {
 				log("info", "task-master-ai server already configured in mcp.json");
 			}
 			// Write the updated configuration
-			fs.writeFileSync(mcpPath, formatJSONWithTabs(mcpConfig) + "\n");
+			fs.writeFileSync(mcpPath, `${formatJSONWithTabs(mcpConfig)}\n`);
 			log("success", "Updated MCP configuration file");
 		} catch (error) {
 			log("error", `Failed to update MCP configuration: ${error.message}`);
@@ -118,7 +118,7 @@ export function setupMCPConfiguration(projectRoot, mcpConfigPath) {
 			const newMCPConfig = {
 				mcpServers: newMCPServer,
 			};
-			fs.writeFileSync(mcpPath, formatJSONWithTabs(newMCPConfig) + "\n");
+			fs.writeFileSync(mcpPath, `${formatJSONWithTabs(newMCPConfig)}\n`);
 			log(
 				"warn",
 				"Created new MCP configuration file (backup of original file was created if it existed)",
@@ -129,7 +129,7 @@ export function setupMCPConfiguration(projectRoot, mcpConfigPath) {
 		const newMCPConfig = {
 			mcpServers: newMCPServer,
 		};
-		fs.writeFileSync(mcpPath, formatJSONWithTabs(newMCPConfig) + "\n");
+		fs.writeFileSync(mcpPath, `${formatJSONWithTabs(newMCPConfig)}\n`);
 		log("success", `Created MCP configuration file at ${mcpPath}`);
 	}
 
@@ -207,7 +207,7 @@ export function removeTaskMasterMCPConfiguration(projectRoot, mcpConfigPath) {
 		}
 
 		// Remove task-master-ai server
-		delete mcpConfig.mcpServers["task-master-ai"];
+		mcpConfig.mcpServers["task-master-ai"] = undefined;
 
 		// Also remove any servers that have task-master-ai in their args
 		Object.keys(mcpConfig.mcpServers).forEach((serverName) => {
@@ -233,7 +233,7 @@ export function removeTaskMasterMCPConfiguration(projectRoot, mcpConfigPath) {
 
 		if (result.hasOtherServers) {
 			// Write back the modified config with remaining servers
-			fs.writeFileSync(mcpPath, formatJSONWithTabs(mcpConfig) + "\n");
+			fs.writeFileSync(mcpPath, `${formatJSONWithTabs(mcpConfig)}\n`);
 			result.success = true;
 			result.removed = true;
 			result.deleted = false;

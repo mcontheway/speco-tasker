@@ -1,4 +1,4 @@
-import path from "path";
+import path from "node:path";
 import boxen from "boxen";
 import chalk from "chalk";
 import Table from "cli-table3";
@@ -119,11 +119,7 @@ function clearSubtasks(tasksPath, taskIds, context = {}) {
 			// Next steps suggestion
 			console.log(
 				boxen(
-					chalk.white.bold("下一步操作:") +
-						"\n\n" +
-						`${chalk.cyan("1.")} 添加新子任务: ${chalk.yellow('task-master add-subtask --parent=<id> --title="子任务标题"')}\n` +
-						`${chalk.cyan("2.")} 验证更改: ${chalk.yellow("task-master list --with-subtasks")}\n` +
-						`${chalk.cyan("3.")} 查看父任务: ${chalk.yellow("task-master show <parent-id>")}`,
+					`${chalk.white.bold("下一步操作:")}\n\n${chalk.cyan("1.")} 添加新子任务: ${chalk.yellow('task-master add-subtask --parent=<id> --title="子任务标题"')}\n${chalk.cyan("2.")} 验证更改: ${chalk.yellow("task-master list --with-subtasks")}\n${chalk.cyan("3.")} 查看父任务: ${chalk.yellow("task-master show <parent-id>")}`,
 					{
 						padding: 1,
 						borderColor: "cyan",
