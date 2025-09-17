@@ -1,6 +1,6 @@
-import fs from 'fs'
-import path from 'path'
-import { log } from '../utils.js'
+import fs from "fs";
+import path from "path";
+import { log } from "../utils.js";
 
 /**
  * Validates spec_files field for tasks and subtasks
@@ -10,69 +10,74 @@ import { log } from '../utils.js'
  * @param {Function} report - Report function for logging
  * @returns {Object} Validation result with isValid boolean and error messages
  */
-export function validateSpecFiles(task, projectRoot, report, isSubtask = false) {
+export function validateSpecFiles(
+	task,
+	projectRoot,
+	report,
+	isSubtask = false,
+) {
 	const result = {
 		isValid: true,
 		errors: [],
-		warnings: []
-	}
+		warnings: [],
+	};
 
-	const taskType = isSubtask ? '子任务' : '任务'
-	const taskId = isSubtask ? `${task.parentTaskId}.${task.id}` : task.id
+	const taskType = isSubtask ? "子任务" : "任务";
+	const taskId = isSubtask ? `${task.parentTaskId}.${task.id}` : task.id;
 
 	// For subtasks, spec_files is optional - skip validation if not provided
-	if (isSubtask && !task.hasOwnProperty('spec_files')) {
-		return result
+	if (isSubtask && !task.hasOwnProperty("spec_files")) {
+		return result;
 	}
 
 	// For main tasks, spec_files is still required
-	if (!isSubtask && !task.hasOwnProperty('spec_files')) {
-		result.isValid = false
-		result.errors.push(`缺少必填字段 'spec_files'，请先完成规范文档`)
-		return result
+	if (!isSubtask && !task.hasOwnProperty("spec_files")) {
+		result.isValid = false;
+		result.errors.push(`缺少必填字段 'spec_files'，请先完成规范文档`);
+		return result;
 	}
 
 	// Check if spec_files is an array
 	if (!Array.isArray(task.spec_files)) {
-		result.isValid = false
-		result.errors.push(`'spec_files' 字段必须是数组类型`)
-		return result
+		result.isValid = false;
+		result.errors.push(`'spec_files' 字段必须是数组类型`);
+		return result;
 	}
 
 	// For main tasks, spec_files cannot be empty
 	// For subtasks, empty spec_files is allowed
 	if (!isSubtask && task.spec_files.length === 0) {
-		result.isValid = false
-		result.errors.push(`'spec_files' 字段不能为空，请至少关联一个规范文档`)
-		return result
+		result.isValid = false;
+		result.errors.push(`'spec_files' 字段不能为空，请至少关联一个规范文档`);
+		return result;
 	}
 
 	// Validate each spec file entry
 	task.spec_files.forEach((specFile, index) => {
 		// Check required fields
-		if (!specFile.type || typeof specFile.type !== 'string') {
-			result.errors.push(`spec_files[${index}] 缺少或无效的 'type' 字段`)
+		if (!specFile.type || typeof specFile.type !== "string") {
+			result.errors.push(`spec_files[${index}] 缺少或无效的 'type' 字段`);
 		}
 
-		if (!specFile.title || typeof specFile.title !== 'string') {
-			result.errors.push(`spec_files[${index}] 缺少或无效的 'title' 字段`)
+		if (!specFile.title || typeof specFile.title !== "string") {
+			result.errors.push(`spec_files[${index}] 缺少或无效的 'title' 字段`);
 		}
 
-		if (!specFile.file || typeof specFile.file !== 'string') {
-			result.errors.push(`spec_files[${index}] 缺少或无效的 'file' 字段`)
+		if (!specFile.file || typeof specFile.file !== "string") {
+			result.errors.push(`spec_files[${index}] 缺少或无效的 'file' 字段`);
 		} else {
 			// Check if file exists
-			const filePath = path.resolve(projectRoot, specFile.file)
+			const filePath = path.resolve(projectRoot, specFile.file);
 			if (!fs.existsSync(filePath)) {
-				result.warnings.push(`规范文档文件不存在: ${specFile.file}`)
+				result.warnings.push(`规范文档文件不存在: ${specFile.file}`);
 			}
 		}
-	})
+	});
 
 	// Set overall validity
-	result.isValid = result.errors.length === 0
+	result.isValid = result.errors.length === 0;
 
-	return result
+	return result;
 }
 
 /**
@@ -86,18 +91,18 @@ export function validateLogs(task, report, isSubtask = false) {
 	const result = {
 		isValid: true,
 		errors: [],
-		warnings: []
-	}
+		warnings: [],
+	};
 
 	// Logs is optional, so only validate if present
-	if (task.hasOwnProperty('logs')) {
-		if (typeof task.logs !== 'string') {
-			result.isValid = false
-			result.errors.push(`'logs' 字段必须是字符串类型`)
+	if (task.hasOwnProperty("logs")) {
+		if (typeof task.logs !== "string") {
+			result.isValid = false;
+			result.errors.push(`'logs' 字段必须是字符串类型`);
 		}
 	}
 
-	return result
+	return result;
 }
 
 /**
@@ -111,41 +116,51 @@ export function validateRequiredFields(task, report, isSubtask = false) {
 	const result = {
 		isValid: true,
 		errors: [],
-		warnings: []
-	}
+		warnings: [],
+	};
 
-	const taskType = isSubtask ? '子任务' : '任务'
+	const taskType = isSubtask ? "子任务" : "任务";
 
 	// Validate description
-	if (!task.description || typeof task.description !== 'string' || task.description.trim() === '') {
-		result.isValid = false
-		result.errors.push(`${taskType}描述不能为空`)
+	if (
+		!task.description ||
+		typeof task.description !== "string" ||
+		task.description.trim() === ""
+	) {
+		result.isValid = false;
+		result.errors.push(`${taskType}描述不能为空`);
 	}
 
 	// Validate priority
-	const validPriorities = ['high', 'medium', 'low']
+	const validPriorities = ["high", "medium", "low"];
 	if (!task.priority || !validPriorities.includes(task.priority)) {
-		result.isValid = false
-		result.errors.push(`${taskType}优先级必须是 'high', 'medium' 或 'low' 中的一个`)
+		result.isValid = false;
+		result.errors.push(
+			`${taskType}优先级必须是 'high', 'medium' 或 'low' 中的一个`,
+		);
 	}
 
 	// Validate details
-	if (!task.details || typeof task.details !== 'string' || task.details.trim() === '') {
-		result.isValid = false
-		result.errors.push(`${taskType}实现细节不能为空`)
+	if (
+		!task.details ||
+		typeof task.details !== "string" ||
+		task.details.trim() === ""
+	) {
+		result.isValid = false;
+		result.errors.push(`${taskType}实现细节不能为空`);
 	}
 
 	// Validate testStrategy
 	if (
 		!task.testStrategy ||
-		typeof task.testStrategy !== 'string' ||
-		task.testStrategy.trim() === ''
+		typeof task.testStrategy !== "string" ||
+		task.testStrategy.trim() === ""
 	) {
-		result.isValid = false
-		result.errors.push(`${taskType}测试策略不能为空`)
+		result.isValid = false;
+		result.errors.push(`${taskType}测试策略不能为空`);
 	}
 
-	return result
+	return result;
 }
 
 /**
@@ -157,27 +172,38 @@ export function validateRequiredFields(task, report, isSubtask = false) {
  * @returns {Object} Complete validation result
  */
 export function validateTaskData(task, projectRoot, report, isSubtask = false) {
-	const specFilesValidation = validateSpecFiles(task, projectRoot, report, isSubtask)
-	const logsValidation = validateLogs(task, report, isSubtask)
-	const requiredFieldsValidation = validateRequiredFields(task, report, isSubtask)
+	const specFilesValidation = validateSpecFiles(
+		task,
+		projectRoot,
+		report,
+		isSubtask,
+	);
+	const logsValidation = validateLogs(task, report, isSubtask);
+	const requiredFieldsValidation = validateRequiredFields(
+		task,
+		report,
+		isSubtask,
+	);
 
 	return {
 		isValid:
-			specFilesValidation.isValid && logsValidation.isValid && requiredFieldsValidation.isValid,
+			specFilesValidation.isValid &&
+			logsValidation.isValid &&
+			requiredFieldsValidation.isValid,
 		specFiles: specFilesValidation,
 		logs: logsValidation,
 		requiredFields: requiredFieldsValidation,
 		allErrors: [
 			...specFilesValidation.errors,
 			...logsValidation.errors,
-			...requiredFieldsValidation.errors
+			...requiredFieldsValidation.errors,
 		],
 		allWarnings: [
 			...specFilesValidation.warnings,
 			...logsValidation.warnings,
-			...requiredFieldsValidation.warnings
-		]
-	}
+			...requiredFieldsValidation.warnings,
+		],
+	};
 }
 
 /**
@@ -187,25 +213,29 @@ export function validateTaskData(task, projectRoot, report, isSubtask = false) {
  * @param {number|string} taskId - Task ID
  * @returns {string} Formatted error message
  */
-export function formatValidationError(validationResult, taskId, isSubtask = false) {
-	const taskType = isSubtask ? '子任务' : '任务'
-	let message = `${taskType} ${taskId} 验证失败:\n`
+export function formatValidationError(
+	validationResult,
+	taskId,
+	isSubtask = false,
+) {
+	const taskType = isSubtask ? "子任务" : "任务";
+	let message = `${taskType} ${taskId} 验证失败:\n`;
 
 	if (validationResult.allErrors.length > 0) {
-		message += '\n错误:\n'
+		message += "\n错误:\n";
 		validationResult.allErrors.forEach((error) => {
-			message += `  - ${error}\n`
-		})
+			message += `  - ${error}\n`;
+		});
 	}
 
 	if (validationResult.allWarnings.length > 0) {
-		message += '\n警告:\n'
+		message += "\n警告:\n";
 		validationResult.allWarnings.forEach((warning) => {
-			message += `  - ${warning}\n`
-		})
+			message += `  - ${warning}\n`;
+		});
 	}
 
-	message += '\n请先完成规范文档，然后重试。'
+	message += "\n请先完成规范文档，然后重试。";
 
-	return message
+	return message;
 }

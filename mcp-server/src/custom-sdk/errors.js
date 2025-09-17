@@ -10,11 +10,11 @@
  */
 export class MCPError extends Error {
 	constructor(message, options = {}) {
-		super(message)
-		this.name = 'MCPError'
-		this.code = options.code
-		this.cause = options.cause
-		this.mcpResponse = options.mcpResponse
+		super(message);
+		this.name = "MCPError";
+		this.code = options.code;
+		this.cause = options.cause;
+		this.mcpResponse = options.mcpResponse;
 	}
 }
 
@@ -23,8 +23,8 @@ export class MCPError extends Error {
  */
 export class MCPSessionError extends MCPError {
 	constructor(message, options = {}) {
-		super(message, options)
-		this.name = 'MCPSessionError'
+		super(message, options);
+		this.name = "MCPSessionError";
 	}
 }
 
@@ -33,8 +33,8 @@ export class MCPSessionError extends MCPError {
  */
 export class MCPSamplingError extends MCPError {
 	constructor(message, options = {}) {
-		super(message, options)
-		this.name = 'MCPSamplingError'
+		super(message, options);
+		this.name = "MCPSamplingError";
 	}
 }
 
@@ -46,39 +46,39 @@ export class MCPSamplingError extends MCPError {
 export function mapMCPError(error) {
 	// If already an MCP error, return as-is
 	if (error instanceof MCPError) {
-		return error
+		return error;
 	}
 
-	const message = error.message || 'Unknown MCP error'
-	const originalError = error
+	const message = error.message || "Unknown MCP error";
+	const originalError = error;
 
 	// Map common error patterns
-	if (message.includes('session') || message.includes('connection')) {
+	if (message.includes("session") || message.includes("connection")) {
 		return new MCPSessionError(message, {
 			cause: originalError,
-			code: 'SESSION_ERROR'
-		})
+			code: "SESSION_ERROR",
+		});
 	}
 
-	if (message.includes('sampling') || message.includes('timeout')) {
+	if (message.includes("sampling") || message.includes("timeout")) {
 		return new MCPSamplingError(message, {
 			cause: originalError,
-			code: 'SAMPLING_ERROR'
-		})
+			code: "SAMPLING_ERROR",
+		});
 	}
 
-	if (message.includes('capabilities') || message.includes('not supported')) {
+	if (message.includes("capabilities") || message.includes("not supported")) {
 		return new MCPSessionError(message, {
 			cause: originalError,
-			code: 'CAPABILITY_ERROR'
-		})
+			code: "CAPABILITY_ERROR",
+		});
 	}
 
 	// Default to generic MCP error
 	return new MCPError(message, {
 		cause: originalError,
-		code: 'UNKNOWN_ERROR'
-	})
+		code: "UNKNOWN_ERROR",
+	});
 }
 
 /**
@@ -87,16 +87,20 @@ export function mapMCPError(error) {
  * @returns {boolean} True if error might be retryable
  */
 export function isRetryableError(error) {
-	if (error instanceof MCPSamplingError && error.code === 'SAMPLING_ERROR') {
-		return true
+	if (error instanceof MCPSamplingError && error.code === "SAMPLING_ERROR") {
+		return true;
 	}
 
-	if (error instanceof MCPSessionError && error.code === 'SESSION_ERROR') {
+	if (error instanceof MCPSessionError && error.code === "SESSION_ERROR") {
 		// Session errors are generally not retryable
-		return false
+		return false;
 	}
 
 	// Check for common retryable patterns
-	const message = error.message?.toLowerCase() || ''
-	return message.includes('timeout') || message.includes('network') || message.includes('temporary')
+	const message = error.message?.toLowerCase() || "";
+	return (
+		message.includes("timeout") ||
+		message.includes("network") ||
+		message.includes("temporary")
+	);
 }

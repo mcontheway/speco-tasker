@@ -3,11 +3,15 @@
  * Tool to remove a task by ID
  */
 
-import { z } from 'zod'
-import { resolveTag } from '../../../scripts/modules/utils.js'
-import { removeTaskDirect } from '../core/task-master-core.js'
-import { findTasksPath } from '../core/utils/path-utils.js'
-import { createErrorResponse, handleApiResult, withNormalizedProjectRoot } from './utils.js'
+import { z } from "zod";
+import { resolveTag } from "../../../scripts/modules/utils.js";
+import { removeTaskDirect } from "../core/task-master-core.js";
+import { findTasksPath } from "../core/utils/path-utils.js";
+import {
+	createErrorResponse,
+	handleApiResult,
+	withNormalizedProjectRoot,
+} from "./utils.js";
 
 /**
  * Register the remove-task tool with the MCP server
@@ -15,67 +19,82 @@ import { createErrorResponse, handleApiResult, withNormalizedProjectRoot } from 
  */
 export function registerRemoveTaskTool(server) {
 	server.addTool({
-		name: 'remove_task',
-		description: '从任务列表中永久删除任务或子任务',
+		name: "remove_task",
+		description: "从任务列表中永久删除任务或子任务",
 		parameters: z.object({
 			id: z
 				.string()
 				.describe(
-					"ID of the task or subtask to remove (e.g., '5' or '5.2'). Can be comma-separated to update multiple tasks/subtasks at once."
+					"ID of the task or subtask to remove (e.g., '5' or '5.2'). Can be comma-separated to update multiple tasks/subtasks at once.",
 				),
-			file: z.string().optional().describe('Absolute path to the tasks file'),
-			projectRoot: z.string().describe('The directory of the project. Must be an absolute path.'),
+			file: z.string().optional().describe("Absolute path to the tasks file"),
+			projectRoot: z
+				.string()
+				.describe("The directory of the project. Must be an absolute path."),
 			confirm: z
 				.boolean()
 				.optional()
-				.describe('Whether to skip confirmation prompt (default: false)'),
+				.describe("Whether to skip confirmation prompt (default: false)"),
 			tag: z
 				.string()
 				.optional()
-				.describe('Specify which tag context to operate on. Defaults to the current active tag.')
+				.describe(
+					"Specify which tag context to operate on. Defaults to the current active tag.",
+				),
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
 			try {
-				log.info(`Removing task(s) with ID(s): ${args.id}`)
+				log.info(`Removing task(s) with ID(s): ${args.id}`);
 
 				const resolvedTag = resolveTag({
 					projectRoot: args.projectRoot,
-					tag: args.tag
-				})
+					tag: args.tag,
+				});
 
 				// Use args.projectRoot directly (guaranteed by withNormalizedProjectRoot)
-				let tasksJsonPath
+				let tasksJsonPath;
 				try {
-					tasksJsonPath = findTasksPath({ projectRoot: args.projectRoot, file: args.file }, log)
+					tasksJsonPath = findTasksPath(
+						{ projectRoot: args.projectRoot, file: args.file },
+						log,
+					);
 				} catch (error) {
-					log.error(`Error finding tasks.json: ${error.message}`)
-					return createErrorResponse(`Failed to find tasks.json: ${error.message}`)
+					log.error(`Error finding tasks.json: ${error.message}`);
+					return createErrorResponse(
+						`Failed to find tasks.json: ${error.message}`,
+					);
 				}
 
-				log.info(`Using tasks file path: ${tasksJsonPath}`)
+				log.info(`Using tasks file path: ${tasksJsonPath}`);
 
 				const result = await removeTaskDirect(
 					{
 						tasksJsonPath: tasksJsonPath,
 						id: args.id,
 						projectRoot: args.projectRoot,
-						tag: resolvedTag
+						tag: resolvedTag,
 					},
 					log,
-					{ session }
-				)
+					{ session },
+				);
 
 				if (result.success) {
-					log.info(`Successfully removed task: ${args.id}`)
+					log.info(`Successfully removed task: ${args.id}`);
 				} else {
-					log.error(`Failed to remove task: ${result.error.message}`)
+					log.error(`Failed to remove task: ${result.error.message}`);
 				}
 
-				return handleApiResult(result, log, 'Error removing task', undefined, args.projectRoot)
+				return handleApiResult(
+					result,
+					log,
+					"Error removing task",
+					undefined,
+					args.projectRoot,
+				);
 			} catch (error) {
-				log.error(`Error in remove-task tool: ${error.message}`)
-				return createErrorResponse(`Failed to remove task: ${error.message}`)
+				log.error(`Error in remove-task tool: ${error.message}`);
+				return createErrorResponse(`Failed to remove task: ${error.message}`);
 			}
-		})
-	})
+		}),
+	});
 }

@@ -3,8 +3,12 @@
  * Direct function implementation for showing task details
  */
 
-import { findTaskById, readComplexityReport, readJSON } from '../../../../scripts/modules/utils.js'
-import { findTasksPath } from '../utils/path-utils.js'
+import {
+	findTaskById,
+	readComplexityReport,
+	readJSON,
+} from "../../../../scripts/modules/utils.js";
+import { findTasksPath } from "../utils/path-utils.js";
 
 /**
  * Direct function wrapper for getting task details.
@@ -23,56 +27,59 @@ import { findTasksPath } from '../utils/path-utils.js'
 export async function showTaskDirect(args, log) {
 	// This function doesn't need session context since it only reads data
 	// Destructure projectRoot and other args. projectRoot is assumed normalized.
-	const { id, file, reportPath, status, projectRoot, tag } = args
+	const { id, file, reportPath, status, projectRoot, tag } = args;
 
 	log.info(
-		`Showing task direct function. ID: ${id}, File: ${file}, Status Filter: ${status}, ProjectRoot: ${projectRoot}`
-	)
+		`Showing task direct function. ID: ${id}, File: ${file}, Status Filter: ${status}, ProjectRoot: ${projectRoot}`,
+	);
 
 	// --- Path Resolution using the passed (already normalized) projectRoot ---
-	let tasksJsonPath
+	let tasksJsonPath;
 	try {
 		// Use the projectRoot passed directly from args
-		tasksJsonPath = findTasksPath({ projectRoot: projectRoot, file: file }, log)
-		log.info(`Resolved tasks path: ${tasksJsonPath}`)
+		tasksJsonPath = findTasksPath(
+			{ projectRoot: projectRoot, file: file },
+			log,
+		);
+		log.info(`Resolved tasks path: ${tasksJsonPath}`);
 	} catch (error) {
-		log.error(`Error finding tasks.json: ${error.message}`)
+		log.error(`Error finding tasks.json: ${error.message}`);
 		return {
 			success: false,
 			error: {
-				code: 'TASKS_FILE_NOT_FOUND',
-				message: `Failed to find tasks.json: ${error.message}`
-			}
-		}
+				code: "TASKS_FILE_NOT_FOUND",
+				message: `Failed to find tasks.json: ${error.message}`,
+			},
+		};
 	}
 	// --- End Path Resolution ---
 
 	// --- Rest of the function remains the same, using tasksJsonPath ---
 	try {
-		const tasksData = readJSON(tasksJsonPath, projectRoot, tag)
+		const tasksData = readJSON(tasksJsonPath, projectRoot, tag);
 		if (!tasksData || !tasksData.tasks) {
 			return {
 				success: false,
-				error: { code: 'INVALID_TASKS_DATA', message: 'Invalid tasks data' }
-			}
+				error: { code: "INVALID_TASKS_DATA", message: "Invalid tasks data" },
+			};
 		}
 
-		const complexityReport = readComplexityReport(reportPath)
+		const complexityReport = readComplexityReport(reportPath);
 
 		// Parse comma-separated IDs
 		const taskIds = id
-			.split(',')
+			.split(",")
 			.map((taskId) => taskId.trim())
-			.filter((taskId) => taskId.length > 0)
+			.filter((taskId) => taskId.length > 0);
 
 		if (taskIds.length === 0) {
 			return {
 				success: false,
 				error: {
-					code: 'INVALID_TASK_ID',
-					message: 'No valid task IDs provided'
-				}
-			}
+					code: "INVALID_TASK_ID",
+					message: "No valid task IDs provided",
+				},
+			};
 		}
 
 		// Handle single task ID (existing behavior)
@@ -81,55 +88,57 @@ export async function showTaskDirect(args, log) {
 				tasksData.tasks,
 				taskIds[0],
 				complexityReport,
-				status
-			)
+				status,
+			);
 
 			if (!task) {
 				return {
 					success: false,
 					error: {
-						code: 'TASK_NOT_FOUND',
-						message: `Task or subtask with ID ${taskIds[0]} not found`
-					}
-				}
+						code: "TASK_NOT_FOUND",
+						message: `Task or subtask with ID ${taskIds[0]} not found`,
+					},
+				};
 			}
 
-			log.info(`Successfully retrieved task ${taskIds[0]}.`)
+			log.info(`Successfully retrieved task ${taskIds[0]}.`);
 
-			const returnData = { ...task }
+			const returnData = { ...task };
 			if (originalSubtaskCount !== null) {
-				returnData._originalSubtaskCount = originalSubtaskCount
-				returnData._subtaskFilter = status
+				returnData._originalSubtaskCount = originalSubtaskCount;
+				returnData._subtaskFilter = status;
 			}
 
-			return { success: true, data: returnData }
+			return { success: true, data: returnData };
 		}
 
 		// Handle multiple task IDs
-		const foundTasks = []
-		const notFoundIds = []
+		const foundTasks = [];
+		const notFoundIds = [];
 
 		taskIds.forEach((taskId) => {
 			const { task, originalSubtaskCount } = findTaskById(
 				tasksData.tasks,
 				taskId,
 				complexityReport,
-				status
-			)
+				status,
+			);
 
 			if (task) {
-				const taskData = { ...task }
+				const taskData = { ...task };
 				if (originalSubtaskCount !== null) {
-					taskData._originalSubtaskCount = originalSubtaskCount
-					taskData._subtaskFilter = status
+					taskData._originalSubtaskCount = originalSubtaskCount;
+					taskData._subtaskFilter = status;
 				}
-				foundTasks.push(taskData)
+				foundTasks.push(taskData);
 			} else {
-				notFoundIds.push(taskId)
+				notFoundIds.push(taskId);
 			}
-		})
+		});
 
-		log.info(`Successfully retrieved ${foundTasks.length} of ${taskIds.length} requested tasks.`)
+		log.info(
+			`Successfully retrieved ${foundTasks.length} of ${taskIds.length} requested tasks.`,
+		);
 
 		// Return multiple tasks with metadata
 		return {
@@ -139,17 +148,17 @@ export async function showTaskDirect(args, log) {
 				requestedIds: taskIds,
 				foundCount: foundTasks.length,
 				notFoundIds: notFoundIds,
-				isMultiple: true
-			}
-		}
+				isMultiple: true,
+			},
+		};
 	} catch (error) {
-		log.error(`Error showing task ${id}: ${error.message}`)
+		log.error(`Error showing task ${id}: ${error.message}`);
 		return {
 			success: false,
 			error: {
-				code: 'TASK_OPERATION_ERROR',
-				message: error.message
-			}
-		}
+				code: "TASK_OPERATION_ERROR",
+				message: error.message,
+			},
+		};
 	}
 }

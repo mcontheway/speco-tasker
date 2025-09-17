@@ -1,94 +1,101 @@
-import { jest } from '@jest/globals'
+import { jest } from "@jest/globals";
 
 // --- Mocks ---
 // Only mock the specific functions that move-task actually uses
-jest.unstable_mockModule('../../../../../scripts/modules/utils.js', () => ({
+jest.unstable_mockModule("../../../../../scripts/modules/utils.js", () => ({
 	readJSON: jest.fn(),
 	writeJSON: jest.fn(),
 	log: jest.fn(),
 	setTasksForTag: jest.fn(),
-	traverseDependencies: jest.fn(() => [])
-}))
+	traverseDependencies: jest.fn(() => []),
+}));
 
 jest.unstable_mockModule(
-	'../../../../../scripts/modules/task-manager/generate-task-files.js',
+	"../../../../../scripts/modules/task-manager/generate-task-files.js",
 	() => ({
-		default: jest.fn().mockResolvedValue()
-	})
-)
+		default: jest.fn().mockResolvedValue(),
+	}),
+);
 
 jest.unstable_mockModule(
-	'../../../../../scripts/modules/task-manager/is-task-dependent.js',
+	"../../../../../scripts/modules/task-manager/is-task-dependent.js",
 	() => ({
-		default: jest.fn(() => false)
-	})
-)
+		default: jest.fn(() => false),
+	}),
+);
 
-jest.unstable_mockModule('../../../../../scripts/modules/dependency-manager.js', () => ({
-	findCrossTagDependencies: jest.fn(() => []),
-	getDependentTaskIds: jest.fn(() => []),
-	validateSubtaskMove: jest.fn()
-}))
+jest.unstable_mockModule(
+	"../../../../../scripts/modules/dependency-manager.js",
+	() => ({
+		findCrossTagDependencies: jest.fn(() => []),
+		getDependentTaskIds: jest.fn(() => []),
+		validateSubtaskMove: jest.fn(),
+	}),
+);
 
-const { readJSON, writeJSON, log } = await import('../../../../../scripts/modules/utils.js')
+const { readJSON, writeJSON, log } = await import(
+	"../../../../../scripts/modules/utils.js"
+);
 const generateTaskFiles = (
-	await import('../../../../../scripts/modules/task-manager/generate-task-files.js')
-).default
+	await import(
+		"../../../../../scripts/modules/task-manager/generate-task-files.js"
+	)
+).default;
 
 const { default: moveTask } = await import(
-	'../../../../../scripts/modules/task-manager/move-task.js'
-)
+	"../../../../../scripts/modules/task-manager/move-task.js"
+);
 
 const sampleTagged = () => ({
 	main: {
 		tasks: [
-			{ id: 1, title: 'A' },
-			{ id: 2, title: 'B', subtasks: [{ id: 1, title: 'B.1' }] }
+			{ id: 1, title: "A" },
+			{ id: 2, title: "B", subtasks: [{ id: 1, title: "B.1" }] },
 		],
-		metadata: {}
+		metadata: {},
 	},
 	feature: {
-		tasks: [{ id: 10, title: 'X' }],
-		metadata: {}
-	}
-})
+		tasks: [{ id: 10, title: "X" }],
+		metadata: {},
+	},
+});
 
-const clone = () => JSON.parse(JSON.stringify(sampleTagged()))
+const clone = () => JSON.parse(JSON.stringify(sampleTagged()));
 
-describe('moveTask (unit)', () => {
+describe("moveTask (unit)", () => {
 	beforeEach(() => {
-		jest.clearAllMocks()
+		jest.clearAllMocks();
 		readJSON.mockImplementation((path, projectRoot, tag) => {
-			const data = clone()
-			return { ...data[tag], tag, _rawTaggedData: data }
-		})
-		writeJSON.mockResolvedValue()
-		log.mockImplementation(() => {})
-	})
+			const data = clone();
+			return { ...data[tag], tag, _rawTaggedData: data };
+		});
+		writeJSON.mockResolvedValue();
+		log.mockImplementation(() => {});
+	});
 
-	test('moves task to new ID in same tag', async () => {
-		await moveTask('tasks.json', '1', '3', false, { tag: 'main' })
-		expect(writeJSON).toHaveBeenCalled()
-		const written = writeJSON.mock.calls[0][1]
-		const ids = written.master.tasks.map((t) => t.id)
-		expect(ids).toEqual(expect.arrayContaining([2, 3]))
-		expect(ids).not.toContain(1)
-	})
+	test("moves task to new ID in same tag", async () => {
+		await moveTask("tasks.json", "1", "3", false, { tag: "main" });
+		expect(writeJSON).toHaveBeenCalled();
+		const written = writeJSON.mock.calls[0][1];
+		const ids = written.master.tasks.map((t) => t.id);
+		expect(ids).toEqual(expect.arrayContaining([2, 3]));
+		expect(ids).not.toContain(1);
+	});
 
-	test('throws when counts of source and dest mismatch', async () => {
-		await expect(moveTask('tasks.json', '1,2', '3', {}, { tag: 'main' })).rejects.toThrow(
-			/Number of source IDs/
-		)
-	})
+	test("throws when counts of source and dest mismatch", async () => {
+		await expect(
+			moveTask("tasks.json", "1,2", "3", {}, { tag: "main" }),
+		).rejects.toThrow(/Number of source IDs/);
+	});
 
-	test('batch move calls generateTaskFiles once when flag true', async () => {
-		await moveTask('tasks.json', '1,2', '3,4', true, { tag: 'main' })
-		expect(generateTaskFiles).toHaveBeenCalledTimes(1)
-	})
+	test("batch move calls generateTaskFiles once when flag true", async () => {
+		await moveTask("tasks.json", "1,2", "3,4", true, { tag: "main" });
+		expect(generateTaskFiles).toHaveBeenCalledTimes(1);
+	});
 
-	test('error when tag invalid', async () => {
-		await expect(moveTask('tasks.json', '1', '2', false, { tag: 'ghost' })).rejects.toThrow(
-			/tag "ghost" not found/
-		)
-	})
-})
+	test("error when tag invalid", async () => {
+		await expect(
+			moveTask("tasks.json", "1", "2", false, { tag: "ghost" }),
+		).rejects.toThrow(/tag "ghost" not found/);
+	});
+});

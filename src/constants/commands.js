@@ -4,4 +4,4 @@
  */
 
 // All commands are now manual - no AI processing
-export const AI_COMMAND_NAMES = []
+export const AI_COMMAND_NAMES = [];

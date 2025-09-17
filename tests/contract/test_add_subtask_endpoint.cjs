@@ -3,390 +3,391 @@
  * Tests the subtask addition functionality according to API contract
  */
 
-describe('POST /add-subtask Endpoint Contract Test', () => {
-  let mockTaskManager
+describe("POST /add-subtask Endpoint Contract Test", () => {
+	let mockTaskManager;
 
-  beforeEach(() => {
-    mockTaskManager = {
-      addSubtask: jest.fn(),
-      findProjectRoot: jest.fn().mockReturnValue('/mock/project')
-    }
-  })
+	beforeEach(() => {
+		mockTaskManager = {
+			addSubtask: jest.fn(),
+			findProjectRoot: jest.fn().mockReturnValue("/mock/project"),
+		};
+	});
 
-  describe('Basic functionality', () => {
-    it('should add new subtask to parent task successfully', () => {
-      mockTaskManager.addSubtask.mockReturnValue({
-        success: true,
-        data: {
-          subtask: {
-            id: '5.1',
-            title: 'New Subtask',
-            description: 'Subtask description',
-            status: 'pending',
-            parentId: 5
-          },
-          parentTask: { id: 5, title: 'Parent Task' }
-        },
-        message: 'Subtask added successfully'
-      })
+	describe("Basic functionality", () => {
+		it("should add new subtask to parent task successfully", () => {
+			mockTaskManager.addSubtask.mockReturnValue({
+				success: true,
+				data: {
+					subtask: {
+						id: "5.1",
+						title: "New Subtask",
+						description: "Subtask description",
+						status: "pending",
+						parentId: 5,
+					},
+					parentTask: { id: 5, title: "Parent Task" },
+				},
+				message: "Subtask added successfully",
+			});
 
-      const result = mockTaskManager.addSubtask({
-        parentId: 5,
-        title: 'New Subtask',
-        description: 'Subtask description',
-        projectRoot: '/mock/project',
-        tasksPath: '/mock/project/.taskmaster/tasks/tasks.json'
-      })
+			const result = mockTaskManager.addSubtask({
+				parentId: 5,
+				title: "New Subtask",
+				description: "Subtask description",
+				projectRoot: "/mock/project",
+				tasksPath: "/mock/project/.taskmaster/tasks/tasks.json",
+			});
 
-      expect(result.success).toBe(true)
-      expect(result.data.subtask.id).toBe('5.1')
-      expect(result.data.subtask.parentId).toBe(5)
-      expect(result.data.parentTask.id).toBe(5)
-      expect(result.message).toBe('Subtask added successfully')
-    })
+			expect(result.success).toBe(true);
+			expect(result.data.subtask.id).toBe("5.1");
+			expect(result.data.subtask.parentId).toBe(5);
+			expect(result.data.parentTask.id).toBe(5);
+			expect(result.message).toBe("Subtask added successfully");
+		});
 
-    it('should convert existing task to subtask', () => {
-      mockTaskManager.addSubtask.mockReturnValue({
-        success: true,
-        data: {
-          subtask: {
-            id: '5.1',
-            title: 'Converted Task',
-            status: 'pending',
-            parentId: 5,
-            originalId: 8
-          },
-          parentTask: { id: 5, title: 'Parent Task' },
-          operation: 'task_conversion'
-        },
-        message: 'Task converted to subtask successfully'
-      })
+		it("should convert existing task to subtask", () => {
+			mockTaskManager.addSubtask.mockReturnValue({
+				success: true,
+				data: {
+					subtask: {
+						id: "5.1",
+						title: "Converted Task",
+						status: "pending",
+						parentId: 5,
+						originalId: 8,
+					},
+					parentTask: { id: 5, title: "Parent Task" },
+					operation: "task_conversion",
+				},
+				message: "Task converted to subtask successfully",
+			});
 
-      const result = mockTaskManager.addSubtask({
-        parentId: 5,
-        taskId: 8
-      })
+			const result = mockTaskManager.addSubtask({
+				parentId: 5,
+				taskId: 8,
+			});
 
-      expect(result.success).toBe(true)
-      expect(result.data.operation).toBe('task_conversion')
-      expect(result.data.subtask.originalId).toBe(8)
-      expect(result.data.subtask.parentId).toBe(5)
-    })
+			expect(result.success).toBe(true);
+			expect(result.data.operation).toBe("task_conversion");
+			expect(result.data.subtask.originalId).toBe(8);
+			expect(result.data.subtask.parentId).toBe(5);
+		});
 
-    it('should handle subtask with dependencies', () => {
-      mockTaskManager.addSubtask.mockReturnValue({
-        success: true,
-        data: {
-          subtask: {
-            id: '5.2',
-            title: 'Dependent Subtask',
-            dependencies: ['5.1', '4'],
-            status: 'pending',
-            parentId: 5
-          },
-          dependencyValidation: true
-        },
-        message: 'Subtask with dependencies added successfully'
-      })
+		it("should handle subtask with dependencies", () => {
+			mockTaskManager.addSubtask.mockReturnValue({
+				success: true,
+				data: {
+					subtask: {
+						id: "5.2",
+						title: "Dependent Subtask",
+						dependencies: ["5.1", "4"],
+						status: "pending",
+						parentId: 5,
+					},
+					dependencyValidation: true,
+				},
+				message: "Subtask with dependencies added successfully",
+			});
 
-      const result = mockTaskManager.addSubtask({
-        parentId: 5,
-        title: 'Dependent Subtask',
-        dependencies: ['5.1', '4']
-      })
+			const result = mockTaskManager.addSubtask({
+				parentId: 5,
+				title: "Dependent Subtask",
+				dependencies: ["5.1", "4"],
+			});
 
-      expect(result.success).toBe(true)
-      expect(result.data.subtask.dependencies).toEqual(['5.1', '4'])
-      expect(result.data.dependencyValidation).toBe(true)
-    })
-  })
+			expect(result.success).toBe(true);
+			expect(result.data.subtask.dependencies).toEqual(["5.1", "4"]);
+			expect(result.data.dependencyValidation).toBe(true);
+		});
+	});
 
-  describe('Subtask properties', () => {
-    it('should set custom status for new subtask', () => {
-      mockTaskManager.addSubtask.mockReturnValue({
-        success: true,
-        data: {
-          subtask: {
-            id: '5.1',
-            title: 'In Progress Subtask',
-            status: 'in-progress',
-            parentId: 5
-          }
-        },
-        message: 'Subtask created with custom status'
-      })
+	describe("Subtask properties", () => {
+		it("should set custom status for new subtask", () => {
+			mockTaskManager.addSubtask.mockReturnValue({
+				success: true,
+				data: {
+					subtask: {
+						id: "5.1",
+						title: "In Progress Subtask",
+						status: "in-progress",
+						parentId: 5,
+					},
+				},
+				message: "Subtask created with custom status",
+			});
 
-      const result = mockTaskManager.addSubtask({
-        parentId: 5,
-        title: 'In Progress Subtask',
-        status: 'in-progress'
-      })
+			const result = mockTaskManager.addSubtask({
+				parentId: 5,
+				title: "In Progress Subtask",
+				status: "in-progress",
+			});
 
-      expect(result.success).toBe(true)
-      expect(result.data.subtask.status).toBe('in-progress')
-    })
+			expect(result.success).toBe(true);
+			expect(result.data.subtask.status).toBe("in-progress");
+		});
 
-    it('should include implementation details', () => {
-      mockTaskManager.addSubtask.mockReturnValue({
-        success: true,
-        data: {
-          subtask: {
-            id: '5.1',
-            title: 'Detailed Subtask',
-            description: 'Subtask description',
-            details: 'Implementation details',
-            testStrategy: 'Testing approach',
-            status: 'pending',
-            parentId: 5
-          }
-        },
-        message: 'Detailed subtask added successfully'
-      })
+		it("should include implementation details", () => {
+			mockTaskManager.addSubtask.mockReturnValue({
+				success: true,
+				data: {
+					subtask: {
+						id: "5.1",
+						title: "Detailed Subtask",
+						description: "Subtask description",
+						details: "Implementation details",
+						testStrategy: "Testing approach",
+						status: "pending",
+						parentId: 5,
+					},
+				},
+				message: "Detailed subtask added successfully",
+			});
 
-      const result = mockTaskManager.addSubtask({
-        parentId: 5,
-        title: 'Detailed Subtask',
-        description: 'Subtask description',
-        details: 'Implementation details',
-        testStrategy: 'Testing approach'
-      })
+			const result = mockTaskManager.addSubtask({
+				parentId: 5,
+				title: "Detailed Subtask",
+				description: "Subtask description",
+				details: "Implementation details",
+				testStrategy: "Testing approach",
+			});
 
-      expect(result.success).toBe(true)
-      expect(result.data.subtask.details).toBe('Implementation details')
-      expect(result.data.subtask.testStrategy).toBe('Testing approach')
-    })
+			expect(result.success).toBe(true);
+			expect(result.data.subtask.details).toBe("Implementation details");
+			expect(result.data.subtask.testStrategy).toBe("Testing approach");
+		});
 
-    it('should auto-generate subtask ID', () => {
-      mockTaskManager.addSubtask.mockReturnValue({
-        success: true,
-        data: {
-          subtask: {
-            id: '5.3',
-            title: 'Auto ID Subtask',
-            parentId: 5,
-            autoGenerated: true
-          },
-          existingSubtasks: ['5.1', '5.2']
-        },
-        message: 'Subtask ID auto-generated'
-      })
+		it("should auto-generate subtask ID", () => {
+			mockTaskManager.addSubtask.mockReturnValue({
+				success: true,
+				data: {
+					subtask: {
+						id: "5.3",
+						title: "Auto ID Subtask",
+						parentId: 5,
+						autoGenerated: true,
+					},
+					existingSubtasks: ["5.1", "5.2"],
+				},
+				message: "Subtask ID auto-generated",
+			});
 
-      const result = mockTaskManager.addSubtask({
-        parentId: 5,
-        title: 'Auto ID Subtask'
-      })
+			const result = mockTaskManager.addSubtask({
+				parentId: 5,
+				title: "Auto ID Subtask",
+			});
 
-      expect(result.success).toBe(true)
-      expect(result.data.subtask.id).toBe('5.3')
-      expect(result.data.subtask.autoGenerated).toBe(true)
-      expect(result.data.existingSubtasks).toEqual(['5.1', '5.2'])
-    })
-  })
+			expect(result.success).toBe(true);
+			expect(result.data.subtask.id).toBe("5.3");
+			expect(result.data.subtask.autoGenerated).toBe(true);
+			expect(result.data.existingSubtasks).toEqual(["5.1", "5.2"]);
+		});
+	});
 
-  describe('Error handling', () => {
-    it('should handle non-existent parent task', () => {
-      mockTaskManager.addSubtask.mockReturnValue({
-        success: false,
-        error: 'Parent task not found',
-        message: 'Task with ID 999 does not exist'
-      })
+	describe("Error handling", () => {
+		it("should handle non-existent parent task", () => {
+			mockTaskManager.addSubtask.mockReturnValue({
+				success: false,
+				error: "Parent task not found",
+				message: "Task with ID 999 does not exist",
+			});
 
-      const result = mockTaskManager.addSubtask({
-        parentId: 999,
-        title: 'Orphan Subtask'
-      })
+			const result = mockTaskManager.addSubtask({
+				parentId: 999,
+				title: "Orphan Subtask",
+			});
 
-      expect(result.success).toBe(false)
-      expect(result.error).toBe('Parent task not found')
-    })
+			expect(result.success).toBe(false);
+			expect(result.error).toBe("Parent task not found");
+		});
 
-    it('should handle invalid parent ID format', () => {
-      mockTaskManager.addSubtask.mockReturnValue({
-        success: false,
-        error: 'Invalid parent ID format',
-        message: 'Parent ID must be a number'
-      })
+		it("should handle invalid parent ID format", () => {
+			mockTaskManager.addSubtask.mockReturnValue({
+				success: false,
+				error: "Invalid parent ID format",
+				message: "Parent ID must be a number",
+			});
 
-      const result = mockTaskManager.addSubtask({
-        parentId: 'invalid',
-        title: 'Bad Parent Subtask'
-      })
+			const result = mockTaskManager.addSubtask({
+				parentId: "invalid",
+				title: "Bad Parent Subtask",
+			});
 
-      expect(result.success).toBe(false)
-      expect(result.error).toBe('Invalid parent ID format')
-    })
+			expect(result.success).toBe(false);
+			expect(result.error).toBe("Invalid parent ID format");
+		});
 
-    it('should handle non-existent task for conversion', () => {
-      mockTaskManager.addSubtask.mockReturnValue({
-        success: false,
-        error: 'Task to convert not found',
-        message: 'Task with ID 888 does not exist for conversion'
-      })
+		it("should handle non-existent task for conversion", () => {
+			mockTaskManager.addSubtask.mockReturnValue({
+				success: false,
+				error: "Task to convert not found",
+				message: "Task with ID 888 does not exist for conversion",
+			});
 
-      const result = mockTaskManager.addSubtask({
-        parentId: 5,
-        taskId: 888
-      })
+			const result = mockTaskManager.addSubtask({
+				parentId: 5,
+				taskId: 888,
+			});
 
-      expect(result.success).toBe(false)
-      expect(result.error).toBe('Task to convert not found')
-    })
+			expect(result.success).toBe(false);
+			expect(result.error).toBe("Task to convert not found");
+		});
 
-    it('should handle invalid dependencies', () => {
-      mockTaskManager.addSubtask.mockReturnValue({
-        success: false,
-        error: 'Invalid dependencies',
-        message: 'Dependency 999 does not exist'
-      })
+		it("should handle invalid dependencies", () => {
+			mockTaskManager.addSubtask.mockReturnValue({
+				success: false,
+				error: "Invalid dependencies",
+				message: "Dependency 999 does not exist",
+			});
 
-      const result = mockTaskManager.addSubtask({
-        parentId: 5,
-        title: 'Bad Dependencies Subtask',
-        dependencies: ['999']
-      })
+			const result = mockTaskManager.addSubtask({
+				parentId: 5,
+				title: "Bad Dependencies Subtask",
+				dependencies: ["999"],
+			});
 
-      expect(result.success).toBe(false)
-      expect(result.error).toBe('Invalid dependencies')
-    })
+			expect(result.success).toBe(false);
+			expect(result.error).toBe("Invalid dependencies");
+		});
 
-    it('should handle file write errors', () => {
-      mockTaskManager.addSubtask.mockReturnValue({
-        success: false,
-        error: 'Failed to write tasks file',
-        message: 'Could not save subtask to tasks.json'
-      })
+		it("should handle file write errors", () => {
+			mockTaskManager.addSubtask.mockReturnValue({
+				success: false,
+				error: "Failed to write tasks file",
+				message: "Could not save subtask to tasks.json",
+			});
 
-      const result = mockTaskManager.addSubtask({
-        parentId: 5,
-        title: 'File Error Subtask'
-      })
+			const result = mockTaskManager.addSubtask({
+				parentId: 5,
+				title: "File Error Subtask",
+			});
 
-      expect(result.success).toBe(false)
-      expect(result.error).toBe('Failed to write tasks file')
-    })
-  })
+			expect(result.success).toBe(false);
+			expect(result.error).toBe("Failed to write tasks file");
+		});
+	});
 
-  describe('Response format', () => {
-    it('should return consistent response structure', () => {
-      mockTaskManager.addSubtask.mockReturnValue({
-        success: true,
-        data: {
-          subtask: { id: '5.1', title: 'Test Subtask', parentId: 5 },
-          parentTask: { id: 5, title: 'Parent Task' }
-        },
-        message: 'Subtask added successfully'
-      })
+	describe("Response format", () => {
+		it("should return consistent response structure", () => {
+			mockTaskManager.addSubtask.mockReturnValue({
+				success: true,
+				data: {
+					subtask: { id: "5.1", title: "Test Subtask", parentId: 5 },
+					parentTask: { id: 5, title: "Parent Task" },
+				},
+				message: "Subtask added successfully",
+			});
 
-      const result = mockTaskManager.addSubtask({
-        parentId: 5,
-        title: 'Test Subtask'
-      })
+			const result = mockTaskManager.addSubtask({
+				parentId: 5,
+				title: "Test Subtask",
+			});
 
-      expect(result).toHaveProperty('success')
-      expect(result).toHaveProperty('data')
-      expect(result).toHaveProperty('message')
-      expect(result.data).toHaveProperty('subtask')
-      expect(result.data).toHaveProperty('parentTask')
-      expect(typeof result.success).toBe('boolean')
-      expect(typeof result.data).toBe('object')
-      expect(typeof result.message).toBe('string')
-    })
+			expect(result).toHaveProperty("success");
+			expect(result).toHaveProperty("data");
+			expect(result).toHaveProperty("message");
+			expect(result.data).toHaveProperty("subtask");
+			expect(result.data).toHaveProperty("parentTask");
+			expect(typeof result.success).toBe("boolean");
+			expect(typeof result.data).toBe("object");
+			expect(typeof result.message).toBe("string");
+		});
 
-    it('should include file generation status', () => {
-      mockTaskManager.addSubtask.mockReturnValue({
-        success: true,
-        data: {
-          subtask: { id: '5.1', title: 'Generated Subtask', parentId: 5 },
-          parentTask: { id: 5, title: 'Parent Task' },
-          fileGeneration: true,
-          taskFilesRegenerated: true
-        },
-        message: 'Subtask added and files generated'
-      })
+		it("should include file generation status", () => {
+			mockTaskManager.addSubtask.mockReturnValue({
+				success: true,
+				data: {
+					subtask: { id: "5.1", title: "Generated Subtask", parentId: 5 },
+					parentTask: { id: 5, title: "Parent Task" },
+					fileGeneration: true,
+					taskFilesRegenerated: true,
+				},
+				message: "Subtask added and files generated",
+			});
 
-      const result = mockTaskManager.addSubtask({
-        parentId: 5,
-        title: 'Generated Subtask',
-        generate: true
-      })
+			const result = mockTaskManager.addSubtask({
+				parentId: 5,
+				title: "Generated Subtask",
+				generate: true,
+			});
 
-      expect(result.success).toBe(true)
-      expect(result.data.fileGeneration).toBe(true)
-      expect(result.data.taskFilesRegenerated).toBe(true)
-    })
-  })
+			expect(result.success).toBe(true);
+			expect(result.data.fileGeneration).toBe(true);
+			expect(result.data.taskFilesRegenerated).toBe(true);
+		});
+	});
 
-  describe('Parameter validation', () => {
-    it('should require parent ID parameter', () => {
-      mockTaskManager.addSubtask.mockReturnValue({
-        success: false,
-        error: 'Parent ID is required',
-        message: 'Please provide a valid parent task ID'
-      })
+	describe("Parameter validation", () => {
+		it("should require parent ID parameter", () => {
+			mockTaskManager.addSubtask.mockReturnValue({
+				success: false,
+				error: "Parent ID is required",
+				message: "Please provide a valid parent task ID",
+			});
 
-      const result = mockTaskManager.addSubtask({
-        title: 'Parentless Subtask'
-      })
+			const result = mockTaskManager.addSubtask({
+				title: "Parentless Subtask",
+			});
 
-      expect(result.success).toBe(false)
-      expect(result.error).toBe('Parent ID is required')
-    })
+			expect(result.success).toBe(false);
+			expect(result.error).toBe("Parent ID is required");
+		});
 
-    it('should require either title or taskId parameter', () => {
-      mockTaskManager.addSubtask.mockReturnValue({
-        success: false,
-        error: 'Title or task ID required',
-        message: 'Provide either a title for new subtask or taskId for conversion'
-      })
+		it("should require either title or taskId parameter", () => {
+			mockTaskManager.addSubtask.mockReturnValue({
+				success: false,
+				error: "Title or task ID required",
+				message:
+					"Provide either a title for new subtask or taskId for conversion",
+			});
 
-      const result = mockTaskManager.addSubtask({
-        parentId: 5
-      })
+			const result = mockTaskManager.addSubtask({
+				parentId: 5,
+			});
 
-      expect(result.success).toBe(false)
-      expect(result.error).toBe('Title or task ID required')
-    })
+			expect(result.success).toBe(false);
+			expect(result.error).toBe("Title or task ID required");
+		});
 
-    it('should handle tag parameter', () => {
-      mockTaskManager.addSubtask.mockReturnValue({
-        success: true,
-        data: {
-          subtask: { id: '5.1', title: 'Tagged Subtask', parentId: 5 },
-          tag: 'feature-branch'
-        },
-        message: 'Subtask added in tag context'
-      })
+		it("should handle tag parameter", () => {
+			mockTaskManager.addSubtask.mockReturnValue({
+				success: true,
+				data: {
+					subtask: { id: "5.1", title: "Tagged Subtask", parentId: 5 },
+					tag: "feature-branch",
+				},
+				message: "Subtask added in tag context",
+			});
 
-      const result = mockTaskManager.addSubtask({
-        parentId: 5,
-        title: 'Tagged Subtask',
-        tag: 'feature-branch'
-      })
+			const result = mockTaskManager.addSubtask({
+				parentId: 5,
+				title: "Tagged Subtask",
+				tag: "feature-branch",
+			});
 
-      expect(result.success).toBe(true)
-      expect(result.data.tag).toBe('feature-branch')
-    })
+			expect(result.success).toBe(true);
+			expect(result.data.tag).toBe("feature-branch");
+		});
 
-    it('should handle generate parameter', () => {
-      mockTaskManager.addSubtask.mockReturnValue({
-        success: true,
-        data: {
-          subtask: { id: '5.1', title: 'File Gen Subtask', parentId: 5 },
-          taskFilesRegenerated: false,
-          skipGenerate: true
-        },
-        message: 'Subtask added without file generation'
-      })
+		it("should handle generate parameter", () => {
+			mockTaskManager.addSubtask.mockReturnValue({
+				success: true,
+				data: {
+					subtask: { id: "5.1", title: "File Gen Subtask", parentId: 5 },
+					taskFilesRegenerated: false,
+					skipGenerate: true,
+				},
+				message: "Subtask added without file generation",
+			});
 
-      const result = mockTaskManager.addSubtask({
-        parentId: 5,
-        title: 'File Gen Subtask',
-        generate: false
-      })
+			const result = mockTaskManager.addSubtask({
+				parentId: 5,
+				title: "File Gen Subtask",
+				generate: false,
+			});
 
-      expect(result.success).toBe(true)
-      expect(result.data.skipGenerate).toBe(true)
-      expect(result.data.taskFilesRegenerated).toBe(false)
-    })
-  })
-})
+			expect(result.success).toBe(true);
+			expect(result.data.skipGenerate).toBe(true);
+			expect(result.data.taskFilesRegenerated).toBe(false);
+		});
+	});
+});

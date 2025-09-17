@@ -1,87 +1,89 @@
-# Speco Tasker 命令参考
+# Speco Tasker 命令参考 | Command Reference
 
 这是所有可用命令的完整参考。Speco Tasker 是纯净的手动任务管理系统，完全移除了AI功能，专注于高效的手动任务管理。
 
-## 项目初始化
+This is a complete reference of all available commands. Speco Tasker is a pure manual task management system with all AI features completely removed, focusing on efficient manual task management.
+
+## 项目初始化 | Project Initialization
 
 ```bash
-# 初始化新项目
+# 初始化新项目 | Initialize new project
 task-master init
 
-# 初始化项目并添加shell别名
+# 初始化项目并添加shell别名 | Initialize project and add shell aliases
 task-master init --add-aliases
 
-# 跳过依赖安装的初始化
+# 跳过依赖安装的初始化 | Initialize skipping dependency installation
 task-master init --skip-install
 ```
 
-## 列出任务
+## 列出任务 | List Tasks
 
 ```bash
-# 列出所有任务
+# 列出所有任务 | List all tasks
 task-master list
 
-# 列出特定状态的任务
+# 列出特定状态的任务 | List tasks with specific status
 task-master list --status=<status>
 
-# 列出包含子任务的任务
+# 列出包含子任务的任务 | List tasks with subtasks
 task-master list --with-subtasks
 
-# 使用紧凑格式显示任务
+# 使用紧凑格式显示任务 | Display tasks in compact format
 task-master list --compact
 
-# 在特定标签中列出任务
+# 在特定标签中列出任务 | List tasks in specific tag
 task-master list --tag=<tag-name>
 ```
 
-## 显示下一个任务
+## 显示下一个任务 | Show Next Task
 
 ```bash
-# 根据依赖关系和状态显示下一个可以处理的任务
+# 根据依赖关系和状态显示下一个可以处理的任务 | Display the next task that can be processed based on dependencies and status
 task-master next
 
-# 在特定标签中查找下一个任务
+# 在特定标签中查找下一个任务 | Find next task in specific tag
 task-master next --tag=<tag-name>
 ```
 
-## 显示特定任务
+## 显示特定任务 | Show Specific Task
 
 ```bash
-# 显示特定任务的详细信息
+# 显示特定任务的详细信息 | Display detailed information for specific task
 task-master show <id>
-# 或
+# 或 | or
 task-master show --id=<id>
 
-# 使用逗号分隔的 ID 查看多个任务
+# 使用逗号分隔的 ID 查看多个任务 | View multiple tasks using comma-separated IDs
 task-master show 1,3,5
 
-# 查看特定子任务（例如任务 1 的子任务 2）
+# 查看特定子任务（例如任务 1 的子任务 2） | View specific subtask (e.g., subtask 2 of task 1)
 task-master show 1.2
 
-# 在特定标签中显示任务
+# 在特定标签中显示任务 | Display task in specific tag
 task-master show 1 --tag=<tag-name>
 ```
 
-## 设置任务状态
+## 设置任务状态 | Set Task Status
 
 ```bash
-# 设置单个任务的状态
+# 设置单个任务的状态 | Set status for single task
 task-master set-status --id=<id> --status=<status>
 
-# 设置多个任务的状态
+# 设置多个任务的状态 | Set status for multiple tasks
 task-master set-status --id=1,2,3 --status=<status>
 
-# 设置子任务的状态
+# 设置子任务的状态 | Set status for subtasks
 task-master set-status --id=1.1,1.2 --status=<status>
 
-# 在特定标签中设置任务状态
+# 在特定标签中设置任务状态 | Set task status in specific tag
 task-master set-status --id=1 --status=done --tag=<tag-name>
 ```
 
-## 添加新任务
+## 添加新任务 | Add New Task
 
 ```bash
-# 添加新任务（规范驱动开发）
+# 添加新任务（规范驱动开发） | Add new task (Specification-driven Development)
 task-master add-task \
   --title="用户认证" \
   --description="实现用户认证功能" \
@@ -89,7 +91,7 @@ task-master add-task \
   --test-strategy="单元测试和集成测试" \
   --spec-files="docs/auth-spec.md"
 
-# 添加具有依赖关系的任务
+# 添加具有依赖关系的任务 | Add task with dependencies
 task-master add-task \
   --title="数据库迁移" \
   --description="创建用户表结构" \
@@ -97,7 +99,7 @@ task-master add-task \
   --priority=high \
   --spec-files="docs/database-schema.md"
 
-# 在特定标签中添加任务
+# 在特定标签中添加任务 | Add task in specific tag
 task-master add-task \
   --title="新功能" \
   --description="实现新功能" \
@@ -105,47 +107,47 @@ task-master add-task \
   --spec-files="docs/feature-spec.md"
 ```
 
-## 添加子任务
+## 添加子任务 | Add Subtask
 
 ```bash
-# 为现有任务添加新的子任务
+# 为现有任务添加新的子任务 | Add new subtask to existing task
 task-master add-subtask --parent=<id> --title="子任务标题" --description="子任务描述"
 
-# 将现有任务转换为子任务
+# 将现有任务转换为子任务 | Convert existing task to subtask
 task-master add-subtask --parent=<id> --task-id=<existing-task-id>
 
-# 创建具有依赖关系的子任务
+# 创建具有依赖关系的子任务 | Create subtask with dependencies
 task-master add-subtask --parent=<id> --title="数据库迁移" --dependencies="1.1,1.2"
 
-# 创建子任务时可选择性地指定规范文档（不会继承父任务的规范文档）
+# 创建子任务时可选择性地指定规范文档（不会继承父任务的规范文档） | Optionally specify spec files when creating subtask (does not inherit parent task's spec files)
 task-master add-subtask --parent=<id> --title="实现功能" --spec-files="docs/feature-spec.md"
 ```
 
-**注意**: 子任务的规范文档字段是独立的，不会自动继承父任务的规范文档。
+**注意**: 子任务的规范文档字段是独立的，不会自动继承父任务的规范文档。 | **Note**: Subtask's spec files field is independent and does not automatically inherit the parent task's spec files.
 
-## 更新特定任务
+## 更新特定任务 | Update Specific Task
 
 ```bash
-# 更新任务的多个字段
+# 更新任务的多个字段 | Update multiple fields of a task
 task-master update-task --id=<id> --status="in-progress" --details="开始实现API端点"
 
-# 更新任务的规范文档
+# 更新任务的规范文档 | Update task's spec files
 task-master update-task --id=<id> --spec-files="docs/api-spec.md,docs/test-plan.md"
 
-# 追加模式更新任务详情
+# 追加模式更新任务详情 | Append mode update task details
 task-master update-task --id=<id> --details="添加错误处理逻辑" --append
 ```
 
-## 更新子任务
+## 更新子任务 | Update Subtask
 
 ```bash
-# 更新子任务的状态和详情
+# 更新子任务的状态和详情 | Update subtask status and details
 task-master update-subtask --id=<parentId.subtaskId> --status="in-progress" --details="开始实现认证逻辑"
 
-# 追加模式更新子任务（保留历史记录）
+# 追加模式更新子任务（保留历史记录） | Append mode update subtask (preserve history)
 task-master update-subtask --id=5.2 --details="更新：实现认证逻辑" --append
 
-# 更新子任务的依赖关系
+# 更新子任务的依赖关系 | Update subtask dependencies
 task-master update-subtask --id=5.2 --dependencies="5.1,5.3"
 ```
 

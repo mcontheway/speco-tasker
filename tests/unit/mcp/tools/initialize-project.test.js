@@ -10,27 +10,27 @@
  * We do NOT import the real implementation - everything is mocked
  */
 
-import { jest } from '@jest/globals'
+import { jest } from "@jest/globals";
 
 // Mock child_process.execSync
-const mockExecSync = jest.fn()
-jest.mock('child_process', () => ({
-	execSync: mockExecSync
-}))
+const mockExecSync = jest.fn();
+jest.mock("child_process", () => ({
+	execSync: mockExecSync,
+}));
 
 // Mock the utility functions
 const mockCreateContentResponse = jest.fn((content) => ({
-	content
-}))
+	content,
+}));
 
 const mockCreateErrorResponse = jest.fn((message, details) => ({
-	error: { message, details }
-}))
+	error: { message, details },
+}));
 
-jest.mock('../../../../mcp-server/src/tools/utils.js', () => ({
+jest.mock("../../../../mcp-server/src/tools/utils.js", () => ({
 	createContentResponse: (content) => ({ content }),
-	createErrorResponse: (message, details) => ({ error: { message, details } })
-}))
+	createErrorResponse: (message, details) => ({ error: { message, details } }),
+}));
 
 // Mock the z object from zod
 const mockZod = {
@@ -48,241 +48,256 @@ const mockZod = {
 			authorName: {},
 			skipInstall: {},
 			addAliases: {},
-			yes: {}
-		})
-	}
-}
+			yes: {},
+		}),
+	},
+};
 
-jest.mock('zod', () => ({
-	z: mockZod
-}))
+jest.mock("zod", () => ({
+	z: mockZod,
+}));
 
 // Create our own simplified version of the registerInitializeProjectTool function
 const registerInitializeProjectTool = (server) => {
 	server.addTool({
-		name: 'initialize_project',
+		name: "initialize_project",
 		description:
 			"Initializes a new Speco Tasker project structure in the current working directory by running 'task-master init'.",
 		parameters: mockZod,
 		execute: async (args, { log }) => {
 			try {
-				log.info(`Executing initialize_project with args: ${JSON.stringify(args)}`)
+				log.info(
+					`Executing initialize_project with args: ${JSON.stringify(args)}`,
+				);
 
 				// Construct the command arguments
-				let command = 'npx task-master init'
-				const cliArgs = []
+				let command = "npx task-master init";
+				const cliArgs = [];
 				if (args.projectName) {
-					cliArgs.push(`--name "${args.projectName.replace(/"/g, '\\"')}"`)
+					cliArgs.push(`--name "${args.projectName.replace(/"/g, '\\"')}"`);
 				}
 				if (args.projectDescription) {
-					cliArgs.push(`--description "${args.projectDescription.replace(/"/g, '\\"')}"`)
+					cliArgs.push(
+						`--description "${args.projectDescription.replace(/"/g, '\\"')}"`,
+					);
 				}
 				if (args.projectVersion) {
-					cliArgs.push(`--version "${args.projectVersion.replace(/"/g, '\\"')}"`)
+					cliArgs.push(
+						`--version "${args.projectVersion.replace(/"/g, '\\"')}"`,
+					);
 				}
 				if (args.authorName) {
-					cliArgs.push(`--author "${args.authorName.replace(/"/g, '\\"')}"`)
+					cliArgs.push(`--author "${args.authorName.replace(/"/g, '\\"')}"`);
 				}
-				if (args.skipInstall) cliArgs.push('--skip-install')
-				if (args.addAliases) cliArgs.push('--aliases')
-				if (args.yes) cliArgs.push('--yes')
+				if (args.skipInstall) cliArgs.push("--skip-install");
+				if (args.addAliases) cliArgs.push("--aliases");
+				if (args.yes) cliArgs.push("--yes");
 
-				command += ' ' + cliArgs.join(' ')
+				command += " " + cliArgs.join(" ");
 
-				log.info(`Constructed command: ${command}`)
+				log.info(`Constructed command: ${command}`);
 
 				// Execute the command
 				const output = mockExecSync(command, {
-					encoding: 'utf8',
-					stdio: 'pipe',
-					timeout: 300000
-				})
+					encoding: "utf8",
+					stdio: "pipe",
+					timeout: 300000,
+				});
 
-				log.info(`Initialization output:\n${output}`)
+				log.info(`Initialization output:\n${output}`);
 
 				// Return success response
 				return mockCreateContentResponse({
-					message: 'Project initialized successfully.',
+					message: "Project initialized successfully.",
 					next_step:
-						'Now that the project is initialized, the next step is to create the tasks by parsing a PRD. This will create the tasks folder and the initial task files. The parse-prd tool will required a PRD file',
-					output: output
-				})
+						"Now that the project is initialized, the next step is to create the tasks by parsing a PRD. This will create the tasks folder and the initial task files. The parse-prd tool will required a PRD file",
+					output: output,
+				});
 			} catch (error) {
 				// Catch errors
-				const errorMessage = `Project initialization failed: ${error.message}`
-				const errorDetails = error.stderr?.toString() || error.stdout?.toString() || error.message
-				log.error(`${errorMessage}\nDetails: ${errorDetails}`)
+				const errorMessage = `Project initialization failed: ${error.message}`;
+				const errorDetails =
+					error.stderr?.toString() || error.stdout?.toString() || error.message;
+				log.error(`${errorMessage}\nDetails: ${errorDetails}`);
 
 				// Return error response
-				return mockCreateErrorResponse(errorMessage, { details: errorDetails })
+				return mockCreateErrorResponse(errorMessage, { details: errorDetails });
 			}
-		}
-	})
-}
+		},
+	});
+};
 
-describe('Initialize Project MCP Tool', () => {
+describe("Initialize Project MCP Tool", () => {
 	// Mock server and logger
-	let mockServer
-	let executeFunction
+	let mockServer;
+	let executeFunction;
 
 	const mockLogger = {
 		debug: jest.fn(),
 		info: jest.fn(),
 		warn: jest.fn(),
-		error: jest.fn()
-	}
+		error: jest.fn(),
+	};
 
 	beforeEach(() => {
 		// Clear all mocks before each test
-		jest.clearAllMocks()
+		jest.clearAllMocks();
 
 		// Create mock server
 		mockServer = {
 			addTool: jest.fn((config) => {
-				executeFunction = config.execute
-			})
-		}
+				executeFunction = config.execute;
+			}),
+		};
 
 		// Default mock behavior
-		mockExecSync.mockReturnValue('Project initialized successfully.')
+		mockExecSync.mockReturnValue("Project initialized successfully.");
 
 		// Register the tool to capture the tool definition
-		registerInitializeProjectTool(mockServer)
-	})
+		registerInitializeProjectTool(mockServer);
+	});
 
-	test('registers the tool with correct name and parameters', () => {
+	test("registers the tool with correct name and parameters", () => {
 		// Check that addTool was called
-		expect(mockServer.addTool).toHaveBeenCalledTimes(1)
+		expect(mockServer.addTool).toHaveBeenCalledTimes(1);
 
 		// Extract the tool definition from the mock call
-		const toolDefinition = mockServer.addTool.mock.calls[0][0]
+		const toolDefinition = mockServer.addTool.mock.calls[0][0];
 
 		// Verify tool properties
-		expect(toolDefinition.name).toBe('initialize_project')
-		expect(toolDefinition.description).toContain('Initializes a new Speco Tasker project')
-		expect(toolDefinition).toHaveProperty('parameters')
-		expect(toolDefinition).toHaveProperty('execute')
-	})
+		expect(toolDefinition.name).toBe("initialize_project");
+		expect(toolDefinition.description).toContain(
+			"Initializes a new Speco Tasker project",
+		);
+		expect(toolDefinition).toHaveProperty("parameters");
+		expect(toolDefinition).toHaveProperty("execute");
+	});
 
-	test('constructs command with proper arguments', async () => {
+	test("constructs command with proper arguments", async () => {
 		// Create arguments with all parameters
 		const args = {
-			projectName: 'Test Project',
-			projectDescription: 'A project for testing',
-			projectVersion: '1.0.0',
-			authorName: 'Test Author',
+			projectName: "Test Project",
+			projectDescription: "A project for testing",
+			projectVersion: "1.0.0",
+			authorName: "Test Author",
 			skipInstall: true,
 			addAliases: true,
-			yes: true
-		}
+			yes: true,
+		};
 
 		// Execute the tool
-		await executeFunction(args, { log: mockLogger })
+		await executeFunction(args, { log: mockLogger });
 
 		// Verify execSync was called with the expected command
-		expect(mockExecSync).toHaveBeenCalledTimes(1)
+		expect(mockExecSync).toHaveBeenCalledTimes(1);
 
-		const command = mockExecSync.mock.calls[0][0]
+		const command = mockExecSync.mock.calls[0][0];
 
 		// Check that the command includes npx task-master init
-		expect(command).toContain('npx task-master init')
+		expect(command).toContain("npx task-master init");
 
 		// Verify each argument is correctly formatted in the command
-		expect(command).toContain('--name "Test Project"')
-		expect(command).toContain('--description "A project for testing"')
-		expect(command).toContain('--version "1.0.0"')
-		expect(command).toContain('--author "Test Author"')
-		expect(command).toContain('--skip-install')
-		expect(command).toContain('--aliases')
-		expect(command).toContain('--yes')
-	})
+		expect(command).toContain('--name "Test Project"');
+		expect(command).toContain('--description "A project for testing"');
+		expect(command).toContain('--version "1.0.0"');
+		expect(command).toContain('--author "Test Author"');
+		expect(command).toContain("--skip-install");
+		expect(command).toContain("--aliases");
+		expect(command).toContain("--yes");
+	});
 
-	test('properly escapes special characters in arguments', async () => {
+	test("properly escapes special characters in arguments", async () => {
 		// Create arguments with special characters
 		const args = {
 			projectName: 'Test "Quoted" Project',
-			projectDescription: 'A "special" project for testing'
-		}
+			projectDescription: 'A "special" project for testing',
+		};
 
 		// Execute the tool
-		await executeFunction(args, { log: mockLogger })
+		await executeFunction(args, { log: mockLogger });
 
 		// Get the command that was executed
-		const command = mockExecSync.mock.calls[0][0]
+		const command = mockExecSync.mock.calls[0][0];
 
 		// Verify quotes were properly escaped
-		expect(command).toContain('--name "Test \\"Quoted\\" Project"')
-		expect(command).toContain('--description "A \\"special\\" project for testing"')
-	})
+		expect(command).toContain('--name "Test \\"Quoted\\" Project"');
+		expect(command).toContain(
+			'--description "A \\"special\\" project for testing"',
+		);
+	});
 
-	test.skip('returns success response when command succeeds - skipped due to complex mocking', async () => {
+	test.skip("returns success response when command succeeds - skipped due to complex mocking", async () => {
 		// This test is skipped because the response formatting depends on utility functions
 		// that are difficult to mock properly in this isolated test environment.
 		// The core functionality (tool registration, argument construction) is tested elsewhere.
-		expect(true).toBe(true)
-	})
+		expect(true).toBe(true);
+	});
 
-	test.skip('returns error response when command fails - skipped due to complex mocking', async () => {
+	test.skip("returns error response when command fails - skipped due to complex mocking", async () => {
 		// This test is skipped because the error response formatting depends on utility functions
 		// that are difficult to mock properly in this isolated test environment.
 		// The core functionality (tool registration, argument construction) is tested elsewhere.
-		expect(true).toBe(true)
-	})
+		expect(true).toBe(true);
+	});
 
-	test('logs information about the execution', async () => {
+	test("logs information about the execution", async () => {
 		// Execute the tool
-		await executeFunction({}, { log: mockLogger })
+		await executeFunction({}, { log: mockLogger });
 
 		// Verify that logging occurred
 		expect(mockLogger.info).toHaveBeenCalledWith(
-			expect.stringContaining('Executing initialize_project')
-		)
-		expect(mockLogger.info).toHaveBeenCalledWith(expect.stringContaining('Constructed command'))
-		expect(mockLogger.info).toHaveBeenCalledWith(expect.stringContaining('Initialization output'))
-	})
+			expect.stringContaining("Executing initialize_project"),
+		);
+		expect(mockLogger.info).toHaveBeenCalledWith(
+			expect.stringContaining("Constructed command"),
+		);
+		expect(mockLogger.info).toHaveBeenCalledWith(
+			expect.stringContaining("Initialization output"),
+		);
+	});
 
-	test('uses fallback to stdout if stderr is not available in error', async () => {
+	test("uses fallback to stdout if stderr is not available in error", async () => {
 		// Create an error with only stdout
-		const error = new Error('Command failed')
-		error.stdout = 'Some standard output with error details'
+		const error = new Error("Command failed");
+		error.stdout = "Some standard output with error details";
 		// No stderr property
 
 		// Make the mock throw the error
 		mockExecSync.mockImplementationOnce(() => {
-			throw error
-		})
+			throw error;
+		});
 
 		// Execute the tool
-		await executeFunction({}, { log: mockLogger })
+		await executeFunction({}, { log: mockLogger });
 
 		// Verify createErrorResponse was called with stdout as details
 		expect(mockCreateErrorResponse).toHaveBeenCalledWith(
 			expect.any(String),
 			expect.objectContaining({
-				details: 'Some standard output with error details'
-			})
-		)
-	})
+				details: "Some standard output with error details",
+			}),
+		);
+	});
 
-	test('logs error details when command fails', async () => {
+	test("logs error details when command fails", async () => {
 		// Create an error
-		const error = new Error('Command failed')
-		error.stderr = 'Some detailed error message'
+		const error = new Error("Command failed");
+		error.stderr = "Some detailed error message";
 
 		// Make the mock throw the error
 		mockExecSync.mockImplementationOnce(() => {
-			throw error
-		})
+			throw error;
+		});
 
 		// Execute the tool
-		await executeFunction({}, { log: mockLogger })
+		await executeFunction({}, { log: mockLogger });
 
 		// Verify error logging
 		expect(mockLogger.error).toHaveBeenCalledWith(
-			expect.stringContaining('Project initialization failed')
-		)
+			expect.stringContaining("Project initialization failed"),
+		);
 		expect(mockLogger.error).toHaveBeenCalledWith(
-			expect.stringContaining('Some detailed error message')
-		)
-	})
-})
+			expect.stringContaining("Some detailed error message"),
+		);
+	});
+});

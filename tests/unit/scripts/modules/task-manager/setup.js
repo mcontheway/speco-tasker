@@ -1,97 +1,99 @@
 /**
  * Common setup for task-manager module tests
  */
-import { jest } from '@jest/globals'
+import { jest } from "@jest/globals";
 
 // Sample test data
 export const sampleTasks = {
-	meta: { projectName: 'Test Project' },
+	meta: { projectName: "Test Project" },
 	tasks: [
 		{
 			id: 1,
-			title: 'Task 1',
-			description: 'First task description',
-			status: 'pending',
+			title: "Task 1",
+			description: "First task description",
+			status: "pending",
 			dependencies: [],
-			priority: 'high',
-			details: 'Detailed information for task 1',
-			testStrategy: 'Test strategy for task 1'
+			priority: "high",
+			details: "Detailed information for task 1",
+			testStrategy: "Test strategy for task 1",
 		},
 		{
 			id: 2,
-			title: 'Task 2',
-			description: 'Second task description',
-			status: 'pending',
+			title: "Task 2",
+			description: "Second task description",
+			status: "pending",
 			dependencies: [1],
-			priority: 'medium',
-			details: 'Detailed information for task 2',
-			testStrategy: 'Test strategy for task 2'
+			priority: "medium",
+			details: "Detailed information for task 2",
+			testStrategy: "Test strategy for task 2",
 		},
 		{
 			id: 3,
-			title: 'Task with Subtasks',
-			description: 'Task with subtasks description',
-			status: 'pending',
+			title: "Task with Subtasks",
+			description: "Task with subtasks description",
+			status: "pending",
 			dependencies: [1, 2],
-			priority: 'high',
-			details: 'Detailed information for task 3',
-			testStrategy: 'Test strategy for task 3',
+			priority: "high",
+			details: "Detailed information for task 3",
+			testStrategy: "Test strategy for task 3",
 			subtasks: [
 				{
 					id: 1,
-					title: 'Subtask 1',
-					description: 'First subtask',
-					status: 'pending',
+					title: "Subtask 1",
+					description: "First subtask",
+					status: "pending",
 					dependencies: [],
-					details: 'Details for subtask 1'
+					details: "Details for subtask 1",
 				},
 				{
 					id: 2,
-					title: 'Subtask 2',
-					description: 'Second subtask',
-					status: 'pending',
+					title: "Subtask 2",
+					description: "Second subtask",
+					status: "pending",
 					dependencies: [1],
-					details: 'Details for subtask 2'
-				}
-			]
-		}
-	]
-}
+					details: "Details for subtask 2",
+				},
+			],
+		},
+	],
+};
 
 export const emptySampleTasks = {
-	meta: { projectName: 'Empty Project' },
-	tasks: []
-}
+	meta: { projectName: "Empty Project" },
+	tasks: [],
+};
 
 export const sampleClaudeResponse = {
 	tasks: [
 		{
 			id: 1,
-			title: 'Setup Project',
-			description: 'Initialize the project structure',
-			status: 'pending',
+			title: "Setup Project",
+			description: "Initialize the project structure",
+			status: "pending",
 			dependencies: [],
-			priority: 'high',
-			details: 'Create repository, configure build system, and setup dev environment',
-			testStrategy: 'Verify project builds and tests run'
+			priority: "high",
+			details:
+				"Create repository, configure build system, and setup dev environment",
+			testStrategy: "Verify project builds and tests run",
 		},
 		{
 			id: 2,
-			title: 'Implement Core Feature',
-			description: 'Create the main functionality',
-			status: 'pending',
+			title: "Implement Core Feature",
+			description: "Create the main functionality",
+			status: "pending",
 			dependencies: [1],
-			priority: 'high',
-			details: 'Implement the core business logic for the application',
-			testStrategy: 'Unit tests for core functions, integration tests for workflows'
-		}
-	]
-}
+			priority: "high",
+			details: "Implement the core business logic for the application",
+			testStrategy:
+				"Unit tests for core functions, integration tests for workflows",
+		},
+	],
+};
 
 // Common mock setup function
 export const setupCommonMocks = () => {
 	// Clear mocks before setup
-	jest.clearAllMocks()
+	jest.clearAllMocks();
 
 	// Mock implementations
 	const mocks = {
@@ -108,15 +110,15 @@ export const setupCommonMocks = () => {
 		validateAndFixDependencies: jest.fn(),
 		generateObjectService: jest.fn().mockResolvedValue({
 			mainResult: { tasks: [] },
-			telemetryData: {}
-		})
-	}
+			telemetryData: {},
+		}),
+	};
 
-	return mocks
-}
+	return mocks;
+};
 
 // Helper to create a deep copy of objects to avoid test pollution
-export const cloneData = (data) => JSON.parse(JSON.stringify(data))
+export const cloneData = (data) => JSON.parse(JSON.stringify(data));
 
 /**
  * Shared mock implementation for getTagAwareFilePath that matches the actual implementation
@@ -131,20 +133,20 @@ export const cloneData = (data) => JSON.parse(JSON.stringify(data))
  * @returns {string} The resolved file path
  */
 export const createGetTagAwareFilePathMock = () => {
-	return jest.fn((basePath, tag, projectRoot = '.') => {
+	return jest.fn((basePath, tag, projectRoot = ".") => {
 		// Handle projectRoot consistently - this was the key fix
-		const fullPath = projectRoot ? `${projectRoot}/${basePath}` : basePath
+		const fullPath = projectRoot ? `${projectRoot}/${basePath}` : basePath;
 
-		if (!tag || tag === 'main') {
-			return fullPath
+		if (!tag || tag === "main") {
+			return fullPath;
 		}
 
 		// Mock the slugification behavior (matches actual implementation)
-		const slugifiedTag = tag.replace(/[^a-zA-Z0-9_-]/g, '-').toLowerCase()
-		const idx = fullPath.lastIndexOf('.')
-		return `${fullPath.slice(0, idx)}_${slugifiedTag}${fullPath.slice(idx)}`
-	})
-}
+		const slugifiedTag = tag.replace(/[^a-zA-Z0-9_-]/g, "-").toLowerCase();
+		const idx = fullPath.lastIndexOf(".");
+		return `${fullPath.slice(0, idx)}_${slugifiedTag}${fullPath.slice(idx)}`;
+	});
+};
 
 /**
  * Shared mock implementation for slugifyTagForFilePath that matches the actual implementation
@@ -153,9 +155,9 @@ export const createGetTagAwareFilePathMock = () => {
  */
 export const createSlugifyTagForFilePathMock = () => {
 	return jest.fn((tagName) => {
-		if (!tagName || typeof tagName !== 'string') {
-			return 'unknown-tag'
+		if (!tagName || typeof tagName !== "string") {
+			return "unknown-tag";
 		}
-		return tagName.replace(/[^a-zA-Z0-9_-]/g, '-').toLowerCase()
-	})
-}
+		return tagName.replace(/[^a-zA-Z0-9_-]/g, "-").toLowerCase();
+	});
+};

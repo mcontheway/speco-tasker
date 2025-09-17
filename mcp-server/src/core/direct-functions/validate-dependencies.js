@@ -2,9 +2,12 @@
  * Direct function wrapper for validateDependenciesCommand
  */
 
-import fs from 'fs'
-import { validateDependenciesCommand } from '../../../../scripts/modules/dependency-manager.js'
-import { disableSilentMode, enableSilentMode } from '../../../../scripts/modules/utils.js'
+import fs from "fs";
+import { validateDependenciesCommand } from "../../../../scripts/modules/dependency-manager.js";
+import {
+	disableSilentMode,
+	enableSilentMode,
+} from "../../../../scripts/modules/utils.js";
 
 /**
  * Validate dependencies in tasks.json
@@ -17,64 +20,64 @@ import { disableSilentMode, enableSilentMode } from '../../../../scripts/modules
  */
 export async function validateDependenciesDirect(args, log) {
 	// Destructure the explicit tasksJsonPath
-	const { tasksJsonPath, projectRoot, tag } = args
+	const { tasksJsonPath, projectRoot, tag } = args;
 
 	if (!tasksJsonPath) {
-		log.error('validateDependenciesDirect called without tasksJsonPath')
+		log.error("validateDependenciesDirect called without tasksJsonPath");
 		return {
 			success: false,
 			error: {
-				code: 'MISSING_ARGUMENT',
-				message: 'tasksJsonPath is required'
-			}
-		}
+				code: "MISSING_ARGUMENT",
+				message: "tasksJsonPath is required",
+			},
+		};
 	}
 
 	try {
-		log.info(`Validating dependencies in tasks: ${tasksJsonPath}`)
+		log.info(`Validating dependencies in tasks: ${tasksJsonPath}`);
 
 		// Use the provided tasksJsonPath
-		const tasksPath = tasksJsonPath
+		const tasksPath = tasksJsonPath;
 
 		// Verify the file exists
 		if (!fs.existsSync(tasksPath)) {
 			return {
 				success: false,
 				error: {
-					code: 'FILE_NOT_FOUND',
-					message: `Tasks file not found at ${tasksPath}`
-				}
-			}
+					code: "FILE_NOT_FOUND",
+					message: `Tasks file not found at ${tasksPath}`,
+				},
+			};
 		}
 
 		// Enable silent mode to prevent console logs from interfering with JSON response
-		enableSilentMode()
+		enableSilentMode();
 
-		const options = { projectRoot, tag }
+		const options = { projectRoot, tag };
 		// Call the original command function using the provided tasksPath
-		await validateDependenciesCommand(tasksPath, options)
+		await validateDependenciesCommand(tasksPath, options);
 
 		// Restore normal logging
-		disableSilentMode()
+		disableSilentMode();
 
 		return {
 			success: true,
 			data: {
-				message: 'Dependencies validated successfully',
-				tasksPath
-			}
-		}
+				message: "Dependencies validated successfully",
+				tasksPath,
+			},
+		};
 	} catch (error) {
 		// Make sure to restore normal logging even if there's an error
-		disableSilentMode()
+		disableSilentMode();
 
-		log.error(`Error validating dependencies: ${error.message}`)
+		log.error(`Error validating dependencies: ${error.message}`);
 		return {
 			success: false,
 			error: {
-				code: 'VALIDATION_ERROR',
-				message: error.message
-			}
-		}
+				code: "VALIDATION_ERROR",
+				message: error.message,
+			},
+		};
 	}
 }

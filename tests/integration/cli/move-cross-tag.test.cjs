@@ -127,7 +127,7 @@ describe('Cross-Tag Move CLI Integration', () => {
 				throw error
 			}
 
-			const taskIds = sourceId.split(',').map((id) => parseInt(id.trim(), 10))
+			const taskIds = sourceId.split(',').map((id) => Number.parseInt(id.trim(), 10))
 
 			// Validate parsed task IDs
 			for (let i = 0; i < taskIds.length; i++) {

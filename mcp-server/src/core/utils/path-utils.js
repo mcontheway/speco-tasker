@@ -1,12 +1,12 @@
-import path from 'path'
-import { PROJECT_MARKERS } from '../../../../src/constants/paths.js'
+import path from "path";
+import { PROJECT_MARKERS } from "../../../../src/constants/paths.js";
 import {
 	findComplexityReportPath as coreFindComplexityReportPath,
 	findPRDPath as coreFindPrdPath,
 	findProjectRoot as coreFindProjectRoot,
 	findTasksPath as coreFindTasksPath,
-	normalizeProjectRoot
-} from '../../../../src/utils/path-utils.js'
+	normalizeProjectRoot,
+} from "../../../../src/utils/path-utils.js";
 
 /**
  * MCP-specific path utilities that extend core path utilities with session support
@@ -21,13 +21,13 @@ const silentLogger = {
 	warn: () => {},
 	error: () => {},
 	debug: () => {},
-	success: () => {}
-}
+	success: () => {},
+};
 
 /**
  * Cache for last found project root to improve performance
  */
-export const lastFoundProjectRoot = null
+export const lastFoundProjectRoot = null;
 
 /**
  * Find PRD file with MCP support
@@ -37,7 +37,7 @@ export const lastFoundProjectRoot = null
  * @returns {string|null} - Resolved path to PRD file or null if not found
  */
 export function findPrdPath(explicitPath, args = null, log = silentLogger) {
-	return coreFindPrdPath(explicitPath, args, log)
+	return coreFindPrdPath(explicitPath, args, log);
 }
 
 /**
@@ -49,29 +49,31 @@ export function findPrdPath(explicitPath, args = null, log = silentLogger) {
  */
 export function resolveTasksPath(args, log = silentLogger) {
 	// Get explicit path from args.file if provided
-	const explicitPath = args?.file
-	const rawProjectRoot = args?.projectRoot
+	const explicitPath = args?.file;
+	const rawProjectRoot = args?.projectRoot;
 
 	// If explicit path is provided and absolute, use it directly
 	if (explicitPath && path.isAbsolute(explicitPath)) {
-		return explicitPath
+		return explicitPath;
 	}
 
 	// Normalize project root if provided
-	const projectRoot = rawProjectRoot ? normalizeProjectRoot(rawProjectRoot) : null
+	const projectRoot = rawProjectRoot
+		? normalizeProjectRoot(rawProjectRoot)
+		: null;
 
 	// If explicit path is relative, resolve it relative to normalized projectRoot
 	if (explicitPath && projectRoot) {
-		return path.resolve(projectRoot, explicitPath)
+		return path.resolve(projectRoot, explicitPath);
 	}
 
 	// Use core findTasksPath with explicit path and normalized projectRoot context
 	if (projectRoot) {
-		return coreFindTasksPath(explicitPath, { projectRoot }, log)
+		return coreFindTasksPath(explicitPath, { projectRoot }, log);
 	}
 
 	// Fallback to core function without projectRoot context
-	return coreFindTasksPath(explicitPath, null, log)
+	return coreFindTasksPath(explicitPath, null, log);
 }
 
 /**
@@ -82,29 +84,31 @@ export function resolveTasksPath(args, log = silentLogger) {
  */
 export function resolvePrdPath(args, log = silentLogger) {
 	// Get explicit path from args.input if provided
-	const explicitPath = args?.input
-	const rawProjectRoot = args?.projectRoot
+	const explicitPath = args?.input;
+	const rawProjectRoot = args?.projectRoot;
 
 	// If explicit path is provided and absolute, use it directly
 	if (explicitPath && path.isAbsolute(explicitPath)) {
-		return explicitPath
+		return explicitPath;
 	}
 
 	// Normalize project root if provided
-	const projectRoot = rawProjectRoot ? normalizeProjectRoot(rawProjectRoot) : null
+	const projectRoot = rawProjectRoot
+		? normalizeProjectRoot(rawProjectRoot)
+		: null;
 
 	// If explicit path is relative, resolve it relative to normalized projectRoot
 	if (explicitPath && projectRoot) {
-		return path.resolve(projectRoot, explicitPath)
+		return path.resolve(projectRoot, explicitPath);
 	}
 
 	// Use core findPRDPath with explicit path and normalized projectRoot context
 	if (projectRoot) {
-		return coreFindPrdPath(explicitPath, { projectRoot }, log)
+		return coreFindPrdPath(explicitPath, { projectRoot }, log);
 	}
 
 	// Fallback to core function without projectRoot context
-	return coreFindPrdPath(explicitPath, null, log)
+	return coreFindPrdPath(explicitPath, null, log);
 }
 
 /**
@@ -115,30 +119,36 @@ export function resolvePrdPath(args, log = silentLogger) {
  */
 export function resolveComplexityReportPath(args, log = silentLogger) {
 	// Get explicit path from args.complexityReport if provided
-	const explicitPath = args?.complexityReport
-	const rawProjectRoot = args?.projectRoot
-	const tag = args?.tag
+	const explicitPath = args?.complexityReport;
+	const rawProjectRoot = args?.projectRoot;
+	const tag = args?.tag;
 
 	// If explicit path is provided and absolute, use it directly
 	if (explicitPath && path.isAbsolute(explicitPath)) {
-		return explicitPath
+		return explicitPath;
 	}
 
 	// Normalize project root if provided
-	const projectRoot = rawProjectRoot ? normalizeProjectRoot(rawProjectRoot) : null
+	const projectRoot = rawProjectRoot
+		? normalizeProjectRoot(rawProjectRoot)
+		: null;
 
 	// If explicit path is relative, resolve it relative to normalized projectRoot
 	if (explicitPath && projectRoot) {
-		return path.resolve(projectRoot, explicitPath)
+		return path.resolve(projectRoot, explicitPath);
 	}
 
 	// Use core findComplexityReportPath with explicit path and normalized projectRoot context
 	if (projectRoot) {
-		return coreFindComplexityReportPath(explicitPath, { projectRoot, tag }, log)
+		return coreFindComplexityReportPath(
+			explicitPath,
+			{ projectRoot, tag },
+			log,
+		);
 	}
 
 	// Fallback to core function without projectRoot context
-	return coreFindComplexityReportPath(explicitPath, null, log)
+	return coreFindComplexityReportPath(explicitPath, null, log);
 }
 
 /**
@@ -150,19 +160,19 @@ export function resolveComplexityReportPath(args, log = silentLogger) {
 export function resolveProjectPath(relativePath, args) {
 	// Ensure we have a projectRoot from args
 	if (!args?.projectRoot) {
-		throw new Error('projectRoot is required in args to resolve project paths')
+		throw new Error("projectRoot is required in args to resolve project paths");
 	}
 
 	// Normalize the project root to prevent double .taskmaster paths
-	const projectRoot = normalizeProjectRoot(args.projectRoot)
+	const projectRoot = normalizeProjectRoot(args.projectRoot);
 
 	// If already absolute, return as-is
 	if (path.isAbsolute(relativePath)) {
-		return relativePath
+		return relativePath;
 	}
 
 	// Resolve relative to normalized projectRoot
-	return path.resolve(projectRoot, relativePath)
+	return path.resolve(projectRoot, relativePath);
 }
 
 /**
@@ -171,7 +181,7 @@ export function resolveProjectPath(relativePath, args) {
  * @returns {string|null} - Project root path or null if not found
  */
 export function findProjectRoot(startDir) {
-	return coreFindProjectRoot(startDir)
+	return coreFindProjectRoot(startDir);
 }
 
 // MAIN EXPORTS FOR MCP TOOLS - these are the functions MCP tools should use
@@ -183,7 +193,7 @@ export function findProjectRoot(startDir) {
  * @returns {string|null} - Resolved path to tasks.json or null if not found
  */
 export function findTasksPath(args, log = silentLogger) {
-	return resolveTasksPath(args, log)
+	return resolveTasksPath(args, log);
 }
 
 /**
@@ -193,7 +203,7 @@ export function findTasksPath(args, log = silentLogger) {
  * @returns {string|null} - Resolved path to complexity report or null if not found
  */
 export function findComplexityReportPath(args, log = silentLogger) {
-	return resolveComplexityReportPath(args, log)
+	return resolveComplexityReportPath(args, log);
 }
 
 /**
@@ -204,12 +214,12 @@ export function findComplexityReportPath(args, log = silentLogger) {
  * @returns {string|null} - Resolved path to PRD file or null if not found
  */
 export function findPRDPath(explicitPath, args = null, log = silentLogger) {
-	return findPrdPath(explicitPath, args, log)
+	return findPrdPath(explicitPath, args, log);
 }
 
 // Legacy aliases for backward compatibility - DEPRECATED
-export const findTasksJsonPath = findTasksPath
-export const findComplexityReportJsonPath = findComplexityReportPath
+export const findTasksJsonPath = findTasksPath;
+export const findComplexityReportJsonPath = findComplexityReportPath;
 
 // Re-export PROJECT_MARKERS for MCP tools that import it from this module
-export { PROJECT_MARKERS }
+export { PROJECT_MARKERS };

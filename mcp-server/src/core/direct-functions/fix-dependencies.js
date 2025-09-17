@@ -2,9 +2,12 @@
  * Direct function wrapper for fixDependenciesCommand
  */
 
-import fs from 'fs'
-import { fixDependenciesCommand } from '../../../../scripts/modules/dependency-manager.js'
-import { disableSilentMode, enableSilentMode } from '../../../../scripts/modules/utils.js'
+import fs from "fs";
+import { fixDependenciesCommand } from "../../../../scripts/modules/dependency-manager.js";
+import {
+	disableSilentMode,
+	enableSilentMode,
+} from "../../../../scripts/modules/utils.js";
 
 /**
  * Fix invalid dependencies in tasks.json automatically
@@ -17,65 +20,65 @@ import { disableSilentMode, enableSilentMode } from '../../../../scripts/modules
  */
 export async function fixDependenciesDirect(args, log) {
 	// Destructure expected args
-	const { tasksJsonPath, projectRoot, tag } = args
+	const { tasksJsonPath, projectRoot, tag } = args;
 	try {
-		log.info(`Fixing invalid dependencies in tasks: ${tasksJsonPath}`)
+		log.info(`Fixing invalid dependencies in tasks: ${tasksJsonPath}`);
 
 		// Check if tasksJsonPath was provided
 		if (!tasksJsonPath) {
-			log.error('fixDependenciesDirect called without tasksJsonPath')
+			log.error("fixDependenciesDirect called without tasksJsonPath");
 			return {
 				success: false,
 				error: {
-					code: 'MISSING_ARGUMENT',
-					message: 'tasksJsonPath is required'
-				}
-			}
+					code: "MISSING_ARGUMENT",
+					message: "tasksJsonPath is required",
+				},
+			};
 		}
 
 		// Use provided path
-		const tasksPath = tasksJsonPath
+		const tasksPath = tasksJsonPath;
 
 		// Verify the file exists
 		if (!fs.existsSync(tasksPath)) {
 			return {
 				success: false,
 				error: {
-					code: 'FILE_NOT_FOUND',
-					message: `Tasks file not found at ${tasksPath}`
-				}
-			}
+					code: "FILE_NOT_FOUND",
+					message: `Tasks file not found at ${tasksPath}`,
+				},
+			};
 		}
 
 		// Enable silent mode to prevent console logs from interfering with JSON response
-		enableSilentMode()
+		enableSilentMode();
 
-		const options = { projectRoot, tag }
+		const options = { projectRoot, tag };
 		// Call the original command function using the provided path and proper context
-		await fixDependenciesCommand(tasksPath, options)
+		await fixDependenciesCommand(tasksPath, options);
 
 		// Restore normal logging
-		disableSilentMode()
+		disableSilentMode();
 
 		return {
 			success: true,
 			data: {
-				message: 'Dependencies fixed successfully',
+				message: "Dependencies fixed successfully",
 				tasksPath,
-				tag: tag || 'main'
-			}
-		}
+				tag: tag || "main",
+			},
+		};
 	} catch (error) {
 		// Make sure to restore normal logging even if there's an error
-		disableSilentMode()
+		disableSilentMode();
 
-		log.error(`Error fixing dependencies: ${error.message}`)
+		log.error(`Error fixing dependencies: ${error.message}`);
 		return {
 			success: false,
 			error: {
-				code: 'FIX_DEPENDENCIES_ERROR',
-				message: error.message
-			}
-		}
+				code: "FIX_DEPENDENCIES_ERROR",
+				message: error.message,
+			},
+		};
 	}
 }

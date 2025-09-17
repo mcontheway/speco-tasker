@@ -3,12 +3,16 @@
  * Tool to generate individual task files from tasks.json
  */
 
-import path from 'path'
-import { z } from 'zod'
-import { resolveTag } from '../../../scripts/modules/utils.js'
-import { generateTaskFilesDirect } from '../core/task-master-core.js'
-import { findTasksPath } from '../core/utils/path-utils.js'
-import { createErrorResponse, handleApiResult, withNormalizedProjectRoot } from './utils.js'
+import path from "path";
+import { z } from "zod";
+import { resolveTag } from "../../../scripts/modules/utils.js";
+import { generateTaskFilesDirect } from "../core/task-master-core.js";
+import { findTasksPath } from "../core/utils/path-utils.js";
+import {
+	createErrorResponse,
+	handleApiResult,
+	withNormalizedProjectRoot,
+} from "./utils.js";
 
 /**
  * Register the generate tool with the MCP server
@@ -16,66 +20,75 @@ import { createErrorResponse, handleApiResult, withNormalizedProjectRoot } from 
  */
 export function registerGenerateTool(server) {
 	server.addTool({
-		name: 'generate',
-		description: '基于tasks.json在tasks目录中生成单独的任务文件',
+		name: "generate",
+		description: "基于tasks.json在tasks目录中生成单独的任务文件",
 		parameters: z.object({
-			file: z.string().optional().describe('Absolute path to the tasks file'),
+			file: z.string().optional().describe("Absolute path to the tasks file"),
 			output: z
 				.string()
 				.optional()
-				.describe('Output directory (default: same directory as tasks file)'),
-			projectRoot: z.string().describe('The directory of the project. Must be an absolute path.'),
-			tag: z.string().optional().describe('选择要处理的任务分组')
+				.describe("Output directory (default: same directory as tasks file)"),
+			projectRoot: z
+				.string()
+				.describe("The directory of the project. Must be an absolute path."),
+			tag: z.string().optional().describe("选择要处理的任务分组"),
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
 			try {
-				log.info(`Generating task files with args: ${JSON.stringify(args)}`)
+				log.info(`Generating task files with args: ${JSON.stringify(args)}`);
 
 				const resolvedTag = resolveTag({
 					projectRoot: args.projectRoot,
-					tag: args.tag
-				})
+					tag: args.tag,
+				});
 				// Use args.projectRoot directly (guaranteed by withNormalizedProjectRoot)
-				let tasksJsonPath
+				let tasksJsonPath;
 				try {
-					tasksJsonPath = findTasksPath({ projectRoot: args.projectRoot, file: args.file }, log)
+					tasksJsonPath = findTasksPath(
+						{ projectRoot: args.projectRoot, file: args.file },
+						log,
+					);
 				} catch (error) {
-					log.error(`Error finding tasks.json: ${error.message}`)
-					return createErrorResponse(`Failed to find tasks.json: ${error.message}`)
+					log.error(`Error finding tasks.json: ${error.message}`);
+					return createErrorResponse(
+						`Failed to find tasks.json: ${error.message}`,
+					);
 				}
 
 				const outputDir = args.output
 					? path.resolve(args.projectRoot, args.output)
-					: path.dirname(tasksJsonPath)
+					: path.dirname(tasksJsonPath);
 
 				const result = await generateTaskFilesDirect(
 					{
 						tasksJsonPath: tasksJsonPath,
 						outputDir: outputDir,
 						projectRoot: args.projectRoot,
-						tag: resolvedTag
+						tag: resolvedTag,
 					},
 					log,
-					{ session }
-				)
+					{ session },
+				);
 
 				if (result.success) {
-					log.info(`Successfully generated task files: ${result.data.message}`)
+					log.info(`Successfully generated task files: ${result.data.message}`);
 				} else {
-					log.error(`Failed to generate task files: ${result.error?.message || 'Unknown error'}`)
+					log.error(
+						`Failed to generate task files: ${result.error?.message || "Unknown error"}`,
+					);
 				}
 
 				return handleApiResult(
 					result,
 					log,
-					'Error generating task files',
+					"Error generating task files",
 					undefined,
-					args.projectRoot
-				)
+					args.projectRoot,
+				);
 			} catch (error) {
-				log.error(`Error in generate tool: ${error.message}`)
-				return createErrorResponse(error.message)
+				log.error(`Error in generate tool: ${error.message}`);
+				return createErrorResponse(error.message);
 			}
-		})
-	})
+		}),
+	});
 }

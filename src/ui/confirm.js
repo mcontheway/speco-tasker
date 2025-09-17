@@ -1,5 +1,5 @@
-import boxen from 'boxen'
-import chalk from 'chalk'
+import boxen from "boxen";
+import chalk from "chalk";
 
 /**
  * Confirm removing profile rules (destructive operation)
@@ -7,7 +7,9 @@ import chalk from 'chalk'
  * @returns {Promise<boolean>} - Promise resolving to true if user confirms, false otherwise
  */
 async function confirmProfilesRemove(profiles) {
-	const profileList = profiles.map((b) => b.charAt(0).toUpperCase() + b.slice(1)).join(', ')
+	const profileList = profiles
+		.map((b) => b.charAt(0).toUpperCase() + b.slice(1))
+		.join(", ");
 	console.log(
 		boxen(
 			chalk.yellow(
@@ -27,21 +29,21 @@ The .[profile] directory will only be removed if ALL of the following are true:
 • No other files or folders exist in the profile directory
 • The MCP configuration was completely removed (no other servers)
 
-Are you sure you want to proceed?`
+Are you sure you want to proceed?`,
 			),
-			{ padding: 1, borderColor: 'yellow', borderStyle: 'round' }
-		)
-	)
-	const inquirer = await import('inquirer')
+			{ padding: 1, borderColor: "yellow", borderStyle: "round" },
+		),
+	);
+	const inquirer = await import("inquirer");
 	const { confirm } = await inquirer.default.prompt([
 		{
-			type: 'confirm',
-			name: 'confirm',
-			message: 'Type y to confirm selective removal, or n to abort:',
-			default: false
-		}
-	])
-	return confirm
+			type: "confirm",
+			name: "confirm",
+			message: "Type y to confirm selective removal, or n to abort:",
+			default: false,
+		},
+	]);
+	return confirm;
 }
 
 /**
@@ -51,7 +53,9 @@ Are you sure you want to proceed?`
  * @returns {Promise<boolean>} - Promise resolving to true if user confirms, false otherwise
  */
 async function confirmRemoveAllRemainingProfiles(profiles, remainingProfiles) {
-	const profileList = profiles.map((p) => p.charAt(0).toUpperCase() + p.slice(1)).join(', ')
+	const profileList = profiles
+		.map((p) => p.charAt(0).toUpperCase() + p.slice(1))
+		.join(", ");
 
 	console.log(
 		boxen(
@@ -68,28 +72,29 @@ async function confirmRemoveAllRemainingProfiles(profiles, remainingProfiles) {
 					`• Other MCP server configurations\n` +
 					`• Profile directories with custom content\n\n` +
 					`This could impact Task Master functionality but will preserve your custom configurations.\n\n` +
-					`Are you absolutely sure you want to proceed?`
+					`Are you absolutely sure you want to proceed?`,
 			),
 			{
 				padding: 1,
-				borderColor: 'red',
-				borderStyle: 'double',
-				title: '🚨 CRITICAL OPERATION',
-				titleAlignment: 'center'
-			}
-		)
-	)
+				borderColor: "red",
+				borderStyle: "double",
+				title: "🚨 CRITICAL OPERATION",
+				titleAlignment: "center",
+			},
+		),
+	);
 
-	const inquirer = await import('inquirer')
+	const inquirer = await import("inquirer");
 	const { confirm } = await inquirer.default.prompt([
 		{
-			type: 'confirm',
-			name: 'confirm',
-			message: 'Type y to confirm removing ALL Task Master rule profiles, or n to abort:',
-			default: false
-		}
-	])
-	return confirm
+			type: "confirm",
+			name: "confirm",
+			message:
+				"Type y to confirm removing ALL Task Master rule profiles, or n to abort:",
+			default: false,
+		},
+	]);
+	return confirm;
 }
 
-export { confirmProfilesRemove, confirmRemoveAllRemainingProfiles }
+export { confirmProfilesRemove, confirmRemoveAllRemainingProfiles };

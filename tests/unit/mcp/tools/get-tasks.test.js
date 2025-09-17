@@ -5,49 +5,54 @@
  * and passes arguments correctly to the underlying direct function.
  */
 
-import { jest } from '@jest/globals'
-import { emptySampleTasks, sampleTasks } from '../../../fixtures/sample-tasks.js'
+import { jest } from "@jest/globals";
+import {
+	emptySampleTasks,
+	sampleTasks,
+} from "../../../fixtures/sample-tasks.js";
 
 // Mock EVERYTHING
-const mockListTasksDirect = jest.fn()
-jest.mock('../../../../mcp-server/src/core/task-master-core.js', () => ({
-	listTasksDirect: mockListTasksDirect
-}))
+const mockListTasksDirect = jest.fn();
+jest.mock("../../../../mcp-server/src/core/task-master-core.js", () => ({
+	listTasksDirect: mockListTasksDirect,
+}));
 
-const mockHandleApiResult = jest.fn((result) => result)
+const mockHandleApiResult = jest.fn((result) => result);
 const mockWithNormalizedProjectRoot = jest.fn((fn) => {
 	// Return a wrapped function that normalizes projectRoot and calls the original
 	return async (args, context) => {
 		// Ensure projectRoot is normalized (this is what the real wrapper does)
 		const normalizedArgs = {
 			...args,
-			projectRoot: args.projectRoot || '/default/project/root'
-		}
-		return await fn(normalizedArgs, context)
-	}
-})
+			projectRoot: args.projectRoot || "/default/project/root",
+		};
+		return await fn(normalizedArgs, context);
+	};
+});
 const mockCreateErrorResponse = jest.fn((msg) => ({
 	success: false,
-	error: { code: 'ERROR', message: msg }
-}))
+	error: { code: "ERROR", message: msg },
+}));
 
-const mockResolveTasksPath = jest.fn(() => '/mock/project/tasks.json')
-const mockResolveComplexityReportPath = jest.fn(() => '/mock/project/complexity-report.json')
+const mockResolveTasksPath = jest.fn(() => "/mock/project/tasks.json");
+const mockResolveComplexityReportPath = jest.fn(
+	() => "/mock/project/complexity-report.json",
+);
 
-jest.mock('../../../../mcp-server/src/tools/utils.js', () => ({
+jest.mock("../../../../mcp-server/src/tools/utils.js", () => ({
 	withNormalizedProjectRoot: mockWithNormalizedProjectRoot,
 	handleApiResult: mockHandleApiResult,
 	createErrorResponse: mockCreateErrorResponse,
 	createContentResponse: jest.fn((content) => ({
 		success: true,
-		data: content
-	}))
-}))
+		data: content,
+	})),
+}));
 
-jest.mock('../../../../mcp-server/src/core/utils/path-utils.js', () => ({
+jest.mock("../../../../mcp-server/src/core/utils/path-utils.js", () => ({
 	resolveTasksPath: mockResolveTasksPath,
-	resolveComplexityReportPath: mockResolveComplexityReportPath
-}))
+	resolveComplexityReportPath: mockResolveComplexityReportPath,
+}));
 
 // Mock the z object from zod
 const mockZod = {
@@ -62,45 +67,49 @@ const mockZod = {
 			withSubtasks: {},
 			file: {},
 			complexityReport: {},
-			projectRoot: {}
-		})
-	}
-}
+			projectRoot: {},
+		}),
+	},
+};
 
-jest.mock('zod', () => ({
-	z: mockZod
-}))
+jest.mock("zod", () => ({
+	z: mockZod,
+}));
 
 // DO NOT import the real module - create a fake implementation
 const registerListTasksTool = (server) => {
 	const toolConfig = {
-		name: 'get_tasks',
+		name: "get_tasks",
 		description:
-			'Get all tasks from Speco Tasker, optionally filtering by status and including subtasks.',
+			"Get all tasks from Speco Tasker, optionally filtering by status and including subtasks.",
 		parameters: mockZod,
 
 		// Set execute function directly
 		execute: mockWithNormalizedProjectRoot(async (args, context) => {
-			const { log, session } = context
+			const { log, session } = context;
 
 			try {
-				log.info && log.info(`Getting tasks with filters: ${JSON.stringify(args)}`)
+				log.info &&
+					log.info(`Getting tasks with filters: ${JSON.stringify(args)}`);
 
 				// Resolve paths using mock functions
-				let tasksJsonPath
+				let tasksJsonPath;
 				try {
-					tasksJsonPath = mockResolveTasksPath(args, log)
+					tasksJsonPath = mockResolveTasksPath(args, log);
 				} catch (error) {
-					log.error && log.error(`Error finding tasks.json: ${error.message}`)
-					return mockCreateErrorResponse(`Failed to find tasks.json: ${error.message}`)
+					log.error && log.error(`Error finding tasks.json: ${error.message}`);
+					return mockCreateErrorResponse(
+						`Failed to find tasks.json: ${error.message}`,
+					);
 				}
 
-				let complexityReportPath
+				let complexityReportPath;
 				try {
-					complexityReportPath = mockResolveComplexityReportPath(args, session)
+					complexityReportPath = mockResolveComplexityReportPath(args, session);
 				} catch (error) {
-					log.error && log.error(`Error finding complexity report: ${error.message}`)
-					complexityReportPath = null
+					log.error &&
+						log.error(`Error finding complexity report: ${error.message}`);
+					complexityReportPath = null;
 				}
 
 				const result = mockListTasksDirect(
@@ -110,49 +119,51 @@ const registerListTasksTool = (server) => {
 						withSubtasks: args.withSubtasks,
 						reportPath: complexityReportPath,
 						projectRoot: args.projectRoot,
-						tag: args.tag || 'main'
+						tag: args.tag || "main",
 					},
 					log,
-					{ session: { workingDirectory: '/mock/dir' } }
-				)
+					{ session: { workingDirectory: "/mock/dir" } },
+				);
 
 				log.info &&
-					log.info(`Retrieved ${result.success ? result.data?.tasks?.length || 0 : 0} tasks`)
-				return mockHandleApiResult(result, log, 'Error getting tasks')
+					log.info(
+						`Retrieved ${result.success ? result.data?.tasks?.length || 0 : 0} tasks`,
+					);
+				return mockHandleApiResult(result, log, "Error getting tasks");
 			} catch (error) {
-				log.error && log.error(`Error getting tasks: ${error.message}`)
-				return mockCreateErrorResponse(error.message)
+				log.error && log.error(`Error getting tasks: ${error.message}`);
+				return mockCreateErrorResponse(error.message);
 			}
-		})
-	}
+		}),
+	};
 
-	server.addTool(toolConfig)
-}
+	server.addTool(toolConfig);
+};
 
-describe('MCP Tool: get-tasks', () => {
-	let mockServer
-	let executeFunction
+describe("MCP Tool: get-tasks", () => {
+	let mockServer;
+	let executeFunction;
 
 	const mockLogger = {
 		debug: jest.fn(),
 		info: jest.fn(),
 		warn: jest.fn(),
-		error: jest.fn()
-	}
+		error: jest.fn(),
+	};
 
 	// Sample response data with different statuses for testing
 	const tasksResponse = {
 		success: true,
 		data: {
 			tasks: [
-				{ id: 1, title: 'Task 1', status: 'done' },
-				{ id: 2, title: 'Task 2', status: 'pending' },
-				{ id: 3, title: 'Task 3', status: 'in-progress' },
-				{ id: 4, title: 'Task 4', status: 'blocked' },
-				{ id: 5, title: 'Task 5', status: 'deferred' },
-				{ id: 6, title: 'Task 6', status: 'review' }
+				{ id: 1, title: "Task 1", status: "done" },
+				{ id: 2, title: "Task 2", status: "pending" },
+				{ id: 3, title: "Task 3", status: "in-progress" },
+				{ id: 4, title: "Task 4", status: "blocked" },
+				{ id: 5, title: "Task 5", status: "deferred" },
+				{ id: 6, title: "Task 6", status: "review" },
 			],
-			filter: 'all',
+			filter: "all",
 			stats: {
 				total: 6,
 				completed: 1,
@@ -160,13 +171,13 @@ describe('MCP Tool: get-tasks', () => {
 				pending: 1,
 				blocked: 1,
 				deferred: 1,
-				review: 1
-			}
-		}
-	}
+				review: 1,
+			},
+		},
+	};
 
 	beforeEach(() => {
-		jest.clearAllMocks()
+		jest.clearAllMocks();
 
 		// Re-establish the mockWithNormalizedProjectRoot implementation after clearAllMocks
 		mockWithNormalizedProjectRoot.mockImplementation((fn) => {
@@ -175,312 +186,316 @@ describe('MCP Tool: get-tasks', () => {
 				// Ensure projectRoot is normalized (this is what the real wrapper does)
 				const normalizedArgs = {
 					...args,
-					projectRoot: args.projectRoot || '/default/project/root'
-				}
-				return await fn(normalizedArgs, context)
-			}
-		})
+					projectRoot: args.projectRoot || "/default/project/root",
+				};
+				return await fn(normalizedArgs, context);
+			};
+		});
 
 		// Setup default successful response first
-		mockListTasksDirect.mockReturnValue(tasksResponse)
+		mockListTasksDirect.mockReturnValue(tasksResponse);
 
 		mockServer = {
 			addTool: jest.fn((config) => {
-				executeFunction = config.execute
-				return config
-			})
-		}
+				executeFunction = config.execute;
+				return config;
+			}),
+		};
 
 		// Register the tool
-		registerListTasksTool(mockServer)
-	})
+		registerListTasksTool(mockServer);
+	});
 
-	test('should register the tool correctly', () => {
+	test("should register the tool correctly", () => {
 		expect(mockServer.addTool).toHaveBeenCalledWith(
 			expect.objectContaining({
-				name: 'get_tasks',
-				description: expect.stringContaining('Get all tasks from Speco Tasker'),
+				name: "get_tasks",
+				description: expect.stringContaining("Get all tasks from Speco Tasker"),
 				parameters: expect.any(Object),
-				execute: expect.any(Function)
-			})
-		)
-	})
+				execute: expect.any(Function),
+			}),
+		);
+	});
 
-	test('should handle single status filter', () => {
+	test("should handle single status filter", () => {
 		const mockContext = {
 			log: mockLogger,
-			session: { workingDirectory: '/mock/dir' }
-		}
+			session: { workingDirectory: "/mock/dir" },
+		};
 
 		const args = {
-			status: 'pending',
+			status: "pending",
 			withSubtasks: false,
-			projectRoot: '/mock/project'
-		}
+			projectRoot: "/mock/project",
+		};
 
-		executeFunction(args, mockContext)
+		executeFunction(args, mockContext);
 
 		expect(mockListTasksDirect).toHaveBeenCalledWith(
 			expect.objectContaining({
-				status: 'pending'
+				status: "pending",
 			}),
 			mockLogger,
 			expect.objectContaining({
-				session: mockContext.session
-			})
-		)
-	})
+				session: mockContext.session,
+			}),
+		);
+	});
 
-	test('should handle comma-separated status filter', () => {
+	test("should handle comma-separated status filter", () => {
 		const mockContext = {
 			log: mockLogger,
-			session: { workingDirectory: '/mock/dir' }
-		}
+			session: { workingDirectory: "/mock/dir" },
+		};
 
 		const args = {
-			status: 'done,pending,in-progress',
+			status: "done,pending,in-progress",
 			withSubtasks: false,
-			projectRoot: '/mock/project'
-		}
+			projectRoot: "/mock/project",
+		};
 
-		executeFunction(args, mockContext)
+		executeFunction(args, mockContext);
 
 		expect(mockListTasksDirect).toHaveBeenCalledWith(
 			expect.objectContaining({
-				status: 'done,pending,in-progress'
+				status: "done,pending,in-progress",
 			}),
 			mockLogger,
 			expect.objectContaining({
-				session: mockContext.session
-			})
-		)
-	})
+				session: mockContext.session,
+			}),
+		);
+	});
 
-	test('should handle comma-separated status with spaces', () => {
+	test("should handle comma-separated status with spaces", () => {
 		const mockContext = {
 			log: mockLogger,
-			session: { workingDirectory: '/mock/dir' }
-		}
+			session: { workingDirectory: "/mock/dir" },
+		};
 
 		const args = {
-			status: 'blocked, deferred , review',
+			status: "blocked, deferred , review",
 			withSubtasks: true,
-			projectRoot: '/mock/project'
-		}
+			projectRoot: "/mock/project",
+		};
 
-		executeFunction(args, mockContext)
+		executeFunction(args, mockContext);
 
 		expect(mockListTasksDirect).toHaveBeenCalledWith(
 			expect.objectContaining({
-				status: 'blocked, deferred , review',
-				withSubtasks: true
+				status: "blocked, deferred , review",
+				withSubtasks: true,
 			}),
 			mockLogger,
 			expect.objectContaining({
-				session: mockContext.session
-			})
-		)
-	})
+				session: mockContext.session,
+			}),
+		);
+	});
 
-	test('should handle withSubtasks parameter correctly', () => {
+	test("should handle withSubtasks parameter correctly", () => {
 		const mockContext = {
 			log: mockLogger,
-			session: { workingDirectory: '/mock/dir' }
-		}
+			session: { workingDirectory: "/mock/dir" },
+		};
 
 		// Test with withSubtasks=true
 		executeFunction(
 			{
-				status: 'pending',
+				status: "pending",
 				withSubtasks: true,
-				projectRoot: '/mock/project'
+				projectRoot: "/mock/project",
 			},
-			mockContext
-		)
+			mockContext,
+		);
 
 		expect(mockListTasksDirect).toHaveBeenCalledWith(
 			expect.objectContaining({
-				withSubtasks: true
+				withSubtasks: true,
 			}),
 			mockLogger,
 			expect.objectContaining({
-				session: mockContext.session
-			})
-		)
+				session: mockContext.session,
+			}),
+		);
 
-		jest.clearAllMocks()
+		jest.clearAllMocks();
 
 		// Test with withSubtasks=false
 		executeFunction(
 			{
-				status: 'pending',
+				status: "pending",
 				withSubtasks: false,
-				projectRoot: '/mock/project'
+				projectRoot: "/mock/project",
 			},
-			mockContext
-		)
+			mockContext,
+		);
 
 		expect(mockListTasksDirect).toHaveBeenCalledWith(
 			expect.objectContaining({
-				withSubtasks: false
+				withSubtasks: false,
 			}),
 			mockLogger,
 			expect.objectContaining({
-				session: mockContext.session
-			})
-		)
-	})
+				session: mockContext.session,
+			}),
+		);
+	});
 
-	test('should handle path resolution errors gracefully', () => {
+	test("should handle path resolution errors gracefully", () => {
 		mockResolveTasksPath.mockImplementationOnce(() => {
-			throw new Error('Tasks file not found')
-		})
+			throw new Error("Tasks file not found");
+		});
 
 		const mockContext = {
 			log: mockLogger,
-			session: { workingDirectory: '/mock/dir' }
-		}
+			session: { workingDirectory: "/mock/dir" },
+		};
 
 		const args = {
-			status: 'pending',
-			projectRoot: '/mock/project'
-		}
+			status: "pending",
+			projectRoot: "/mock/project",
+		};
 
-		const result = executeFunction(args, mockContext)
+		const result = executeFunction(args, mockContext);
 
-		expect(mockLogger.error).toHaveBeenCalledWith('Error finding tasks.json: Tasks file not found')
+		expect(mockLogger.error).toHaveBeenCalledWith(
+			"Error finding tasks.json: Tasks file not found",
+		);
 		expect(mockCreateErrorResponse).toHaveBeenCalledWith(
-			'Failed to find tasks.json: Tasks file not found'
-		)
-	})
+			"Failed to find tasks.json: Tasks file not found",
+		);
+	});
 
-	test('should handle complexity report path resolution errors gracefully', () => {
+	test("should handle complexity report path resolution errors gracefully", () => {
 		mockResolveComplexityReportPath.mockImplementationOnce(() => {
-			throw new Error('Complexity report not found')
-		})
+			throw new Error("Complexity report not found");
+		});
 
 		const mockContext = {
 			log: mockLogger,
-			session: { workingDirectory: '/mock/dir' }
-		}
+			session: { workingDirectory: "/mock/dir" },
+		};
 
 		const args = {
-			status: 'pending',
-			projectRoot: '/mock/project'
-		}
+			status: "pending",
+			projectRoot: "/mock/project",
+		};
 
-		executeFunction(args, mockContext)
+		executeFunction(args, mockContext);
 
 		// Should not fail the operation but set complexityReportPath to null
 		expect(mockListTasksDirect).toHaveBeenCalledWith(
 			expect.objectContaining({
-				reportPath: null
+				reportPath: null,
 			}),
 			mockLogger,
 			expect.objectContaining({
-				session: mockContext.session
-			})
-		)
-	})
+				session: mockContext.session,
+			}),
+		);
+	});
 
-	test('should handle listTasksDirect errors', () => {
+	test("should handle listTasksDirect errors", () => {
 		const errorResponse = {
 			success: false,
 			error: {
-				code: 'LIST_TASKS_ERROR',
-				message: 'Failed to list tasks'
-			}
-		}
+				code: "LIST_TASKS_ERROR",
+				message: "Failed to list tasks",
+			},
+		};
 
-		mockListTasksDirect.mockReturnValueOnce(errorResponse)
+		mockListTasksDirect.mockReturnValueOnce(errorResponse);
 
 		const mockContext = {
 			log: mockLogger,
-			session: { workingDirectory: '/mock/dir' }
-		}
+			session: { workingDirectory: "/mock/dir" },
+		};
 
 		const args = {
-			status: 'pending',
-			projectRoot: '/mock/project'
-		}
+			status: "pending",
+			projectRoot: "/mock/project",
+		};
 
-		executeFunction(args, mockContext)
+		executeFunction(args, mockContext);
 
 		expect(mockHandleApiResult).toHaveBeenCalledWith(
 			errorResponse,
 			mockLogger,
-			'Error getting tasks'
-		)
-	})
+			"Error getting tasks",
+		);
+	});
 
-	test('should handle unexpected errors', () => {
-		const testError = new Error('Unexpected error')
+	test("should handle unexpected errors", () => {
+		const testError = new Error("Unexpected error");
 		mockListTasksDirect.mockImplementationOnce(() => {
-			throw testError
-		})
+			throw testError;
+		});
 
 		const mockContext = {
 			log: mockLogger,
-			session: { workingDirectory: '/mock/dir' }
-		}
+			session: { workingDirectory: "/mock/dir" },
+		};
 
 		const args = {
-			status: 'pending',
-			projectRoot: '/mock/project'
-		}
+			status: "pending",
+			projectRoot: "/mock/project",
+		};
 
-		executeFunction(args, mockContext)
+		executeFunction(args, mockContext);
 
-		expect(mockLogger.error).toHaveBeenCalledWith('Error getting tasks: Unexpected error')
-		expect(mockCreateErrorResponse).toHaveBeenCalledWith('Unexpected error')
-	})
+		expect(mockLogger.error).toHaveBeenCalledWith(
+			"Error getting tasks: Unexpected error",
+		);
+		expect(mockCreateErrorResponse).toHaveBeenCalledWith("Unexpected error");
+	});
 
-	test('should pass all parameters correctly', () => {
+	test("should pass all parameters correctly", () => {
 		const mockContext = {
 			log: mockLogger,
-			session: { workingDirectory: '/mock/dir' }
-		}
+			session: { workingDirectory: "/mock/dir" },
+		};
 
 		const args = {
-			status: 'done,pending',
+			status: "done,pending",
 			withSubtasks: true,
-			file: 'custom-tasks.json',
-			complexityReport: 'custom-report.json',
-			projectRoot: '/mock/project'
-		}
+			file: "custom-tasks.json",
+			complexityReport: "custom-report.json",
+			projectRoot: "/mock/project",
+		};
 
-		executeFunction(args, mockContext)
+		executeFunction(args, mockContext);
 
 		// Verify listTasksDirect was called with correct parameters
 		expect(mockListTasksDirect).toHaveBeenCalledWith(
 			{
 				tasksJsonPath: undefined, // Path resolution handled internally
-				status: 'done,pending',
+				status: "done,pending",
 				withSubtasks: true,
 				reportPath: undefined, // Path resolution handled internally
-				projectRoot: '/mock/project',
-				tag: 'main'
+				projectRoot: "/mock/project",
+				tag: "main",
 			},
 			mockLogger,
-			{ session: mockContext.session }
-		)
-	})
+			{ session: mockContext.session },
+		);
+	});
 
-	test('should log task count after successful retrieval', () => {
+	test("should log task count after successful retrieval", () => {
 		const mockContext = {
 			log: mockLogger,
-			session: { workingDirectory: '/mock/dir' }
-		}
+			session: { workingDirectory: "/mock/dir" },
+		};
 
 		const args = {
-			status: 'pending',
-			projectRoot: '/mock/project'
-		}
+			status: "pending",
+			projectRoot: "/mock/project",
+		};
 
-		executeFunction(args, mockContext)
+		executeFunction(args, mockContext);
 
 		expect(mockLogger.info).toHaveBeenCalledWith(
-			`Retrieved ${tasksResponse.data.tasks.length} tasks`
-		)
-	})
-})
+			`Retrieved ${tasksResponse.data.tasks.length} tasks`,
+		);
+	});
+});

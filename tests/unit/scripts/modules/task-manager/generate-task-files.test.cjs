@@ -21,7 +21,7 @@ jest.mock('../../../../../scripts/modules/utils.js', () => ({
 	sanitizePrompt: jest.fn((prompt) => prompt),
 	truncate: jest.fn((text) => text),
 	isSilentMode: jest.fn(() => false),
-	findTaskById: jest.fn((tasks, id) => tasks.find((t) => t.id === parseInt(id))),
+	findTaskById: jest.fn((tasks, id) => tasks.find((t) => t.id === Number.parseInt(id))),
 	findProjectRoot: jest.fn(() => '/mock/project/root'),
 	resolveEnvVariable: jest.fn((varName) => `mock_${varName}`),
 	ensureTagMetadata: jest.fn()

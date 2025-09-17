@@ -3,17 +3,20 @@
  * Tool to find the next task to work on based on dependencies and status
  */
 
-import { z } from 'zod'
-import { resolveTag } from '../../../scripts/modules/utils.js'
-import { nextTaskDirect } from '../core/task-master-core.js'
-import { resolveComplexityReportPath, resolveTasksPath } from '../core/utils/path-utils.js'
+import { z } from "zod";
+import { resolveTag } from "../../../scripts/modules/utils.js";
+import { nextTaskDirect } from "../core/task-master-core.js";
+import {
+	resolveComplexityReportPath,
+	resolveTasksPath,
+} from "../core/utils/path-utils.js";
 import {
 	createErrorResponse,
 	generateParameterHelp,
 	getTagInfo,
 	handleApiResult,
-	withNormalizedProjectRoot
-} from './utils.js'
+	withNormalizedProjectRoot,
+} from "./utils.js";
 
 /**
  * Register the nextTask tool with the MCP server
@@ -22,57 +25,62 @@ import {
 
 // Generate parameter help for next_task tool
 const nextTaskParameterHelp = generateParameterHelp(
-	'next_task',
-	[{ name: 'projectRoot', description: '项目根目录的绝对路径' }],
+	"next_task",
+	[{ name: "projectRoot", description: "项目根目录的绝对路径" }],
 	[
-		{ name: 'file', description: '任务文件路径（默认：tasks/tasks.json）' },
-		{ name: 'complexityReport', description: '复杂度报告文件路径' },
-		{ name: 'tag', description: '选择要处理的任务分组' }
+		{ name: "file", description: "任务文件路径（默认：tasks/tasks.json）" },
+		{ name: "complexityReport", description: "复杂度报告文件路径" },
+		{ name: "tag", description: "选择要处理的任务分组" },
 	],
 	[
 		'{"projectRoot": "/path/to/project"}',
-		'{"projectRoot": "/path/to/project", "tag": "feature-branch"}'
-	]
-)
+		'{"projectRoot": "/path/to/project", "tag": "feature-branch"}',
+	],
+);
 
 export function registerNextTaskTool(server) {
 	server.addTool({
-		name: 'next_task',
-		description: '基于依赖关系和状态查找下一个可处理的任务',
+		name: "next_task",
+		description: "基于依赖关系和状态查找下一个可处理的任务",
 		parameters: z.object({
-			file: z.string().optional().describe('任务文件的绝对路径'),
+			file: z.string().optional().describe("任务文件的绝对路径"),
 			complexityReport: z
 				.string()
 				.optional()
-				.describe('复杂度报告文件路径，相对于项目根目录或绝对路径'),
-			projectRoot: z.string().describe('项目目录，必须是绝对路径'),
-			tag: z.string().optional().describe('选择要处理的任务分组')
+				.describe("复杂度报告文件路径，相对于项目根目录或绝对路径"),
+			projectRoot: z.string().describe("项目目录，必须是绝对路径"),
+			tag: z.string().optional().describe("选择要处理的任务分组"),
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
 			try {
-				log.info(`Finding next task with args: ${JSON.stringify(args)}`)
+				log.info(`Finding next task with args: ${JSON.stringify(args)}`);
 				const resolvedTag = resolveTag({
 					projectRoot: args.projectRoot,
-					tag: args.tag
-				})
+					tag: args.tag,
+				});
 
 				// Resolve the path to tasks.json using new path utilities
-				let tasksJsonPath
+				let tasksJsonPath;
 				try {
-					tasksJsonPath = resolveTasksPath(args, session)
+					tasksJsonPath = resolveTasksPath(args, session);
 				} catch (error) {
-					log.error(`Error finding tasks.json: ${error.message}`)
-					return createErrorResponse(`Failed to find tasks.json: ${error.message}`)
+					log.error(`Error finding tasks.json: ${error.message}`);
+					return createErrorResponse(
+						`Failed to find tasks.json: ${error.message}`,
+					);
 				}
 
 				// Resolve the path to complexity report (optional)
-				let complexityReportPath
+				let complexityReportPath;
 				try {
-					complexityReportPath = resolveComplexityReportPath({ ...args, tag: resolvedTag }, session)
+					complexityReportPath = resolveComplexityReportPath(
+						{ ...args, tag: resolvedTag },
+						session,
+					);
 				} catch (error) {
-					log.error(`Error finding complexity report: ${error.message}`)
+					log.error(`Error finding complexity report: ${error.message}`);
 					// This is optional, so we don't fail the operation
-					complexityReportPath = null
+					complexityReportPath = null;
 				}
 
 				const result = await nextTaskDirect(
@@ -80,29 +88,37 @@ export function registerNextTaskTool(server) {
 						tasksJsonPath: tasksJsonPath,
 						reportPath: complexityReportPath,
 						projectRoot: args.projectRoot,
-						tag: resolvedTag
+						tag: resolvedTag,
 					},
 					log,
-					{ session }
-				)
+					{ session },
+				);
 
-				log.info(`Next task result: ${result.success ? 'found' : 'none'}`)
-				return handleApiResult(result, log, 'Error finding next task', undefined, args.projectRoot)
+				log.info(`Next task result: ${result.success ? "found" : "none"}`);
+				return handleApiResult(
+					result,
+					log,
+					"Error finding next task",
+					undefined,
+					args.projectRoot,
+				);
 			} catch (error) {
-				const errorMessage = `查找下一个任务失败: ${error.message || '未知错误'}`
-				log.error(`[next-task tool] ${errorMessage}`)
+				const errorMessage = `查找下一个任务失败: ${error.message || "未知错误"}`;
+				log.error(`[next-task tool] ${errorMessage}`);
 
 				// Get tag info for better error context
-				const tagInfo = args.projectRoot ? getTagInfo(args.projectRoot, log) : null
+				const tagInfo = args.projectRoot
+					? getTagInfo(args.projectRoot, log)
+					: null;
 
 				return createErrorResponse(
 					errorMessage,
 					undefined,
 					tagInfo,
-					'NEXT_TASK_FAILED',
-					nextTaskParameterHelp
-				)
+					"NEXT_TASK_FAILED",
+					nextTaskParameterHelp,
+				);
 			}
-		})
-	})
+		}),
+	});
 }

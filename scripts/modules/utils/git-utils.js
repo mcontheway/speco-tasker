@@ -5,12 +5,12 @@
  * MCP-friendly: All functions require projectRoot parameter
  */
 
-import { exec, execSync } from 'child_process'
-import fs from 'fs'
-import path from 'path'
-import { promisify } from 'util'
+import { exec, execSync } from "child_process";
+import fs from "fs";
+import path from "path";
+import { promisify } from "util";
 
-const execAsync = promisify(exec)
+const execAsync = promisify(exec);
 
 /**
  * Check if the specified directory is inside a git repository
@@ -19,14 +19,14 @@ const execAsync = promisify(exec)
  */
 async function isGitRepository(projectRoot) {
 	if (!projectRoot) {
-		throw new Error('projectRoot is required for isGitRepository')
+		throw new Error("projectRoot is required for isGitRepository");
 	}
 
 	try {
-		await execAsync('git rev-parse --git-dir', { cwd: projectRoot })
-		return true
+		await execAsync("git rev-parse --git-dir", { cwd: projectRoot });
+		return true;
 	} catch (error) {
-		return false
+		return false;
 	}
 }
 
@@ -37,16 +37,16 @@ async function isGitRepository(projectRoot) {
  */
 async function getCurrentBranch(projectRoot) {
 	if (!projectRoot) {
-		throw new Error('projectRoot is required for getCurrentBranch')
+		throw new Error("projectRoot is required for getCurrentBranch");
 	}
 
 	try {
-		const { stdout } = await execAsync('git rev-parse --abbrev-ref HEAD', {
-			cwd: projectRoot
-		})
-		return stdout.trim()
+		const { stdout } = await execAsync("git rev-parse --abbrev-ref HEAD", {
+			cwd: projectRoot,
+		});
+		return stdout.trim();
 	} catch (error) {
-		return null
+		return null;
 	}
 }
 
@@ -57,20 +57,23 @@ async function getCurrentBranch(projectRoot) {
  */
 async function getLocalBranches(projectRoot) {
 	if (!projectRoot) {
-		throw new Error('projectRoot is required for getLocalBranches')
+		throw new Error("projectRoot is required for getLocalBranches");
 	}
 
 	try {
-		const { stdout } = await execAsync('git branch --format="%(refname:short)"', {
-			cwd: projectRoot
-		})
+		const { stdout } = await execAsync(
+			'git branch --format="%(refname:short)"',
+			{
+				cwd: projectRoot,
+			},
+		);
 		return stdout
 			.trim()
-			.split('\n')
+			.split("\n")
 			.filter((branch) => branch.length > 0)
-			.map((branch) => branch.trim())
+			.map((branch) => branch.trim());
 	} catch (error) {
-		return []
+		return [];
 	}
 }
 
@@ -81,20 +84,23 @@ async function getLocalBranches(projectRoot) {
  */
 async function getRemoteBranches(projectRoot) {
 	if (!projectRoot) {
-		throw new Error('projectRoot is required for getRemoteBranches')
+		throw new Error("projectRoot is required for getRemoteBranches");
 	}
 
 	try {
-		const { stdout } = await execAsync('git branch -r --format="%(refname:short)"', {
-			cwd: projectRoot
-		})
+		const { stdout } = await execAsync(
+			'git branch -r --format="%(refname:short)"',
+			{
+				cwd: projectRoot,
+			},
+		);
 		return stdout
 			.trim()
-			.split('\n')
-			.filter((branch) => branch.length > 0 && !branch.includes('HEAD'))
-			.map((branch) => branch.replace(/^origin\//, '').trim())
+			.split("\n")
+			.filter((branch) => branch.length > 0 && !branch.includes("HEAD"))
+			.map((branch) => branch.replace(/^origin\//, "").trim());
 	} catch (error) {
-		return []
+		return [];
 	}
 }
 
@@ -105,11 +111,11 @@ async function getRemoteBranches(projectRoot) {
  */
 async function isGhCliAvailable(projectRoot = null) {
 	try {
-		const options = projectRoot ? { cwd: projectRoot } : {}
-		await execAsync('gh auth status', options)
-		return true
+		const options = projectRoot ? { cwd: projectRoot } : {};
+		await execAsync("gh auth status", options);
+		return true;
 	} catch (error) {
-		return false
+		return false;
 	}
 }
 
@@ -120,16 +126,19 @@ async function isGhCliAvailable(projectRoot = null) {
  */
 async function getGitHubRepoInfo(projectRoot) {
 	if (!projectRoot) {
-		throw new Error('projectRoot is required for getGitHubRepoInfo')
+		throw new Error("projectRoot is required for getGitHubRepoInfo");
 	}
 
 	try {
-		const { stdout } = await execAsync('gh repo view --json name,owner,defaultBranchRef', {
-			cwd: projectRoot
-		})
-		return JSON.parse(stdout)
+		const { stdout } = await execAsync(
+			"gh repo view --json name,owner,defaultBranchRef",
+			{
+				cwd: projectRoot,
+			},
+		);
+		return JSON.parse(stdout);
 	} catch (error) {
-		return null
+		return null;
 	}
 }
 
@@ -139,17 +148,17 @@ async function getGitHubRepoInfo(projectRoot) {
  * @returns {string} Sanitized tag name
  */
 function sanitizeBranchNameForTag(branchName) {
-	if (!branchName || typeof branchName !== 'string') {
-		return 'unknown-branch'
+	if (!branchName || typeof branchName !== "string") {
+		return "unknown-branch";
 	}
 
 	// Replace invalid characters with hyphens and clean up
 	return branchName
-		.replace(/[^a-zA-Z0-9_-]/g, '-') // Replace invalid chars with hyphens
-		.replace(/^-+|-+$/g, '') // Remove leading/trailing hyphens
-		.replace(/-+/g, '-') // Collapse multiple hyphens
+		.replace(/[^a-zA-Z0-9_-]/g, "-") // Replace invalid chars with hyphens
+		.replace(/^-+|-+$/g, "") // Remove leading/trailing hyphens
+		.replace(/-+/g, "-") // Collapse multiple hyphens
 		.toLowerCase() // Convert to lowercase
-		.substring(0, 50) // Limit length
+		.substring(0, 50); // Limit length
 }
 
 /**
@@ -158,19 +167,19 @@ function sanitizeBranchNameForTag(branchName) {
  * @returns {boolean} True if branch name can be converted to valid tag
  */
 function isValidBranchForTag(branchName) {
-	if (!branchName || typeof branchName !== 'string') {
-		return false
+	if (!branchName || typeof branchName !== "string") {
+		return false;
 	}
 
 	// Check if it's a reserved branch name that shouldn't become tags
-	const reservedBranches = ['main', 'main', 'develop', 'dev', 'HEAD']
+	const reservedBranches = ["main", "main", "develop", "dev", "HEAD"];
 	if (reservedBranches.includes(branchName.toLowerCase())) {
-		return false
+		return false;
 	}
 
 	// Check if sanitized name would be meaningful
-	const sanitized = sanitizeBranchNameForTag(branchName)
-	return sanitized.length > 0 && sanitized !== 'unknown-branch'
+	const sanitized = sanitizeBranchNameForTag(branchName);
+	return sanitized.length > 0 && sanitized !== "unknown-branch";
 }
 
 /**
@@ -180,16 +189,16 @@ function isValidBranchForTag(branchName) {
  */
 async function getGitRepositoryRoot(projectRoot) {
 	if (!projectRoot) {
-		throw new Error('projectRoot is required for getGitRepositoryRoot')
+		throw new Error("projectRoot is required for getGitRepositoryRoot");
 	}
 
 	try {
-		const { stdout } = await execAsync('git rev-parse --show-toplevel', {
-			cwd: projectRoot
-		})
-		return stdout.trim()
+		const { stdout } = await execAsync("git rev-parse --show-toplevel", {
+			cwd: projectRoot,
+		});
+		return stdout.trim();
 	} catch (error) {
-		return null
+		return null;
 	}
 }
 
@@ -200,14 +209,14 @@ async function getGitRepositoryRoot(projectRoot) {
  */
 async function isGitRepositoryRoot(projectRoot) {
 	if (!projectRoot) {
-		throw new Error('projectRoot is required for isGitRepositoryRoot')
+		throw new Error("projectRoot is required for isGitRepositoryRoot");
 	}
 
 	try {
-		const gitRoot = await getGitRepositoryRoot(projectRoot)
-		return gitRoot && path.resolve(gitRoot) === path.resolve(projectRoot)
+		const gitRoot = await getGitRepositoryRoot(projectRoot);
+		return gitRoot && path.resolve(gitRoot) === path.resolve(projectRoot);
 	} catch (error) {
-		return false
+		return false;
 	}
 }
 
@@ -218,35 +227,38 @@ async function isGitRepositoryRoot(projectRoot) {
  */
 async function getDefaultBranch(projectRoot) {
 	if (!projectRoot) {
-		throw new Error('projectRoot is required for getDefaultBranch')
+		throw new Error("projectRoot is required for getDefaultBranch");
 	}
 
 	try {
 		// Try to get from GitHub first (if gh CLI is available)
 		if (await isGhCliAvailable(projectRoot)) {
-			const repoInfo = await getGitHubRepoInfo(projectRoot)
+			const repoInfo = await getGitHubRepoInfo(projectRoot);
 			if (repoInfo && repoInfo.defaultBranchRef) {
-				return repoInfo.defaultBranchRef.name
+				return repoInfo.defaultBranchRef.name;
 			}
 		}
 
 		// Fallback to git remote info
-		const { stdout } = await execAsync('git symbolic-ref refs/remotes/origin/HEAD', {
-			cwd: projectRoot
-		})
-		return stdout.replace('refs/remotes/origin/', '').trim()
+		const { stdout } = await execAsync(
+			"git symbolic-ref refs/remotes/origin/HEAD",
+			{
+				cwd: projectRoot,
+			},
+		);
+		return stdout.replace("refs/remotes/origin/", "").trim();
 	} catch (error) {
 		// Final fallback - common default branch names
-		const commonDefaults = ['main', 'main']
-		const branches = await getLocalBranches(projectRoot)
+		const commonDefaults = ["main", "main"];
+		const branches = await getLocalBranches(projectRoot);
 
 		for (const defaultName of commonDefaults) {
 			if (branches.includes(defaultName)) {
-				return defaultName
+				return defaultName;
 			}
 		}
 
-		return null
+		return null;
 	}
 }
 
@@ -257,15 +269,15 @@ async function getDefaultBranch(projectRoot) {
  */
 async function isOnDefaultBranch(projectRoot) {
 	if (!projectRoot) {
-		throw new Error('projectRoot is required for isOnDefaultBranch')
+		throw new Error("projectRoot is required for isOnDefaultBranch");
 	}
 
 	try {
-		const currentBranch = await getCurrentBranch(projectRoot)
-		const defaultBranch = await getDefaultBranch(projectRoot)
-		return currentBranch && defaultBranch && currentBranch === defaultBranch
+		const currentBranch = await getCurrentBranch(projectRoot);
+		const defaultBranch = await getDefaultBranch(projectRoot);
+		return currentBranch && defaultBranch && currentBranch === defaultBranch;
 	} catch (error) {
-		return false
+		return false;
 	}
 }
 
@@ -278,12 +290,12 @@ async function isOnDefaultBranch(projectRoot) {
  */
 async function checkAndAutoSwitchGitTag(projectRoot, tasksPath) {
 	if (!projectRoot) {
-		throw new Error('projectRoot is required for checkAndAutoSwitchGitTag')
+		throw new Error("projectRoot is required for checkAndAutoSwitchGitTag");
 	}
 
 	// DISABLED: Automatic git workflow is too rigid and opinionated
 	// Users should explicitly use git-tag commands if they want integration
-	return
+	return;
 }
 
 /**
@@ -295,12 +307,12 @@ async function checkAndAutoSwitchGitTag(projectRoot, tasksPath) {
  */
 function checkAndAutoSwitchGitTagSync(projectRoot, tasksPath) {
 	if (!projectRoot) {
-		return // Can't proceed without project root
+		return; // Can't proceed without project root
 	}
 
 	// DISABLED: Automatic git workflow is too rigid and opinionated
 	// Users should explicitly use git-tag commands if they want integration
-	return
+	return;
 }
 
 /**
@@ -310,17 +322,17 @@ function checkAndAutoSwitchGitTagSync(projectRoot, tasksPath) {
  */
 function isGitRepositorySync(projectRoot) {
 	if (!projectRoot) {
-		return false
+		return false;
 	}
 
 	try {
-		execSync('git rev-parse --git-dir', {
+		execSync("git rev-parse --git-dir", {
 			cwd: projectRoot,
-			stdio: 'ignore' // Suppress output
-		})
-		return true
+			stdio: "ignore", // Suppress output
+		});
+		return true;
 	} catch (error) {
-		return false
+		return false;
 	}
 }
 
@@ -331,17 +343,17 @@ function isGitRepositorySync(projectRoot) {
  */
 function getCurrentBranchSync(projectRoot) {
 	if (!projectRoot) {
-		return null
+		return null;
 	}
 
 	try {
-		const stdout = execSync('git rev-parse --abbrev-ref HEAD', {
+		const stdout = execSync("git rev-parse --abbrev-ref HEAD", {
 			cwd: projectRoot,
-			encoding: 'utf8'
-		})
-		return stdout.trim()
+			encoding: "utf8",
+		});
+		return stdout.trim();
 	} catch (error) {
-		return null
+		return null;
 	}
 }
 
@@ -354,13 +366,13 @@ function getCurrentBranchSync(projectRoot) {
  */
 function insideGitWorkTree() {
 	try {
-		execSync('git rev-parse --is-inside-work-tree', {
-			stdio: 'ignore',
-			cwd: process.cwd()
-		})
-		return true
+		execSync("git rev-parse --is-inside-work-tree", {
+			stdio: "ignore",
+			cwd: process.cwd(),
+		});
+		return true;
 	} catch {
-		return false
+		return false;
 	}
 }
 
@@ -382,5 +394,5 @@ export {
 	checkAndAutoSwitchGitTagSync,
 	isGitRepositorySync,
 	getCurrentBranchSync,
-	insideGitWorkTree
-}
+	insideGitWorkTree,
+};

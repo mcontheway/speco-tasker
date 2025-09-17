@@ -3,10 +3,16 @@
  * Direct function implementation for creating tags from git branches
  */
 
-import { createTagFromBranch } from '../../../../scripts/modules/task-manager/tag-management.js'
-import { disableSilentMode, enableSilentMode } from '../../../../scripts/modules/utils.js'
-import { getCurrentBranch, isGitRepository } from '../../../../scripts/modules/utils/git-utils.js'
-import { createLogWrapper } from '../../tools/utils.js'
+import { createTagFromBranch } from "../../../../scripts/modules/task-manager/tag-management.js";
+import {
+	disableSilentMode,
+	enableSilentMode,
+} from "../../../../scripts/modules/utils.js";
+import {
+	getCurrentBranch,
+	isGitRepository,
+} from "../../../../scripts/modules/utils/git-utils.js";
+import { createLogWrapper } from "../../tools/utils.js";
 
 /**
  * Direct function wrapper for creating tags from git branches with error handling.
@@ -32,82 +38,83 @@ export async function createTagFromBranchDirect(args, log, context = {}) {
 		copyFromTag,
 		description,
 		autoSwitch,
-		projectRoot
-	} = args
-	const { session } = context
+		projectRoot,
+	} = args;
+	const { session } = context;
 
 	// Enable silent mode to prevent console logs from interfering with JSON response
-	enableSilentMode()
+	enableSilentMode();
 
 	// Create logger wrapper using the utility
-	const mcpLog = createLogWrapper(log)
+	const mcpLog = createLogWrapper(log);
 
 	try {
 		// Check if tasksJsonPath was provided
 		if (!tasksJsonPath) {
-			log.error('createTagFromBranchDirect called without tasksJsonPath')
-			disableSilentMode()
+			log.error("createTagFromBranchDirect called without tasksJsonPath");
+			disableSilentMode();
 			return {
 				success: false,
 				error: {
-					code: 'MISSING_ARGUMENT',
-					message: 'tasksJsonPath is required'
-				}
-			}
+					code: "MISSING_ARGUMENT",
+					message: "tasksJsonPath is required",
+				},
+			};
 		}
 
 		// Check if projectRoot was provided
 		if (!projectRoot) {
-			log.error('createTagFromBranchDirect called without projectRoot')
-			disableSilentMode()
+			log.error("createTagFromBranchDirect called without projectRoot");
+			disableSilentMode();
 			return {
 				success: false,
 				error: {
-					code: 'MISSING_ARGUMENT',
-					message: 'projectRoot is required'
-				}
-			}
+					code: "MISSING_ARGUMENT",
+					message: "projectRoot is required",
+				},
+			};
 		}
 
 		// Check if we're in a git repository
 		if (!(await isGitRepository(projectRoot))) {
-			log.error('Not in a git repository')
-			disableSilentMode()
+			log.error("Not in a git repository");
+			disableSilentMode();
 			return {
 				success: false,
 				error: {
-					code: 'NOT_GIT_REPOSITORY',
-					message: 'Not in a git repository. Cannot create tag from branch.'
-				}
-			}
+					code: "NOT_GIT_REPOSITORY",
+					message: "Not in a git repository. Cannot create tag from branch.",
+				},
+			};
 		}
 
 		// Determine branch name
-		let targetBranch = branchName
+		let targetBranch = branchName;
 		if (!targetBranch) {
-			targetBranch = await getCurrentBranch(projectRoot)
+			targetBranch = await getCurrentBranch(projectRoot);
 			if (!targetBranch) {
-				log.error('Could not determine current git branch')
-				disableSilentMode()
+				log.error("Could not determine current git branch");
+				disableSilentMode();
 				return {
 					success: false,
 					error: {
-						code: 'NO_CURRENT_BRANCH',
-						message: 'Could not determine current git branch'
-					}
-				}
+						code: "NO_CURRENT_BRANCH",
+						message: "Could not determine current git branch",
+					},
+				};
 			}
 		}
 
-		log.info(`Creating tag from git branch: ${targetBranch}`)
+		log.info(`Creating tag from git branch: ${targetBranch}`);
 
 		// Prepare options
 		const options = {
 			copyFromCurrent: copyFromCurrent || false,
 			copyFromTag,
-			description: description || `Tag created from git branch "${targetBranch}"`,
-			autoSwitch: autoSwitch || false
-		}
+			description:
+				description || `Tag created from git branch "${targetBranch}"`,
+			autoSwitch: autoSwitch || false,
+		};
 
 		// Call the createTagFromBranch function
 		const result = await createTagFromBranch(
@@ -117,13 +124,13 @@ export async function createTagFromBranchDirect(args, log, context = {}) {
 			{
 				session,
 				mcpLog,
-				projectRoot
+				projectRoot,
 			},
-			'json' // outputFormat - use 'json' to suppress CLI UI
-		)
+			"json", // outputFormat - use 'json' to suppress CLI UI
+		);
 
 		// Restore normal logging
-		disableSilentMode()
+		disableSilentMode();
 
 		return {
 			success: true,
@@ -133,20 +140,20 @@ export async function createTagFromBranchDirect(args, log, context = {}) {
 				created: result.created,
 				mappingUpdated: result.mappingUpdated,
 				autoSwitched: result.autoSwitched,
-				message: `Successfully created tag "${result.tagName}" from branch "${result.branchName}"`
-			}
-		}
+				message: `Successfully created tag "${result.tagName}" from branch "${result.branchName}"`,
+			},
+		};
 	} catch (error) {
 		// Make sure to restore normal logging even if there's an error
-		disableSilentMode()
+		disableSilentMode();
 
-		log.error(`Error in createTagFromBranchDirect: ${error.message}`)
+		log.error(`Error in createTagFromBranchDirect: ${error.message}`);
 		return {
 			success: false,
 			error: {
-				code: error.code || 'CREATE_TAG_FROM_BRANCH_ERROR',
-				message: error.message
-			}
-		}
+				code: error.code || "CREATE_TAG_FROM_BRANCH_ERROR",
+				message: error.message,
+			},
+		};
 	}
 }

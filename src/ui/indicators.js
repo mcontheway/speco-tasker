@@ -3,38 +3,38 @@
  * UI functions for displaying priority and complexity indicators in different contexts
  */
 
-import chalk from 'chalk'
-import { TASK_PRIORITY_OPTIONS } from '../constants/task-priority.js'
+import chalk from "chalk";
+import { TASK_PRIORITY_OPTIONS } from "../constants/task-priority.js";
 
 // Extract priority values for cleaner object keys
-const [HIGH, MEDIUM, LOW] = TASK_PRIORITY_OPTIONS
+const [HIGH, MEDIUM, LOW] = TASK_PRIORITY_OPTIONS;
 
 // Cache for generated indicators
-const INDICATOR_CACHE = new Map()
+const INDICATOR_CACHE = new Map();
 
 /**
  * Base configuration for indicator systems
  */
 class IndicatorConfig {
 	constructor(name, levels, colors, thresholds = null) {
-		this.name = name
-		this.levels = levels
-		this.colors = colors
-		this.thresholds = thresholds
+		this.name = name;
+		this.levels = levels;
+		this.colors = colors;
+		this.thresholds = thresholds;
 	}
 
 	getColor(level) {
-		return this.colors[level] || chalk.gray
+		return this.colors[level] || chalk.gray;
 	}
 
 	getLevelFromScore(score) {
 		if (!this.thresholds) {
-			throw new Error(`${this.name} does not support score-based levels`)
+			throw new Error(`${this.name} does not support score-based levels`);
 		}
 
-		if (score >= 7) return this.levels[0] // high
-		if (score <= 3) return this.levels[2] // low
-		return this.levels[1] // medium
+		if (score >= 7) return this.levels[0]; // high
+		if (score <= 3) return this.levels[2]; // low
+		return this.levels[1]; // medium
 	}
 }
 
@@ -43,54 +43,54 @@ class IndicatorConfig {
  */
 const VISUAL_STYLES = {
 	cli: {
-		filled: '●', // ●
-		empty: '○' // ○
+		filled: "●", // ●
+		empty: "○", // ○
 	},
 	statusBar: {
-		high: '⋮', // ⋮
-		medium: ':', // :
-		low: '.' // .
+		high: "⋮", // ⋮
+		medium: ":", // :
+		low: ".", // .
 	},
 	mcp: {
-		high: '🔴', // 🔴
-		medium: '🟠', // 🟠
-		low: '🟢' // 🟢
-	}
-}
+		high: "🔴", // 🔴
+		medium: "🟠", // 🟠
+		low: "🟢", // 🟢
+	},
+};
 
 /**
  * Priority configuration
  */
-const PRIORITY_CONFIG = new IndicatorConfig('priority', [HIGH, MEDIUM, LOW], {
-	[HIGH]: chalk.hex('#CC0000'),
-	[MEDIUM]: chalk.hex('#FF8800'),
-	[LOW]: chalk.yellow
-})
+const PRIORITY_CONFIG = new IndicatorConfig("priority", [HIGH, MEDIUM, LOW], {
+	[HIGH]: chalk.hex("#CC0000"),
+	[MEDIUM]: chalk.hex("#FF8800"),
+	[LOW]: chalk.yellow,
+});
 
 /**
  * Generates CLI indicator with intensity
  */
 function generateCliIndicator(intensity, color) {
-	const filled = VISUAL_STYLES.cli.filled
-	const empty = VISUAL_STYLES.cli.empty
+	const filled = VISUAL_STYLES.cli.filled;
+	const empty = VISUAL_STYLES.cli.empty;
 
-	let indicator = ''
+	let indicator = "";
 	for (let i = 0; i < 3; i++) {
 		if (i < intensity) {
-			indicator += color(filled)
+			indicator += color(filled);
 		} else {
-			indicator += chalk.white(empty)
+			indicator += chalk.white(empty);
 		}
 	}
-	return indicator
+	return indicator;
 }
 
 /**
  * Get intensity level from priority/complexity level
  */
 function getIntensityFromLevel(level, levels) {
-	const index = levels.indexOf(level)
-	return 3 - index // high=3, medium=2, low=1
+	const index = levels.indexOf(level);
+	return 3 - index; // high=3, medium=2, low=1
 }
 
 /**
@@ -101,12 +101,12 @@ function getIntensityFromLevel(level, levels) {
  */
 function getCachedIndicators(cacheKey, generator) {
 	if (INDICATOR_CACHE.has(cacheKey)) {
-		return INDICATOR_CACHE.get(cacheKey)
+		return INDICATOR_CACHE.get(cacheKey);
 	}
 
-	const indicators = generator()
-	INDICATOR_CACHE.set(cacheKey, indicators)
-	return indicators
+	const indicators = generator();
+	INDICATOR_CACHE.set(cacheKey, indicators);
+	return indicators;
 }
 
 /**
@@ -114,11 +114,11 @@ function getCachedIndicators(cacheKey, generator) {
  * @returns {Object} Priority to emoji mapping
  */
 export function getMcpPriorityIndicators() {
-	return getCachedIndicators('mcp-priority-all', () => ({
+	return getCachedIndicators("mcp-priority-all", () => ({
 		[HIGH]: VISUAL_STYLES.mcp.high,
 		[MEDIUM]: VISUAL_STYLES.mcp.medium,
-		[LOW]: VISUAL_STYLES.mcp.low
-	}))
+		[LOW]: VISUAL_STYLES.mcp.low,
+	}));
 }
 
 /**
@@ -126,15 +126,15 @@ export function getMcpPriorityIndicators() {
  * @returns {Object} Priority to colored dot string mapping
  */
 export function getCliPriorityIndicators() {
-	return getCachedIndicators('cli-priority-all', () => {
-		const indicators = {}
+	return getCachedIndicators("cli-priority-all", () => {
+		const indicators = {};
 		PRIORITY_CONFIG.levels.forEach((level) => {
-			const intensity = getIntensityFromLevel(level, PRIORITY_CONFIG.levels)
-			const color = PRIORITY_CONFIG.getColor(level)
-			indicators[level] = generateCliIndicator(intensity, color)
-		})
-		return indicators
-	})
+			const intensity = getIntensityFromLevel(level, PRIORITY_CONFIG.levels);
+			const color = PRIORITY_CONFIG.getColor(level);
+			indicators[level] = generateCliIndicator(intensity, color);
+		});
+		return indicators;
+	});
 }
 
 /**
@@ -142,20 +142,20 @@ export function getCliPriorityIndicators() {
  * @returns {Object} Priority to single character indicator mapping
  */
 export function getStatusBarPriorityIndicators() {
-	return getCachedIndicators('statusbar-priority-all', () => {
-		const indicators = {}
+	return getCachedIndicators("statusbar-priority-all", () => {
+		const indicators = {};
 		PRIORITY_CONFIG.levels.forEach((level, index) => {
 			const style =
 				index === 0
 					? VISUAL_STYLES.statusBar.high
 					: index === 1
 						? VISUAL_STYLES.statusBar.medium
-						: VISUAL_STYLES.statusBar.low
-			const color = PRIORITY_CONFIG.getColor(level)
-			indicators[level] = color(style)
-		})
-		return indicators
-	})
+						: VISUAL_STYLES.statusBar.low;
+			const color = PRIORITY_CONFIG.getColor(level);
+			indicators[level] = color(style);
+		});
+		return indicators;
+	});
 }
 
 /**
@@ -166,8 +166,8 @@ export function getPriorityColors() {
 	return {
 		[HIGH]: PRIORITY_CONFIG.colors[HIGH],
 		[MEDIUM]: PRIORITY_CONFIG.colors[MEDIUM],
-		[LOW]: PRIORITY_CONFIG.colors[LOW]
-	}
+		[LOW]: PRIORITY_CONFIG.colors[LOW],
+	};
 }
 
 /**
@@ -176,7 +176,7 @@ export function getPriorityColors() {
  * @returns {Object} Priority to indicator mapping
  */
 export function getPriorityIndicators(isMcp = false) {
-	return isMcp ? getMcpPriorityIndicators() : getCliPriorityIndicators()
+	return isMcp ? getMcpPriorityIndicators() : getCliPriorityIndicators();
 }
 
 /**
@@ -186,8 +186,8 @@ export function getPriorityIndicators(isMcp = false) {
  * @returns {string} The indicator string for the priority
  */
 export function getPriorityIndicator(priority, isMcp = false) {
-	const indicators = getPriorityIndicators(isMcp)
-	return indicators[priority] || indicators[MEDIUM]
+	const indicators = getPriorityIndicators(isMcp);
+	return indicators[priority] || indicators[MEDIUM];
 }
 
 // ============================================================================
@@ -198,19 +198,19 @@ export function getPriorityIndicator(priority, isMcp = false) {
  * Complexity configuration
  */
 const COMPLEXITY_CONFIG = new IndicatorConfig(
-	'complexity',
-	['high', 'medium', 'low'],
+	"complexity",
+	["high", "medium", "low"],
 	{
-		high: chalk.hex('#CC0000'),
-		medium: chalk.hex('#FF8800'),
-		low: chalk.green
+		high: chalk.hex("#CC0000"),
+		medium: chalk.hex("#FF8800"),
+		low: chalk.green,
 	},
 	{
 		high: (score) => score >= 7,
 		medium: (score) => score >= 4 && score <= 6,
-		low: (score) => score <= 3
-	}
-)
+		low: (score) => score <= 3,
+	},
+);
 
 /**
  * Get complexity indicators for CLI context (colored dots with visual hierarchy)
@@ -218,15 +218,15 @@ const COMPLEXITY_CONFIG = new IndicatorConfig(
  * @returns {Object} Complexity level to colored dot string mapping
  */
 export function getCliComplexityIndicators() {
-	return getCachedIndicators('cli-complexity-all', () => {
-		const indicators = {}
+	return getCachedIndicators("cli-complexity-all", () => {
+		const indicators = {};
 		COMPLEXITY_CONFIG.levels.forEach((level) => {
-			const intensity = getIntensityFromLevel(level, COMPLEXITY_CONFIG.levels)
-			const color = COMPLEXITY_CONFIG.getColor(level)
-			indicators[level] = generateCliIndicator(intensity, color)
-		})
-		return indicators
-	})
+			const intensity = getIntensityFromLevel(level, COMPLEXITY_CONFIG.levels);
+			const color = COMPLEXITY_CONFIG.getColor(level);
+			indicators[level] = generateCliIndicator(intensity, color);
+		});
+		return indicators;
+	});
 }
 
 /**
@@ -234,20 +234,20 @@ export function getCliComplexityIndicators() {
  * @returns {Object} Complexity level to single character indicator mapping
  */
 export function getStatusBarComplexityIndicators() {
-	return getCachedIndicators('statusbar-complexity-all', () => {
-		const indicators = {}
+	return getCachedIndicators("statusbar-complexity-all", () => {
+		const indicators = {};
 		COMPLEXITY_CONFIG.levels.forEach((level, index) => {
 			const style =
 				index === 0
 					? VISUAL_STYLES.statusBar.high
 					: index === 1
 						? VISUAL_STYLES.statusBar.medium
-						: VISUAL_STYLES.statusBar.low
-			const color = COMPLEXITY_CONFIG.getColor(level)
-			indicators[level] = color(style)
-		})
-		return indicators
-	})
+						: VISUAL_STYLES.statusBar.low;
+			const color = COMPLEXITY_CONFIG.getColor(level);
+			indicators[level] = color(style);
+		});
+		return indicators;
+	});
 }
 
 /**
@@ -255,7 +255,7 @@ export function getStatusBarComplexityIndicators() {
  * @returns {Object} Complexity level to chalk color function mapping
  */
 export function getComplexityColors() {
-	return { ...COMPLEXITY_CONFIG.colors }
+	return { ...COMPLEXITY_CONFIG.colors };
 }
 
 /**
@@ -265,7 +265,9 @@ export function getComplexityColors() {
  * @returns {string} The indicator string for the complexity level
  */
 export function getComplexityIndicator(score, statusBar = false) {
-	const level = COMPLEXITY_CONFIG.getLevelFromScore(score)
-	const indicators = statusBar ? getStatusBarComplexityIndicators() : getCliComplexityIndicators()
-	return indicators[level]
+	const level = COMPLEXITY_CONFIG.getLevelFromScore(score);
+	const indicators = statusBar
+		? getStatusBarComplexityIndicators()
+		: getCliComplexityIndicators();
+	return indicators[level];
 }

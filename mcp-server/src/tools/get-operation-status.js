@@ -1,6 +1,6 @@
 // mcp-server/src/tools/get-operation-status.js
-import { z } from 'zod'
-import { createContentResponse, createErrorResponse } from './utils.js' // Assuming these utils exist
+import { z } from "zod";
+import { createContentResponse, createErrorResponse } from "./utils.js"; // Assuming these utils exist
 
 /**
  * Register the get_operation_status tool.
@@ -9,38 +9,38 @@ import { createContentResponse, createErrorResponse } from './utils.js' // Assum
  */
 export function registerGetOperationStatusTool(server, asyncManager) {
 	server.addTool({
-		name: 'get_operation_status',
-		description: '获取后台操作的状态和结果或错误信息',
+		name: "get_operation_status",
+		description: "获取后台操作的状态和结果或错误信息",
 		parameters: z.object({
-			operationId: z.string().describe('The ID of the operation to check.')
+			operationId: z.string().describe("The ID of the operation to check."),
 		}),
 		execute: async (args, { log }) => {
 			try {
-				const { operationId } = args
-				log.info(`Checking status for operation ID: ${operationId}`)
+				const { operationId } = args;
+				log.info(`Checking status for operation ID: ${operationId}`);
 
-				const status = asyncManager.getStatus(operationId)
+				const status = asyncManager.getStatus(operationId);
 
 				// Status will now always return an object, but it might have status='not_found'
-				if (status.status === 'not_found') {
-					log.warn(`Operation ID not found: ${operationId}`)
+				if (status.status === "not_found") {
+					log.warn(`Operation ID not found: ${operationId}`);
 					return createErrorResponse(
 						status.error?.message || `Operation ID not found: ${operationId}`,
-						status.error?.code || 'OPERATION_NOT_FOUND'
-					)
+						status.error?.code || "OPERATION_NOT_FOUND",
+					);
 				}
 
-				log.info(`Status for ${operationId}: ${status.status}`)
-				return createContentResponse(status)
+				log.info(`Status for ${operationId}: ${status.status}`);
+				return createContentResponse(status);
 			} catch (error) {
 				log.error(`Error in get_operation_status tool: ${error.message}`, {
-					stack: error.stack
-				})
+					stack: error.stack,
+				});
 				return createErrorResponse(
 					`Failed to get operation status: ${error.message}`,
-					'GET_STATUS_ERROR'
-				)
+					"GET_STATUS_ERROR",
+				);
 			}
-		}
-	})
+		},
+	});
 }

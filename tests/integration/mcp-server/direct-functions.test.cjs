@@ -189,13 +189,13 @@ describe('MCP Server Direct Functions', () => {
 
 		// Default mockFindTaskById implementation
 		mockFindTaskById.mockImplementation((tasks, taskId) => {
-			const id = parseInt(taskId, 10)
+			const id = Number.parseInt(taskId, 10)
 			return tasks.find((t) => t.id === id)
 		})
 
 		// Default mockTaskExists implementation
 		mockTaskExists.mockImplementation((tasks, taskId) => {
-			const id = parseInt(taskId, 10)
+			const id = Number.parseInt(taskId, 10)
 			return tasks.some((t) => t.id === id)
 		})
 
@@ -464,7 +464,7 @@ describe('MCP Server Direct Functions', () => {
 			// This is just a mock call that won't make real API requests
 			// We're using mockExpandTask which is already a mock function
 			const expandedTask = await mockExpandTask(
-				parseInt(args.id, 10),
+				Number.parseInt(args.id, 10),
 				args.num,
 				args.research || false,
 				args.prompt || '',

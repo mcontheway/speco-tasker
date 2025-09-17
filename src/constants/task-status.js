@@ -14,13 +14,13 @@
  * - cancelled: Task cancelled and will not be completed
  */
 export const TASK_STATUS_OPTIONS = [
-	'pending',
-	'done',
-	'in-progress',
-	'review',
-	'deferred',
-	'cancelled'
-]
+	"pending",
+	"done",
+	"in-progress",
+	"review",
+	"deferred",
+	"cancelled",
+];
 
 /**
  * Check if a given status is a valid task status
@@ -28,5 +28,5 @@ export const TASK_STATUS_OPTIONS = [
  * @returns {boolean} True if the status is valid, false otherwise
  */
 export function isValidTaskStatus(status) {
-	return TASK_STATUS_OPTIONS.includes(status)
+	return TASK_STATUS_OPTIONS.includes(status);
 }

@@ -3,8 +3,8 @@
  * Context and cache management for Speco Tasker MCP Server
  */
 
-import { FastMCP } from 'fastmcp'
-import { LRUCache } from 'lru-cache'
+import { FastMCP } from "fastmcp";
+import { LRUCache } from "lru-cache";
 
 /**
  * Configuration options for the ContextManager
@@ -23,22 +23,22 @@ export class ContextManager {
 		this.config = {
 			maxCacheSize: config.maxCacheSize || 1000,
 			ttl: config.ttl || 1000 * 60 * 5, // 5 minutes default
-			maxContextSize: config.maxContextSize || 4000
-		}
+			maxContextSize: config.maxContextSize || 4000,
+		};
 
 		// Initialize LRU cache for context data
 		this.cache = new LRUCache({
 			max: this.config.maxCacheSize,
 			ttl: this.config.ttl,
-			updateAgeOnGet: true
-		})
+			updateAgeOnGet: true,
+		});
 
 		// Cache statistics
 		this.stats = {
 			hits: 0,
 			misses: 0,
-			invalidations: 0
-		}
+			invalidations: 0,
+		};
 	}
 
 	/**
@@ -48,30 +48,30 @@ export class ContextManager {
 	 * @returns {Object} Context object with metadata
 	 */
 	async getContext(contextId, metadata = {}) {
-		const cacheKey = this._getCacheKey(contextId, metadata)
+		const cacheKey = this._getCacheKey(contextId, metadata);
 
 		// Try to get from cache first
-		const cached = this.cache.get(cacheKey)
+		const cached = this.cache.get(cacheKey);
 		if (cached) {
-			this.stats.hits++
-			return cached
+			this.stats.hits++;
+			return cached;
 		}
 
-		this.stats.misses++
+		this.stats.misses++;
 
 		// Create new context if not in cache
 		const context = {
 			id: contextId,
 			metadata: {
 				...metadata,
-				created: new Date().toISOString()
-			}
-		}
+				created: new Date().toISOString(),
+			},
+		};
 
 		// Cache the new context
-		this.cache.set(cacheKey, context)
+		this.cache.set(cacheKey, context);
 
-		return context
+		return context;
 	}
 
 	/**
@@ -81,16 +81,16 @@ export class ContextManager {
 	 * @returns {Object} Updated context
 	 */
 	async updateContext(contextId, updates) {
-		const context = await this.getContext(contextId)
+		const context = await this.getContext(contextId);
 
 		// Apply updates to context
-		Object.assign(context.metadata, updates)
+		Object.assign(context.metadata, updates);
 
 		// Update cache
-		const cacheKey = this._getCacheKey(contextId, context.metadata)
-		this.cache.set(cacheKey, context)
+		const cacheKey = this._getCacheKey(contextId, context.metadata);
+		this.cache.set(cacheKey, context);
 
-		return context
+		return context;
 	}
 
 	/**
@@ -99,9 +99,9 @@ export class ContextManager {
 	 * @param {Object} metadata - Metadata used in the cache key
 	 */
 	invalidateContext(contextId, metadata = {}) {
-		const cacheKey = this._getCacheKey(contextId, metadata)
-		this.cache.delete(cacheKey)
-		this.stats.invalidations++
+		const cacheKey = this._getCacheKey(contextId, metadata);
+		this.cache.delete(cacheKey);
+		this.stats.invalidations++;
 	}
 
 	/**
@@ -111,14 +111,14 @@ export class ContextManager {
 	 * @returns {any | undefined} The cached data or undefined if not found/expired.
 	 */
 	getCachedData(key) {
-		const cached = this.cache.get(key)
+		const cached = this.cache.get(key);
 		if (cached !== undefined) {
 			// Check for undefined specifically, as null/false might be valid cached values
-			this.stats.hits++
-			return cached
+			this.stats.hits++;
+			return cached;
 		}
-		this.stats.misses++
-		return undefined
+		this.stats.misses++;
+		return undefined;
 	}
 
 	/**
@@ -127,7 +127,7 @@ export class ContextManager {
 	 * @param {any} data - The data to cache.
 	 */
 	setCachedData(key, data) {
-		this.cache.set(key, data)
+		this.cache.set(key, data);
 	}
 
 	/**
@@ -136,8 +136,8 @@ export class ContextManager {
 	 * @param {string} key - The cache key to invalidate.
 	 */
 	invalidateCacheKey(key) {
-		this.cache.delete(key)
-		this.stats.invalidations++
+		this.cache.delete(key);
+		this.stats.invalidations++;
 	}
 
 	/**
@@ -151,8 +151,8 @@ export class ContextManager {
 			invalidations: this.stats.invalidations,
 			size: this.cache.size,
 			maxSize: this.config.maxCacheSize,
-			ttl: this.config.ttl
-		}
+			ttl: this.config.ttl,
+		};
 	}
 
 	/**
@@ -163,9 +163,9 @@ export class ContextManager {
 	 */
 	_getCacheKey(contextId, metadata) {
 		// Kept for potential backward compatibility or internal use if needed later.
-		return `${contextId}:${JSON.stringify(metadata)}`
+		return `${contextId}:${JSON.stringify(metadata)}`;
 	}
 }
 
 // Export a singleton instance with default config
-export const contextManager = new ContextManager()
+export const contextManager = new ContextManager();

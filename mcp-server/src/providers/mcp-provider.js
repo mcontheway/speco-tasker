@@ -11,8 +11,8 @@
  */
 export class MCPProvider {
 	constructor() {
-		this.name = 'mcp'
-		this.session = null // MCP server session object (kept for compatibility)
+		this.name = "mcp";
+		this.session = null; // MCP server session object (kept for compatibility)
 	}
 
 	/**
@@ -20,7 +20,7 @@ export class MCPProvider {
 	 * @param {object} session - MCP session object
 	 */
 	setSession(session) {
-		this.session = session
+		this.session = session;
 	}
 
 	/**
@@ -28,6 +28,6 @@ export class MCPProvider {
 	 * @returns {boolean} True if session is available
 	 */
 	hasValidSession() {
-		return !!this.session
+		return !!this.session;
 	}
 }

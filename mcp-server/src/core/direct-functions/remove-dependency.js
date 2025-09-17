@@ -2,8 +2,11 @@
  * Direct function wrapper for removeDependency
  */
 
-import { removeDependency } from '../../../../scripts/modules/dependency-manager.js'
-import { disableSilentMode, enableSilentMode } from '../../../../scripts/modules/utils.js'
+import { removeDependency } from "../../../../scripts/modules/dependency-manager.js";
+import {
+	disableSilentMode,
+	enableSilentMode,
+} from "../../../../scripts/modules/utils.js";
 
 /**
  * Remove a dependency from a task
@@ -18,20 +21,20 @@ import { disableSilentMode, enableSilentMode } from '../../../../scripts/modules
  */
 export async function removeDependencyDirect(args, log) {
 	// Destructure expected args
-	const { tasksJsonPath, id, dependsOn, projectRoot, tag } = args
+	const { tasksJsonPath, id, dependsOn, projectRoot, tag } = args;
 	try {
-		log.info(`Removing dependency with args: ${JSON.stringify(args)}`)
+		log.info(`Removing dependency with args: ${JSON.stringify(args)}`);
 
 		// Check if tasksJsonPath was provided
 		if (!tasksJsonPath) {
-			log.error('removeDependencyDirect called without tasksJsonPath')
+			log.error("removeDependencyDirect called without tasksJsonPath");
 			return {
 				success: false,
 				error: {
-					code: 'MISSING_ARGUMENT',
-					message: 'tasksJsonPath is required'
-				}
-			}
+					code: "MISSING_ARGUMENT",
+					message: "tasksJsonPath is required",
+				},
+			};
 		}
 
 		// Validate required parameters
@@ -39,65 +42,68 @@ export async function removeDependencyDirect(args, log) {
 			return {
 				success: false,
 				error: {
-					code: 'INPUT_VALIDATION_ERROR',
-					message: 'Task ID (id) is required'
-				}
-			}
+					code: "INPUT_VALIDATION_ERROR",
+					message: "Task ID (id) is required",
+				},
+			};
 		}
 
 		if (!dependsOn) {
 			return {
 				success: false,
 				error: {
-					code: 'INPUT_VALIDATION_ERROR',
-					message: 'Dependency ID (dependsOn) is required'
-				}
-			}
+					code: "INPUT_VALIDATION_ERROR",
+					message: "Dependency ID (dependsOn) is required",
+				},
+			};
 		}
 
 		// Use provided path
-		const tasksPath = tasksJsonPath
+		const tasksPath = tasksJsonPath;
 
 		// Format IDs for the core function
-		const taskId = id && id.includes && id.includes('.') ? id : parseInt(id, 10)
+		const taskId =
+			id && id.includes && id.includes(".") ? id : Number.parseInt(id, 10);
 		const dependencyId =
-			dependsOn && dependsOn.includes && dependsOn.includes('.')
+			dependsOn && dependsOn.includes && dependsOn.includes(".")
 				? dependsOn
-				: parseInt(dependsOn, 10)
+				: Number.parseInt(dependsOn, 10);
 
-		log.info(`Removing dependency: task ${taskId} no longer depends on ${dependencyId}`)
+		log.info(
+			`Removing dependency: task ${taskId} no longer depends on ${dependencyId}`,
+		);
 
 		// Enable silent mode to prevent console logs from interfering with JSON response
-		enableSilentMode()
+		enableSilentMode();
 
 		// Call the core function using the provided tasksPath
 		await removeDependency(tasksPath, taskId, dependencyId, {
 			projectRoot,
-			tag
-		})
+			tag,
+		});
 
 		// Restore normal logging
-		disableSilentMode()
+		disableSilentMode();
 
 		return {
 			success: true,
 			data: {
 				message: `Successfully removed dependency: Task ${taskId} no longer depends on ${dependencyId}`,
 				taskId: taskId,
-				dependencyId: dependencyId
-			}
-		}
+				dependencyId: dependencyId,
+			},
+		};
 	} catch (error) {
 		// Make sure to restore normal logging even if there's an error
-		disableSilentMode()
+		disableSilentMode();
 
-		log.error(`Error in removeDependencyDirect: ${error.message}`)
+		log.error(`Error in removeDependencyDirect: ${error.message}`);
 		return {
 			success: false,
 			error: {
-				code: 'CORE_FUNCTION_ERROR',
-				message: error.message
-			}
-		}
+				code: "CORE_FUNCTION_ERROR",
+				message: error.message,
+			},
+		};
 	}
 }

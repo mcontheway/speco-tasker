@@ -1,0 +1,24 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# 运行完整的测试套件
+echo "🧪 正在运行完整的测试套件..."
+npm test
+
+# 检查是否有未处理的 changeset
+if [ -d ".changeset" ] && [ "$(ls -A .changeset/*.md 2>/dev/null)" ]; then
+  echo "⚠️  检测到未处理的 changeset 文件"
+  echo "   推送前请确认是否需要运行 'npm run release' 进行发布"
+  echo ""
+  echo "   如果这是功能变更，请先创建 changeset："
+  echo "   npm run changeset"
+  echo ""
+  read -p "是否继续推送？(y/N): " -n 1 -r
+  echo
+  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    echo "推送已取消"
+    exit 1
+  fi
+fi
+
+echo "✅ 所有检查通过，可以推送"

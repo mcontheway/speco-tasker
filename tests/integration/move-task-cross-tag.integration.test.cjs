@@ -75,7 +75,7 @@ jest.unstable_mockModule('../../scripts/modules/dependency-manager.js', () => ({
 			if (!task || !Array.isArray(task.dependencies)) return
 
 			task.dependencies.forEach((depId) => {
-				const normalizedDepId = typeof depId === 'string' ? parseInt(depId, 10) : depId
+				const normalizedDepId = typeof depId === 'string' ? Number.parseInt(depId, 10) : depId
 				if (!isNaN(normalizedDepId) && normalizedDepId !== taskId) {
 					dependentIds.add(normalizedDepId)
 					findAllDependencies(normalizedDepId)

@@ -1,9 +1,12 @@
-import path from 'path'
+import path from "path";
 
-import { isTaskDependentOn } from '../task-manager.js'
-import { getCurrentTag, log, readJSON, writeJSON } from '../utils.js'
-import { formatValidationError, validateTaskData } from '../utils/task-validation.js'
-import generateTaskFiles from './generate-task-files.js'
+import { isTaskDependentOn } from "../task-manager.js";
+import { getCurrentTag, log, readJSON, writeJSON } from "../utils.js";
+import {
+	formatValidationError,
+	validateTaskData,
+} from "../utils/task-validation.js";
+import generateTaskFiles from "./generate-task-files.js";
 
 /**
  * Add a subtask to a parent task
@@ -23,92 +26,101 @@ async function addSubtask(
 	existingTaskId = null,
 	newSubtaskData = null,
 	generateFiles = false,
-	context = {}
+	context = {},
 ) {
-	const { projectRoot, tag } = context
+	const { projectRoot, tag } = context;
 	try {
-		log('info', `Adding subtask to parent task ${parentId}...`)
+		log("info", `Adding subtask to parent task ${parentId}...`);
 
 		// Read the existing tasks with proper context
-		const data = readJSON(tasksPath, projectRoot, tag)
+		const data = readJSON(tasksPath, projectRoot, tag);
 		if (!data || !data.tasks) {
-			throw new Error(`Invalid or missing tasks file at ${tasksPath}`)
+			throw new Error(`Invalid or missing tasks file at ${tasksPath}`);
 		}
 
 		// Convert parent ID to number
-		const parentIdNum = parseInt(parentId, 10)
+		const parentIdNum = Number.parseInt(parentId, 10);
 
 		// Find the parent task
-		const parentTask = data.tasks.find((t) => t.id === parentIdNum)
+		const parentTask = data.tasks.find((t) => t.id === parentIdNum);
 		if (!parentTask) {
-			throw new Error(`Parent task with ID ${parentIdNum} not found`)
+			throw new Error(`Parent task with ID ${parentIdNum} not found`);
 		}
 
 		// Initialize subtasks array if it doesn't exist
 		if (!parentTask.subtasks) {
-			parentTask.subtasks = []
+			parentTask.subtasks = [];
 		}
 
-		let newSubtask
+		let newSubtask;
 
 		// Case 1: Convert an existing task to a subtask
 		if (existingTaskId !== null) {
-			const existingTaskIdNum = parseInt(existingTaskId, 10)
+			const existingTaskIdNum = Number.parseInt(existingTaskId, 10);
 
 			// Find the existing task
-			const existingTaskIndex = data.tasks.findIndex((t) => t.id === existingTaskIdNum)
+			const existingTaskIndex = data.tasks.findIndex(
+				(t) => t.id === existingTaskIdNum,
+			);
 			if (existingTaskIndex === -1) {
-				throw new Error(`Task with ID ${existingTaskIdNum} not found`)
+				throw new Error(`Task with ID ${existingTaskIdNum} not found`);
 			}
 
-			const existingTask = data.tasks[existingTaskIndex]
+			const existingTask = data.tasks[existingTaskIndex];
 
 			// Check if task is already a subtask
 			if (existingTask.parentTaskId) {
 				throw new Error(
-					`Task ${existingTaskIdNum} is already a subtask of task ${existingTask.parentTaskId}`
-				)
+					`Task ${existingTaskIdNum} is already a subtask of task ${existingTask.parentTaskId}`,
+				);
 			}
 
 			// Check for circular dependency
 			if (existingTaskIdNum === parentIdNum) {
-				throw new Error(`Cannot make a task a subtask of itself`)
+				throw new Error(`Cannot make a task a subtask of itself`);
 			}
 
 			// Check if parent task is a subtask of the task we're converting
 			// This would create a circular dependency
 			if (isTaskDependentOn(data.tasks, parentTask, existingTaskIdNum)) {
 				throw new Error(
-					`Cannot create circular dependency: task ${parentIdNum} is already a subtask or dependent of task ${existingTaskIdNum}`
-				)
+					`Cannot create circular dependency: task ${parentIdNum} is already a subtask or dependent of task ${existingTaskIdNum}`,
+				);
 			}
 
 			// Find the highest subtask ID to determine the next ID
 			const highestSubtaskId =
-				parentTask.subtasks.length > 0 ? Math.max(...parentTask.subtasks.map((st) => st.id)) : 0
-			const newSubtaskId = highestSubtaskId + 1
+				parentTask.subtasks.length > 0
+					? Math.max(...parentTask.subtasks.map((st) => st.id))
+					: 0;
+			const newSubtaskId = highestSubtaskId + 1;
 
 			// Clone the existing task to be converted to a subtask
 			newSubtask = {
 				...existingTask,
 				id: newSubtaskId,
-				parentTaskId: parentIdNum
-			}
+				parentTaskId: parentIdNum,
+			};
 
 			// Add to parent's subtasks
-			parentTask.subtasks.push(newSubtask)
+			parentTask.subtasks.push(newSubtask);
 
 			// Remove the task from the main tasks array
-			data.tasks.splice(existingTaskIndex, 1)
+			data.tasks.splice(existingTaskIndex, 1);
 
-			log('info', `Converted task ${existingTaskIdNum} to subtask ${parentIdNum}.${newSubtaskId}`)
+			log(
+				"info",
+				`Converted task ${existingTaskIdNum} to subtask ${parentIdNum}.${newSubtaskId}`,
+			);
 		}
 		// Case 2: Create a new subtask
 		else if (newSubtaskData) {
 			// Find the highest subtask ID to determine the next ID
 			const highestSubtaskId =
-				parentTask.subtasks.length > 0 ? Math.max(...parentTask.subtasks.map((st) => st.id)) : 0
-			const newSubtaskId = highestSubtaskId + 1
+				parentTask.subtasks.length > 0
+					? Math.max(...parentTask.subtasks.map((st) => st.id))
+					: 0;
+			const newSubtaskId = highestSubtaskId + 1;
 
 			// Create the new subtask object (no inheritance for spec_files)
 			newSubtask = {
@@ -116,57 +128,64 @@ async function addSubtask(
 				title: newSubtaskData.title,
 				description: newSubtaskData.description,
 				details: newSubtaskData.details,
-				status: newSubtaskData.status || 'pending',
+				status: newSubtaskData.status || "pending",
 				dependencies: newSubtaskData.dependencies || [],
 				priority: newSubtaskData.priority || parentTask.priority,
 				testStrategy: newSubtaskData.testStrategy || parentTask.testStrategy,
 				spec_files: newSubtaskData.spec_files || [], // Use provided spec_files or empty array (no inheritance)
-				logs: newSubtaskData.logs || '',
-				parentTaskId: parentIdNum
-			}
+				logs: newSubtaskData.logs || "",
+				parentTaskId: parentIdNum,
+			};
 
 			// Log inheritance for other fields (excluding spec_files)
 			if (!newSubtaskData.priority && parentTask.priority) {
-				log('info', `子任务继承了优先级 '${parentTask.priority}'`)
+				log("info", `子任务继承了优先级 '${parentTask.priority}'`);
 			}
 			if (!newSubtaskData.testStrategy && parentTask.testStrategy) {
-				log('info', `子任务继承了测试策略`)
+				log("info", `子任务继承了测试策略`);
 			}
 
 			// Add to parent's subtasks
-			parentTask.subtasks.push(newSubtask)
+			parentTask.subtasks.push(newSubtask);
 
-			log('info', `Created new subtask ${parentIdNum}.${newSubtaskId}`)
+			log("info", `Created new subtask ${parentIdNum}.${newSubtaskId}`);
 
 			// Validate the new subtask data
-			const validationResult = validateTaskData(newSubtask, projectRoot, log, true)
+			const validationResult = validateTaskData(
+				newSubtask,
+				projectRoot,
+				log,
+				true,
+			);
 			if (!validationResult.isValid) {
 				const errorMessage = formatValidationError(
 					validationResult,
 					`${parentIdNum}.${newSubtaskId}`,
-					true
-				)
-				log('error', errorMessage)
-				throw new Error(errorMessage)
+					true,
+				);
+				log("error", errorMessage);
+				throw new Error(errorMessage);
 			}
 		} else {
-			throw new Error('Either existingTaskId or newSubtaskData must be provided')
+			throw new Error(
+				"Either existingTaskId or newSubtaskData must be provided",
+			);
 		}
 
 		// Write the updated tasks back to the file with proper context
-		writeJSON(tasksPath, data, projectRoot, tag)
+		writeJSON(tasksPath, data, projectRoot, tag);
 
 		// Generate task files if requested
 		if (generateFiles) {
-			log('info', 'Regenerating task files...')
-			await generateTaskFiles(tasksPath, path.dirname(tasksPath), context)
+			log("info", "Regenerating task files...");
+			await generateTaskFiles(tasksPath, path.dirname(tasksPath), context);
 		}
 
-		return newSubtask
+		return newSubtask;
 	} catch (error) {
-		log('error', `Error adding subtask: ${error.message}`)
-		throw error
+		log("error", `Error adding subtask: ${error.message}`);
+		throw error;
 	}
 }
 
-export default addSubtask
+export default addSubtask;

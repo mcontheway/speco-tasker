@@ -1,0 +1,11 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# 运行 lint-staged（只检查暂存的文件）
+npx lint-staged
+
+# 运行代码质量检查
+npm run quality-check
+
+# 运行测试（只运行单元测试以加快速度）
+npm run test:unit

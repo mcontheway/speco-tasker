@@ -2,9 +2,12 @@
  * Direct function wrapper for moveTask
  */
 
-import { moveTask } from '../../../../scripts/modules/task-manager.js'
-import { disableSilentMode, enableSilentMode } from '../../../../scripts/modules/utils.js'
-import { findTasksPath } from '../utils/path-utils.js'
+import { moveTask } from "../../../../scripts/modules/task-manager.js";
+import {
+	disableSilentMode,
+	enableSilentMode,
+} from "../../../../scripts/modules/utils.js";
+import { findTasksPath } from "../utils/path-utils.js";
 
 /**
  * Move a task or subtask to a new position
@@ -20,78 +23,85 @@ import { findTasksPath } from '../utils/path-utils.js'
  * @returns {Promise<{success: boolean, data?: Object, error?: Object}>}
  */
 export async function moveTaskDirect(args, log, context = {}) {
-	const { session } = context
-	const { projectRoot, tag } = args
+	const { session } = context;
+	const { projectRoot, tag } = args;
 
 	// Validate required parameters
 	if (!args.sourceId) {
 		return {
 			success: false,
 			error: {
-				message: 'Source ID is required',
-				code: 'MISSING_SOURCE_ID'
-			}
-		}
+				message: "Source ID is required",
+				code: "MISSING_SOURCE_ID",
+			},
+		};
 	}
 
 	if (!args.destinationId) {
 		return {
 			success: false,
 			error: {
-				message: 'Destination ID is required',
-				code: 'MISSING_DESTINATION_ID'
-			}
-		}
+				message: "Destination ID is required",
+				code: "MISSING_DESTINATION_ID",
+			},
+		};
 	}
 
 	try {
 		// Find tasks.json path if not provided
-		let tasksPath = args.tasksJsonPath || args.file
+		let tasksPath = args.tasksJsonPath || args.file;
 		if (!tasksPath) {
 			if (!args.projectRoot) {
 				return {
 					success: false,
 					error: {
-						message: 'Project root is required if tasksJsonPath is not provided',
-						code: 'MISSING_PROJECT_ROOT'
-					}
-				}
+						message:
+							"Project root is required if tasksJsonPath is not provided",
+						code: "MISSING_PROJECT_ROOT",
+					},
+				};
 			}
-			tasksPath = findTasksPath(args, log)
+			tasksPath = findTasksPath(args, log);
 		}
 
 		// Enable silent mode to prevent console output during MCP operation
-		enableSilentMode()
+		enableSilentMode();
 
 		// Call the core moveTask function with file generation control
-		const generateFiles = args.generateFiles !== false // Default to true
-		const result = await moveTask(tasksPath, args.sourceId, args.destinationId, generateFiles, {
-			projectRoot,
-			tag
-		})
+		const generateFiles = args.generateFiles !== false; // Default to true
+		const result = await moveTask(
+			tasksPath,
+			args.sourceId,
+			args.destinationId,
+			generateFiles,
+			{
+				projectRoot,
+				tag,
+			},
+		);
 
 		// Restore console output
-		disableSilentMode()
+		disableSilentMode();
 
 		return {
 			success: true,
 			data: {
 				...result,
-				message: `Successfully moved task/subtask ${args.sourceId} to ${args.destinationId}`
-			}
-		}
+				message: `Successfully moved task/subtask ${args.sourceId} to ${args.destinationId}`,
+			},
+		};
 	} catch (error) {
 		// Restore console output in case of error
-		disableSilentMode()
+		disableSilentMode();
 
-		log.error(`Failed to move task: ${error.message}`)
+		log.error(`Failed to move task: ${error.message}`);
 
 		return {
 			success: false,
 			error: {
 				message: error.message,
-				code: 'MOVE_TASK_ERROR'
-			}
-		}
+				code: "MOVE_TASK_ERROR",
+			},
+		};
 	}
 }

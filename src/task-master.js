@@ -5,8 +5,8 @@
  * authoritative source for all critical file and directory paths, resolving circular dependencies.
  */
 
-import fs from 'fs'
-import path from 'path'
+import fs from "fs";
+import path from "path";
 import {
 	COMPLEXITY_REPORT_FILE,
 	LEGACY_CONFIG_FILE,
@@ -15,17 +15,17 @@ import {
 	TASKMASTER_DIR,
 	TASKMASTER_DOCS_DIR,
 	TASKMASTER_REPORTS_DIR,
-	TASKMASTER_TASKS_FILE
-} from './constants/paths.js'
-import { findProjectRoot } from './utils/path-utils.js'
+	TASKMASTER_TASKS_FILE,
+} from "./constants/paths.js";
+import { findProjectRoot } from "./utils/path-utils.js";
 
 /**
  * TaskMaster class manages all the paths for the application.
  * An instance of this class is created by the initTaskMaster function.
  */
 export class TaskMaster {
-	#paths
-	#tag
+	#paths;
+	#tag;
 
 	/**
 	 * The constructor is intended to be used only by the initTaskMaster factory function.
@@ -33,36 +33,36 @@ export class TaskMaster {
 	 * @param {string|undefined} tag - The current tag.
 	 */
 	constructor(paths, tag) {
-		this.#paths = Object.freeze({ ...paths })
-		this.#tag = tag
+		this.#paths = Object.freeze({ ...paths });
+		this.#tag = tag;
 	}
 
 	/**
 	 * @returns {string|null} The absolute path to the project root.
 	 */
 	getProjectRoot() {
-		return this.#paths.projectRoot
+		return this.#paths.projectRoot;
 	}
 
 	/**
 	 * @returns {string|null} The absolute path to the .taskmaster directory.
 	 */
 	getTaskMasterDir() {
-		return this.#paths.taskMasterDir
+		return this.#paths.taskMasterDir;
 	}
 
 	/**
 	 * @returns {string|null} The absolute path to the tasks.json file.
 	 */
 	getTasksPath() {
-		return this.#paths.tasksPath
+		return this.#paths.tasksPath;
 	}
 
 	/**
 	 * @returns {string|null} The absolute path to the PRD file.
 	 */
 	getPrdPath() {
-		return this.#paths.prdPath
+		return this.#paths.prdPath;
 	}
 
 	/**
@@ -70,36 +70,39 @@ export class TaskMaster {
 	 */
 	getComplexityReportPath() {
 		if (this.#paths.complexityReportPath) {
-			return this.#paths.complexityReportPath
+			return this.#paths.complexityReportPath;
 		}
 
 		const complexityReportFile =
-			this.getCurrentTag() !== 'main'
-				? COMPLEXITY_REPORT_FILE.replace('.json', `_${this.getCurrentTag()}.json`)
-				: COMPLEXITY_REPORT_FILE
+			this.getCurrentTag() !== "main"
+				? COMPLEXITY_REPORT_FILE.replace(
+						".json",
+						`_${this.getCurrentTag()}.json`,
+					)
+				: COMPLEXITY_REPORT_FILE;
 
-		return path.join(this.#paths.projectRoot, complexityReportFile)
+		return path.join(this.#paths.projectRoot, complexityReportFile);
 	}
 
 	/**
 	 * @returns {string|null} The absolute path to the config.json file.
 	 */
 	getConfigPath() {
-		return this.#paths.configPath
+		return this.#paths.configPath;
 	}
 
 	/**
 	 * @returns {string|null} The absolute path to the state.json file.
 	 */
 	getStatePath() {
-		return this.#paths.statePath
+		return this.#paths.statePath;
 	}
 
 	/**
 	 * @returns {object} A frozen object containing all resolved paths.
 	 */
 	getAllPaths() {
-		return this.#paths
+		return this.#paths;
 	}
 
 	/**
@@ -108,16 +111,16 @@ export class TaskMaster {
 	 */
 	getCurrentTag() {
 		if (this.#tag) {
-			return this.#tag
+			return this.#tag;
 		}
 
 		try {
 			// Try to read current tag from state.json using fs directly
 			if (fs.existsSync(this.#paths.statePath)) {
-				const rawState = fs.readFileSync(this.#paths.statePath, 'utf8')
-				const stateData = JSON.parse(rawState)
+				const rawState = fs.readFileSync(this.#paths.statePath, "utf8");
+				const stateData = JSON.parse(rawState);
 				if (stateData && stateData.currentTag) {
-					return stateData.currentTag
+					return stateData.currentTag;
 				}
 			}
 		} catch (error) {
@@ -127,10 +130,10 @@ export class TaskMaster {
 		// Fall back to defaultTag from config using fs directly
 		try {
 			if (fs.existsSync(this.#paths.configPath)) {
-				const rawConfig = fs.readFileSync(this.#paths.configPath, 'utf8')
-				const configData = JSON.parse(rawConfig)
+				const rawConfig = fs.readFileSync(this.#paths.configPath, "utf8");
+				const configData = JSON.parse(rawConfig);
 				if (configData && configData.global && configData.global.defaultTag) {
-					return configData.global.defaultTag
+					return configData.global.defaultTag;
 				}
 			}
 		} catch (error) {
@@ -138,7 +141,7 @@ export class TaskMaster {
 		}
 
 		// Final fallback
-		return 'main'
+		return "main";
 	}
 }
 
@@ -162,32 +165,34 @@ export function initTaskMaster(overrides = {}) {
 		override,
 		defaultPaths = [],
 		basePath = null,
-		createParentDirs = false
+		createParentDirs = false,
 	) => {
-		if (typeof override === 'string') {
+		if (typeof override === "string") {
 			const resolvedPath = path.isAbsolute(override)
 				? override
-				: path.resolve(basePath || process.cwd(), override)
+				: path.resolve(basePath || process.cwd(), override);
 
 			if (createParentDirs) {
 				// For output paths, create parent directory if it doesn't exist
-				const parentDir = path.dirname(resolvedPath)
+				const parentDir = path.dirname(resolvedPath);
 				if (!fs.existsSync(parentDir)) {
 					try {
-						fs.mkdirSync(parentDir, { recursive: true })
+						fs.mkdirSync(parentDir, { recursive: true });
 					} catch (error) {
 						throw new Error(
-							`Could not create directory for ${pathType}: ${parentDir}. Error: ${error.message}`
-						)
+							`Could not create directory for ${pathType}: ${parentDir}. Error: ${error.message}`,
+						);
 					}
 				}
 			} else {
 				// Original validation logic
 				if (!fs.existsSync(resolvedPath)) {
-					throw new Error(`${pathType} override path does not exist: ${resolvedPath}`)
+					throw new Error(
+						`${pathType} override path does not exist: ${resolvedPath}`,
+					);
 				}
 			}
-			return resolvedPath
+			return resolvedPath;
 		}
 
 		if (override === true) {
@@ -195,143 +200,151 @@ export function initTaskMaster(overrides = {}) {
 			for (const defaultPath of defaultPaths) {
 				const fullPath = path.isAbsolute(defaultPath)
 					? defaultPath
-					: path.join(basePath || process.cwd(), defaultPath)
+					: path.join(basePath || process.cwd(), defaultPath);
 				if (fs.existsSync(fullPath)) {
-					return fullPath
+					return fullPath;
 				}
 			}
-			throw new Error(`Required ${pathType} not found. Searched: ${defaultPaths.join(', ')}`)
+			throw new Error(
+				`Required ${pathType} not found. Searched: ${defaultPaths.join(", ")}`,
+			);
 		}
 
 		// Optional path (override === false/undefined) - search defaults, return null if not found
 		for (const defaultPath of defaultPaths) {
 			const fullPath = path.isAbsolute(defaultPath)
 				? defaultPath
-				: path.join(basePath || process.cwd(), defaultPath)
+				: path.join(basePath || process.cwd(), defaultPath);
 			if (fs.existsSync(fullPath)) {
-				return fullPath
+				return fullPath;
 			}
 		}
 
-		return null
-	}
+		return null;
+	};
 
-	const paths = {}
+	const paths = {};
 
 	// Project Root
 	if (overrides.projectRoot) {
-		const resolvedOverride = path.resolve(overrides.projectRoot)
+		const resolvedOverride = path.resolve(overrides.projectRoot);
 		if (!fs.existsSync(resolvedOverride)) {
-			throw new Error(`Project root override path does not exist: ${resolvedOverride}`)
+			throw new Error(
+				`Project root override path does not exist: ${resolvedOverride}`,
+			);
 		}
 
-		const hasTaskmasterDir = fs.existsSync(path.join(resolvedOverride, TASKMASTER_DIR))
-		const hasLegacyConfig = fs.existsSync(path.join(resolvedOverride, LEGACY_CONFIG_FILE))
+		const hasTaskmasterDir = fs.existsSync(
+			path.join(resolvedOverride, TASKMASTER_DIR),
+		);
+		const hasLegacyConfig = fs.existsSync(
+			path.join(resolvedOverride, LEGACY_CONFIG_FILE),
+		);
 
 		if (!hasTaskmasterDir && !hasLegacyConfig) {
 			throw new Error(
-				`Project root override is not a valid taskmaster project: ${resolvedOverride}`
-			)
+				`Project root override is not a valid taskmaster project: ${resolvedOverride}`,
+			);
 		}
 
-		paths.projectRoot = resolvedOverride
+		paths.projectRoot = resolvedOverride;
 	} else {
 		// findProjectRoot now always returns a value (fallback to cwd)
-		paths.projectRoot = findProjectRoot()
+		paths.projectRoot = findProjectRoot();
 	}
 
 	// TaskMaster Directory
-	if ('taskMasterDir' in overrides) {
+	if ("taskMasterDir" in overrides) {
 		paths.taskMasterDir = resolvePath(
-			'taskmaster directory',
+			"taskmaster directory",
 			overrides.taskMasterDir,
 			[TASKMASTER_DIR],
-			paths.projectRoot
-		)
+			paths.projectRoot,
+		);
 	} else {
 		paths.taskMasterDir = resolvePath(
-			'taskmaster directory',
+			"taskmaster directory",
 			false,
 			[TASKMASTER_DIR],
-			paths.projectRoot
-		)
+			paths.projectRoot,
+		);
 	}
 
 	// Always set default paths first
 	// These can be overridden below if needed
-	paths.configPath = path.join(paths.projectRoot, TASKMASTER_CONFIG_FILE)
+	paths.configPath = path.join(paths.projectRoot, TASKMASTER_CONFIG_FILE);
 	paths.statePath = path.join(
 		paths.taskMasterDir || path.join(paths.projectRoot, TASKMASTER_DIR),
-		'state.json'
-	)
-	paths.tasksPath = path.join(paths.projectRoot, TASKMASTER_TASKS_FILE)
+		"state.json",
+	);
+	paths.tasksPath = path.join(paths.projectRoot, TASKMASTER_TASKS_FILE);
 
 	// Handle overrides - only validate/resolve if explicitly provided
-	if ('configPath' in overrides) {
+	if ("configPath" in overrides) {
 		paths.configPath = resolvePath(
-			'config file',
+			"config file",
 			overrides.configPath,
 			[TASKMASTER_CONFIG_FILE, LEGACY_CONFIG_FILE],
-			paths.projectRoot
-		)
+			paths.projectRoot,
+		);
 	}
 
-	if ('statePath' in overrides) {
+	if ("statePath" in overrides) {
 		paths.statePath = resolvePath(
-			'state file',
+			"state file",
 			overrides.statePath,
-			['state.json'],
-			paths.taskMasterDir
-		)
+			["state.json"],
+			paths.taskMasterDir,
+		);
 	}
 
-	if ('tasksPath' in overrides) {
+	if ("tasksPath" in overrides) {
 		paths.tasksPath = resolvePath(
-			'tasks file',
+			"tasks file",
 			overrides.tasksPath,
 			[TASKMASTER_TASKS_FILE, LEGACY_TASKS_FILE],
-			paths.projectRoot
-		)
+			paths.projectRoot,
+		);
 	}
 
-	if ('prdPath' in overrides) {
+	if ("prdPath" in overrides) {
 		paths.prdPath = resolvePath(
-			'PRD file',
+			"PRD file",
 			overrides.prdPath,
 			[
-				path.join(TASKMASTER_DOCS_DIR, 'PRD.md'),
-				path.join(TASKMASTER_DOCS_DIR, 'prd.md'),
-				path.join(TASKMASTER_DOCS_DIR, 'PRD.txt'),
-				path.join(TASKMASTER_DOCS_DIR, 'prd.txt'),
-				path.join('scripts', 'PRD.md'),
-				path.join('scripts', 'prd.md'),
-				path.join('scripts', 'PRD.txt'),
-				path.join('scripts', 'prd.txt'),
-				'PRD.md',
-				'prd.md',
-				'PRD.txt',
-				'prd.txt'
-			],
-			paths.projectRoot
-		)
-	}
-
-	if ('complexityReportPath' in overrides) {
-		paths.complexityReportPath = resolvePath(
-			'complexity report',
-			overrides.complexityReportPath,
-			[
-				path.join(TASKMASTER_REPORTS_DIR, 'task-complexity-report.json'),
-				path.join(TASKMASTER_REPORTS_DIR, 'complexity-report.json'),
-				path.join('scripts', 'task-complexity-report.json'),
-				path.join('scripts', 'complexity-report.json'),
-				'task-complexity-report.json',
-				'complexity-report.json'
+				path.join(TASKMASTER_DOCS_DIR, "PRD.md"),
+				path.join(TASKMASTER_DOCS_DIR, "prd.md"),
+				path.join(TASKMASTER_DOCS_DIR, "PRD.txt"),
+				path.join(TASKMASTER_DOCS_DIR, "prd.txt"),
+				path.join("scripts", "PRD.md"),
+				path.join("scripts", "prd.md"),
+				path.join("scripts", "PRD.txt"),
+				path.join("scripts", "prd.txt"),
+				"PRD.md",
+				"prd.md",
+				"PRD.txt",
+				"prd.txt",
 			],
 			paths.projectRoot,
-			true // Enable parent directory creation for output paths
-		)
+		);
 	}
 
-	return new TaskMaster(paths, overrides.tag)
+	if ("complexityReportPath" in overrides) {
+		paths.complexityReportPath = resolvePath(
+			"complexity report",
+			overrides.complexityReportPath,
+			[
+				path.join(TASKMASTER_REPORTS_DIR, "task-complexity-report.json"),
+				path.join(TASKMASTER_REPORTS_DIR, "complexity-report.json"),
+				path.join("scripts", "task-complexity-report.json"),
+				path.join("scripts", "complexity-report.json"),
+				"task-complexity-report.json",
+				"complexity-report.json",
+			],
+			paths.projectRoot,
+			true, // Enable parent directory creation for output paths
+		);
+	}
+
+	return new TaskMaster(paths, overrides.tag);
 }

@@ -3,9 +3,12 @@
  * Direct function implementation for adding a new task
  */
 
-import { addTask } from '../../../../scripts/modules/task-manager.js'
-import { disableSilentMode, enableSilentMode } from '../../../../scripts/modules/utils.js'
-import { createLogWrapper } from '../../tools/utils.js'
+import { addTask } from "../../../../scripts/modules/task-manager.js";
+import {
+	disableSilentMode,
+	enableSilentMode,
+} from "../../../../scripts/modules/utils.js";
+import { createLogWrapper } from "../../tools/utils.js";
 
 /**
  * Direct function wrapper for adding a new task with error handling.
@@ -27,47 +30,60 @@ import { createLogWrapper } from '../../tools/utils.js'
  */
 export async function addTaskDirect(args, log, context = {}) {
 	// Destructure expected args
-	const { tasksJsonPath, dependencies, priority, projectRoot, tag, spec_files, logs } = args
-	const { session } = context // Destructure session from context
+	const {
+		tasksJsonPath,
+		dependencies,
+		priority,
+		projectRoot,
+		tag,
+		spec_files,
+		logs,
+	} = args;
+	const { session } = context; // Destructure session from context
 
 	// Enable silent mode to prevent console logs from interfering with JSON response
-	enableSilentMode()
+	enableSilentMode();
 
 	// Create logger wrapper using the utility
-	const mcpLog = createLogWrapper(log)
+	const mcpLog = createLogWrapper(log);
 
 	try {
 		// Check if tasksJsonPath was provided
 		if (!tasksJsonPath) {
-			log.error('addTaskDirect called without tasksJsonPath')
-			disableSilentMode() // Disable before returning
+			log.error("addTaskDirect called without tasksJsonPath");
+			disableSilentMode(); // Disable before returning
 			return {
 				success: false,
 				error: {
-					code: 'MISSING_ARGUMENT',
-					message: 'tasksJsonPath is required'
-				}
-			}
+					code: "MISSING_ARGUMENT",
+					message: "tasksJsonPath is required",
+				},
+			};
 		}
 
 		// Use provided path
-		const tasksPath = tasksJsonPath
+		const tasksPath = tasksJsonPath;
 
 		// Check if this is manual task creation with all required fields for spec-driven development
-		const isManualCreation = args.title && args.description && args.details && args.testStrategy && args.spec_files
+		const isManualCreation =
+			args.title &&
+			args.description &&
+			args.details &&
+			args.testStrategy &&
+			args.spec_files;
 
 		// Check required parameters for spec-driven development
 		if (!isManualCreation) {
-			log.error('Missing required parameters for spec-driven development')
-			disableSilentMode()
+			log.error("Missing required parameters for spec-driven development");
+			disableSilentMode();
 			return {
 				success: false,
 				error: {
-					code: 'MISSING_PARAMETER',
+					code: "MISSING_PARAMETER",
 					message:
-						'All required fields must be provided for spec-driven development: title, description, details, testStrategy, spec_files'
-				}
-			}
+						"All required fields must be provided for spec-driven development: title, description, details, testStrategy, spec_files",
+				},
+			};
 		}
 
 		// Extract and prepare parameters
@@ -75,30 +91,30 @@ export async function addTaskDirect(args, log, context = {}) {
 			? dependencies // Already an array if passed directly
 			: dependencies // Check if dependencies exist and are a string
 				? String(dependencies)
-						.split(',')
-						.map((id) => parseInt(id.trim(), 10)) // Split, trim, and parse
-				: [] // Default to empty array if null/undefined
-		const taskPriority = priority || 'medium' // Default priority
+						.split(",")
+						.map((id) => Number.parseInt(id.trim(), 10)) // Split, trim, and parse
+				: []; // Default to empty array if null/undefined
+		const taskPriority = priority || "medium"; // Default priority
 
-		let manualTaskData = null
-		let newTaskId
-		let telemetryData
-		let tagInfo
+		let manualTaskData = null;
+		let newTaskId;
+		let telemetryData;
+		let tagInfo;
 
 		if (isManualCreation) {
 			// Process spec_files into array format for spec-driven development
-			let processedSpecFiles = []
-			if (typeof args.spec_files === 'string') {
-				processedSpecFiles = args.spec_files.split(',').map(f => {
-					const trimmed = f.trim()
+			let processedSpecFiles = [];
+			if (typeof args.spec_files === "string") {
+				processedSpecFiles = args.spec_files.split(",").map((f) => {
+					const trimmed = f.trim();
 					return {
-						type: 'spec',
-						title: trimmed.split('/').pop() || 'Specification Document',
-						file: trimmed
-					}
-				})
+						type: "spec",
+						title: trimmed.split("/").pop() || "Specification Document",
+						file: trimmed,
+					};
+				});
 			} else if (Array.isArray(args.spec_files)) {
-				processedSpecFiles = args.spec_files
+				processedSpecFiles = args.spec_files;
 			}
 
 			// Create manual task data object with all required fields for spec-driven development
@@ -108,12 +124,12 @@ export async function addTaskDirect(args, log, context = {}) {
 				details: args.details,
 				testStrategy: args.testStrategy,
 				spec_files: processedSpecFiles,
-				logs: logs || ''
-			}
+				logs: logs || "",
+			};
 
 			log.info(
-				`Adding new task manually with title: "${args.title}", dependencies: [${taskDependencies.join(', ')}], priority: ${taskPriority}`
-			)
+				`Adding new task manually with title: "${args.title}", dependencies: [${taskDependencies.join(", ")}], priority: ${taskPriority}`,
+			);
 
 			// Call the addTask function with manual task data
 			const result = await addTask(
@@ -125,20 +141,20 @@ export async function addTaskDirect(args, log, context = {}) {
 					session,
 					mcpLog,
 					projectRoot,
-					commandName: 'add-task',
-					outputType: 'mcp',
-					tag
+					commandName: "add-task",
+					outputType: "mcp",
+					tag,
 				},
-				'json', // outputFormat
-				manualTaskData // Pass the manual task data
-			)
-			newTaskId = result.newTaskId
-			telemetryData = result.telemetryData
-			tagInfo = result.tagInfo
+				"json", // outputFormat
+				manualTaskData, // Pass the manual task data
+			);
+			newTaskId = result.newTaskId;
+			telemetryData = result.telemetryData;
+			tagInfo = result.tagInfo;
 		}
 
 		// Restore normal logging
-		disableSilentMode()
+		disableSilentMode();
 
 		return {
 			success: true,
@@ -146,21 +162,21 @@ export async function addTaskDirect(args, log, context = {}) {
 				taskId: newTaskId,
 				message: `Successfully added new task #${newTaskId}`,
 				telemetryData: telemetryData,
-				tagInfo: tagInfo
-			}
-		}
+				tagInfo: tagInfo,
+			},
+		};
 	} catch (error) {
 		// Make sure to restore normal logging even if there's an error
-		disableSilentMode()
+		disableSilentMode();
 
-		log.error(`Error in addTaskDirect: ${error.message}`)
+		log.error(`Error in addTaskDirect: ${error.message}`);
 		// Add specific error code checks if needed
 		return {
 			success: false,
 			error: {
-				code: error.code || 'ADD_TASK_ERROR', // Use error code if available
-				message: error.message
-			}
-		}
+				code: error.code || "ADD_TASK_ERROR", // Use error code if available
+				message: error.message,
+			},
+		};
 	}
 }
