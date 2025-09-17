@@ -22,7 +22,6 @@ import boxen from "boxen";
 import chalk from "chalk";
 import figlet from "figlet";
 import gradient from "gradient-string";
-import { updateConfigMaxTokens } from "./modules/update-config-tokens.js";
 import { isSilentMode } from "./modules/utils.js";
 import { insideGitWorkTree } from "./modules/utils/git-utils.js";
 
@@ -622,13 +621,7 @@ function createProjectStructure(
 		},
 	);
 
-	// Update config.json with correct maxTokens values from supported-models.json
-	const configPath = path.join(targetDir, TASKMASTER_CONFIG_FILE);
-	if (updateConfigMaxTokens(configPath)) {
-		log("info", "Updated config with correct maxTokens values");
-	} else {
-		log("warn", "Could not update maxTokens in config");
-	}
+	// Note: maxTokens configuration update skipped (AI functionality removed)
 
 	// Skip example_prd.txt - not needed for minimal initialization
 

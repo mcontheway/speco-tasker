@@ -17,7 +17,7 @@ import removeTask from "./task-manager/remove-task.js";
 import setTaskStatus from "./task-manager/set-task-status.js";
 import taskExists from "./task-manager/task-exists.js";
 import updateSingleTaskStatus from "./task-manager/update-single-task-status.js";
-import updateSubtaskById from "./task-manager/update-subtask-by-id.js";
+import { updateSubtaskById } from "./task-manager/update-subtask-by-id.js";
 import { updateSubtaskManually } from "./task-manager/update-subtask-manually.js";
 import { updateTaskManually } from "./task-manager/update-task-manually.js";
 import { findTaskById } from "./utils.js";
