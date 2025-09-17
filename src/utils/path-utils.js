@@ -1,5 +1,5 @@
 /**
- * Path utility functions for Task Master
+ * Path utility functions for Speco Tasker
  * Provides centralized path resolution logic for both CLI and MCP use cases
  */
 

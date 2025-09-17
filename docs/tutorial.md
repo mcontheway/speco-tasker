@@ -1,22 +1,22 @@
-# Speco Tasker Tutorial
+# Speco Tasker 教程
 
-This tutorial will guide you through setting up and using Speco Tasker for manual development workflows.
+本教程将指导您设置和使用 Speco Tasker 进行手动开发工作流程。
 
-## Initial Setup
+## 初始设置
 
-There are two ways to set up Speco Tasker: using MCP (recommended) or via npm installation.
+设置 Speco Tasker 有两种方式：使用 MCP（推荐）或通过 npm 安装。
 
-### Option 1: Using MCP (Recommended)
+### 选项 1：使用 MCP（推荐）
 
-MCP (Model Control Protocol) provides the easiest way to get started with Speco Tasker directly in your editor.
+MCP（模型控制协议）提供了在您的编辑器中直接开始使用 Speco Tasker 的最简单方式。
 
-1. **Install the package**
+1. **安装包**
 
 ```bash
 npm i -g speco-tasker
 ```
 
-2. **Add the MCP config to your IDE/MCP Client** (Cursor is recommended, but it works with other clients):
+2. **将 MCP 配置添加到您的 IDE/MCP 客户端**（推荐使用 Cursor，但也支持其他客户端）：
 
 ```json
 {
@@ -29,25 +29,25 @@ npm i -g speco-tasker
 }
 ```
 
-**Note:** Taskmaster is a pure manual system and requires no API keys or external services.
+**注意：** Taskmaster 是一个纯手动系统，不需要 API 密钥或外部服务。
 
-3. **Enable the MCP** in your editor settings
+3. **在编辑器设置中启用 MCP**
 
-4. **Initialize Speco Tasker** in your project:
+4. **在项目中初始化 Speco Tasker**：
 
 ```bash
 task-master init
 ```
 
-The AI will:
+AI 将会：
 
-- Create necessary project structure
-- Set up initial configuration files
-- Guide you through the rest of the process
+- 创建必要的项目结构
+- 设置初始配置文件
+- 指导您完成其余过程
 
-5. Place your PRD document in the `.taskmaster/docs/` directory (e.g., `.taskmaster/docs/prd.txt`)
+5. 将您的 PRD 文档放置在 `.taskmaster/docs/` 目录中（例如：`.taskmaster/docs/prd.txt`）
 
-6. **Use natural language commands** to interact with Speco Tasker:
+6. **使用自然语言命令**与 Speco Tasker 交互：
 
 ```
 Can you parse my PRD at .taskmaster/docs/prd.txt?
@@ -55,55 +55,55 @@ What's the next task I should work on?
 Can you help me implement task 3?
 ```
 
-### Option 2: Manual Installation
+### 选项 2：手动安装
 
-If you prefer to use the command line interface directly:
+如果您更喜欢直接使用命令行界面：
 
 ```bash
-# Install globally
+# 全局安装
 npm install -g task-master-ai
 
-# OR install locally within your project
+# 或者在项目中本地安装
 npm install task-master-ai
 ```
 
-Initialize a new project:
+初始化新项目：
 
 ```bash
-# If installed globally
+# 如果全局安装
 task-master init
 
-# If installed locally
+# 如果本地安装
 npx task-master init
 ```
 
-This will prompt you for project details and set up a new project with the necessary files and structure.
+这将提示您输入项目详细信息，并使用必要的文件和结构设置新项目。
 
-## Common Commands
+## 常用命令
 
-After setting up Speco Tasker, you can use these commands (either via AI prompts or CLI):
+设置 Speco Tasker 后，您可以使用这些命令（通过 AI 提示或 CLI）：
 
 ```bash
-# Parse a PRD and generate tasks
+# 解析 PRD 并生成任务
 task-master parse-prd your-prd.txt
 
-# List all tasks
+# 列出所有任务
 task-master list
 
-# Show the next task to work on
+# 显示下一个要处理的任务
 task-master next
 
-# Generate task files
+# 生成任务文件
 task-master generate
 ```
 
-## Setting up Cursor AI Integration
+## 设置 Cursor AI 集成
 
-Speco Tasker is designed to work seamlessly with [Cursor AI](https://www.cursor.so/), providing a structured workflow for manual development.
+Speco Tasker 设计为与 [Cursor AI](https://www.cursor.so/) 无缝协作，为手动开发提供结构化的工作流程。
 
-### Using Cursor with MCP (Recommended)
+### 使用 Cursor 和 MCP（推荐）
 
-If you've already set up Speco Tasker with MCP in Cursor, the integration is automatic. You can simply use natural language to interact with Speco Tasker:
+如果您已经在 Cursor 中设置了 Speco Tasker 的 MCP 集成，则集成是自动的。您可以简单地使用自然语言与 Speco Tasker 交互：
 
 ```
 What tasks are available to work on next?
@@ -111,73 +111,73 @@ Can you analyze the complexity of our tasks?
 I'd like to implement task 4. What does it involve?
 ```
 
-### Manual Cursor Setup
+### 手动 Cursor 设置
 
-If you're not using MCP, you can still set up Cursor integration:
+如果您不使用 MCP，您仍然可以设置 Cursor 集成：
 
-1. After initializing your project, open it in Cursor
-2. The `.cursor/rules/dev_workflow.mdc` file is automatically loaded by Cursor, providing the AI with knowledge about the task management system
-3. Place your PRD document in the `.taskmaster/docs/` directory (e.g., `.taskmaster/docs/prd.txt`)
-4. Open Cursor's AI chat and switch to Agent mode
+1. 初始化项目后，在 Cursor 中打开它
+2. `.cursor/rules/dev_workflow.mdc` 文件会被 Cursor 自动加载，为 AI 提供任务管理系统知识
+3. 将您的 PRD 文档放置在 `.taskmaster/docs/` 目录中（例如：`.taskmaster/docs/prd.txt`）
+4. 打开 Cursor 的 AI 聊天并切换到代理模式
 
-### Alternative MCP Setup in Cursor
+### Cursor 中的替代 MCP 设置
 
-You can also set up the MCP server in Cursor settings:
+您也可以在 Cursor 设置中设置 MCP 服务器：
 
-1. Go to Cursor settings
-2. Navigate to the MCP section
-3. Click on "Add New MCP Server"
-4. Configure with the following details:
-   - Name: "Speco Tasker"
-   - Type: "Command"
-   - Command: "npx -y --package=task-master-ai task-master-ai"
-5. Save the settings
+1. 转到 Cursor 设置
+2. 导航到 MCP 部分
+3. 点击"添加新的 MCP 服务器"
+4. 使用以下详细信息进行配置：
+   - 名称："Speco Tasker"
+   - 类型："命令"
+   - 命令："npx -y --package=task-master-ai task-master-ai"
+5. 保存设置
 
-Once configured, you can interact with Speco Tasker's task management commands directly through Cursor's interface, providing a more integrated experience.
+配置完成后，您可以直接通过 Cursor 的界面与 Speco Tasker 的任务管理命令进行交互，提供更集成的体验。
 
-## Initial Task Generation
+## 初始任务生成
 
-In Cursor's AI chat, instruct the agent to generate tasks from your PRD:
+在 Cursor 的 AI 聊天中，指示代理从您的 PRD 生成任务：
 
 ```
 Please use the task-master parse-prd command to generate tasks from my PRD. The PRD is located at .taskmaster/docs/prd.txt.
 ```
 
-The agent will execute:
+代理将执行：
 
 ```bash
 task-master parse-prd .taskmaster/docs/prd.txt
 ```
 
-This will:
+这将：
 
-- Parse your PRD document
-- Generate a structured `tasks.json` file with tasks, dependencies, priorities, and test strategies
-- The agent will understand this process through its configuration
+- 解析您的 PRD 文档
+- 生成包含任务、依赖关系、优先级和测试策略的结构化 `tasks.json` 文件
+- 代理将通过其配置理解此过程
 
-### Generate Individual Task Files
+### 生成单个任务文件
 
-Next, ask the agent to generate individual task files:
+接下来，要求代理从 tasks.json 生成单个任务文件：
 
 ```
 Please generate individual task files from tasks.json
 ```
 
-The agent will execute:
+代理将执行：
 
 ```bash
 task-master generate
 ```
 
-This creates individual task files in the `tasks/` directory (e.g., `task_001.txt`, `task_002.txt`), making it easier to reference specific tasks.
+这会在 `tasks/` 目录中创建单个任务文件（例如：`task_001.txt`、`task_002.txt`），使引用特定任务更容易。
 
-## AI-Driven Development Workflow
+## AI 驱动的开发工作流程
 
-The Cursor agent is configured to follow this workflow:
+Cursor 代理配置为遵循以下工作流程：
 
-### 1. Task Discovery and Selection
+### 1. 任务发现和选择
 
-Ask the agent to list available tasks:
+要求代理列出可用任务：
 
 ```
 What tasks are available to work on next?
@@ -187,191 +187,191 @@ What tasks are available to work on next?
 Can you show me tasks 1, 3, and 5 to understand their current status?
 ```
 
-The agent will:
+代理将：
 
-- Run `task-master list` to see all tasks
-- Run `task-master next` to determine the next task to work on
-- Run `task-master show 1,3,5` to display multiple tasks with interactive options
-- Analyze dependencies to determine which tasks are ready to be worked on
-- Prioritize tasks based on priority level and ID order
-- Suggest the next task(s) to implement
+- 运行 `task-master list` 查看所有任务
+- 运行 `task-master next` 确定下一个要处理的任务
+- 运行 `task-master show 1,3,5` 显示多个任务及交互选项
+- 分析依赖关系以确定哪些任务已准备好处理
+- 根据优先级和 ID 顺序对任务进行优先级排序
+- 建议要实现的下一个任务
 
-### 2. Task Implementation
+### 2. 任务实现
 
-When implementing a task, the agent will:
+实现任务时，代理将：
 
-- Reference the task's details section for implementation specifics
-- Consider dependencies on previous tasks
-- Follow the project's coding standards
-- Create appropriate tests based on the task's testStrategy
+- 引用任务的详细信息部分以获取实现细节
+- 考虑对之前任务的依赖关系
+- 遵循项目的编码标准
+- 根据任务的 testStrategy 创建适当的测试
 
-You can ask:
+您可以询问：
 
 ```
 Let's implement task 3. What does it involve?
 ```
 
-### 2.1. Viewing Multiple Tasks
+### 2.1. 查看多个任务
 
-For efficient context gathering and batch operations:
+为了高效的上下文收集和批量操作：
 
 ```
 Show me tasks 5, 7, and 9 so I can plan my implementation approach.
 ```
 
-The agent will:
+代理将：
 
-- Run `task-master show 5,7,9` to display a compact summary table
-- Show task status, priority, and progress indicators
-- Provide an interactive action menu with batch operations
-- Allow you to perform group actions like marking multiple tasks as in-progress
+- 运行 `task-master show 5,7,9` 显示紧凑的摘要表格
+- 显示任务状态、优先级和进度指示器
+- 提供带有批量操作的交互式操作菜单
+- 允许您执行组操作，如将多个任务标记为进行中
 
-### 3. Task Verification
+### 3. 任务验证
 
-Before marking a task as complete, verify it according to:
+在标记任务为完成之前，请根据以下内容进行验证：
 
-- The task's specified testStrategy
-- Any automated tests in the codebase
-- Manual verification if required
+- 任务指定的 testStrategy
+- 代码库中的任何自动化测试
+- 如需要的手动验证
 
-### 4. Task Completion
+### 4. 任务完成
 
-When a task is completed, tell the agent:
+当任务完成时，告诉代理：
 
 ```
 Task 3 is now complete. Please update its status.
 ```
 
-The agent will execute:
+代理将执行：
 
 ```bash
 task-master set-status --id=3 --status=done
 ```
 
-### 5. Handling Implementation Drift
+### 5. 处理实现偏差
 
-If during implementation, you discover that:
+如果在实现过程中您发现：
 
-- The current approach differs significantly from what was planned
-- Future tasks need to be modified due to current implementation choices
-- New dependencies or requirements have emerged
+- 当前方法与计划有重大差异
+- 由于当前实现选择需要修改未来任务
+- 出现了新的依赖关系或需求
 
-Tell the agent:
+告诉代理：
 
 ```
 We've decided to use MongoDB instead of PostgreSQL. Can you update all future tasks (from ID 4) to reflect this change?
 ```
 
-The agent will execute:
+代理将执行：
 
 ```bash
 task-master update --from=4 --prompt="Now we are using MongoDB instead of PostgreSQL."
 
-# OR, if research is needed to find best practices for MongoDB:
+# 或者，如果需要研究 MongoDB 的最佳实践：
 task-master update --from=4 --prompt="Update to use MongoDB, researching best practices" --research
 ```
 
-This will rewrite or re-scope subsequent tasks in tasks.json while preserving completed work.
+这将重写或重新调整 tasks.json 中的后续任务，同时保留已完成的工作。
 
-### 6. Reorganizing Tasks
+### 6. 重组任务
 
-If you need to reorganize your task structure:
+如果您需要重组任务结构：
 
 ```
 I think subtask 5.2 would fit better as part of task 7 instead. Can you move it there?
 ```
 
-The agent will execute:
+代理将执行：
 
 ```bash
 task-master move --from=5.2 --to=7.3
 ```
 
-You can reorganize tasks in various ways:
+您可以通过多种方式重组任务：
 
-- Moving a standalone task to become a subtask: `--from=5 --to=7`
-- Moving a subtask to become a standalone task: `--from=5.2 --to=7`
-- Moving a subtask to a different parent: `--from=5.2 --to=7.3`
-- Reordering subtasks within the same parent: `--from=5.2 --to=5.4`
-- Moving a task to a new ID position: `--from=5 --to=25` (even if task 25 doesn't exist yet)
-- Moving multiple tasks at once: `--from=10,11,12 --to=16,17,18` (must have same number of IDs, Taskmaster will look through each position)
+- 将独立任务移动为子任务：`--from=5 --to=7`
+- 将子任务移动为独立任务：`--from=5.2 --to=7`
+- 将子任务移动到不同的父任务：`--from=5.2 --to=7.3`
+- 在同一父任务内重新排序子任务：`--from=5.2 --to=5.4`
+- 将任务移动到新的 ID 位置：`--from=5 --to=25`（即使任务 25 还不存在）
+- 一次移动多个任务：`--from=10,11,12 --to=16,17,18`（必须具有相同数量的 ID，Taskmaster 将逐个查看每个位置）
 
-When moving tasks to new IDs:
+将任务移动到新 ID 时：
 
-- The system automatically creates placeholder tasks for non-existent destination IDs
-- This prevents accidental data loss during reorganization
-- Any tasks that depend on moved tasks will have their dependencies updated
-- When moving a parent task, all its subtasks are automatically moved with it and renumbered
+- 系统会为不存在的目标 ID 自动创建占位符任务
+- 这可以防止重组期间意外丢失数据
+- 任何依赖于移动任务的任务都将更新其依赖关系
+- 移动父任务时，所有子任务都会自动与其一起移动并重新编号
 
-This is particularly useful as your project understanding evolves and you need to refine your task structure.
+当您的项目理解演变并且需要优化任务结构时，这特别有用。
 
-### 7. Resolving Merge Conflicts with Tasks
+### 7. 解决任务合并冲突
 
-When working with a team, you might encounter merge conflicts in your tasks.json file if multiple team members create tasks on different branches. The move command makes resolving these conflicts straightforward:
+与团队合作时，如果多个团队成员在不同分支上创建任务，您可能会遇到 tasks.json 文件的合并冲突。move 命令使解决这些冲突变得简单：
 
 ```
 I just merged the main branch and there's a conflict with tasks.json. My teammates created tasks 10-15 while I created tasks 10-12 on my branch. Can you help me resolve this?
 ```
 
-The agent will help you:
+代理将帮助您：
 
-1. Keep your teammates' tasks (10-15)
-2. Move your tasks to new positions to avoid conflicts:
+1. 保留您队友的任务（10-15）
+2. 将您的任务移动到新位置以避免冲突：
 
 ```bash
-# Move your tasks to new positions (e.g., 16-18)
+# 将您的任务移动到新位置（例如：16-18）
 task-master move --from=10 --to=16
 task-master move --from=11 --to=17
 task-master move --from=12 --to=18
 ```
 
-This approach preserves everyone's work while maintaining a clean task structure, making it much easier to handle task conflicts than trying to manually merge JSON files.
+这种方法保留了每个人的工作，同时维护干净的任务结构，使处理任务冲突比尝试手动合并 JSON 文件更容易。
 
-### 8. Breaking Down Complex Tasks
+### 8. 拆分复杂任务
 
-For complex tasks that need more granularity:
+对于需要更多粒度的复杂任务：
 
 ```
 Task 5 seems complex. Can you break it down into subtasks?
 ```
 
-The agent will execute:
+代理将执行：
 
 ```bash
 task-master expand --id=5 --num=3
 ```
 
-You can provide additional context:
+您可以提供额外上下文：
 
 ```
 Please break down task 5 with a focus on security considerations.
 ```
 
-The agent will execute:
+代理将执行：
 
 ```bash
 task-master expand --id=5 --prompt="Focus on security aspects"
 ```
 
-You can also expand all pending tasks:
+您也可以展开所有待处理任务：
 
 ```
 Please break down all pending tasks into subtasks.
 ```
 
-The agent will execute:
+代理将执行：
 
 ```bash
 task-master expand --all
 ```
 
-For research-backed subtask generation using the configured research model:
+对于使用配置的研究模型的研究支持的子任务生成：
 
 ```
 Please break down task 5 using research-backed generation.
 ```
 
-The agent will execute:
+代理将执行：
 
 ```bash
 task-master expand --id=5 --research
@@ -429,147 +429,147 @@ Can you analyze the complexity of our tasks to help me understand which ones nee
 Can you show me the complexity report in a more readable format?
 ```
 
-### Research-Driven Development
+### 研究驱动的开发
 
-Speco Tasker includes a powerful research tool that provides fresh, up-to-date information beyond the AI's knowledge cutoff. This is particularly valuable for:
+Speco Tasker 包含一个强大的研究工具，它提供了超出 AI 知识截止日期的新鲜、最新的信息。这对于以下情况特别有价值：
 
-#### Getting Current Best Practices
+#### 获取当前最佳实践
 
 ```
 Before implementing task 5 (authentication), research the latest JWT security recommendations.
 ```
 
-The agent will execute:
+代理将执行：
 
 ```bash
 task-master research "Latest JWT security recommendations 2024" --id=5
 ```
 
-#### Research with Project Context
+#### 带项目上下文的研究
 
 ```
 Research React Query v5 migration strategies for our current API implementation.
 ```
 
-The agent will execute:
+代理将执行：
 
 ```bash
 task-master research "React Query v5 migration strategies" --files=src/api.js,src/hooks.js
 ```
 
-#### Research and Update Pattern
+#### 研究和更新模式
 
-A powerful workflow is to research first, then update tasks with findings:
+一个强大的工作流程是先研究，然后用发现更新任务：
 
 ```
 Research the latest Node.js performance optimization techniques and update task 12 with the findings.
 ```
 
-The agent will:
+代理将：
 
-1. Run research: `task-master research "Node.js performance optimization 2024" --id=12`
-2. Update the task: `task-master update-subtask --id=12.2 --prompt="Updated with latest performance findings: [research results]"`
+1. 运行研究：`task-master research "Node.js performance optimization 2024" --id=12`
+2. 更新任务：`task-master update-subtask --id=12.2 --prompt="Updated with latest performance findings: [research results]"`
 
-#### When to Use Research
+#### 何时使用研究
 
-- **Before implementing any new technology**
-- **When encountering security-related tasks**
-- **For performance optimization tasks**
-- **When debugging complex issues**
-- **Before making architectural decisions**
-- **When updating dependencies**
+- **在实现任何新技术之前**
+- **遇到安全相关任务时**
+- **进行性能优化任务时**
+- **调试复杂问题时**
+- **在做出架构决策之前**
+- **更新依赖项时**
 
-The research tool automatically includes relevant project context and provides fresh information that can significantly improve implementation quality.
+研究工具自动包含相关项目上下文，并提供新鲜信息，可以显著提高实现质量。
 
-## Git Integration and Tag Management
+## Git 集成和标签管理
 
-Speco Tasker supports tagged task lists for multi-context development, which is particularly useful when working with git branches or different project phases.
+Speco Tasker 支持带标签的任务列表以进行多上下文开发，这在处理 git 分支或不同项目阶段时特别有用。
 
-### Working with Tags
+### 使用标签
 
-Tags provide isolated task contexts, allowing you to maintain separate task lists for different features, branches, or experiments:
+标签提供隔离的任务上下文，允许您为不同的功能、分支或实验维护单独的任务列表：
 
 ```
 I'm starting work on a new feature branch. Can you create a new tag for this work?
 ```
 
-The agent will execute:
+代理将执行：
 
 ```bash
-# Create a tag based on your current git branch
+# 基于您的当前 git 分支创建标签
 task-master add-tag --from-branch
 ```
 
-Or you can create a tag with a specific name:
+或者您可以使用特定名称创建标签：
 
 ```
 Create a new tag called 'user-auth' for authentication-related tasks.
 ```
 
-The agent will execute:
+代理将执行：
 
 ```bash
 task-master add-tag user-auth --description="User authentication feature tasks"
 ```
 
-### Switching Between Contexts
+### 在上下文之间切换
 
-When working on different features or branches:
+在处理不同功能或分支时：
 
 ```
 Switch to the 'user-auth' tag context so I can work on authentication tasks.
 ```
 
-The agent will execute:
+代理将执行：
 
 ```bash
 task-master use-tag user-auth
 ```
 
-### Copying Tasks Between Tags
+### 在标签之间复制任务
 
-When you need to duplicate work across contexts:
+当您需要在上下文之间复制工作时：
 
 ```
 Copy all tasks from the current tag to a new 'testing' tag for QA work.
 ```
 
-The agent will execute:
+代理将执行：
 
 ```bash
 task-master add-tag testing --copy-from-current --description="QA and testing tasks"
 ```
 
-### Tag Management
+### 标签管理
 
-View and manage your tag contexts:
+查看和管理您的标签上下文：
 
 ```
 Show me all available tags and their current status.
 ```
 
-The agent will execute:
+代理将执行：
 
 ```bash
 task-master tags --show-metadata
 ```
 
-### Benefits of Tagged Task Lists
+### 带标签任务列表的好处
 
-- **Branch Isolation**: Each git branch can have its own task context
-- **Merge Conflict Prevention**: Tasks in different tags don't interfere with each other
-- **Parallel Development**: Multiple team members can work on separate contexts
-- **Context Switching**: Easily switch between different project phases or features
-- **Experimentation**: Create experimental task lists without affecting main work
+- **分支隔离**：每个 git 分支可以有自己的任务上下文
+- **防止合并冲突**：不同标签中的任务不会相互干扰
+- **并行开发**：多个团队成员可以在单独的上下文中工作
+- **上下文切换**：轻松在不同的项目阶段或功能之间切换
+- **实验性工作**：创建实验性任务列表而不影响主要工作
 
-### Git Workflow Integration
+### Git 工作流程集成
 
-A typical git workflow with Speco Tasker tags:
+使用 Speco Tasker 标签的典型 git 工作流程：
 
-1. **Create feature branch**: `git checkout -b feature/user-auth`
-2. **Create matching tag**: Ask agent to run `task-master add-tag --from-branch`
-3. **Work in isolated context**: All task operations work within the new tag
-4. **Switch contexts as needed**: Use `task-master use-tag <name>` to switch between different work streams
-5. **Merge and cleanup**: After merging the branch, optionally delete the tag with `task-master delete-tag <name>`
+1. **创建功能分支**：`git checkout -b feature/user-auth`
+2. **创建匹配标签**：要求代理运行 `task-master add-tag --from-branch`
+3. **在隔离上下文中工作**：所有任务操作都在新标签内工作
+4. **根据需要切换上下文**：使用 `task-master use-tag <name>` 在不同的工作流之间切换
+5. **合并和清理**：合并分支后，可选择使用 `task-master delete-tag <name>` 删除标签
 
-This workflow ensures your task management stays organized and conflicts are minimized when working with teams or multiple features simultaneously.
+这个工作流程确保您的任务管理保持有组织，并且在与团队合作或处理多个功能时冲突最小化。

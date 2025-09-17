@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url'
 import { FastMCP } from 'fastmcp'
 import logger from './logger.js'
 import { MCPProvider } from './providers/mcp-provider.js'
-import { registerTaskMasterTools } from './tools/index.js'
+import { registerSpecoTaskerTools } from './tools/index.js'
 
 // Constants
 const __filename = fileURLToPath(import.meta.url)
@@ -44,7 +44,7 @@ class TaskMasterMCPServer {
 		if (this.initialized) return
 
 		// Pass the manager instance to the tool registration function
-		registerTaskMasterTools(this.server, this.asyncManager)
+		registerSpecoTaskerTools(this.server, this.asyncManager)
 
 		this.initialized = true
 

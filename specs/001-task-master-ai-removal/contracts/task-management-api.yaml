@@ -1,10 +1,10 @@
 openapi: 3.0.1
 info:
-  title: Task Master CLI API
-  description: Task Master 命令行接口合约 - AI功能移除后的纯手动任务管理
+  title: Speco Tasker CLI API
+  description: Speco Tasker 命令行接口合约 - AI功能移除后的纯手动任务管理
   version: 1.0.0
   contact:
-    name: Task Master Team
+    name: Speco Team
 
 servers:
   - url: task-master

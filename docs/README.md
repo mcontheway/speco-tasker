@@ -1,23 +1,23 @@
-# Speco Tasker Documentation
+# Speco Tasker 文档
 
-Welcome to the Speco Tasker documentation. Use the links below to navigate to the information you need:
+欢迎使用 Speco Tasker 文档。请使用下面的链接来导航到您需要的信息：
 
-## Getting Started
+## 开始使用
 
-- [Configuration Guide](configuration.md) - Set up environment variables and customize Speco Tasker
-- [Tutorial](tutorial.md) - Step-by-step guide to getting started with Speco Tasker
+- [配置指南](configuration.md) - 设置环境变量并自定义 Speco Tasker
+- [教程](tutorial.md) - 逐步指南开始使用 Speco Tasker
 
-## Reference
+## 参考资料
 
-- [Command Reference](command-reference.md) - Complete list of all available commands (including research and multi-task viewing)
-- [Task Structure](task-structure.md) - Understanding the task format and features
-- [Available Models](models.md) - Complete list of supported AI models and providers
+- [命令参考](command-reference.md) - 所有可用命令的完整列表（包括研究和多任务查看）
+- [任务结构](task-structure.md) - 理解任务格式和功能
+- [可用模型](models.md) - 支持的 AI 模型和提供商的完整列表
 
-## Examples & Licensing
+## 示例和许可
 
-- [Example Interactions](examples.md) - Common Cursor AI interaction examples  
-- [Licensing Information](licensing.md) - Detailed information about the license
+- [交互示例](examples.md) - 常见的 Cursor AI 交互示例
+- [许可信息](licensing.md) - 许可证的详细信息
 
-## Need More Help?
+## 需要更多帮助？
 
-If you can't find what you're looking for in these docs, please check the [main README](../README.md) or visit our [GitHub repository](https://github.com/mcontheway/speco-tasker).
+如果您在这些文档中找不到所需的内容，请查看[主 README](../README.md) 或访问我们的 [GitHub 仓库](https://github.com/mcontheway/speco-tasker)。

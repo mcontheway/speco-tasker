@@ -31,7 +31,7 @@ import { registerValidateDependenciesTool } from './validate-dependencies.js'
  * Register all Speco Tasker tools with the MCP server
  * @param {Object} server - FastMCP server instance
  */
-export function registerTaskMasterTools(server) {
+export function registerSpecoTaskerTools(server) {
 	try {
 		// Register each tool in a logical workflow order
 

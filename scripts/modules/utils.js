@@ -1,6 +1,6 @@
 /**
  * utils.js
- * Utility functions for the Task Master CLI
+ * Utility functions for the Speco Tasker CLI
  */
 
 import fs from 'fs'

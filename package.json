@@ -47,7 +47,7 @@
 		"task-tracking",
 		"manual-workflow"
 	],
-	"author": "TaskMaster Team",
+	"author": "Speco Team",
 	"license": "MIT WITH Commons-Clause",
 	"dependencies": {
 		"@aws-sdk/credential-providers": "^3.817.0",

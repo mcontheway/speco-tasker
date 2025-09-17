@@ -1,65 +1,65 @@
-# Speco Tasker Migration Guide
+# Speco Tasker 迁移指南
 
-This guide helps users migrate from the AI-powered Task Master to the new pure manual version (`speco-tasker`).
+本指南帮助用户从 AI 驱动的 Speco Tasker 迁移到新的纯手动版本（`speco-tasker`）。
 
-## Overview
+## 概述
 
-Speco Tasker has been completely refactored to remove all AI dependencies and become a pure manual task management system. This change eliminates the need for API keys and external AI services while maintaining all core task management functionality.
+Speco Tasker 已被完全重构，移除了所有 AI 依赖，成为一个纯手动任务管理系统。这一变化消除了对 API 密钥和外部 AI 服务的需要，同时保持了所有核心任务管理功能。
 
-## What Changed
+## 变更内容
 
-### Removed Features
-- ❌ AI-powered task generation from PRDs
-- ❌ AI-assisted task expansion and breakdown
-- ❌ AI research capabilities
-- ❌ AI model configuration and management
-- ❌ All external AI provider integrations (Anthropic, OpenAI, etc.)
+### 移除的功能
+- ❌ 从 PRD 进行 AI 驱动的任务生成
+- ❌ AI 辅助的任务扩展和分解
+- ❌ AI 研究功能
+- ❌ AI 模型配置和管理
+- ❌ 所有外部 AI 提供商集成（Anthropic、OpenAI 等）
 
-### Retained Features
-- ✅ Manual task creation and management
-- ✅ Task dependencies and status tracking
-- ✅ Subtask management
-- ✅ Tag-based task organization
-- ✅ MCP server integration (for Cursor/VS Code)
-- ✅ Command-line interface
-- ✅ All manual task operations
+### 保留的功能
+- ✅ 手动任务创建和管理
+- ✅ 任务依赖关系和状态跟踪
+- ✅ 子任务管理
+- ✅ 基于标签的任务组织
+- ✅ MCP 服务器集成（用于 Cursor/VS Code）
+- ✅ 命令行界面
+- ✅ 所有手动任务操作
 
-## Migration Steps
+## 迁移步骤
 
-### 1. Backup Your Data
-Before migrating, backup your existing `.taskmaster/` directory:
+### 1. 备份您的数据
+在迁移之前，备份您现有的 `.taskmaster/` 目录：
 
 ```bash
-# Backup existing Speco Tasker data
+# 备份现有的 Speco Tasker 数据
 cp -r .taskmaster .taskmaster-backup-ai
 ```
 
-### 2. Remove Old Installation
-Uninstall the AI version:
+### 2. 移除旧版本
+卸载 AI 版本：
 
 ```bash
-# Remove globally installed AI version
+# 移除全局安装的 AI 版本
 npm uninstall -g task-master-ai
 
-# Remove locally installed AI version (if applicable)
+# 移除本地安装的 AI 版本（如果适用）
 npm uninstall task-master-ai
 ```
 
-### 3. Install New Version
-Install the pure manual version:
+### 3. 安装新版本
+安装纯手动版本：
 
 ```bash
-# Install globally
+# 全局安装
 npm install -g speco-tasker
 
-# Or install locally in your project
+# 或者在您的项目中本地安装
 npm install speco-tasker
 ```
 
-### 4. Update MCP Configuration
-Update your MCP configuration to remove API keys:
+### 4. 更新 MCP 配置
+更新您的 MCP 配置以移除 API 密钥：
 
-**Cursor (.cursor/mcp.json):**
+**Cursor (.cursor/mcp.json)：**
 ```json
 {
   "mcpServers": {
@@ -71,7 +71,7 @@ Update your MCP configuration to remove API keys:
 }
 ```
 
-**VS Code (.vscode/mcp.json):**
+**VS Code (.vscode/mcp.json)：**
 ```json
 {
   "servers": {
@@ -84,157 +84,157 @@ Update your MCP configuration to remove API keys:
 }
 ```
 
-### 5. Reinitialize Project
-Reinitialize Speco Tasker in your project:
+### 5. 重新初始化项目
+在您的项目中重新初始化 Speco Tasker：
 
 ```bash
-# Initialize the new version
+# 初始化新版本
 task-master init
 
-# Note: The new version does not support automatic PRD parsing
-# You will need to create tasks manually
+# 注意：新版本不支持自动 PRD 解析
+# 您需要手动创建任务
 ```
 
-### 6. Manual Task Creation
-Since AI-powered PRD parsing is removed, create tasks manually:
+### 6. 手动任务创建
+由于 AI 驱动的 PRD 解析已被移除，请手动创建任务：
 
 ```bash
-# Create your first task
+# 创建您的第一个任务
 task-master add-task --title "Set up project structure" --description "Create basic directory structure and configuration files"
 
-# Create more tasks as needed
+# 根据需要创建更多任务
 task-master add-task --title "Implement user authentication" --description "Add user login and registration functionality"
 
-# View all tasks
+# 查看所有任务
 task-master list
 ```
 
-### 7. Update Workflows
-Replace AI-dependent workflows with manual processes:
+### 7. 更新工作流程
+用手动流程替换依赖 AI 的工作流程：
 
-**Old AI Workflow:**
+**旧的 AI 工作流程：**
 ```
-1. Write PRD
-2. Ask AI: "Parse my PRD at docs/prd.txt"
-3. Ask AI: "What's the next task?"
-4. Ask AI: "Help me implement task 3"
-```
-
-**New Manual Workflow:**
-```
-1. Write PRD
-2. Manually create tasks: task-master parse-prd docs/prd.txt (Note: This now only reads plain text, no AI analysis)
-3. Check next task: task-master next
-4. View task details: task-master show 3
-5. Implement manually based on task description
+1. 编写 PRD
+2. 询问 AI："Parse my PRD at docs/prd.txt"
+3. 询问 AI："What's the next task?"
+4. 询问 AI："Help me implement task 3"
 ```
 
-## Breaking Changes
+**新的手动工作流程：**
+```
+1. 编写 PRD
+2. 手动创建任务：task-master parse-prd docs/prd.txt（注意：这现在只读取纯文本，没有 AI 分析）
+3. 检查下一个任务：task-master next
+4. 查看任务详情：task-master show 3
+5. 根据任务描述手动实现
+```
 
-### Command Changes
-- `task-master parse-prd` now only accepts plain text files (no AI analysis)
-- Removed all AI-related commands:
-  - `task-master models` (model configuration)
-  - `task-master research` (AI research)
-  - `task-master update` (AI-powered task updates)
-  - `task-master expand --research` (AI research expansion)
+## 重大变更
 
-### Configuration Changes
-- Removed `.taskmaster/config.json` AI model settings
-- No longer requires API keys in environment variables
-- Simplified MCP configuration (no environment variables needed)
+### 命令变更
+- `task-master parse-prd` 现在只接受纯文本文件（无 AI 分析）
+- 移除了所有与 AI 相关的命令：
+  - `task-master models`（模型配置）
+  - `task-master research`（AI 研究）
+  - `task-master update`（AI 驱动的任务更新）
+  - `task-master expand --research`（AI 研究扩展）
 
-### File Structure Changes
-- Removed `src/ai-providers/` directory
-- Removed `src/prompts/` directory
-- Removed AI-related modules from `scripts/modules/`
+### 配置变更
+- 移除了 `.taskmaster/config.json` 中的 AI 模型设置
+- 不再需要在环境变量中配置 API 密钥
+- 简化的 MCP 配置（不需要环境变量）
 
-## New Capabilities
+### 文件结构变更
+- 移除了 `src/ai-providers/` 目录
+- 移除了 `src/prompts/` 目录
+- 从 `scripts/modules/` 中移除了 AI 相关模块
 
-While AI features were removed, the new version offers:
+## 新功能
 
-### Improved Performance
-- ⚡ Faster startup times (no AI initialization)
-- 💾 Lower memory usage
-- 🔒 No external API dependencies
+虽然 AI 功能已被移除，但新版本提供了：
 
-### Enhanced Reliability
-- 🛠️ No API rate limits or outages
-- 🔄 Consistent behavior across environments
-- 📦 Self-contained operation
+### 改进的性能
+- ⚡ 更快的启动时间（无 AI 初始化）
+- 💾 更低的内存使用
+- 🔒 无外部 API 依赖
 
-### Simplified Setup
-- 🚀 No API key configuration required
-- 📝 Straightforward installation
-- 🧹 Minimal dependencies
+### 增强的可靠性
+- 🛠️ 无 API 速率限制或中断
+- 🔄 跨环境的一致行为
+- 📦 自包含操作
 
-## Troubleshooting
+### 简化的设置
+- 🚀 无需 API 密钥配置
+- 📝 直接的安装过程
+- 🧹 最少的依赖
 
-### Common Issues
+## 故障排除
 
-**"Command not found" after installation:**
+### 常见问题
+
+**安装后出现"Command not found"：**
 ```bash
-# Try using npx
+# 尝试使用 npx
 npx speco-tasker --help
 
-# Or reinstall globally
+# 或者重新全局安装
 npm install -g speco-tasker
 ```
 
-**Old tasks not loading:**
-The new version maintains backward compatibility with existing task files. If you encounter issues:
+**旧任务无法加载：**
+新版本保持与现有任务文件的向后兼容性。如果遇到问题：
 ```bash
-# Check task file format
+# 检查任务文件格式
 cat .taskmaster/tasks/tasks.json
 
-# Reinitialize if needed
+# 如需要重新初始化
 rm -rf .taskmaster/
 task-master init
 ```
 
-**MCP server not connecting:**
-1. Verify MCP configuration syntax
-2. Restart your editor
-3. Check that the package is properly installed
+**MCP 服务器无法连接：**
+1. 验证 MCP 配置语法
+2. 重启您的编辑器
+3. 检查包是否正确安装
 
-### Getting Help
+### 获取帮助
 
-- 📖 Check the updated documentation in `docs/`
-- 🐛 Report issues on GitHub
-- 💬 Community discussions (when available)
+- 📖 查看 `docs/` 中的更新文档
+- 🐛 在 GitHub 上报告问题
+- 💬 社区讨论（可用时）
 
-## Benefits of the Change
+## 变更的好处
 
-### For Individual Developers
-- **Cost Savings**: No API key expenses
-- **Privacy**: All data stays local
-- **Reliability**: No external service dependencies
-- **Performance**: Faster operation without AI overhead
+### 对于个人开发者
+- **成本节省**：无 API 密钥费用
+- **隐私**：所有数据都保存在本地
+- **可靠性**：无外部服务依赖
+- **性能**：无 AI 开销的更快操作
 
-### For Teams
-- **Consistency**: Same behavior across all environments
-- **Security**: No sensitive API keys to manage
-- **Compliance**: Better for air-gapped or restricted environments
-- **Maintenance**: Fewer moving parts to maintain
+### 对于团队
+- **一致性**：跨所有环境的行为相同
+- **安全性**：无需管理敏感 API 密钥
+- **合规性**：更适合隔离或受限环境
+- **维护**：更少的移动部件需要维护
 
-### For Organizations
-- **Scalability**: No API rate limiting concerns
-- **Compliance**: Meets strict data residency requirements
-- **Cost Control**: Predictable operational costs
-- **Simplicity**: Easier deployment and management
+### 对于组织
+- **可扩展性**：无 API 速率限制问题
+- **合规性**：满足严格的数据驻留要求
+- **成本控制**：可预测的运营成本
+- **简单性**：更容易部署和管理
 
-## Future Plans
+## 未来计划
 
-The pure manual version establishes a solid foundation for future enhancements:
+纯手动版本为未来增强建立了坚实的基础：
 
-- 🔧 Enhanced manual task management features
-- 📊 Improved reporting and analytics
-- 🔗 Better integration with development tools
-- 📱 Potential GUI interfaces
-- 🌐 Web-based interfaces
+- 🔧 增强的手动任务管理功能
+- 📊 改进的报告和分析
+- 🔗 与开发工具更好的集成
+- 📱 潜在的 GUI 界面
+- 🌐 基于 Web 的界面
 
-## Summary
+## 总结
 
-The migration to `speco-tasker` represents a strategic shift toward simplicity and reliability. While AI-powered features provided convenience, the manual approach offers better performance, security, and maintainability for most use cases.
+迁移到 `speco-tasker` 代表着向简单性和可靠性的战略转变。虽然 AI 驱动的功能提供了便利，但手动方法为大多数用例提供了更好的性能、安全性和可维护性。
 
-The core task management functionality remains intact, ensuring that all your project planning and tracking needs are still met with a more robust and dependable solution.
+核心任务管理功能保持完整，确保您的所有项目规划和跟踪需求仍能通过更强大、更可靠的解决方案得到满足。

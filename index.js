@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 /**
- * Task Master
- * Copyright (c) 2025 TaskMaster Team
+ * Speco Tasker
+ * Copyright (c) 2025 Speco Team
  *
  * This software is licensed under the MIT License with Commons Clause.
  * You may use this software for any purpose, including commercial applications,
@@ -16,7 +16,7 @@
  */
 
 /**
- * Claude Task Master
+ * Speco Tasker
  * A task management system for AI-driven development with Claude
  */
 
@@ -67,7 +67,7 @@ export const version = packageJson.version
 if (import.meta.url === `file://${process.argv[1]}`) {
 	const program = new Command()
 
-	program.name('task-master').description('Claude Task Master CLI').version(version)
+	program.name('task-master').description('Speco Tasker CLI').version(version)
 
 	program
 		.command('init')

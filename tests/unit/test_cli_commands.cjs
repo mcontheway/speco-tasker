@@ -494,7 +494,7 @@ describe('CLI命令功能验证', () => {
 		it('应该提供全局帮助信息', () => {
 			const getGlobalHelp = () => {
 				const helpText = `
-Task Master - 任务管理系统
+Speco Tasker - 任务管理系统
 
 可用命令:
   add-task    创建新任务
@@ -528,7 +528,7 @@ Task Master - 任务管理系统
 			}
 
 			const helpText = getGlobalHelp()
-			expect(helpText).toContain('Task Master - 任务管理系统')
+			expect(helpText).toContain('Speco Tasker - 任务管理系统')
 			expect(helpText).toContain('可用命令:')
 			expect(helpText).toContain('add-task    创建新任务')
 			expect(helpText).toContain('list        列出任务')

@@ -1,18 +1,18 @@
-# Licensing
+# 许可协议
 
-Speco Tasker is licensed under the MIT License with Commons Clause. This means you can:
+Speco Tasker 采用 MIT 许可证加 Commons Clause 进行许可。这意味着您可以：
 
-## ✅ Allowed:
+## ✅ 允许的操作：
 
-- Use Speco Tasker for any purpose (personal, commercial, academic)
-- Modify the code
-- Distribute copies
-- Create and sell products built using Speco Tasker
+- 将 Speco Tasker 用于任何目的（个人、商业、学术）
+- 修改代码
+- 分发副本
+- 创建并销售使用 Speco Tasker 的产品
 
-## ❌ Not Allowed:
+## ❌ 不允许的操作：
 
-- Sell Speco Tasker itself
-- Offer Speco Tasker as a hosted service
-- Create competing products based on Speco Tasker
+- 销售 Speco Tasker 本身
+- 以托管服务形式提供 Speco Tasker
+- 基于 Speco Tasker 创建竞争产品
 
-See the [LICENSE](../LICENSE) file for the complete license text.
+请查看 [LICENSE](../LICENSE) 文件以获取完整的许可证文本。

@@ -1,4 +1,4 @@
-实施计划：Task Master AI 功能移除重构
+实施计划：Speco Tasker AI 功能移除重构
 分支： 001-task-master-ai-removal | 日期：2025年09月15日 | 规格：[链接] 输入：来自 /specs/001-task-master-ai-removal/spec.md 的功能规范
 
 执行流程 (/plan 命令范围)
@@ -26,7 +26,7 @@
 第二阶段：/tasks 命令创建 tasks.md
 第三至四阶段：实施执行（手动或通过工具）
 总结
-Task Master AI 功能移除重构 - 移除所有AI功能调用，保留27个纯手动任务管理功能，确保系统稳定性和可预测性。主要技术方法包括代码重构、依赖清理和向后兼容性保证。
+Speco Tasker AI 功能移除重构 - 移除所有AI功能调用，保留27个纯手动任务管理功能，确保系统稳定性和可预测性。主要技术方法包括代码重构、依赖清理和向后兼容性保证。
 
 技术背景
 语言/版本：Node.js/JavaScript (ES2020+)

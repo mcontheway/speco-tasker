@@ -1,6 +1,6 @@
 /**
- * TaskMaster
- * Copyright (c) 2025 TaskMaster Team
+ * Speco Tasker
+ * Copyright (c) 2025 Speco Team
  *
  * This software is licensed under the MIT License with Commons Clause.
  * You may use this software for any purpose, including commercial applications,

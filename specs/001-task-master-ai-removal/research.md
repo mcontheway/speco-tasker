@@ -1,4 +1,4 @@
-# 研究报告：Task Master AI 功能移除重构
+# 研究报告：Speco Tasker AI 功能移除重构
 
 ## 决策：AI功能移除策略
 

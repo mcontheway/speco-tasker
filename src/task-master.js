@@ -1,6 +1,6 @@
 /**
  * task-master.js
- * This module provides a centralized path management system for the Task Master application.
+ * This module provides a centralized path management system for the Speco Tasker application.
  * It exports the TaskMaster class and the initTaskMaster factory function to create a single,
  * authoritative source for all critical file and directory paths, resolving circular dependencies.
  */

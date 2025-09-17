@@ -1,6 +1,6 @@
-# Contributing to Task Master
+# Contributing to Speco Tasker
 
-Thank you for your interest in contributing to Task Master! We're excited to work with you and appreciate your help in making this project better. 🚀
+Thank you for your interest in contributing to Speco Tasker! We're excited to work with you and appreciate your help in making this project better. 🚀
 
 ## 🤝 Our Collaborative Approach
 
@@ -330,6 +330,6 @@ By contributing, you agree that your contributions will be licensed under the sa
 
 ---
 
-**Thank you for contributing to Task Master!** 🎉
+**Thank you for contributing to Speco Tasker!** 🎉
 
 Your contributions help make AI-driven development more accessible and efficient for everyone.

@@ -1,5 +1,5 @@
 /**
- * SCOPE: 测试Task Master系统命令响应时间性能
+ * SCOPE: 测试Speco Tasker系统命令响应时间性能
  */
 
 import { spawn } from 'child_process'

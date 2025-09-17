@@ -1,8 +1,8 @@
-# Task Master 快速入门指南
+# Speco Tasker 快速入门指南
 
 ## 概述
 
-Task Master 现已完成AI功能移除重构，提供纯粹的手动任务管理能力。本指南将帮助您快速上手使用新的Task Master。
+Speco Tasker 现已完成AI功能移除重构，提供纯粹的手动任务管理能力。本指南将帮助您快速上手使用新的Speco Tasker。
 
 ## 安装和设置
 
@@ -14,7 +14,7 @@ Task Master 现已完成AI功能移除重构，提供纯粹的手动任务管理
 ```bash
 npm install -g task-master-ai
 # 或者
-npm install -g taskmaster-no-ai  # 重构后的版本
+npm install -g speco-tasker  # 重构后的版本
 ```
 
 ### 初始化项目
@@ -294,11 +294,11 @@ task-master complexity-report
    # 检查Node.js版本
    node --version
 
-   # 检查Task Master版本
+   # 检查Speco Tasker版本
    task-master --version
 
    # 重新安装
-   npm install -g taskmaster-no-ai
+   npm install -g speco-tasker
    ```
 
 3. **标签切换问题**
@@ -321,7 +321,7 @@ task-master complexity-report
 
 ## 从AI版本迁移
 
-如果您之前使用的是包含AI功能的Task Master版本：
+如果您之前使用的是包含AI功能的Speco Tasker版本：
 
 1. **数据完全兼容**: 现有任务数据无需转换
 2. **功能调整**: 原来使用AI创建的任务需要手动调整
