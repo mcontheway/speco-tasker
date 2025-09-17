@@ -8,17 +8,17 @@ const mockMoveTask = jest.fn()
 const mockGenerateTaskFiles = jest.fn()
 const mockLog = jest.fn()
 
-// --- Setup mocks using unstable_mockModule ---
-jest.unstable_mockModule('../../../scripts/modules/task-manager/move-task.js', () => ({
+// --- Setup mocks using traditional jest.mock ---
+jest.mock('../../../scripts/modules/task-manager/move-task.js', () => ({
 	default: mockMoveTask,
 	moveTasksBetweenTags: mockMoveTasksBetweenTags
 }))
 
-jest.unstable_mockModule('../../../scripts/modules/task-manager/generate-task-files.js', () => ({
+jest.mock('../../../scripts/modules/task-manager/generate-task-files.js', () => ({
 	default: mockGenerateTaskFiles
 }))
 
-jest.unstable_mockModule('../../../scripts/modules/utils.js', () => ({
+jest.mock('../../../scripts/modules/utils.js', () => ({
 	log: mockLog,
 	readJSON: jest.fn(),
 	writeJSON: jest.fn(),
