@@ -54,9 +54,13 @@ describe("ContextManager", () => {
 	describe("updateContext", () => {
 		it("should update existing context metadata", async () => {
 			await contextManager.getContext("test-id", { initial: true });
-			const updated = await contextManager.updateContext("test-id", {
-				updated: true,
-			}, { initial: true });
+			const updated = await contextManager.updateContext(
+				"test-id",
+				{
+					updated: true,
+				},
+				{ initial: true },
+			);
 
 			expect(updated.metadata.initial).toBe(true);
 			expect(updated.metadata.updated).toBe(true);
