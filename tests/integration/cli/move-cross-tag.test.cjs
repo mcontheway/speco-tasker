@@ -1,6 +1,6 @@
-import fs from "node:fs";
-import path from "node:path";
-import { jest } from "@jest/globals";
+const fs = require("node:fs");
+const path = require("node:path");
+// jest is globally available in Jest test environment
 
 // --- Define mock functions ---
 const mockMoveTasksBetweenTags = jest.fn();
@@ -9,16 +9,17 @@ const mockGenerateTaskFiles = jest.fn();
 const mockLog = jest.fn();
 
 // --- Setup mocks using traditional jest.mock ---
-jest.mock("../scripts/modules/task-manager/move-task.js", () => ({
+jest.mock("../../../scripts/modules/task-manager/move-task.js", () => ({
 	default: mockMoveTask,
 	moveTasksBetweenTags: mockMoveTasksBetweenTags,
 }));
 
-jest.mock("../scripts/modules/task-manager/generate-task-files.js", () => ({
+jest.mock("../../../scripts/modules/task-manager/generate-task-files.js", () => ({
 	default: mockGenerateTaskFiles,
 }));
 
-jest.mock("../scripts/modules/utils.js", () => ({
+// Mock specific functions from utils
+jest.mock("../../../scripts/modules/utils.js", () => ({
 	log: mockLog,
 	readJSON: jest.fn(),
 	writeJSON: jest.fn(),
@@ -56,18 +57,30 @@ let moveTaskModule;
 let generateTaskFilesModule;
 let utilsModule;
 let chalk;
+let tempDir;
 
 describe("Cross-Tag Move CLI Integration", () => {
-	// Setup dynamic imports before tests run
+	// Setup module imports before tests run
 	beforeAll(async () => {
-		moveTaskModule = await import(
-			"../scripts/modules/task-manager/move-task.js"
-		);
-		generateTaskFilesModule = await import(
-			"../scripts/modules/task-manager/generate-task-files.js"
-		);
-		utilsModule = await import("../scripts/modules/utils.js");
-		chalk = (await import("chalk")).default;
+		// Create a temporary directory for testing
+		tempDir = fs.mkdtempSync(path.join(require("os").tmpdir(), "taskmaster-test-"));
+		process.chdir(tempDir);
+
+		// Create basic project structure
+		fs.mkdirSync(".taskmaster/tasks", { recursive: true });
+		fs.writeFileSync("package.json", JSON.stringify({ name: "test-project" }));
+
+		moveTaskModule = require("../../../scripts/modules/task-manager/move-task.js");
+		generateTaskFilesModule = require("../../../scripts/modules/task-manager/generate-task-files.js");
+		utilsModule = require("../../../scripts/modules/utils.js");
+		chalk = require("chalk");
+	});
+
+	afterAll(() => {
+		// Cleanup temporary directory
+		if (tempDir && fs.existsSync(tempDir)) {
+			fs.rmSync(tempDir, { recursive: true, force: true });
+		}
 	});
 
 	beforeEach(() => {

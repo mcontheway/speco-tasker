@@ -30,7 +30,7 @@ const mockStartLoadingIndicator = jest.fn(() => ({ stop: jest.fn() }));
 const mockStopLoadingIndicator = jest.fn();
 
 // --- Setup mocks using unstable_mockModule (recommended for ES modules) ---
-jest.unstable_mockModule("../scripts/modules/config-manager.js", () => ({
+jest.unstable_mockModule("../../../scripts/modules/config-manager.js", () => ({
 	getMainModelId: mockGetMainModelId,
 	getResearchModelId: mockGetResearchModelId,
 	getFallbackModelId: mockGetFallbackModelId,
