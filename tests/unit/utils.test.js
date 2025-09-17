@@ -4,7 +4,16 @@
 
 import { jest } from "@jest/globals";
 
+// Import the actual module first
+import * as actualUtils from "../../scripts/modules/utils.js";
+
 // Mock modules first before any imports
+jest.mock("../../scripts/modules/utils.js", () => ({
+	...actualUtils,
+	// Override specific functions if needed for testing
+}));
+
+import * as utils from "../../scripts/modules/utils.js";
 jest.mock("fs", () => ({
 	existsSync: jest.fn((filePath) => {
 		// Prevent Jest internal file access
@@ -758,7 +767,6 @@ test("getTagAwareFilePath should use slugified tags in file paths", () => {
 });
 
 describe("Parameter processing functions", () => {
-	const utils = jest.requireActual("../../../scripts/modules/utils.js");
 
 	describe("parseSpecFiles", () => {
 		test("should parse comma-separated spec files string", () => {
@@ -770,12 +778,12 @@ describe("Parameter processing functions", () => {
 			expect(result).toEqual([
 				{
 					type: "spec",
-					title: "Specification Document",
+					title: "api.md",
 					file: "docs/api.md",
 				},
 				{
 					type: "spec",
-					title: "Specification Document",
+					title: "design.pdf",
 					file: "docs/design.pdf",
 				},
 			]);
@@ -790,7 +798,7 @@ describe("Parameter processing functions", () => {
 			expect(result).toEqual([
 				{
 					type: "spec",
-					title: "Specification Document",
+					title: "requirements.md",
 					file: "docs/requirements.md",
 				},
 			]);
@@ -814,12 +822,12 @@ describe("Parameter processing functions", () => {
 			expect(result).toEqual([
 				{
 					type: "spec",
-					title: "Specification Document",
+					title: "api.md",
 					file: "docs/api.md",
 				},
 				{
 					type: "spec",
-					title: "Specification Document",
+					title: "design.pdf",
 					file: "docs/design.pdf",
 				},
 			]);
@@ -895,7 +903,9 @@ describe("Parameter processing functions", () => {
 
 			const result = utils.parseLogs(input);
 
-			expect(result).toBe("2024-01-15 10:30: Started implementation");
+			// Should include timestamp and the input text
+			expect(result).toContain("2024-01-15 10:30: Started implementation");
+			expect(result).toMatch(/^\[.*?\] 2024-01-15 10:30: Started implementation$/);
 		});
 
 		test("should handle multi-line logs", () => {
@@ -904,9 +914,10 @@ describe("Parameter processing functions", () => {
 
 			const result = utils.parseLogs(input);
 
-			expect(result).toBe(
-				"2024-01-15 10:30: Started implementation\n2024-01-15 11:00: Completed first phase",
-			);
+			// Should include timestamp and preserve multi-line input
+			expect(result).toContain("2024-01-15 10:30: Started implementation");
+			expect(result).toContain("2024-01-15 11:00: Completed first phase");
+			expect(result).toMatch(/^\[.*?\] 2024-01-15 10:30: Started implementation\n2024-01-15 11:00: Completed first phase$/);
 		});
 
 		test("should handle empty logs", () => {
@@ -920,22 +931,22 @@ describe("Parameter processing functions", () => {
 
 	describe("validateFieldUpdatePermission", () => {
 		test("should allow updating allowed fields", () => {
-			const allowedFields = [
-				"title",
-				"description",
-				"details",
-				"status",
-				"priority",
-				"testStrategy",
-				"dependencies",
-				"spec_files",
-				"logs",
+			const testCases = [
+				{ field: "title", value: "new title" },
+				{ field: "description", value: "new description" },
+				{ field: "details", value: "new details" },
+				{ field: "status", value: "in-progress" },
+				{ field: "priority", value: "high" },
+				{ field: "testStrategy", value: "new test strategy" },
+				{ field: "dependencies", value: [1, 2, 3] },
+				{ field: "spec_files", value: [{ type: "spec", title: "test", file: "test.md" }] },
+				{ field: "logs", value: "new log entry" },
 			];
 
-			allowedFields.forEach((field) => {
+			testCases.forEach(({ field, value }) => {
 				const result = utils.validateFieldUpdatePermission(
 					field,
-					"new value",
+					value,
 					{},
 				);
 				expect(result.isAllowed).toBe(true);

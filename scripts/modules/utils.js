@@ -264,7 +264,8 @@ function parseDependencies(input, allTasks = []) {
 			})
 			.filter((dep) => dep !== null);
 
-		// 验证依赖任务存在性
+		// 验证依赖任务存在性并过滤无效依赖
+		const validDeps = [];
 		if (allTasks.length > 0) {
 			parsedDeps.forEach((dep) => {
 				const depExists = allTasks.some((task) => {
@@ -285,14 +286,19 @@ function parseDependencies(input, allTasks = []) {
 					}
 				});
 
-				if (!depExists) {
+				if (depExists) {
+					validDeps.push(dep);
+				} else {
 					warnings.push(`Dependency task/subtask '${dep}' does not exist`);
 				}
 			});
+		} else {
+			// 如果没有提供 allTasks，保留所有依赖（用于向后兼容）
+			validDeps.push(...parsedDeps);
 		}
 
 		return {
-			dependencies: parsedDeps,
+			dependencies: validDeps,
 			errors,
 			warnings,
 		};

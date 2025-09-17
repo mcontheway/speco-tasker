@@ -84,7 +84,12 @@ try {
 	);
 	REAL_SUPPORTED_MODELS_CONTENT = "{}"; // Default to empty object on error
 	REAL_SUPPORTED_MODELS_DATA = {};
-	process.exit(1); // Exit if essential test data can't be loaded
+	// In test environment, throw error instead of process.exit()
+	if (typeof jest !== 'undefined') {
+		throw new Error(`Could not load supported-models.json: ${err.message}`);
+	} else {
+		process.exit(1); // Exit if essential test data can't be loaded
+	}
 }
 
 // --- Define Mock Function Instances ---
@@ -120,9 +125,8 @@ const DEFAULT_CONFIG = {
 		logLevel: "info",
 		debug: false,
 		defaultNumTasks: 10,
-		defaultSubtasks: 5,
 		defaultPriority: "medium",
-		projectName: "Task Master",
+		projectName: "MyProject",
 	},
 };
 
