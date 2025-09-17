@@ -71,7 +71,7 @@ task-master list --tag=feature-branch
 - `withSubtasks`: 是否包含子任务
 - `file`: 任务文件路径
 - `complexityReport`: 复杂度报告路径
-- `projectRoot`: 项目根目录（必需）
+- `projectRoot`: 项目根目录（可选，会自动检测）
 - `tag`: 标签名称
 
 **使用示例：**
@@ -96,7 +96,7 @@ task-master next --tag=feature-branch
 
 **MCP 工具参数：**
 - `file`: 任务文件路径
-- `projectRoot`: 项目根目录（必需）
+- `projectRoot`: 项目根目录（可选，会自动检测）
 - `tag`: 标签名称
 
 ---
@@ -127,7 +127,7 @@ task-master show 1 --tag=feature-branch
 - `id`: 任务ID（必需，支持逗号分隔多个ID）
 - `tag`: 标签名称
 - `file`: 任务文件路径
-- `projectRoot`: 项目根目录（必需）
+- `projectRoot`: 项目根目录（可选，会自动检测）
 
 **使用示例：**
 ```json
@@ -166,7 +166,7 @@ task-master set-status --id=1 --status=done --tag=feature-branch
 - `status`: 新状态（pending, in-progress, done, review, cancelled）
 - `tag`: 标签名称
 - `file`: 任务文件路径
-- `projectRoot`: 项目根目录（必需）
+- `projectRoot`: 项目根目录（可选，会自动检测）
 
 **状态说明：**
 - `pending`: 待处理
@@ -210,7 +210,7 @@ task-master add-task \
 ```
 
 **MCP 工具参数：**
-- `projectRoot`: 项目根目录（必需）
+- `projectRoot`: 项目根目录（可选，会自动检测）
 - `title`: 任务标题（必需）
 - `description`: 任务描述（必需）
 - `details`: 实现细节（必需）
@@ -265,7 +265,7 @@ task-master add-subtask --parent=1 --title="实现功能" --spec-files="docs/fea
 - `generate`: 是否生成任务文件
 - `tag`: 标签名称
 - `file`: 任务文件路径
-- `projectRoot`: 项目根目录（必需）
+- `projectRoot`: 项目根目录（可选，会自动检测）
 
 ---
 
@@ -300,7 +300,7 @@ task-master update-task --id=1 --details="添加错误处理逻辑" --append
 - `append`: 是否追加模式
 - `tag`: 标签名称
 - `file`: 任务文件路径
-- `projectRoot`: 项目根目录（必需）
+- `projectRoot`: 项目根目录（可选，会自动检测）
 
 ### 更新子任务 (update_subtask / update-subtask)
 
@@ -328,7 +328,7 @@ task-master update-subtask --id=5.2 --dependencies="5.1,5.3"
 - `priority`: 新优先级
 - `tag`: 标签名称
 - `file`: 任务文件路径
-- `projectRoot`: 项目根目录（必需）
+- `projectRoot`: 项目根目录（可选，会自动检测）
 
 ---
 
@@ -367,7 +367,7 @@ task-master move --from=5 --from-tag=source-tag --to-tag=target-tag
 - `to`: 目标位置ID（必需，支持逗号分隔）
 - `tag`: 标签名称
 - `file`: 任务文件路径
-- `projectRoot`: 项目根目录（必需）
+- `projectRoot`: 项目根目录（可选，会自动检测）
 
 ---
 
@@ -397,7 +397,7 @@ task-master remove-task --id=1 --yes
 - `yes`: 跳过确认提示
 - `tag`: 标签名称
 - `file`: 任务文件路径
-- `projectRoot`: 项目根目录（必需）
+- `projectRoot`: 项目根目录（可选，会自动检测）
 
 ### 删除子任务 (remove_subtask / remove-subtask)
 
@@ -421,7 +421,7 @@ task-master remove-subtask --id=1.2 --tag=feature-branch
 - `generate`: 是否生成任务文件
 - `tag`: 标签名称
 - `file`: 任务文件路径
-- `projectRoot`: 项目根目录（必需）
+- `projectRoot`: 项目根目录（可选，会自动检测）
 
 ---
 
@@ -442,7 +442,7 @@ task-master add-dependency --id=2 --depends-on=1 --tag=feature-branch
 - `dependsOn`: 依赖的任务ID（必需）
 - `tag`: 标签名称
 - `file`: 任务文件路径
-- `projectRoot`: 项目根目录（必需）
+- `projectRoot`: 项目根目录（可选，会自动检测）
 
 ### 删除依赖关系 (remove_dependency / remove-dependency)
 
@@ -459,7 +459,7 @@ task-master remove-dependency --id=2 --depends-on=1 --tag=feature-branch
 - `dependsOn`: 要移除依赖的任务ID（必需）
 - `tag`: 标签名称
 - `file`: 任务文件路径
-- `projectRoot`: 项目根目录（必需）
+- `projectRoot`: 项目根目录（可选，会自动检测）
 
 ### 验证依赖关系 (validate_dependencies / validate-dependencies)
 
@@ -474,7 +474,7 @@ task-master validate-dependencies --tag=feature-branch
 **MCP 工具参数：**
 - `tag`: 标签名称
 - `file`: 任务文件路径
-- `projectRoot`: 项目根目录（必需）
+- `projectRoot`: 项目根目录（可选，会自动检测）
 
 ### 修复依赖关系 (fix_dependencies / fix-dependencies)
 
@@ -489,7 +489,7 @@ task-master fix-dependencies --tag=feature-branch
 **MCP 工具参数：**
 - `tag`: 标签名称
 - `file`: 任务文件路径
-- `projectRoot`: 项目根目录（必需）
+- `projectRoot`: 项目根目录（可选，会自动检测）
 
 ---
 
@@ -519,7 +519,7 @@ task-master clear-subtasks --id=1 --tag=feature-branch
 - `all`: 清除所有任务的子任务
 - `tag`: 标签名称
 - `file`: 任务文件路径
-- `projectRoot`: 项目根目录（必需）
+- `projectRoot`: 项目根目录（可选，会自动检测）
 
 ---
 
@@ -545,7 +545,7 @@ task-master generate --tag=feature-branch
 - `output`: 输出目录
 - `tag`: 标签名称
 - `file`: 任务文件路径
-- `projectRoot`: 项目根目录（必需）
+- `projectRoot`: 项目根目录（可选，会自动检测）
 
 ---
 
@@ -563,7 +563,7 @@ task-master tags --show-metadata
 
 **MCP 工具参数：**
 - `file`: 任务文件路径
-- `projectRoot`: 项目根目录（必需）
+- `projectRoot`: 项目根目录（可选，会自动检测）
 
 ### 添加标签 (add_tag / add-tag)
 
@@ -594,7 +594,7 @@ task-master add-tag new-feature --copy-from=existing-tag
 - `--copy-from`: 指定源标签
 - `--description`: 标签描述
 - `file`: 任务文件路径
-- `projectRoot`: 项目根目录（必需）
+- `projectRoot`: 项目根目录（可选，会自动检测）
 
 ### 删除标签 (delete_tag / delete-tag)
 
@@ -610,7 +610,7 @@ task-master delete-tag old-feature --yes
 - `tagName`: 要删除的标签名称
 - `--yes`: 跳过确认提示
 - `file`: 任务文件路径
-- `projectRoot`: 项目根目录（必需）
+- `projectRoot`: 项目根目录（可选，会自动检测）
 
 ### 使用标签 (use_tag / use-tag)
 
@@ -624,7 +624,7 @@ task-master use-tag feature-branch
 **MCP 工具参数：**
 - `tagName`: 要使用的标签名称
 - `file`: 任务文件路径
-- `projectRoot`: 项目根目录（必需）
+- `projectRoot`: 项目根目录（可选，会自动检测）
 
 ### 重命名标签 (rename_tag / rename-tag)
 
@@ -639,7 +639,7 @@ task-master rename-tag old-name new-name
 - `oldName`: 当前标签名称
 - `newName`: 新标签名称
 - `file`: 任务文件路径
-- `projectRoot`: 项目根目录（必需）
+- `projectRoot`: 项目根目录（可选，会自动检测）
 
 ### 复制标签 (copy_tag / copy-tag)
 
@@ -655,7 +655,7 @@ task-master copy-tag source-tag target-tag --description="复制描述"
 - `sourceName`: 源标签名称
 - `targetName`: 目标标签名称
 - `--description`: 目标标签描述
-- `projectRoot`: 项目根目录（必需）
+- `projectRoot`: 项目根目录（可选，会自动检测）
 
 ---
 
