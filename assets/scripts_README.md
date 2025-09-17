@@ -56,22 +56,18 @@ Task Master 配置现在通过两种主要方法进行管理：
    可用命令：
 
    - `init`: 初始化新项目
-   - `parse-prd`: 从 PRD 文档生成任务
    - `list`: 显示所有任务及其状态
    - `update`: 根据新信息更新任务
    - `generate`: 创建单个任务文件
    - `set-status`: 更改任务状态
-   - `expand`: 为任务或所有任务添加子任务
    - `clear-subtasks`: 从指定任务中移除子任务
    - `next`: 根据依赖关系确定下一个要处理的任务
    - `show`: 显示特定任务的详细信息
-   - `analyze-complexity`: 分析任务复杂度并生成建议
-   - `complexity-report`: 以可读格式显示复杂度分析
    - `add-dependency`: 在任务之间添加依赖关系
    - `remove-dependency`: 从任务中移除依赖关系
    - `validate-dependencies`: 检查无效的依赖关系
    - `fix-dependencies`: 自动修复无效的依赖关系
-   - `add-task`: 使用 AI 添加新任务
+   - `add-task`: 添加新任务
 
    运行 `task-master --help` 或 `node scripts/dev.js --help` 查看详细使用信息。
 
@@ -142,30 +138,6 @@ task-master set-status --id=1,2,3 --status=done
 
 ## 扩展任务
 
-`expand` 命令允许您将任务分解为子任务，以进行更详细的实现：
-
-```bash
-# 使用 3 个子任务扩展特定任务（默认值）
-task-master expand --id=3
-
-# 使用 5 个子任务扩展特定任务
-task-master expand --id=3 --num=5
-
-# 使用额外上下文扩展任务
-task-master expand --id=3 --prompt="重点关注安全方面"
-
-# 扩展所有没有子任务的待处理任务
-task-master expand --all
-
-# 强制重新生成所有待处理任务的子任务
-task-master expand --all --force
-
-# 使用 Perplexity AI 进行基于研究的子任务生成
-task-master expand --id=3 --research
-
-# 在所有待处理任务上使用 Perplexity AI 进行基于研究的生成
-task-master expand --all --research
-```
 
 ## 清除子任务
 
@@ -300,84 +272,8 @@ task-master fix-dependencies --file=custom-tasks.json
 
 这在任务已被删除或 ID 已更改时特别有用，可能破坏依赖链。
 
-## 分析任务复杂度
 
-`analyze-complexity` 命令允许您自动评估任务复杂度并生成扩展建议：
 
-```bash
-# 分析所有任务并生成扩展建议
-task-master analyze-complexity
-
-# 指定自定义输出文件
-task-master analyze-complexity --output=custom-report.json
-
-# 覆盖用于分析的模型
-task-master analyze-complexity --model=claude-3-opus-20240229
-
-# 设置自定义复杂度阈值（1-10）
-task-master analyze-complexity --threshold=6
-
-# 使用 Perplexity AI 进行基于研究的复杂度分析
-task-master analyze-complexity --research
-```
-
-注意事项：
-
-- 该命令使用 Claude 分析每个任务的复杂度（或使用 --research 标志的 Perplexity）
-- 任务按 1-10 等级评分
-- 每个任务根据 DEFAULT_SUBTASKS 配置接收建议的子任务数量
-- 默认输出路径是 `scripts/task-complexity-report.json`
-- 分析中的每个任务都包含一个现成的 `expansionCommand`，可以直接复制到终端或以编程方式执行
-- 复杂度分数低于阈值（默认：5）的任务可能不需要扩展
-- research 标志提供更多上下文和信息丰富的复杂度评估
-
-### 与扩展命令集成
-
-`expand` 命令会自动检查并使用可用的复杂度分析：
-
-```bash
-# 扩展任务，如果复杂度报告可用则使用其建议
-task-master expand --id=8
-
-# 扩展所有任务，如果报告存在则按复杂度分数优先排序
-task-master expand --all
-
-# 使用显式值覆盖建议
-task-master expand --id=8 --num=5 --prompt="Custom prompt"
-```
-
-当复杂度报告存在时：
-
-- `expand` 命令将使用报告中建议的子任务数量（除非被覆盖）
-- 它将使用报告中的定制扩展提示（除非提供自定义提示）
-- 使用 `--all` 时，任务按复杂度分数排序（最高优先）
-- `--research` 标志从复杂度分析保留到扩展
-
-输出报告结构如下：
-
-```json
-{
-  "meta": {
-    "generatedAt": "2023-06-15T12:34:56.789Z",
-    "tasksAnalyzed": 20,
-    "thresholdScore": 5,
-    "projectName": "您的项目名称",
-    "usedResearch": true
-  },
-  "complexityAnalysis": [
-    {
-      "taskId": 8,
-      "taskTitle": "开发实现偏差处理",
-      "complexityScore": 9.5,
-      "recommendedSubtasks": 6,
-      "expansionPrompt": "创建处理检测的子任务...",
-      "reasoning": "此任务需要复杂的逻辑...",
-      "expansionCommand": "task-master expand --id=8 --num=6 --prompt=\"创建子任务...\" --research"
-    }
-    // 更多任务按复杂度分数排序（最高优先）
-  ]
-}
-```
 
 ## 查找下一个任务
 

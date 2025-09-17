@@ -12,10 +12,8 @@ const originalWorkingDirectory = process.cwd();
 // Store original working directory and project root
 const projectRoot = path.resolve(__dirname, "..");
 
-// Ensure we're always starting from the project root
-if (process.cwd() !== projectRoot) {
-	process.chdir(projectRoot);
-}
+// Note: Jest now handles working directory via config.cwd
+// Avoid manual process.chdir() to prevent path resolution issues
 
 // Mock environment variables
 process.env.MODEL = "sonar-pro";

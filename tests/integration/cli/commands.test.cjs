@@ -10,10 +10,8 @@ describe.skip("CLI Commands Integration Tests", () => {
 
 // --- Define mock functions ---
 const mockGetMainModelId = jest.fn().mockReturnValue("claude-3-opus");
-const mockGetResearchModelId = jest.fn().mockReturnValue("gpt-4-turbo");
 const mockGetFallbackModelId = jest.fn().mockReturnValue("claude-3-haiku");
 const mockSetMainModel = jest.fn().mockResolvedValue(true);
-const mockSetResearchModel = jest.fn().mockResolvedValue(true);
 const mockSetFallbackModel = jest.fn().mockResolvedValue(true);
 const mockGetAvailableModels = jest.fn().mockReturnValue([
 	{ id: "claude-3-opus", name: "Claude 3 Opus", provider: "anthropic" },
@@ -32,10 +30,8 @@ const mockStopLoadingIndicator = jest.fn();
 // --- Setup mocks using unstable_mockModule (recommended for ES modules) ---
 jest.unstable_mockModule("../../../scripts/modules/config-manager.js", () => ({
 	getMainModelId: mockGetMainModelId,
-	getResearchModelId: mockGetResearchModelId,
 	getFallbackModelId: mockGetFallbackModelId,
 	setMainModel: mockSetMainModel,
-	setResearchModel: mockSetResearchModel,
 	setFallbackModel: mockSetFallbackModel,
 	getAvailableModels: mockGetAvailableModels,
 	VALID_PROVIDERS: ["anthropic", "openai"],
@@ -136,35 +132,6 @@ describe("CLI Models Command (Action Handler Test)", () => {
 				}
 			}
 
-			if (options.setResearch) {
-				const modelId = options.setResearch;
-				if (typeof modelId !== "string" || modelId.trim() === "") {
-					console.error(
-						chalk.red("Error: --set-research flag requires a valid model ID."),
-					);
-					process.exit(1);
-				}
-				const provider = findProvider(modelId);
-				if (!provider) {
-					console.error(
-						chalk.red(
-							`Error: Model ID "${modelId}" not found in available models.`,
-						),
-					);
-					process.exit(1);
-				}
-				if (await configManager.setResearchModel(provider, modelId)) {
-					console.log(
-						chalk.green(
-							`Research model set to: ${modelId} (Provider: ${provider})`,
-						),
-					);
-					modelSetAction = true;
-				} else {
-					console.error(chalk.red("Failed to set research model."));
-					process.exit(1);
-				}
-			}
 
 			if (options.setFallback) {
 				const modelId = options.setFallback;
@@ -323,24 +290,17 @@ describe("CLI Models Command (Action Handler Test)", () => {
 		);
 	});
 
-	it("should call all set*Model functions when all flags are used", async () => {
+	it("should call setMain and setFallback functions when both flags are used", async () => {
 		const mainModelId = "claude-3-opus";
-		const researchModelId = "gpt-4-turbo";
 		const fallbackModelId = "claude-3-haiku";
 		const mainProvider = "anthropic";
-		const researchProvider = "openai";
 		const fallbackProvider = "anthropic";
 
 		await modelsAction({
 			setMain: mainModelId,
-			setResearch: researchModelId,
 			setFallback: fallbackModelId,
 		});
 		expect(mockSetMainModel).toHaveBeenCalledWith(mainProvider, mainModelId);
-		expect(mockSetResearchModel).toHaveBeenCalledWith(
-			researchProvider,
-			researchModelId,
-		);
 		expect(mockSetFallbackModel).toHaveBeenCalledWith(
 			fallbackProvider,
 			fallbackModelId,

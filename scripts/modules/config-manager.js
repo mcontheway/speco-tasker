@@ -217,30 +217,13 @@ function isCodebaseAnalysisEnabled(session = null, projectRoot = null) {
 
 /**
  * Check if codebase analysis is available and enabled
- * @param {boolean} useResearch - Whether to check research provider or main provider
  * @param {string|null} projectRoot - Project root path (optional)
  * @param {object|null} session - MCP session object (optional)
  * @returns {boolean} True if codebase analysis is available and enabled
  */
-function hasCodebaseAnalysis(
-	useResearch = false,
-	projectRoot = null,
-	session = null,
-) {
-	// First check if the feature is enabled
-	if (!isCodebaseAnalysisEnabled(session, projectRoot)) {
-		return false;
-	}
-
-	// Then check if a codebase analysis provider is configured
-	const currentProvider = useResearch
-		? getResearchProvider(projectRoot)
-		: getMainProvider(projectRoot);
-
-	return (
-		currentProvider === CUSTOM_PROVIDERS.CLAUDE_CODE ||
-		currentProvider === CUSTOM_PROVIDERS.GEMINI_CLI
-	);
+function hasCodebaseAnalysis(projectRoot = null, session = null) {
+	// AI functionality has been removed - codebase analysis is no longer available
+	return false;
 }
 
 // --- Global Settings Getters ---

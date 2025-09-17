@@ -65,52 +65,6 @@ const mockParseSubtasksFromText = jest.fn().mockReturnValue([
 	},
 ]);
 
-// Create a mock for expandTask that returns predefined responses instead of making real calls
-const mockExpandTask = jest
-	.fn()
-	.mockImplementation(
-		(taskId, numSubtasks, useResearch, additionalContext, options) => {
-			const task = {
-				...(sampleTasks.tasks.find((t) => t.id === taskId) || {}),
-				subtasks: useResearch
-					? [
-							{
-								id: 1,
-								title: "Research-Backed Subtask 1",
-								description: "First research-backed subtask",
-								status: "pending",
-								dependencies: [],
-							},
-							{
-								id: 2,
-								title: "Research-Backed Subtask 2",
-								description: "Second research-backed subtask",
-								status: "pending",
-								dependencies: [1],
-							},
-						]
-					: [
-							{
-								id: 1,
-								title: "Mock Subtask 1",
-								description: "First mock subtask",
-								status: "pending",
-								dependencies: [],
-							},
-							{
-								id: 2,
-								title: "Mock Subtask 2",
-								description: "Second mock subtask",
-								status: "pending",
-								dependencies: [1],
-							},
-						],
-			};
-
-			return Promise.resolve(task);
-		},
-	);
-
 const mockGenerateTaskFiles = jest.fn().mockResolvedValue(true);
 const mockFindTaskById = jest.fn();
 const mockTaskExists = jest.fn().mockReturnValue(true);
@@ -147,7 +101,6 @@ jest.mock("../../../mcp-server/src/core/utils/path-utils.js", () => ({
 // AI functionality has been removed from the project - no need to mock AI services
 // Mock task-manager.js to avoid real operations
 jest.mock("../scripts/modules/task-manager.js", () => ({
-	expandTask: mockExpandTask,
 	generateTaskFiles: mockGenerateTaskFiles,
 	findTaskById: mockFindTaskById,
 	taskExists: mockTaskExists,

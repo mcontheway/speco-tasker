@@ -1618,48 +1618,6 @@ async function displayTaskById(
 	}
 	actionNumber++;
 
-	// Complexity-based scope adjustment actions
-	if (task.complexityScore) {
-		const complexityScore = task.complexityScore;
-		actions.push(
-			`${chalk.cyan(`${actionNumber}.`)} Re-analyze complexity: ${chalk.yellow(`task-master analyze-complexity --id=${task.id}`)}`,
-		);
-		actionNumber++;
-
-		// Add scope adjustment suggestions based on current complexity
-		if (complexityScore >= 7) {
-			// High complexity - suggest scoping down
-			actions.push(
-				`${chalk.cyan(`${actionNumber}.`)} Scope down (simplify): ${chalk.yellow(`task-master scope-down --id=${task.id} --strength=regular`)}`,
-			);
-			actionNumber++;
-			if (complexityScore >= 9) {
-				actions.push(
-					`${chalk.cyan(`${actionNumber}.`)} Heavy scope down: ${chalk.yellow(`task-master scope-down --id=${task.id} --strength=heavy`)}`,
-				);
-				actionNumber++;
-			}
-		} else if (complexityScore <= 4) {
-			// Low complexity - suggest scoping up
-			actions.push(
-				`${chalk.cyan(`${actionNumber}.`)} Scope up (add detail): ${chalk.yellow(`task-master scope-up --id=${task.id} --strength=regular`)}`,
-			);
-			actionNumber++;
-			if (complexityScore <= 2) {
-				actions.push(
-					`${chalk.cyan(`${actionNumber}.`)} Heavy scope up: ${chalk.yellow(`task-master scope-up --id=${task.id} --strength=heavy`)}`,
-				);
-				actionNumber++;
-			}
-		} else {
-			// Medium complexity (5-6) - offer both options
-			actions.push(
-				`${chalk.cyan(`${actionNumber}.`)} Scope up/down: ${chalk.yellow(`task-master scope-up --id=${task.id} --strength=light`)} or ${chalk.yellow(`scope-down --id=${task.id} --strength=light`)}`,
-			);
-			actionNumber++;
-		}
-	}
-
 	console.log(
 		boxen(`${chalk.white.bold("Suggested Actions:")}\n${actions.join("\n")}`, {
 			padding: { top: 0, bottom: 0, left: 1, right: 1 },

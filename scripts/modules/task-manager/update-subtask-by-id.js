@@ -137,34 +137,9 @@ async function updateSubtaskById(
 
 		const subtask = parentTask.subtasks[subtaskIndex];
 
-		// --- Context Gathering ---
+		// --- Context Gathering (Removed - AI functionality removed) ---
 		let gatheredContext = "";
-		try {
-			const contextGatherer = new ContextGatherer(projectRoot, tag);
-			const allTasksFlat = flattenTasksWithSubtasks(data.tasks);
-			const fuzzySearch = new FuzzyTaskSearch(allTasksFlat, "update-subtask");
-			const searchQuery = `${parentTask.title} ${subtask.title} ${prompt}`;
-			const searchResults = fuzzySearch.findRelevantTasks(searchQuery, {
-				maxResults: 5,
-				includeSelf: true,
-			});
-			const relevantTaskIds = fuzzySearch.getTaskIds(searchResults);
-
-			const finalTaskIds = [
-				...new Set([subtaskId.toString(), ...relevantTaskIds]),
-			];
-
-			if (finalTaskIds.length > 0) {
-				const contextResult = await contextGatherer.gather({
-					tasks: finalTaskIds,
-					format: "research",
-				});
-				gatheredContext = contextResult.context || "";
-			}
-		} catch (contextError) {
-			report("warn", `Could not gather context: ${contextError.message}`);
-		}
-		// --- End Context Gathering ---
+		// Manual context gathering is no longer available
 
 		if (outputFormat === "text") {
 			const table = new Table({
@@ -363,7 +338,7 @@ ${gatheredContext ? `Context: ${gatheredContext}` : ""}`;
 					"  1. Set your Perplexity API key: export PERPLEXITY_API_KEY=your_api_key_here",
 				);
 				console.log(
-					'  2. Or run without the research flag: task-master update-subtask --id=<id> --prompt="..."',
+					'  2. The manual update-subtask command should work without API keys: task-master update-subtask --id=<id> --prompt="..."',
 				);
 			} else if (error.message?.includes("overloaded")) {
 				console.log(

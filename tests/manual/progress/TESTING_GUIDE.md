@@ -12,14 +12,14 @@ Quick reference for testing streaming/non-streaming functionality with token tra
 
 ```bash
 # Test Scripts (accept: mcp-streaming, cli-streaming, non-streaming, both, all)
-node test-analyze-complexity.js [mode]
-node test-expand.js [mode] [num_subtasks]
-node test-expand-all.js [mode] [num_subtasks]
+node test-add-task.js [mode]
+node test-update-task.js [mode]
+node test-update-subtask.js [mode]
 
 # CLI Commands
-node scripts/dev.js analyze-complexity --research
-node scripts/dev.js expand --id=1 --force
-node scripts/dev.js expand --all --force
+node scripts/dev.js add-task --title="Test task" --description="Test description"
+node scripts/dev.js update-task --id=1 --title="Updated title"
+node scripts/dev.js update-subtask --id=1.1 --title="Updated subtask"
 
 task-master [command]                          # Global CLI (non-streaming)
 ```
@@ -28,52 +28,42 @@ task-master [command]                          # Global CLI (non-streaming)
 
 ### Indicators
 - **Priority**: 🔴🔴🔴 (high), 🟠🟠⚪ (medium), 🟢⚪⚪ (low)
-- **Complexity**: ●●● (7-10), ●●○ (4-6), ●○○ (1-3)
+- **Status**: ✅ Done, ⏱️ Pending, 🚫 Blocked, 🔄 In Progress
 
-### Token Format
-`Tokens (I/O): 2,150/1,847 ($0.0423)` (~4 chars per token)
+### Output Format
+Standard text output with clear status messages
 
-### Progress Bars
-```
-Single:  Generating subtasks... |████████░░| 80% (4/5)
-Dual:    Expanding 3 tasks | Task 2/3 |████████░░| 66%
-         Generating 5 subtasks... |██████░░░░| 60%
-```
-
-### Fractional Progress
-`(completedTasks + currentSubtask/totalSubtasks) / totalTasks`
-Example: 33% → 46% → 60% → 66% → 80% → 93% → 100%
+### Manual Operations
+All operations are now manual with immediate feedback
 
 ## 🐛 Quick Fixes
 
 | Issue | Fix |
 |-------|-----|
-| No streaming | Check `reportProgress` is passed |
-| NaN% progress | Filter duplicate `subtask_progress` events |
-| Missing tokens | Check `.env` has API keys |
-| Broken bars | Terminal width > 80 |
-| projectRoot.split | Use `projectRoot` not `session` |
+| Command not found | Check if task-master is installed globally |
+| File not found | Verify .taskmaster/tasks/tasks.json exists |
+| Invalid task ID | Use `task-master list` to see available tasks |
+| Permission denied | Check file permissions for .taskmaster directory |
 
 ```bash
 # Debug
-TASKMASTER_DEBUG=true node test-expand.js
+TASKMASTER_DEBUG=true node scripts/dev.js list
 npm run lint
 ```
 
-## 📊 Benchmarks
-- Single task: 10-20s (5 subtasks)
-- Expand all: 30-45s (3 tasks)
-- Streaming: ~10-20% faster
-- Updates: Every 2-5s
+## 📊 Manual Operation Performance
+- All operations are immediate (<1s)
+- No external dependencies required
+- Consistent performance across all environments
 
 ## 🔄 Test Workflow
 
 ```bash
 # Quick check
-node test-analyze-complexity.js both && npm test
+node test-add-task.js both && npm test
 
 # Full suite (before release)
-for test in analyze-complexity expand expand-all; do
+for test in add-task update-task update-subtask; do
   node test-$test.js all
 done
 npm test
@@ -83,9 +73,11 @@ npm test
 
 ```javascript
 {
-  "tool": "analyze_project_complexity",
+  "tool": "update_task",
   "args": {
-    "research": true,
+    "id": "1",
+    "title": "Updated task title",
+    "description": "Updated description",
     "projectRoot": "/path/to/project"
   }
 }

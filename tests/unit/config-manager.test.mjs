@@ -1,7 +1,7 @@
 // @ts-check
 /**
  * Module to test the config-manager.js functionality
- * This file uses ES module syntax (.mjs) to properly handle imports
+ * This file uses ES module syntax to properly handle imports
  */
 
 import fs from "node:fs";
@@ -9,6 +9,20 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { jest } from "@jest/globals";
 import { sampleTasks } from "../fixtures/sample-tasks.js";
+
+/**
+ * @typedef {Object} MCPSession
+ * @property {Record<string, any>} [env] - Optional environment variables
+ */
+
+/**
+ * Type guard to check if an object has an env property
+ * @param {any} obj
+ * @returns {obj is MCPSession}
+ */
+function hasEnvProperty(obj) {
+	return obj && typeof obj === 'object' && 'env' in obj;
+}
 
 // Disable chalk's color detection which can cause fs.readFileSync calls
 process.env.FORCE_COLOR = "0";
@@ -586,36 +600,6 @@ describe("Config Manager Module", () => {
 
 	// --- Getter Functions ---
 	describe("Getter Functions", () => {
-		test("getMainProvider should return provider from config", () => {
-			// Arrange: Set up readFileSync to return VALID_CUSTOM_CONFIG
-			mockReadFileSync.mockImplementation((filePath) => {
-				if (filePath === MOCK_CONFIG_PATH)
-					return JSON.stringify(VALID_CUSTOM_CONFIG);
-				if (path.basename(String(filePath)) === "supported-models.json") {
-					return JSON.stringify({
-						openai: [{ id: "gpt-4o" }],
-						google: [{ id: "gemini-1.5-pro-latest" }],
-						anthropic: [
-							{ id: "claude-3-opus-20240229" },
-							{ id: "claude-3-7-sonnet-20250219" },
-							{ id: "claude-3-5-sonnet" },
-						],
-						perplexity: [{ id: "sonar-pro" }],
-						ollama: [],
-						openrouter: [],
-					}); // Added perplexity
-				}
-				throw new Error(`Unexpected fs.readFileSync call: ${filePath}`);
-			});
-			mockExistsSync.mockReturnValue(true);
-			// findProjectRoot mock set in beforeEach
-
-			// Act
-			const provider = configManager.getMainProvider(MOCK_PROJECT_ROOT);
-
-			// Assert
-			expect(provider).toBe(VALID_CUSTOM_CONFIG.models.main.provider);
-		});
 
 		test("getLogLevel should return logLevel from config", () => {
 			// Arrange: Set up readFileSync to return VALID_CUSTOM_CONFIG
@@ -649,7 +633,7 @@ describe("Config Manager Module", () => {
 			expect(logLevel).toBe(VALID_CUSTOM_CONFIG.global.logLevel);
 		});
 
-		// Add more tests for other getters (getResearchProvider, getProjectName, etc.)
+		// Add more tests for other getters (getProjectName, etc.)
 	});
 
 	// --- isConfigFilePresent Tests ---
@@ -834,7 +818,10 @@ describe("Config Manager Module", () => {
 					// MCP context (resolveEnvVariable uses session.env)
 					const mcpSession = { env: { [String(envVarName)]: keyValue } };
 					mockResolveEnvVariable.mockImplementation((key, sessionArg) => {
-						return sessionArg?.env ? sessionArg.env[String(key)] : undefined;
+						return hasEnvProperty(sessionArg)
+							// @ts-ignore - TypeScript cannot infer that env exists after type guard
+							? sessionArg.env[String(key)]
+							: undefined;
 					});
 					expect(
 						configManager.isApiKeySet(providerName, mcpSession, null),
