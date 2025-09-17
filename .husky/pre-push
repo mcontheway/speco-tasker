@@ -15,14 +15,14 @@ npm run test:integration -- --passWithNoTests --silent --verbose=false --testNam
   echo "⚠️  关键集成测试失败，但允许推送（建议修复）"
 }
 
-# 运行快速E2E验证（如果存在）
-echo "  🚀 运行快速E2E验证..."
-if [ -f "tests/e2e/run_e2e.sh" ]; then
-  timeout 60s bash tests/e2e/run_e2e.sh --quick-verify 2>/dev/null || {
-    echo "⚠️  E2E验证超时或失败，但允许推送"
+# 运行快速功能验证
+echo "  🚀 运行快速功能验证..."
+if [ -f "tests/e2e/quick-verify.sh" ]; then
+  bash tests/e2e/quick-verify.sh || {
+    echo "⚠️  快速验证失败，但允许推送（建议检查项目配置）"
   }
 else
-  echo "    ℹ️  E2E测试脚本不存在，跳过"
+  echo "    ℹ️  快速验证脚本不存在，跳过"
 fi
 
 # 检查是否有未处理的 changeset（仅警告，不阻止推送）
