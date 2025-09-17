@@ -339,16 +339,20 @@ log_step() {
   fi
   log_success "Project initialized."
 
-  log_step "Parsing PRD"
-  cmd_output_prd=$(task-master parse-prd ./prd.txt --force 2>&1)
-  exit_status_prd=$?
-  echo "$cmd_output_prd"
-  extract_and_sum_cost "$cmd_output_prd"
-  if [ $exit_status_prd -ne 0 ] || [ ! -s ".taskmaster/tasks/tasks.json" ]; then
-    log_error "Parsing PRD failed: .taskmaster/tasks/tasks.json not found or is empty. Exit status: $exit_status_prd"
+  log_step "Creating initial tasks manually"
+  # Create initial tasks manually since PRD parsing is removed
+  task-master add-task --title="Setup project structure" --description="Create basic project structure with folders and configuration files" --priority=high
+  task-master add-task --title="Implement backend API" --description="Create REST API endpoints for data management" --priority=high
+  task-master add-task --title="Setup database connection" --description="Configure database connection and schema" --priority=medium --dependencies=1
+  task-master add-task --title="Create frontend UI" --description="Build user interface components" --priority=medium --dependencies=2
+  task-master add-task --title="Add authentication" --description="Implement user authentication system" --priority=medium --dependencies=2
+  task-master add-task --title="Write tests" --description="Create unit and integration tests" --priority=low --dependencies=1,2,3,4,5
+
+  if [ ! -s ".taskmaster/tasks/tasks.json" ]; then
+    log_error "Task creation failed: .taskmaster/tasks/tasks.json not found or is empty."
     exit 1
   else
-    log_success "PRD parsed successfully."
+    log_success "Initial tasks created successfully."
   fi
 
   log_step "Expanding Task 1 (to ensure subtask 1.1 exists)"

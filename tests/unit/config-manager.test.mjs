@@ -18,7 +18,7 @@ const __filename = fileURLToPath(import.meta.url); // Get current file path
 const __dirname = path.dirname(__filename); // Get current directory
 const realSupportedModelsPath = path.resolve(
 	__dirname,
-	"../scripts/modules/supported-models.json",
+	"../../scripts/modules/supported-models.json",
 );
 let REAL_SUPPORTED_MODELS_CONTENT;
 let REAL_SUPPORTED_MODELS_DATA;
@@ -35,7 +35,11 @@ try {
 	);
 	REAL_SUPPORTED_MODELS_CONTENT = "{}"; // Default to empty object on error
 	REAL_SUPPORTED_MODELS_DATA = {};
-	process.exit(1); // Exit if essential test data can't be loaded
+	if (typeof jest !== 'undefined') {
+		throw new Error(`Could not load supported-models.json: ${err.message}`);
+	} else {
+		process.exit(1); // Exit if essential test data can't be loaded
+	}
 }
 
 // --- Define Mock Function Instances ---
@@ -44,13 +48,16 @@ const mockLog = jest.fn();
 const mockResolveEnvVariable = jest.fn();
 
 // --- Mock fs functions directly instead of the whole module ---
-const mockExistsSync = jest.fn();
-const mockReadFileSync = jest.fn();
-const mockWriteFileSync = jest.fn();
+const mockExistsSync = jest.fn(() => true);
+const mockReadFileSync = jest.fn(() => "{}");
+const mockWriteFileSync = jest.fn(() => undefined);
 
 // Instead of mocking the entire fs module, mock just the functions we need
+// @ts-ignore
 fs.existsSync = mockExistsSync;
+// @ts-ignore
 fs.readFileSync = mockReadFileSync;
+// @ts-ignore
 fs.writeFileSync = mockWriteFileSync;
 
 // --- Test Data (Keep as is, ensure DEFAULT_CONFIG is accurate) ---
@@ -173,7 +180,7 @@ describe("Config Manager Module", () => {
 
 		// --- Mock Dependencies BEFORE importing the module under test ---
 		// Mock the 'utils.js' module using doMock (applied at runtime)
-		jest.doMock("../scripts/modules/utils.js", () => ({
+		jest.doMock("../../scripts/modules/utils.js", () => ({
 			__esModule: true, // Indicate it's an ES module mock
 			findProjectRoot: mockFindProjectRoot, // Use the mock function instance
 			log: mockLog, // Use the mock function instance
@@ -181,7 +188,7 @@ describe("Config Manager Module", () => {
 		}));
 
 		// Dynamically import the module under test AFTER mocking dependencies
-		configManager = await import("../scripts/modules/config-manager.js");
+		configManager = await import("../../scripts/modules/config-manager.js");
 
 		// --- Default Mock Implementations ---
 		mockFindProjectRoot.mockReturnValue(MOCK_PROJECT_ROOT); // Default for utils.findProjectRoot
@@ -189,7 +196,7 @@ describe("Config Manager Module", () => {
 
 		// Default readFileSync: Return REAL models content, mocked config, or throw error
 		mockReadFileSync.mockImplementation((filePath) => {
-			const baseName = path.basename(filePath);
+			const baseName = path.basename(String(filePath));
 			if (baseName === "supported-models.json") {
 				// Return the REAL file content stringified
 				return REAL_SUPPORTED_MODELS_CONTENT;
@@ -321,7 +328,7 @@ describe("Config Manager Module", () => {
 			mockReadFileSync.mockImplementation((filePath) => {
 				if (filePath === MOCK_CONFIG_PATH)
 					return JSON.stringify(VALID_CUSTOM_CONFIG);
-				if (path.basename(filePath) === "supported-models.json") {
+				if (path.basename(String(filePath)) === "supported-models.json") {
 					// Provide necessary models for validation within getConfig
 					return JSON.stringify({
 						openai: [{ id: "gpt-4o" }],
@@ -373,7 +380,7 @@ describe("Config Manager Module", () => {
 			mockReadFileSync.mockImplementation((filePath) => {
 				if (filePath === MOCK_CONFIG_PATH)
 					return JSON.stringify(PARTIAL_CONFIG);
-				if (path.basename(filePath) === "supported-models.json") {
+				if (path.basename(String(filePath)) === "supported-models.json") {
 					return JSON.stringify({
 						openai: [{ id: "gpt-4-turbo" }],
 						perplexity: [{ id: "sonar-pro" }],
@@ -414,7 +421,7 @@ describe("Config Manager Module", () => {
 			mockReadFileSync.mockImplementation((filePath) => {
 				if (filePath === MOCK_CONFIG_PATH) return "invalid json";
 				// Mock models read needed for initial load before parse error
-				if (path.basename(filePath) === "supported-models.json") {
+				if (path.basename(String(filePath)) === "supported-models.json") {
 					return JSON.stringify({
 						anthropic: [{ id: "claude-3-7-sonnet-20250219" }],
 						perplexity: [{ id: "sonar-pro" }],
@@ -444,7 +451,7 @@ describe("Config Manager Module", () => {
 			mockReadFileSync.mockImplementation((filePath) => {
 				if (filePath === MOCK_CONFIG_PATH) throw readError;
 				// Mock models read needed for initial load before read error
-				if (path.basename(filePath) === "supported-models.json") {
+				if (path.basename(String(filePath)) === "supported-models.json") {
 					return JSON.stringify({
 						anthropic: [{ id: "claude-3-7-sonnet-20250219" }],
 						perplexity: [{ id: "sonar-pro" }],
@@ -475,7 +482,7 @@ describe("Config Manager Module", () => {
 			mockReadFileSync.mockImplementation((filePath) => {
 				if (filePath === MOCK_CONFIG_PATH)
 					return JSON.stringify(INVALID_PROVIDER_CONFIG);
-				if (path.basename(filePath) === "supported-models.json") {
+				if (path.basename(String(filePath)) === "supported-models.json") {
 					return JSON.stringify({
 						perplexity: [{ id: "llama-3-sonar-large-32k-online" }],
 						anthropic: [
@@ -584,7 +591,7 @@ describe("Config Manager Module", () => {
 			mockReadFileSync.mockImplementation((filePath) => {
 				if (filePath === MOCK_CONFIG_PATH)
 					return JSON.stringify(VALID_CUSTOM_CONFIG);
-				if (path.basename(filePath) === "supported-models.json") {
+				if (path.basename(String(filePath)) === "supported-models.json") {
 					return JSON.stringify({
 						openai: [{ id: "gpt-4o" }],
 						google: [{ id: "gemini-1.5-pro-latest" }],
@@ -615,7 +622,7 @@ describe("Config Manager Module", () => {
 			mockReadFileSync.mockImplementation((filePath) => {
 				if (filePath === MOCK_CONFIG_PATH)
 					return JSON.stringify(VALID_CUSTOM_CONFIG);
-				if (path.basename(filePath) === "supported-models.json") {
+				if (path.basename(String(filePath)) === "supported-models.json") {
 					// Provide enough mock model data for validation within getConfig
 					return JSON.stringify({
 						openai: [{ id: "gpt-4o" }],
@@ -825,9 +832,9 @@ describe("Config Manager Module", () => {
 
 				test(`should return ${expectedResult} for ${testName} (MCP context)`, () => {
 					// MCP context (resolveEnvVariable uses session.env)
-					const mcpSession = { env: { [envVarName]: keyValue } };
+					const mcpSession = { env: { [String(envVarName)]: keyValue } };
 					mockResolveEnvVariable.mockImplementation((key, sessionArg) => {
-						return sessionArg?.env ? sessionArg.env[key] : undefined;
+						return sessionArg?.env ? sessionArg.env[String(key)] : undefined;
 					});
 					expect(
 						configManager.isApiKeySet(providerName, mcpSession, null),

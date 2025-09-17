@@ -12,14 +12,11 @@ Quick reference for testing streaming/non-streaming functionality with token tra
 
 ```bash
 # Test Scripts (accept: mcp-streaming, cli-streaming, non-streaming, both, all)
-node test-parse-prd.js [mode] 
 node test-analyze-complexity.js [mode]
 node test-expand.js [mode] [num_subtasks]
 node test-expand-all.js [mode] [num_subtasks]
-node parse-prd-analysis.js [accuracy|complexity|all]
 
 # CLI Commands
-node scripts/dev.js parse-prd test.txt         # Local dev (streaming)
 node scripts/dev.js analyze-complexity --research
 node scripts/dev.js expand --id=1 --force
 node scripts/dev.js expand --all --force
@@ -73,13 +70,12 @@ npm run lint
 
 ```bash
 # Quick check
-node test-parse-prd.js both && npm test
+node test-analyze-complexity.js both && npm test
 
 # Full suite (before release)
-for test in parse-prd analyze-complexity expand expand-all; do
+for test in analyze-complexity expand expand-all; do
   node test-$test.js all
 done
-node parse-prd-analysis.js all
 npm test
 ```
 
@@ -87,11 +83,9 @@ npm test
 
 ```javascript
 {
-  "tool": "parse_prd",
+  "tool": "analyze_project_complexity",
   "args": {
-    "input": "prd.txt",
-    "numTasks": "8", 
-    "force": true,
+    "research": true,
     "projectRoot": "/path/to/project"
   }
 }

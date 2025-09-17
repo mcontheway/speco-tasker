@@ -25,20 +25,26 @@ const config = {
 	// Module file extensions
 	moduleFileExtensions: ["js", "cjs", "mjs", "json"],
 
-	// Test file patterns - include .cjs files
+	// Test file patterns - include .cjs and .mjs files
 	testMatch: [
 		"**/__tests__/**/*.js",
 		"**/__tests__/**/*.cjs",
+		"**/__tests__/**/*.mjs",
 		"**/?(*.)+(spec|test).js",
 		"**/?(*.)+(spec|test).cjs",
+		"**/?(*.)+(spec|test).mjs",
 		"**/contract/**/*.js",
 		"**/contract/**/*.cjs",
+		"**/contract/**/*.mjs",
 		"**/integration/**/*.js",
 		"**/integration/**/*.cjs",
+		"**/integration/**/*.mjs",
 		"**/unit/**/*.js",
 		"**/unit/**/*.cjs",
+		"**/unit/**/*.mjs",
 		"**/performance/**/*.js",
 		"**/performance/**/*.cjs",
+		"**/performance/**/*.mjs",
 	],
 
 	// Isolate modules to prevent cross-test contamination
