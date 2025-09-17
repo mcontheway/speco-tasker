@@ -57,11 +57,11 @@ let moveTaskModule, generateTaskFilesModule, utilsModule, chalk
 describe('Cross-Tag Move CLI Integration', () => {
 	// Setup dynamic imports before tests run
 	beforeAll(async () => {
-		moveTaskModule = await import('../../scripts/modules/task-manager/move-task.js')
+		moveTaskModule = await import('../../../scripts/modules/task-manager/move-task.js')
 		generateTaskFilesModule = await import(
-			'../../scripts/modules/task-manager/generate-task-files.js'
+			'../../../scripts/modules/task-manager/generate-task-files.js'
 		)
-		utilsModule = await import('../../scripts/modules/utils.js')
+		utilsModule = await import('../../../scripts/modules/utils.js')
 		chalk = (await import('chalk')).default
 	})
 
