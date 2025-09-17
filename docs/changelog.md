@@ -1,29 +1,5 @@
 # speco-tasker 更新日志 | Changelog
 
-## 1.1.5
-
-### Major Features
-
-- **项目根目录持久化 | Project Root Persistence**
-  - 在初始化时自动保存项目根目录到配置文件中
-  - CLI 命令和 MCP 工具优先从配置文件读取项目根目录
-  - 实现了真正的零配置体验，无需手动指定项目路径
-  - 支持多项目无缝切换，每个项目独立保存配置
-  - 保持完整的向后兼容性，支持环境变量和手动覆盖
-
-- **智能路径解析优化 | Intelligent Path Resolution**
-  - 优化了 MCP 工具的路径解析优先级
-  - 添加了配置文件作为路径检测的优先级
-  - 改进了多层 fallback 机制确保稳定性
-  - 所有 MCP 工具的 projectRoot 参数从必需改为可选
-
-### Improvements
-
-- **用户体验提升 | User Experience Enhancement**
-  - 简化了命令调用，减少了参数输入需求
-  - 提高了多项目工作场景的便利性
-  - 保持了强大的灵活性和覆盖机制
-
 ## 1.1.4
 
 ### Patch Changes
