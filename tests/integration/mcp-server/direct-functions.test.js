@@ -123,7 +123,7 @@ jest.mock('fs', () => ({
 }))
 
 // Mock utils functions to avoid actual file operations
-jest.mock('../../scripts/modules/utils.js', () => ({
+jest.mock('../../../scripts/modules/utils.js', () => ({
 	readJSON: mockReadJSON,
 	writeJSON: mockWriteJSON,
 	enableSilentMode: mockEnableSilentMode,
