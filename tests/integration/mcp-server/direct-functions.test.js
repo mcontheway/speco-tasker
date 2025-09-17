@@ -142,14 +142,7 @@ jest.mock('../../../mcp-server/src/core/utils/path-utils.js', () => ({
 	findTasksJsonPath: mockFindTasksJsonPath
 }))
 
-// Mock the AI module to prevent any real API calls
-jest.mock('../../../scripts/modules/ai-services-unified.js', () => ({
-	// Mock the functions exported by ai-services-unified.js as needed
-	// For example, if you are testing a function that uses generateTextService:
-	generateTextService: jest.fn().mockResolvedValue('Mock AI Response')
-	// Add other mocks for generateObjectService, streamTextService if used
-}))
-
+// AI functionality has been removed from the project - no need to mock AI services
 // Mock task-manager.js to avoid real operations
 jest.mock('../../../scripts/modules/task-manager.js', () => ({
 	expandTask: mockExpandTask,
