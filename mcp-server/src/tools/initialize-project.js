@@ -36,34 +36,34 @@ export function registerInitializeProjectTool(server) {
 				.optional()
 				.default(false)
 				.describe(
-					"Skip installing dependencies automatically. Never do this unless you are sure the project is already installed.",
+					"跳过自动安装依赖项。除非您确信项目已经安装，否则永远不要这样做。",
 				),
 			addAliases: z
 				.boolean()
 				.optional()
 				.default(true)
-				.describe("Add shell aliases (tm, taskmaster) to shell config file."),
+				.describe("添加 shell 别名 (tm, taskmaster) 到 shell 配置文件。"),
 			initGit: z
 				.boolean()
 				.optional()
 				.default(true)
-				.describe("Initialize Git repository in project root."),
+				.describe("在项目根目录初始化 Git 仓库。"),
 			storeTasksInGit: z
 				.boolean()
 				.optional()
 				.default(true)
-				.describe("Store tasks in Git (tasks.json and tasks/ directory)."),
+				.describe("在 Git 中存储任务 (tasks.json 和 tasks/ 目录)。"),
 			yes: z
 				.boolean()
 				.optional()
 				.default(true)
 				.describe(
-					"Skip prompts and use default values. Always set to true for MCP tools.",
+					"跳过提示并使用默认值。对于 MCP 工具，始终设置为 true。",
 				),
 			projectRoot: z
 				.string()
 				.describe(
-					"The root directory for the project. ALWAYS SET THIS TO THE PROJECT ROOT DIRECTORY. IF NOT SET, THE TOOL WILL NOT WORK.",
+					"项目的根目录。始终将此设置为项目根目录。如果未设置，工具将无法工作。",
 				),
 		}),
 		execute: withNormalizedProjectRoot(async (args, context) => {

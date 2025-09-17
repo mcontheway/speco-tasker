@@ -22,8 +22,8 @@ export function registerRemoveDependencyTool(server) {
 		name: "remove_dependency",
 		description: "从任务中移除依赖关系",
 		parameters: z.object({
-			id: z.string().describe("Task ID to remove dependency from"),
-			dependsOn: z.string().describe("Task ID to remove as a dependency"),
+			id: z.string().describe("要从中删除依赖项的任务ID"),
+			dependsOn: z.string().describe("要作为依赖项删除的任务ID"),
 			file: z
 				.string()
 				.optional()
