@@ -17,7 +17,7 @@ jest.unstable_mockModule("../../../../../scripts/modules/utils.js", () => ({
 }));
 
 jest.unstable_mockModule(
-	"../../../../../scripts/modules/task-manager/generate-task-files.js",
+	"../../../../../../scripts/modules/task-manager/generate-task-files.js",
 	() => ({
 		default: jest.fn().mockResolvedValue(),
 	}),
@@ -37,14 +37,14 @@ const { readJSON, writeJSON, log } = await import(
 );
 const generateTaskFiles = (
 	await import(
-		"../../../../../scripts/modules/task-manager/generate-task-files.js"
+		"../../../../../../scripts/modules/task-manager/generate-task-files.js"
 	)
 ).default;
 const fs = await import("fs");
 
 // Import module under test (AFTER mocks in place)
 const { default: removeTask } = await import(
-	"../../../../../scripts/modules/task-manager/remove-task.js"
+	"../../../../../../scripts/modules/task-manager/remove-task.js"
 );
 
 // ---- Test data helpers ----

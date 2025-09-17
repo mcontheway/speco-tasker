@@ -5,7 +5,7 @@ import {
 	getDependentTaskIds,
 	validateCrossTagMove,
 	validateSubtaskMove,
-} from "../../../../../scripts/modules/dependency-manager.js";
+} from "../../../../../../scripts/modules/dependency-manager.js";
 
 describe("Cross-Tag Dependency Validation", () => {
 	describe("validateCrossTagMove", () => {

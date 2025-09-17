@@ -28,7 +28,7 @@ jest.unstable_mockModule("../../../../../scripts/modules/utils.js", () => ({
 	),
 }));
 
-jest.unstable_mockModule("../../../../../scripts/modules/ui.js", () => ({
+jest.unstable_mockModule("../../../../../../scripts/modules/ui.js", () => ({
 	formatDependenciesWithStatus: jest.fn(),
 	displayBanner: jest.fn(),
 	displayTaskList: jest.fn(),
@@ -40,7 +40,7 @@ jest.unstable_mockModule("../../../../../scripts/modules/ui.js", () => ({
 }));
 
 jest.unstable_mockModule(
-	"../../../../../scripts/modules/dependency-manager.js",
+	"../../../../../../scripts/modules/dependency-manager.js",
 	() => ({
 		validateAndFixDependencies: jest.fn(),
 		validateTaskDependencies: jest.fn(),
@@ -56,15 +56,15 @@ const {
 	stripAnsiCodes,
 } = await import("../../../../../scripts/modules/utils.js");
 const { displayTaskList } = await import(
-	"../../../../../scripts/modules/ui.js"
+	"../../../../../../scripts/modules/ui.js"
 );
 const { validateAndFixDependencies } = await import(
-	"../../../../../scripts/modules/dependency-manager.js"
+	"../../../../../../scripts/modules/dependency-manager.js"
 );
 
 // Import the module under test
 const { default: listTasks } = await import(
-	"../../../../../scripts/modules/task-manager/list-tasks.js"
+	"../../../../../../scripts/modules/task-manager/list-tasks.js"
 );
 
 // Sample data for tests

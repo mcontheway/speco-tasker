@@ -13,7 +13,7 @@ jest.mock("fs");
 jest.mock("path");
 
 // Mock 工具函数
-jest.mock("../../scripts/modules/utils.js", () => ({
+jest.mock("../scripts/modules/utils.js", () => ({
 	readJSON: jest.fn(),
 	writeJSON: jest.fn(),
 	log: jest.fn(),
@@ -25,7 +25,7 @@ jest.mock("../../scripts/modules/utils.js", () => ({
 }));
 
 // Mock 配置管理器
-jest.mock("../../scripts/modules/config-manager.js", () => ({
+jest.mock("../scripts/modules/config-manager.js", () => ({
 	getDefaultPriority: jest.fn(() => "medium"),
 	hasCodebaseAnalysis: jest.fn(() => false),
 }));
@@ -256,7 +256,7 @@ describe("任务创建功能验证", () => {
 			};
 
 			// Mock 文件读取
-			const { readJSON } = require("../../scripts/modules/utils.js");
+			const { readJSON } = require("../scripts/modules/utils.js");
 			readJSON.mockReturnValue(mockTasksData);
 
 			const result = readJSON("/mock/tasks.json", "/mock/project", "main");

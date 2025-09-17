@@ -4,7 +4,7 @@
 import { jest } from "@jest/globals";
 
 // Import the module under test
-const { stripAnsiCodes } = await import("../../scripts/modules/utils.js");
+const { stripAnsiCodes } = await import("../scripts/modules/utils.js");
 
 describe("stripAnsiCodes", () => {
 	test("should remove ANSI color codes from text", () => {

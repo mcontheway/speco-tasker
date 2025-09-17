@@ -123,7 +123,7 @@ jest.mock('fs', () => ({
 }))
 
 // Mock utils functions to avoid actual file operations
-jest.mock('../../../scripts/modules/utils.js', () => ({
+jest.mock('../scripts/modules/utils.js', () => ({
 	readJSON: mockReadJSON,
 	writeJSON: mockWriteJSON,
 	enableSilentMode: mockEnableSilentMode,
@@ -144,7 +144,7 @@ jest.mock('../../../mcp-server/src/core/utils/path-utils.js', () => ({
 
 // AI functionality has been removed from the project - no need to mock AI services
 // Mock task-manager.js to avoid real operations
-jest.mock('../../../scripts/modules/task-manager.js', () => ({
+jest.mock('../scripts/modules/task-manager.js', () => ({
 	expandTask: mockExpandTask,
 	generateTaskFiles: mockGenerateTaskFiles,
 	findTaskById: mockFindTaskById,

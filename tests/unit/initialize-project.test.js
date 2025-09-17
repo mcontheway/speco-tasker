@@ -26,7 +26,7 @@ consoleMethods.forEach((method) => {
 });
 
 // Mock ES modules using unstable_mockModule
-jest.unstable_mockModule("../../scripts/modules/utils.js", () => ({
+jest.unstable_mockModule("../scripts/modules/utils.js", () => ({
 	isSilentMode: jest.fn(() => true),
 	enableSilentMode: jest.fn(),
 	log: jest.fn(),
@@ -34,7 +34,7 @@ jest.unstable_mockModule("../../scripts/modules/utils.js", () => ({
 }));
 
 // Mock git-utils module
-jest.unstable_mockModule("../../scripts/modules/utils/git-utils.js", () => ({
+jest.unstable_mockModule("../scripts/modules/utils/git-utils.js", () => ({
 	insideGitWorkTree: jest.fn(() => false),
 }));
 
@@ -48,7 +48,7 @@ jest.unstable_mockModule("../../src/utils/rule-transformer.js", () => ({
 }));
 
 // Mock any other modules that might output or do real operations
-jest.unstable_mockModule("../../scripts/modules/config-manager.js", () => ({
+jest.unstable_mockModule("../scripts/modules/config-manager.js", () => ({
 	createDefaultConfig: jest.fn(() => ({ models: {}, project: {} })),
 	saveConfig: jest.fn(),
 }));
@@ -73,8 +73,8 @@ const { execSync } = jest.requireMock("child_process");
 const mockFs = jest.requireMock("fs");
 
 // Import the mocked modules
-const mockUtils = await import("../../scripts/modules/utils.js");
-const mockGitUtils = await import("../../scripts/modules/utils/git-utils.js");
+const mockUtils = await import("../scripts/modules/utils.js");
+const mockGitUtils = await import("../scripts/modules/utils/git-utils.js");
 const mockRuleTransformer = await import("../../src/utils/rule-transformer.js");
 
 // Import after mocks

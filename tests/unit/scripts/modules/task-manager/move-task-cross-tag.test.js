@@ -43,21 +43,21 @@ jest.unstable_mockModule("../../../../../scripts/modules/utils.js", () => ({
 }));
 
 jest.unstable_mockModule(
-	"../../../../../scripts/modules/task-manager/generate-task-files.js",
+	"../../../../../../scripts/modules/task-manager/generate-task-files.js",
 	() => ({
 		default: jest.fn().mockResolvedValue(),
 	}),
 );
 
 jest.unstable_mockModule(
-	"../../../../../scripts/modules/task-manager.js",
+	"../../../../../../scripts/modules/task-manager.js",
 	() => ({
 		isTaskDependentOn: jest.fn(() => false),
 	}),
 );
 
 jest.unstable_mockModule(
-	"../../../../../scripts/modules/dependency-manager.js",
+	"../../../../../../scripts/modules/dependency-manager.js",
 	() => ({
 		validateCrossTagMove: jest.fn(),
 		findCrossTagDependencies: jest.fn(),
@@ -75,10 +75,10 @@ const {
 	findCrossTagDependencies,
 	getDependentTaskIds,
 	validateSubtaskMove,
-} = await import("../../../../../scripts/modules/dependency-manager.js");
+} = await import("../../../../../../scripts/modules/dependency-manager.js");
 
 const { moveTasksBetweenTags, getAllTasksWithTags } = await import(
-	"../../../../../scripts/modules/task-manager/move-task.js"
+	"../../../../../../scripts/modules/task-manager/move-task.js"
 );
 
 describe("Cross-Tag Task Movement", () => {

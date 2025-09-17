@@ -20,12 +20,12 @@ jest.unstable_mockModule("../../../../../scripts/modules/utils.js", () => ({
 	ensureTagMetadata: jest.fn(),
 }));
 
-jest.unstable_mockModule("../../../../../scripts/modules/ui.js", () => ({
+jest.unstable_mockModule("../../../../../../scripts/modules/ui.js", () => ({
 	displayBanner: jest.fn(),
 }));
 
 jest.unstable_mockModule(
-	"../../../../../scripts/modules/task-manager/generate-task-files.js",
+	"../../../../../../scripts/modules/task-manager/generate-task-files.js",
 	() => ({
 		default: jest.fn().mockResolvedValue(),
 	}),
@@ -70,13 +70,13 @@ const { readJSON, writeJSON, log, findTaskById, ensureTagMetadata } =
 	await import("../../../../../scripts/modules/utils.js");
 const generateTaskFiles = (
 	await import(
-		"../../../../../scripts/modules/task-manager/generate-task-files.js"
+		"../../../../../../scripts/modules/task-manager/generate-task-files.js"
 	)
 ).default;
 
 // Import the module under test
 const { default: clearSubtasks } = await import(
-	"../../../../../scripts/modules/task-manager/clear-subtasks.js"
+	"../../../../../../scripts/modules/task-manager/clear-subtasks.js"
 );
 
 describe("clearSubtasks", () => {

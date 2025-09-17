@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import moveTask from "../../../scripts/modules/task-manager/move-task.js";
+import moveTask from "../../scripts/modules/task-manager/move-task.js";
 
 const TMP = path.join(process.cwd(), ".tmp_move_task");
 const TASKS = path.join(TMP, "tasks.json");

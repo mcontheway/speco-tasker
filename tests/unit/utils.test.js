@@ -5,15 +5,15 @@
 import { jest } from "@jest/globals";
 
 // Import the actual module first
-import * as actualUtils from "../../scripts/modules/utils.js";
+import * as actualUtils from "../scripts/modules/utils.js";
 
 // Mock modules first before any imports
-jest.mock("../../scripts/modules/utils.js", () => ({
+jest.mock("../scripts/modules/utils.js", () => ({
 	...actualUtils,
 	// Override specific functions if needed for testing
 }));
 
-import * as utils from "../../scripts/modules/utils.js";
+import * as utils from "../scripts/modules/utils.js";
 jest.mock("fs", () => ({
 	existsSync: jest.fn((filePath) => {
 		// Prevent Jest internal file access
@@ -100,7 +100,7 @@ import {
 	toKebabCase,
 	truncate,
 	writeJSON,
-} from "../../scripts/modules/utils.js";
+} from "../scripts/modules/utils.js";
 
 // Import the mocked modules for use in tests
 import fs from "fs";
@@ -109,7 +109,7 @@ import path from "path";
 // Mock config-manager to provide config values
 const mockGetLogLevel = jest.fn(() => "info"); // Default log level for tests
 const mockGetDebugFlag = jest.fn(() => false); // Default debug flag for tests
-jest.mock("../../scripts/modules/config-manager.js", () => ({
+jest.mock("../scripts/modules/config-manager.js", () => ({
 	getLogLevel: mockGetLogLevel,
 	getDebugFlag: mockGetDebugFlag,
 	// Mock other getters if needed by utils.js functions under test

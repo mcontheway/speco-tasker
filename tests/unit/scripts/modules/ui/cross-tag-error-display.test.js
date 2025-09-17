@@ -5,7 +5,7 @@ import {
 	displayInvalidTagCombinationError,
 	displaySubtaskMoveError,
 	formatTaskIdForDisplay,
-} from "../../../../../scripts/modules/ui.js";
+} from "../../../../../../scripts/modules/ui.js";
 
 // Mock console.log to capture output
 const originalConsoleLog = console.log;

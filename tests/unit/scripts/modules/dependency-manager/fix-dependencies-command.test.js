@@ -38,14 +38,14 @@ jest.unstable_mockModule("../../../../../scripts/modules/utils.js", () => ({
 }));
 
 // Mock ui.js
-jest.unstable_mockModule("../../../../../scripts/modules/ui.js", () => ({
+jest.unstable_mockModule("../../../../../../scripts/modules/ui.js", () => ({
 	displayBanner: jest.fn(),
 	formatDependenciesWithStatus: jest.fn(),
 }));
 
 // Mock task-manager.js
 jest.unstable_mockModule(
-	"../../../../../scripts/modules/task-manager.js",
+	"../../../../../../scripts/modules/task-manager.js",
 	() => ({
 		generateTaskFiles: jest.fn(),
 	}),
@@ -71,7 +71,7 @@ const { readJSON, writeJSON, log, taskExists } = await import(
 
 // Import the module under test
 const { fixDependenciesCommand } = await import(
-	"../../../../../scripts/modules/dependency-manager.js"
+	"../../../../../../scripts/modules/dependency-manager.js"
 );
 
 describe("fixDependenciesCommand tag preservation", () => {

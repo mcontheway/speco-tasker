@@ -6,7 +6,7 @@ import {
 	deleteTag,
 	tags as listTags,
 	renameTag,
-} from "../../../scripts/modules/task-manager/tag-management.js";
+} from "../../scripts/modules/task-manager/tag-management.js";
 
 const TEMP_DIR = path.join(process.cwd(), ".tmp_tag_management_tests");
 const TASKS_PATH = path.join(TEMP_DIR, "tasks.json");

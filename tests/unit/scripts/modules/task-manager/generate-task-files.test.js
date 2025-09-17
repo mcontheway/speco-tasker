@@ -26,7 +26,7 @@ jest.mock("../../../../../scripts/modules/utils.js", () => ({
 	ensureTagMetadata: jest.fn(),
 }));
 
-jest.mock("../../../../../scripts/modules/ui.js", () => ({
+jest.mock("../../../../../../scripts/modules/ui.js", () => ({
 	formatDependenciesWithStatus: jest.fn(),
 	displayBanner: jest.fn(),
 	displayTaskList: jest.fn(),
@@ -37,7 +37,7 @@ jest.mock("../../../../../scripts/modules/ui.js", () => ({
 	getComplexityWithColor: jest.fn((score) => `Score: ${score}`),
 }));
 
-jest.mock("../../../../../scripts/modules/dependency-manager.js", () => ({
+jest.mock("../../../../../../scripts/modules/dependency-manager.js", () => ({
 	validateAndFixDependencies: jest.fn(),
 	validateTaskDependencies: jest.fn(),
 }));
@@ -51,10 +51,10 @@ jest.mock("../../../../../scripts/modules/config-manager.js", () => ({
 const { readJSON, writeJSON, log, findProjectRoot, ensureTagMetadata } =
 	await import("../../../../../scripts/modules/utils.js");
 const { formatDependenciesWithStatus } = await import(
-	"../../../../../scripts/modules/ui.js"
+	"../../../../../../scripts/modules/ui.js"
 );
 const { validateAndFixDependencies } = await import(
-	"../../../../../scripts/modules/dependency-manager.js"
+	"../../../../../../scripts/modules/dependency-manager.js"
 );
 
 const fs = (await import("fs")).default;
@@ -62,7 +62,7 @@ const path = (await import("path")).default;
 
 // Import the module under test
 const { default: generateTaskFiles } = await import(
-	"../../../../../scripts/modules/task-manager/generate-task-files.js"
+	"../../../../../../scripts/modules/task-manager/generate-task-files.js"
 );
 
 describe("generateTaskFiles", () => {

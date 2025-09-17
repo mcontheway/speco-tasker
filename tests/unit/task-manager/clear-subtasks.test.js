@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import clearSubtasks from "../../../scripts/modules/task-manager/clear-subtasks.js";
+import clearSubtasks from "../../scripts/modules/task-manager/clear-subtasks.js";
 
 const TMP = path.join(process.cwd(), ".tmp_clear_subtasks");
 const TASKS = path.join(TMP, "tasks.json");

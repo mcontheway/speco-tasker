@@ -67,7 +67,7 @@ const __filename = fileURLToPath(import.meta.url); // Get current file path
 const __dirname = path.dirname(__filename); // Get current directory
 const realSupportedModelsPath = path.resolve(
 	__dirname,
-	"../../scripts/modules/supported-models.json",
+	"../scripts/modules/supported-models.json",
 );
 let REAL_SUPPORTED_MODELS_CONTENT;
 let REAL_SUPPORTED_MODELS_DATA;
@@ -99,7 +99,7 @@ const mockLog = jest.fn();
 // --- Mock Dependencies BEFORE importing the module under test ---
 
 // Mock the 'utils.js' module using a factory function
-jest.mock("../../scripts/modules/utils.js", () => ({
+jest.mock("../scripts/modules/utils.js", () => ({
 	__esModule: true, // Indicate it's an ES module mock
 	findProjectRoot: mockFindProjectRoot, // Use the mock function instance
 	log: mockLog, // Use the mock function instance
@@ -110,7 +110,7 @@ jest.mock("../../scripts/modules/utils.js", () => ({
 // Import the mocked 'fs' module to allow spying on its functions
 import fsMocked from "fs";
 // --- Import the module under test AFTER mocks are defined ---
-import * as configManager from "../../scripts/modules/config-manager.js";
+import * as configManager from "../scripts/modules/config-manager.js";
 
 // --- Test Data (Keep as is, ensure DEFAULT_CONFIG is accurate) ---
 const MOCK_PROJECT_ROOT = "/mock/project";

@@ -3,7 +3,7 @@
  */
 
 // Import after mocks are set up - No mocks needed for readComplexityReport anymore
-import { findTaskById } from "../../scripts/modules/utils.js";
+import { findTaskById } from "../scripts/modules/utils.js";
 import { emptySampleTasks, sampleTasks } from "../fixtures/sample-tasks.js";
 
 describe("Task Finder", () => {

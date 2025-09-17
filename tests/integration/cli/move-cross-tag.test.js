@@ -9,16 +9,16 @@ const mockGenerateTaskFiles = jest.fn()
 const mockLog = jest.fn()
 
 // --- Setup mocks using traditional jest.mock ---
-jest.mock('../../../scripts/modules/task-manager/move-task.js', () => ({
+jest.mock('../scripts/modules/task-manager/move-task.js', () => ({
 	default: mockMoveTask,
 	moveTasksBetweenTags: mockMoveTasksBetweenTags
 }))
 
-jest.mock('../../../scripts/modules/task-manager/generate-task-files.js', () => ({
+jest.mock('../scripts/modules/task-manager/generate-task-files.js', () => ({
 	default: mockGenerateTaskFiles
 }))
 
-jest.mock('../../../scripts/modules/utils.js', () => ({
+jest.mock('../scripts/modules/utils.js', () => ({
 	log: mockLog,
 	readJSON: jest.fn(),
 	writeJSON: jest.fn(),
@@ -57,11 +57,11 @@ let moveTaskModule, generateTaskFilesModule, utilsModule, chalk
 describe('Cross-Tag Move CLI Integration', () => {
 	// Setup dynamic imports before tests run
 	beforeAll(async () => {
-		moveTaskModule = await import('../../../scripts/modules/task-manager/move-task.js')
+		moveTaskModule = await import('../scripts/modules/task-manager/move-task.js')
 		generateTaskFilesModule = await import(
-			'../../../scripts/modules/task-manager/generate-task-files.js'
+			'../scripts/modules/task-manager/generate-task-files.js'
 		)
-		utilsModule = await import('../../../scripts/modules/utils.js')
+		utilsModule = await import('../scripts/modules/utils.js')
 		chalk = (await import('chalk')).default
 	})
 

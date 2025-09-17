@@ -48,14 +48,14 @@ const mockUtils = {
 }
 
 // Mock the utils module
-jest.unstable_mockModule('../../scripts/modules/utils.js', () => mockUtils)
+jest.unstable_mockModule('../scripts/modules/utils.js', () => mockUtils)
 
 // Mock other dependencies
-jest.unstable_mockModule('../../scripts/modules/task-manager/is-task-dependent.js', () => ({
+jest.unstable_mockModule('../scripts/modules/task-manager/is-task-dependent.js', () => ({
 	default: jest.fn(() => false)
 }))
 
-jest.unstable_mockModule('../../scripts/modules/dependency-manager.js', () => ({
+jest.unstable_mockModule('../scripts/modules/dependency-manager.js', () => ({
 	findCrossTagDependencies: jest.fn(() => {
 		// Since dependencies can only exist within the same tag,
 		// this function should never find any cross-tag conflicts
@@ -100,12 +100,12 @@ jest.unstable_mockModule('../../scripts/modules/dependency-manager.js', () => ({
 	})
 }))
 
-jest.unstable_mockModule('../../scripts/modules/task-manager/generate-task-files.js', () => ({
+jest.unstable_mockModule('../scripts/modules/task-manager/generate-task-files.js', () => ({
 	default: jest.fn().mockResolvedValue()
 }))
 
 // Import the modules we'll be testing after mocking
-const { moveTasksBetweenTags } = await import('../../scripts/modules/task-manager/move-task.js')
+const { moveTasksBetweenTags } = await import('../scripts/modules/task-manager/move-task.js')
 
 describe('Cross-Tag Task Movement Integration Tests', () => {
 	let testDataPath
@@ -418,7 +418,7 @@ describe('Cross-Tag Task Movement Integration Tests', () => {
 			const targetTag = 'in-progress'
 
 			// Override cross-tag detection to simulate conflicts for this case
-			const depManager = await import('../../scripts/modules/dependency-manager.js')
+			const depManager = await import('../scripts/modules/dependency-manager.js')
 			depManager.findCrossTagDependencies.mockReturnValueOnce([
 				{ taskId: 2, dependencyId: 1, dependencyTag: sourceTag }
 			])

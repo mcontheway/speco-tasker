@@ -18,7 +18,7 @@ const __filename = fileURLToPath(import.meta.url); // Get current file path
 const __dirname = path.dirname(__filename); // Get current directory
 const realSupportedModelsPath = path.resolve(
 	__dirname,
-	"../../scripts/modules/supported-models.json",
+	"../scripts/modules/supported-models.json",
 );
 let REAL_SUPPORTED_MODELS_CONTENT;
 let REAL_SUPPORTED_MODELS_DATA;
@@ -173,7 +173,7 @@ describe("Config Manager Module", () => {
 
 		// --- Mock Dependencies BEFORE importing the module under test ---
 		// Mock the 'utils.js' module using doMock (applied at runtime)
-		jest.doMock("../../scripts/modules/utils.js", () => ({
+		jest.doMock("../scripts/modules/utils.js", () => ({
 			__esModule: true, // Indicate it's an ES module mock
 			findProjectRoot: mockFindProjectRoot, // Use the mock function instance
 			log: mockLog, // Use the mock function instance
@@ -181,7 +181,7 @@ describe("Config Manager Module", () => {
 		}));
 
 		// Dynamically import the module under test AFTER mocking dependencies
-		configManager = await import("../../scripts/modules/config-manager.js");
+		configManager = await import("../scripts/modules/config-manager.js");
 
 		// --- Default Mock Implementations ---
 		mockFindProjectRoot.mockReturnValue(MOCK_PROJECT_ROOT); // Default for utils.findProjectRoot

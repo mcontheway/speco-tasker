@@ -5,8 +5,8 @@ const { jest } = require('@jest/globals')
 const mockFs = require('mock-fs')
 
 // Import the actual move task functionality
-const moveTask, { moveTasksBetweenTags } = require('../../scripts/modules/task-manager/move-task.js')
-const { readJSON, writeJSON } = require('../../scripts/modules/utils.js')
+const moveTask, { moveTasksBetweenTags } = require('../scripts/modules/task-manager/move-task.js')
+const { readJSON, writeJSON } = require('../scripts/modules/utils.js')
 
 // Mock console to avoid conflicts with mock-fs
 const originalConsole = { ...console }

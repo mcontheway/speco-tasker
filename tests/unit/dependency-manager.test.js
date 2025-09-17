@@ -11,8 +11,8 @@ import {
 	removeDuplicateDependencies,
 	validateAndFixDependencies,
 	validateTaskDependencies,
-} from "../../scripts/modules/dependency-manager.js";
-import * as utils from "../../scripts/modules/utils.js";
+} from "../scripts/modules/dependency-manager.js";
+import * as utils from "../scripts/modules/utils.js";
 import { sampleTasks } from "../fixtures/sample-tasks.js";
 
 // Mock dependencies
@@ -35,7 +35,7 @@ const mockLog = jest.fn();
 const mockReadJSON = jest.fn();
 const mockWriteJSON = jest.fn();
 
-jest.mock("../../scripts/modules/utils.js", () => ({
+jest.mock("../scripts/modules/utils.js", () => ({
 	log: mockLog,
 	readJSON: mockReadJSON,
 	writeJSON: mockWriteJSON,
@@ -44,11 +44,11 @@ jest.mock("../../scripts/modules/utils.js", () => ({
 	findCycles: mockFindCycles,
 }));
 
-jest.mock("../../scripts/modules/ui.js", () => ({
+jest.mock("../scripts/modules/ui.js", () => ({
 	displayBanner: jest.fn(),
 }));
 
-jest.mock("../../scripts/modules/task-manager.js", () => ({
+jest.mock("../scripts/modules/task-manager.js", () => ({
 	generateTaskFiles: jest.fn(),
 }));
 

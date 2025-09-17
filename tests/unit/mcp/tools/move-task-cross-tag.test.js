@@ -12,7 +12,7 @@ const mockEnableSilentMode = jest.fn();
 const mockDisableSilentMode = jest.fn();
 const mockReadJSON = jest.fn();
 const mockWriteJSON = jest.fn();
-jest.mock("../../../../scripts/modules/utils.js", () => ({
+jest.mock("../../scripts/modules/utils.js", () => ({
 	enableSilentMode: mockEnableSilentMode,
 	disableSilentMode: mockDisableSilentMode,
 	readJSON: mockReadJSON,

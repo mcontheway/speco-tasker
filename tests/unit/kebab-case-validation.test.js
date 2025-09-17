@@ -3,7 +3,7 @@
  */
 
 import { jest } from "@jest/globals";
-import { toKebabCase } from "../../scripts/modules/utils.js";
+import { toKebabCase } from "../scripts/modules/utils.js";
 
 // Create a test implementation of detectCamelCaseFlags
 function testDetectCamelCaseFlags(args) {

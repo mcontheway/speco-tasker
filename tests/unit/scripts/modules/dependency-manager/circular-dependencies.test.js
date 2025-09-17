@@ -5,7 +5,7 @@ import {
 	getDependentTaskIds,
 	validateCrossTagMove,
 	validateSubtaskMove,
-} from "../../../../../scripts/modules/dependency-manager.js";
+} from "../../../../../../scripts/modules/dependency-manager.js";
 
 describe("Circular Dependency Scenarios", () => {
 	describe("Circular Cross-Tag Dependencies", () => {

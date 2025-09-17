@@ -1,4 +1,7 @@
 const config = {
+	// Root directory for the project (relative to config directory)
+	rootDir: "../",
+
 	// Use Node.js environment for testing
 	testEnvironment: "node",
 
@@ -12,7 +15,7 @@ const config = {
 	coverageDirectory: "coverage",
 
 	// A list of paths to directories that Jest should use to search for files in
-	roots: ["../tests", "../scripts"],
+	roots: ["<rootDir>/tests", "<rootDir>/scripts"],
 
 	// The glob patterns Jest uses to detect test files
 	testMatch: [
@@ -42,7 +45,7 @@ const config = {
 	// moduleNameMapper: {},
 
 	// Setup module aliases
-	moduleDirectories: ["../node_modules", "node_modules"],
+	moduleDirectories: ["node_modules"],
 
 	// Configure test coverage thresholds
 	coverageThreshold: {
@@ -61,7 +64,7 @@ const config = {
 	verbose: true,
 
 	// Setup file - use .cjs extension for CommonJS
-	setupFilesAfterEnv: ["../tests/setup.cjs"],
+	setupFilesAfterEnv: ["<rootDir>/tests/setup.cjs"],
 
 	// Properly initialize source-map-support
 	setupFiles: ["source-map-support/register"],

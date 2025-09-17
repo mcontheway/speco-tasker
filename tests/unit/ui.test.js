@@ -8,7 +8,7 @@ import {
 	formatDependenciesWithStatus,
 	getComplexityWithColor,
 	getStatusWithColor,
-} from "../../scripts/modules/ui.js";
+} from "../scripts/modules/ui.js";
 import { sampleTasks } from "../fixtures/sample-tasks.js";
 
 // Mock dependencies
@@ -56,7 +56,7 @@ jest.mock("cli-table3", () =>
 
 jest.mock("gradient-string", () => jest.fn(() => jest.fn((text) => text)));
 
-jest.mock("../../scripts/modules/utils.js", () => ({
+jest.mock("../scripts/modules/utils.js", () => ({
 	CONFIG: {
 		projectName: "Test Project",
 		projectVersion: "1.0.0",
@@ -68,7 +68,7 @@ jest.mock("../../scripts/modules/utils.js", () => ({
 	truncate: jest.fn((text) => text),
 }));
 
-jest.mock("../../scripts/modules/task-manager.js", () => ({
+jest.mock("../scripts/modules/task-manager.js", () => ({
 	findNextTask: jest.fn(),
 	analyzeTaskComplexity: jest.fn(),
 }));

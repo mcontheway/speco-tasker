@@ -4,7 +4,7 @@ import {
 	createTag,
 	deleteTag,
 	useTag,
-} from "../../../scripts/modules/task-manager/tag-management.js";
+} from "../../scripts/modules/task-manager/tag-management.js";
 
 // Temporary workspace for each test run
 const TEMP_DIR = path.join(process.cwd(), ".tmp_tag_boundary");
@@ -130,7 +130,7 @@ describe("Tag boundary resolution", () => {
 
 		// Call addTask with manual data to avoid AI
 		const { default: addTask } = await import(
-			"../../../scripts/modules/task-manager/add-task.js"
+			"../../scripts/modules/task-manager/add-task.js"
 		);
 
 		await addTask(
@@ -174,7 +174,7 @@ describe("Tag boundary resolution", () => {
 
 	it("copyTag deep copy – mutation does not affect source", async () => {
 		const { copyTag } = await import(
-			"../../../scripts/modules/task-manager/tag-management.js"
+			"../../scripts/modules/task-manager/tag-management.js"
 		);
 
 		await createTag(
@@ -217,9 +217,9 @@ describe("Tag boundary resolution", () => {
 		fs.writeFileSync(STATE_PATH, JSON.stringify(state1, null, 2));
 
 		const { default: addTask } = await import(
-			"../../../scripts/modules/task-manager/add-task.js"
+			"../../scripts/modules/task-manager/add-task.js"
 		);
-		const { resolveTag } = await import("../../../scripts/modules/utils.js");
+		const { resolveTag } = await import("../scripts/modules/utils.js");
 
 		const tag = resolveTag({ projectRoot: TEMP_DIR });
 
@@ -250,9 +250,9 @@ describe("Tag boundary resolution", () => {
 		fs.writeFileSync(STATE_PATH, JSON.stringify({}, null, 2));
 
 		const { default: addTask } = await import(
-			"../../../scripts/modules/task-manager/add-task.js"
+			"../../scripts/modules/task-manager/add-task.js"
 		);
-		const { resolveTag } = await import("../../../scripts/modules/utils.js");
+		const { resolveTag } = await import("../scripts/modules/utils.js");
 
 		const tag = resolveTag({ projectRoot: TEMP_DIR }); // should return master
 

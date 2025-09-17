@@ -20,18 +20,18 @@ jest.unstable_mockModule(
 	() => mockUtils,
 );
 jest.unstable_mockModule(
-	"../../../../../scripts/modules/task-manager.js",
+	"../../../../../../scripts/modules/task-manager.js",
 	() => mockTaskManager,
 );
 jest.unstable_mockModule(
-	"../../../../../scripts/modules/task-manager/generate-task-files.js",
+	"../../../../../../scripts/modules/task-manager/generate-task-files.js",
 	() => ({
 		default: mockGenerateTaskFiles,
 	}),
 );
 
 const addSubtask = (
-	await import("../../../../../scripts/modules/task-manager/add-subtask.js")
+	await import("../../../../../../scripts/modules/task-manager/add-subtask.js")
 ).default;
 
 describe("addSubtask function", () => {

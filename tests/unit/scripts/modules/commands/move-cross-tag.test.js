@@ -73,7 +73,7 @@ function setupMocks(config = mockConfig) {
 	// Only mock the modules that are actually used in cross-tag move functionality
 	if (config.core?.moveTasksBetweenTags) {
 		jest.mock(
-			"../../../../../scripts/modules/task-manager/move-task.js",
+			"../../../../../../scripts/modules/task-manager/move-task.js",
 			() => ({
 				moveTasksBetweenTags: mocks.moveTasksBetweenTags,
 			}),
@@ -127,7 +127,7 @@ function setupMocks(config = mockConfig) {
 const mocks = setupMocks();
 
 // Import the actual command handler functions
-import { registerCommands } from "../../../../../scripts/modules/commands.js";
+import { registerCommands } from "../../../../../../scripts/modules/commands.js";
 
 // Extract the handleCrossTagMove function from the commands module
 // This is a simplified version of the actual function for testing

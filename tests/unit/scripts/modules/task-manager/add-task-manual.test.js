@@ -56,7 +56,7 @@ jest.unstable_mockModule(
 );
 
 jest.unstable_mockModule(
-	"../../../../../scripts/modules/utils/task-validation.js",
+	"../../../../../../scripts/modules/utils/task-validation.js",
 	() => ({
 		formatValidationError: jest.fn(() => "Validation error"),
 		validateTaskData: jest.fn(() => ({
@@ -67,7 +67,7 @@ jest.unstable_mockModule(
 	}),
 );
 
-jest.unstable_mockModule("../../../../../scripts/modules/ui.js", () => ({
+jest.unstable_mockModule("../../../../../../scripts/modules/ui.js", () => ({
 	displayAiUsageSummary: jest.fn(),
 	displayBanner: jest.fn(),
 	displayContextAnalysis: jest.fn(),
@@ -85,14 +85,14 @@ const { readJSON, writeJSON } = await import(
 
 // Mock additional modules
 jest.unstable_mockModule(
-	"../../../../../scripts/modules/task-manager/generate-task-files.js",
+	"../../../../../../scripts/modules/task-manager/generate-task-files.js",
 	() => ({
 		default: jest.fn(),
 	}),
 );
 
 jest.unstable_mockModule(
-	"../../../../../scripts/modules/utils/contextGatherer.js",
+	"../../../../../../scripts/modules/utils/contextGatherer.js",
 	() => ({
 		default: class ContextGatherer {
 			gather() {
@@ -108,7 +108,7 @@ jest.unstable_mockModule(
 
 // Import the module under test
 const { default: addTask } = await import(
-	"../../../../../scripts/modules/task-manager/add-task.js"
+	"../../../../../../scripts/modules/task-manager/add-task.js"
 );
 
 // Import parseDependencies to spy on it
@@ -116,7 +116,7 @@ const utilsModule = await import("../../../../../scripts/modules/utils.js");
 
 // Import task validation module
 const taskValidationModule = await import(
-	"../../../../../scripts/modules/utils/task-validation.js"
+	"../../../../../../scripts/modules/utils/task-validation.js"
 );
 
 describe("addTask - Manual Mode", () => {

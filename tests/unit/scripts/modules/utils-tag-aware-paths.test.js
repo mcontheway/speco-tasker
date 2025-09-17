@@ -4,7 +4,7 @@
  */
 
 import path from "path";
-import { getTagAwareFilePath } from "../../../../scripts/modules/utils.js";
+import { getTagAwareFilePath } from "../../../scripts/modules/utils.js";
 
 describe("getTagAwareFilePath utility function", () => {
 	const projectRoot = "/test/project";

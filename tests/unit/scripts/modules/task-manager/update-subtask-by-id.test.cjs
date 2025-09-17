@@ -19,7 +19,7 @@ jest.mock('../../../../../scripts/modules/utils.js', () => ({
 	getCurrentTag: jest.fn(() => 'main')
 }))
 
-jest.mock('../../../../../scripts/modules/ui.js', () => ({
+jest.mock('../../../../../../scripts/modules/ui.js', () => ({
 	getStatusWithColor: jest.fn((s) => s),
 	startLoadingIndicator: jest.fn(() => ({ stop: jest.fn() })),
 	stopLoadingIndicator: jest.fn(),
@@ -27,13 +27,13 @@ jest.mock('../../../../../scripts/modules/ui.js', () => ({
 }))
 
 jest.mock(
-	'../../../../../scripts/modules/task-manager/generate-task-files.js',
+	'../../../../../../scripts/modules/task-manager/generate-task-files.js',
 	() => ({
 		default: jest.fn().mockResolvedValue()
 	})
 )
 
-jest.mock('../../../../../scripts/modules/ai-services-unified.js', () => ({
+jest.mock('../../../../../../scripts/modules/ai-services-unified.js', () => ({
 	generateTextService: jest
 		.fn()
 		.mockResolvedValue({ mainResult: { content: '' }, telemetryData: {} })
@@ -44,7 +44,7 @@ jest.mock('../../../../../scripts/modules/config-manager.js', () => ({
 	hasCodebaseAnalysis: jest.fn(() => false)
 }))
 
-jest.mock('../../../../../scripts/modules/prompt-manager.js', () => ({
+jest.mock('../../../../../../scripts/modules/prompt-manager.js', () => ({
 	default: jest.fn().mockReturnValue({
 		loadPrompt: jest.fn().mockReturnValue('Update the subtask')
 	}),
@@ -53,7 +53,7 @@ jest.mock('../../../../../scripts/modules/prompt-manager.js', () => ({
 	})
 }))
 
-jest.mock('../../../../../scripts/modules/utils/contextGatherer.js', () => ({
+jest.mock('../../../../../../scripts/modules/utils/contextGatherer.js', () => ({
 	ContextGatherer: jest.fn().mockImplementation(() => ({
 		gather: jest.fn().mockReturnValue({
 			fullContext: '',
@@ -67,7 +67,7 @@ const { readJSON, log } = await import('../../../../../scripts/modules/utils.js'
 
 // Import function under test
 const { default: updateSubtaskById } = await import(
-	'../../../../../scripts/modules/task-manager/update-subtask-by-id.js'
+	'../../../../../../scripts/modules/task-manager/update-subtask-by-id.js'
 )
 
 describe('updateSubtaskById validation', () => {

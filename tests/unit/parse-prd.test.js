@@ -20,7 +20,7 @@ const __dirname = path.dirname(__filename);
 
 // Note: AI services have been removed, this test is simplified
 // Original AI service mocking commented out:
-// jest.unstable_mockModule('../../scripts/modules/ai-services-unified.js', () => ({
+// jest.unstable_mockModule('../scripts/modules/ai-services-unified.js', () => ({
 // 	streamTextService: jest.fn(),
 // 	generateObjectService: jest.fn(),
 // 	streamObjectService: jest.fn().mockImplementation(async () => {
@@ -39,7 +39,7 @@ const __dirname = path.dirname(__filename);
 // })))
 
 // Mock all config-manager exports comprehensively
-jest.unstable_mockModule("../../scripts/modules/config-manager.js", () => ({
+jest.unstable_mockModule("../scripts/modules/config-manager.js", () => ({
 	getDebugFlag: jest.fn(() => false),
 	getDefaultPriority: jest.fn(() => "medium"),
 	getMainModelId: jest.fn(() => "test-model"),
@@ -62,7 +62,7 @@ jest.unstable_mockModule("../../scripts/modules/config-manager.js", () => ({
 }));
 
 // Mock utils comprehensively to prevent CLI behavior
-jest.unstable_mockModule("../../scripts/modules/utils.js", () => ({
+jest.unstable_mockModule("../scripts/modules/utils.js", () => ({
 	log: jest.fn(),
 	writeJSON: jest.fn(),
 	enableSilentMode: jest.fn(),
@@ -91,7 +91,7 @@ jest.unstable_mockModule("../../scripts/modules/utils.js", () => ({
 }));
 
 // Mock prompt manager
-jest.unstable_mockModule("../../scripts/modules/prompt-manager.js", () => ({
+jest.unstable_mockModule("../scripts/modules/prompt-manager.js", () => ({
 	getPromptManager: jest.fn(() => ({
 		loadPrompt: jest.fn(() => ({
 			systemPrompt: "Test system prompt",
@@ -122,13 +122,13 @@ jest.unstable_mockModule("../../src/ui/parse-prd.js", () => ({
 	displayParsePrdSummary: jest.fn(),
 }));
 
-jest.unstable_mockModule("../../scripts/modules/ui.js", () => ({
+jest.unstable_mockModule("../scripts/modules/ui.js", () => ({
 	displayAiUsageSummary: jest.fn(),
 }));
 
 // Mock task generation to prevent file operations
 jest.unstable_mockModule(
-	"../../scripts/modules/task-manager/generate-task-files.js",
+	"../scripts/modules/task-manager/generate-task-files.js",
 	() => ({
 		default: jest.fn(),
 	}),
@@ -212,10 +212,10 @@ jest.unstable_mockModule("../../src/ui/indicators.js", () => ({
 
 // Import modules after mocking
 const { generateObjectService } = await import(
-	"../../scripts/modules/ai-services-unified.js"
+	"../scripts/modules/ai-services-unified.js"
 );
 const parsePRD = (
-	await import("../../scripts/modules/task-manager/parse-prd/parse-prd.js")
+	await import("../scripts/modules/task-manager/parse-prd/parse-prd.js")
 ).default;
 
 describe.skip("parse-prd file extension compatibility", () => {

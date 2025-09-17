@@ -11,21 +11,21 @@ jest.unstable_mockModule("../../../../../scripts/modules/utils.js", () => ({
 }));
 
 jest.unstable_mockModule(
-	"../../../../../scripts/modules/task-manager/generate-task-files.js",
+	"../../../../../../scripts/modules/task-manager/generate-task-files.js",
 	() => ({
 		default: jest.fn().mockResolvedValue(),
 	}),
 );
 
 jest.unstable_mockModule(
-	"../../../../../scripts/modules/task-manager/is-task-dependent.js",
+	"../../../../../../scripts/modules/task-manager/is-task-dependent.js",
 	() => ({
 		default: jest.fn(() => false),
 	}),
 );
 
 jest.unstable_mockModule(
-	"../../../../../scripts/modules/dependency-manager.js",
+	"../../../../../../scripts/modules/dependency-manager.js",
 	() => ({
 		findCrossTagDependencies: jest.fn(() => []),
 		getDependentTaskIds: jest.fn(() => []),
@@ -38,12 +38,12 @@ const { readJSON, writeJSON, log } = await import(
 );
 const generateTaskFiles = (
 	await import(
-		"../../../../../scripts/modules/task-manager/generate-task-files.js"
+		"../../../../../../scripts/modules/task-manager/generate-task-files.js"
 	)
 ).default;
 
 const { default: moveTask } = await import(
-	"../../../../../scripts/modules/task-manager/move-task.js"
+	"../../../../../../scripts/modules/task-manager/move-task.js"
 );
 
 const sampleTagged = () => ({

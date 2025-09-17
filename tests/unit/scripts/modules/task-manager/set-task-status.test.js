@@ -25,13 +25,13 @@ jest.unstable_mockModule("../../../../../scripts/modules/utils.js", () => ({
 }));
 
 jest.unstable_mockModule(
-	"../../../../../scripts/modules/task-manager/generate-task-files.js",
+	"../../../../../../scripts/modules/task-manager/generate-task-files.js",
 	() => ({
 		default: jest.fn().mockResolvedValue(),
 	}),
 );
 
-jest.unstable_mockModule("../../../../../scripts/modules/ui.js", () => ({
+jest.unstable_mockModule("../../../../../../scripts/modules/ui.js", () => ({
 	formatDependenciesWithStatus: jest.fn(),
 	displayBanner: jest.fn(),
 	displayTaskList: jest.fn(),
@@ -62,14 +62,14 @@ jest.unstable_mockModule("../../../../../src/constants/task-status.js", () => ({
 }));
 
 jest.unstable_mockModule(
-	"../../../../../scripts/modules/task-manager/update-single-task-status.js",
+	"../../../../../../scripts/modules/task-manager/update-single-task-status.js",
 	() => ({
 		default: jest.fn(),
 	}),
 );
 
 jest.unstable_mockModule(
-	"../../../../../scripts/modules/dependency-manager.js",
+	"../../../../../../scripts/modules/dependency-manager.js",
 	() => ({
 		validateTaskDependencies: jest.fn(),
 	}),
@@ -89,19 +89,19 @@ const { readJSON, writeJSON, log, findTaskById } = await import(
 
 const generateTaskFiles = (
 	await import(
-		"../../../../../scripts/modules/task-manager/generate-task-files.js"
+		"../../../../../../scripts/modules/task-manager/generate-task-files.js"
 	)
 ).default;
 
 const updateSingleTaskStatus = (
 	await import(
-		"../../../../../scripts/modules/task-manager/update-single-task-status.js"
+		"../../../../../../scripts/modules/task-manager/update-single-task-status.js"
 	)
 ).default;
 
 // Import the module under test
 const { default: setTaskStatus } = await import(
-	"../../../../../scripts/modules/task-manager/set-task-status.js"
+	"../../../../../../scripts/modules/task-manager/set-task-status.js"
 );
 
 // Sample data for tests (from main test file) - TAGGED FORMAT

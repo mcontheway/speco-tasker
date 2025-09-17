@@ -13,7 +13,7 @@ jest.unstable_mockModule(
 
 const mockEnableSilentMode = jest.fn();
 const mockDisableSilentMode = jest.fn();
-jest.unstable_mockModule("../../../../scripts/modules/utils.js", () => ({
+jest.unstable_mockModule("../../scripts/modules/utils.js", () => ({
 	enableSilentMode: mockEnableSilentMode,
 	disableSilentMode: mockDisableSilentMode,
 }));
@@ -21,7 +21,7 @@ jest.unstable_mockModule("../../../../scripts/modules/utils.js", () => ({
 // Spyable mock for moveTasksBetweenTags
 const mockMoveTasksBetweenTags = jest.fn();
 jest.unstable_mockModule(
-	"../../../../scripts/modules/task-manager/move-task.js",
+	"../../../scripts/modules/task-manager/move-task.js",
 	() => ({
 		moveTasksBetweenTags: mockMoveTasksBetweenTags,
 	}),

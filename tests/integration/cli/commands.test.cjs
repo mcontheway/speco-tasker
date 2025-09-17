@@ -30,7 +30,7 @@ const mockStartLoadingIndicator = jest.fn(() => ({ stop: jest.fn() }));
 const mockStopLoadingIndicator = jest.fn();
 
 // --- Setup mocks using unstable_mockModule (recommended for ES modules) ---
-jest.unstable_mockModule("../../scripts/modules/config-manager.js", () => ({
+jest.unstable_mockModule("../scripts/modules/config-manager.js", () => ({
 	getMainModelId: mockGetMainModelId,
 	getResearchModelId: mockGetResearchModelId,
 	getFallbackModelId: mockGetFallbackModelId,
@@ -41,7 +41,7 @@ jest.unstable_mockModule("../../scripts/modules/config-manager.js", () => ({
 	VALID_PROVIDERS: ["anthropic", "openai"],
 }));
 
-jest.unstable_mockModule("../../scripts/modules/ui.js", () => ({
+jest.unstable_mockModule("../scripts/modules/ui.js", () => ({
 	displayHelp: mockDisplayHelp,
 	displayBanner: mockDisplayBanner,
 	log: mockLog,
@@ -86,8 +86,8 @@ let configManager, ui, chalk;
 describe("CLI Models Command (Action Handler Test)", () => {
 	// Setup dynamic imports before tests run
 	beforeAll(async () => {
-		configManager = await import("../../scripts/modules/config-manager.js");
-		ui = await import("../../scripts/modules/ui.js");
+		configManager = await import("../scripts/modules/config-manager.js");
+		ui = await import("../scripts/modules/ui.js");
 		chalk = (await import("chalk")).default;
 	});
 

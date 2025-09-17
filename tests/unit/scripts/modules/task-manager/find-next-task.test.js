@@ -2,7 +2,7 @@
  * Tests for the find-next-task.js module
  */
 import { jest } from "@jest/globals";
-import findNextTask from "../../../../../scripts/modules/task-manager/find-next-task.js";
+import findNextTask from "../../../../../../scripts/modules/task-manager/find-next-task.js";
 
 describe("findNextTask", () => {
 	test("should return the highest priority task with all dependencies satisfied", () => {
