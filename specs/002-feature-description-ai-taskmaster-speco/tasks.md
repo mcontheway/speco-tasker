@@ -135,6 +135,7 @@
 ### 文档更新 [P]
 - [ ] T046 [P] 更新 `docs/tutorial.md`、`docs/path-config-guide.md`、`docs/cleanup-guide.md`（合并T049-T051）
 - [ ] T047 更新 `README.md` 的品牌信息和功能介绍
+- [ ] T047.1 恢复严格的 pre-commit 检测（在所有功能实现和单元测试完善后，确保所有测试都严格通过）
 
 ### 最终验证
 - [ ] T048 运行完整测试套件确保所有功能正常
