@@ -13,7 +13,10 @@ try {
 } catch (error) {
 	// Fallback for environments where process.cwd() might fail
 	originalWorkingDirectory = "/tmp";
-	console.warn("Warning: Could not get current working directory, using fallback:", originalWorkingDirectory);
+	console.warn(
+		"Warning: Could not get current working directory, using fallback:",
+		originalWorkingDirectory,
+	);
 }
 
 // Store original working directory and project root

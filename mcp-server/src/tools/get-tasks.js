@@ -5,10 +5,7 @@
 
 import { z } from "zod";
 import { listTasksDirect } from "../core/task-master-core.js";
-import {
-	resolveComplexityReportPath,
-	resolveTasksPath,
-} from "../core/utils/path-utils.js";
+import { resolveTasksPath } from "../core/utils/path-utils.js";
 import {
 	createErrorResponse,
 	generateParameterHelp,
@@ -27,7 +24,7 @@ import { resolveTag } from "../../../scripts/modules/utils.js";
 // Generate parameter help for get_tasks tool
 const getTasksParameterHelp = generateParameterHelp(
 	"get_tasks",
-	[{ name: "projectRoot", description: "项目根目录的绝对路径" }],
+	[{ name: "projectRoot", description: "项目根目录（可选，会自动检测）" }],
 	[
 		{
 			name: "status",
@@ -36,7 +33,6 @@ const getTasksParameterHelp = generateParameterHelp(
 		},
 		{ name: "withSubtasks", description: "是否包含子任务信息" },
 		{ name: "file", description: "任务文件路径（默认：tasks/tasks.json）" },
-		{ name: "complexityReport", description: "复杂度报告文件路径" },
 		{ name: "tag", description: "选择要处理的任务分组" },
 	],
 	[
@@ -65,11 +61,10 @@ export function registerListTasksTool(server) {
 				.string()
 				.optional()
 				.describe("任务文件路径（相对于项目根目录或绝对路径）"),
-			complexityReport: z
+			projectRoot: z
 				.string()
 				.optional()
-				.describe("复杂度报告文件路径（相对于项目根目录或绝对路径）"),
-			projectRoot: z.string().optional().describe("项目根目录（可选，会自动检测）"),
+				.describe("项目根目录（可选，会自动检测）"),
 			tag: z.string().optional().describe("选择要处理的任务分组"),
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
@@ -101,25 +96,11 @@ export function registerListTasksTool(server) {
 					);
 				}
 
-				// Resolve the path to complexity report
-				let complexityReportPath;
-				try {
-					complexityReportPath = resolveComplexityReportPath(
-						{ ...args, tag: resolvedTag },
-						session,
-					);
-				} catch (error) {
-					log.error(`Error finding complexity report: ${error.message}`);
-					// This is optional, so we don't fail the operation
-					complexityReportPath = null;
-				}
-
 				const result = await listTasksDirect(
 					{
 						tasksJsonPath: tasksJsonPath,
 						status: args.status,
 						withSubtasks: args.withSubtasks,
-						reportPath: complexityReportPath,
 						projectRoot: args.projectRoot,
 						tag: resolvedTag,
 					},

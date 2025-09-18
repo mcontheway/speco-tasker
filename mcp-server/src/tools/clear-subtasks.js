@@ -32,7 +32,10 @@ export function registerClearSubtasksTool(server) {
 					.string()
 					.optional()
 					.describe("任务文件的绝对路径，默认为tasks/tasks.json"),
-				projectRoot: z.string().optional().describe("项目根目录（可选，会自动检测）"),
+				projectRoot: z
+					.string()
+					.optional()
+					.describe("项目根目录（可选，会自动检测）"),
 				tag: z.string().optional().describe("选择要处理的任务分组"),
 			})
 			.refine((data) => data.id || data.all, {

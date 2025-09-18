@@ -214,11 +214,6 @@ function registerCommands(programInstance) {
 		.command("list")
 		.description("列出所有任务")
 		.option("-f, --file <file>", "任务文件路径", TASKMASTER_TASKS_FILE)
-		.option(
-			"-r, --report <report>",
-			"复杂度报告文件路径",
-			COMPLEXITY_REPORT_FILE,
-		)
 		.option("-s, --status <status>", "按状态过滤任务")
 		.option("--with-subtasks", "显示每个任务的子任务")
 		.option("-c, --compact", "使用紧凑的一行格式显示任务")
@@ -229,11 +224,6 @@ function registerCommands(programInstance) {
 				tasksPath: options.file || true,
 				tag: options.tag,
 			};
-
-			// Only pass complexityReportPath if user provided a custom path
-			if (options.report && options.report !== COMPLEXITY_REPORT_FILE) {
-				initOptions.complexityReportPath = options.report;
-			}
 
 			const taskMaster = initTaskMaster(initOptions);
 
@@ -469,11 +459,6 @@ function registerCommands(programInstance) {
 		.command("next")
 		.description("显示基于依赖关系和状态的下一个可处理任务")
 		.option("-f, --file <file>", "任务文件路径", TASKMASTER_TASKS_FILE)
-		.option(
-			"-r, --report <report>",
-			"复杂度报告文件路径",
-			COMPLEXITY_REPORT_FILE,
-		)
 		.option("--tag <tag>", "选择要处理的任务分组")
 		.action(async (options) => {
 			const initOptions = {
@@ -481,15 +466,10 @@ function registerCommands(programInstance) {
 				tag: options.tag,
 			};
 
-			if (options.report && options.report !== COMPLEXITY_REPORT_FILE) {
-				initOptions.complexityReportPath = options.report;
-			}
-
 			// Initialize TaskMaster
 			const taskMaster = initTaskMaster({
 				tasksPath: options.file || true,
 				tag: options.tag,
-				complexityReportPath: options.report || false,
 			});
 
 			const tag = taskMaster.getCurrentTag();
@@ -517,11 +497,6 @@ function registerCommands(programInstance) {
 		.option("-i, --id <id>", "要显示的任务ID，支持逗号分隔多个")
 		.option("-s, --status <status>", "按状态过滤子任务")
 		.option("-f, --file <file>", "任务文件路径", TASKMASTER_TASKS_FILE)
-		.option(
-			"-r, --report <report>",
-			"复杂度报告文件路径",
-			COMPLEXITY_REPORT_FILE,
-		)
 		.option("--tag <tag>", "选择要处理的任务分组")
 		.action(async (taskId, options) => {
 			// Initialize TaskMaster
@@ -529,10 +504,6 @@ function registerCommands(programInstance) {
 				tasksPath: options.file || true,
 				tag: options.tag,
 			};
-			// Only pass complexityReportPath if user provided a custom path
-			if (options.report && options.report !== COMPLEXITY_REPORT_FILE) {
-				initOptions.complexityReportPath = options.report;
-			}
 			const taskMaster = initTaskMaster(initOptions);
 
 			const idArg = taskId || options.id;

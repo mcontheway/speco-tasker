@@ -38,7 +38,10 @@ export function registerMoveTaskTool(server) {
 					'目标ID（例如："7" 或 "7.3"）。标签内移动时必需。跨标签移动时，如果省略，任务将移动到目标标签并保持其原有ID',
 				),
 			file: z.string().optional().describe("自定义tasks.json文件路径"),
-			projectRoot: z.string().describe("项目根目录，通常从会话中获取"),
+			projectRoot: z
+				.string()
+				.optional()
+				.describe("项目根目录（可选，会自动检测）"),
 			tag: z.string().optional().describe("选择要处理的任务分组"),
 			fromTag: z.string().optional().describe("跨标签移动的源标签"),
 			toTag: z.string().optional().describe("跨标签移动的目标标签"),
@@ -60,10 +63,10 @@ export function registerMoveTaskTool(server) {
 				if (isCrossTagMove) {
 					// Cross-tag move logic
 					if (!args.from) {
-					return createErrorResponse(
-						"跨标签移动需要源ID",
-						"MISSING_SOURCE_IDS",
-					);
+						return createErrorResponse(
+							"跨标签移动需要源ID",
+							"MISSING_SOURCE_IDS",
+						);
 					}
 
 					// Warn if 'to' parameter is provided for cross-tag moves

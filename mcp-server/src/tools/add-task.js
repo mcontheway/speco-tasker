@@ -23,7 +23,7 @@ import {
 const addTaskParameterHelp = generateParameterHelp(
 	"add_task",
 	[
-		{ name: "projectRoot", description: "项目根目录的绝对路径" },
+		{ name: "projectRoot", description: "项目根目录（可选，会自动检测）" },
 		{ name: "title", description: "任务标题（必需）" },
 		{ name: "description", description: "任务描述（必需）" },
 		{ name: "details", description: "实现细节（必需）" },
@@ -51,7 +51,10 @@ export function registerAddTaskTool(server) {
 		name: "add_task",
 		description: "手动添加新任务",
 		parameters: z.object({
-			projectRoot: z.string().describe("项目根目录的绝对路径"),
+			projectRoot: z
+				.string()
+				.optional()
+				.describe("项目根目录（可选，会自动检测）"),
 			title: z.string().describe("任务标题（必需）"),
 			description: z.string().describe("任务描述（必需）"),
 			details: z.string().describe("实现细节（必需）"),

@@ -30,7 +30,8 @@ export function registerGenerateTool(server) {
 				.describe("输出目录（默认：与任务文件相同目录）"),
 			projectRoot: z
 				.string()
-				.describe("项目目录，必须是绝对路径"),
+				.optional()
+				.describe("项目根目录（可选，会自动检测）"),
 			tag: z.string().optional().describe("选择要处理的任务分组"),
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {

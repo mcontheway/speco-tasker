@@ -25,7 +25,7 @@ describe("Task Status Constants", () => {
 		});
 
 		test("should contain only strings", () => {
-			TASK_STATUS_OPTIONS.forEach(status => {
+			TASK_STATUS_OPTIONS.forEach((status) => {
 				expect(typeof status).toBe("string");
 			});
 		});
@@ -38,17 +38,32 @@ describe("Task Status Constants", () => {
 
 	describe("isValidTaskStatus", () => {
 		test("should return true for valid statuses", () => {
-			const validStatuses = ["pending", "done", "in-progress", "review", "deferred", "cancelled"];
+			const validStatuses = [
+				"pending",
+				"done",
+				"in-progress",
+				"review",
+				"deferred",
+				"cancelled",
+			];
 
-			validStatuses.forEach(status => {
+			validStatuses.forEach((status) => {
 				expect(isValidTaskStatus(status)).toBe(true);
 			});
 		});
 
 		test("should return false for invalid statuses", () => {
-			const invalidStatuses = ["unknown", "completed", "waiting", "", null, undefined, 123];
+			const invalidStatuses = [
+				"unknown",
+				"completed",
+				"waiting",
+				"",
+				null,
+				undefined,
+				123,
+			];
 
-			invalidStatuses.forEach(status => {
+			invalidStatuses.forEach((status) => {
 				expect(isValidTaskStatus(status)).toBe(false);
 			});
 		});

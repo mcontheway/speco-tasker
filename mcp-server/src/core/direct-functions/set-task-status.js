@@ -25,8 +25,7 @@ import { nextTaskDirect } from "./next-task.js";
  */
 export async function setTaskStatusDirect(args, log, context = {}) {
 	// Destructure expected args, including the resolved tasksJsonPath and projectRoot
-	const { tasksJsonPath, id, status, complexityReportPath, projectRoot, tag } =
-		args;
+	const { tasksJsonPath, id, status, projectRoot, tag } = args;
 	const { session } = context;
 	try {
 		log.info(`Setting task status with args: ${JSON.stringify(args)}`);
@@ -102,7 +101,6 @@ export async function setTaskStatusDirect(args, log, context = {}) {
 					const nextResult = await nextTaskDirect(
 						{
 							tasksJsonPath: tasksJsonPath,
-							reportPath: complexityReportPath,
 							projectRoot: projectRoot,
 							tag,
 						},

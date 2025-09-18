@@ -44,7 +44,7 @@ describe("Stream Parser", () => {
 		});
 
 		test("should have string values for all codes", () => {
-			Object.values(STREAMING_ERROR_CODES).forEach(code => {
+			Object.values(STREAMING_ERROR_CODES).forEach((code) => {
 				expect(typeof code).toBe("string");
 				expect(code.length).toBeGreaterThan(0);
 			});

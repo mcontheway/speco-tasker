@@ -48,7 +48,7 @@ describe("Path Constants", () => {
 		});
 
 		test("should contain only strings", () => {
-			PROJECT_MARKERS.forEach(marker => {
+			PROJECT_MARKERS.forEach((marker) => {
 				expect(typeof marker).toBe("string");
 			});
 		});

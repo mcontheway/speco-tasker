@@ -13,15 +13,15 @@ const config = {
 
 	// Transform configuration for both CommonJS and ES modules
 	transform: {
-		'^.+\\.js$': 'babel-jest',
-		'^.+\\.mjs$': 'babel-jest',
+		"^.+\\.js$": "babel-jest",
+		"^.+\\.mjs$": "babel-jest",
 	},
 
 	// Module name mapping for ES modules
 	moduleNameMapper: {
-		'^(\\.{1,2}/.*)\\.js$': '$1',
+		"^(\\.{1,2}/.*)\\.js$": "$1",
 		// Mock import.meta.url for ES modules
-		'import\\.meta\\.url': 'jest.fn(() => "file:///mock/path")',
+		"import\\.meta\\.url": 'jest.fn(() => "file:///mock/path")',
 	},
 
 	// Don't transform node_modules except specific ones
@@ -31,11 +31,6 @@ const config = {
 
 	// Setup files
 	setupFilesAfterEnv: ["<rootDir>/tests/setup.cjs"],
-
-	// Mock graceful-fs to prevent process.cwd() issues
-	moduleNameMapper: {
-		'^graceful-fs$': '<rootDir>/tests/mocks/graceful-fs.mock.js'
-	},
 
 	// Module file extensions
 	moduleFileExtensions: ["js", "cjs", "mjs", "json"],
@@ -90,7 +85,7 @@ const config = {
 
 	// ES module globals
 	globals: {
-		'ts-jest': {
+		"ts-jest": {
 			useESM: true,
 		},
 	},

@@ -56,7 +56,9 @@ describe("Path Utilities", () => {
 		beforeEach(() => {
 			// Mock path.resolve and path.dirname
 			path.resolve.mockImplementation((...args) => args.join("/"));
-			path.dirname.mockImplementation((p) => p.split("/").slice(0, -1).join("/") || "/");
+			path.dirname.mockImplementation(
+				(p) => p.split("/").slice(0, -1).join("/") || "/",
+			);
 			path.parse.mockReturnValue({ root: "/" });
 		});
 
@@ -81,7 +83,9 @@ describe("Path Utilities", () => {
 		beforeEach(() => {
 			path.isAbsolute.mockReturnValue(false);
 			path.resolve.mockImplementation((...args) => args.join("/"));
-			path.dirname.mockImplementation((p) => p.split("/").slice(0, -1).join("/"));
+			path.dirname.mockImplementation((p) =>
+				p.split("/").slice(0, -1).join("/"),
+			);
 			path.join.mockImplementation((...args) => args.join("/"));
 		});
 
@@ -93,7 +97,10 @@ describe("Path Utilities", () => {
 
 		test("should resolve explicit relative path", () => {
 			const result = resolveTasksOutputPath("custom/tasks.json");
-			expect(path.resolve).toHaveBeenCalledWith(process.cwd(), "custom/tasks.json");
+			expect(path.resolve).toHaveBeenCalledWith(
+				process.cwd(),
+				"custom/tasks.json",
+			);
 		});
 
 		test("should create default .taskmaster path when no explicit path", () => {
@@ -104,7 +111,7 @@ describe("Path Utilities", () => {
 
 			expect(fs.mkdirSync).toHaveBeenCalledWith(
 				expect.stringContaining(".taskmaster"),
-				{ recursive: true }
+				{ recursive: true },
 			);
 		});
 	});

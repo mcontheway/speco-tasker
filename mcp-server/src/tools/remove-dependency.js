@@ -27,12 +27,11 @@ export function registerRemoveDependencyTool(server) {
 			file: z
 				.string()
 				.optional()
-				.describe(
-					"任务文件的绝对路径（默认：tasks/tasks.json）",
-				),
+				.describe("任务文件的绝对路径（默认：tasks/tasks.json）"),
 			projectRoot: z
 				.string()
-				.describe("项目目录，必须是绝对路径"),
+				.optional()
+				.describe("项目根目录（可选，会自动检测）"),
 			tag: z.string().optional().describe("选择要处理的任务分组"),
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {

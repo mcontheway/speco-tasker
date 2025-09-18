@@ -10,10 +10,7 @@ import {
 	nextTaskDirect,
 	setTaskStatusDirect,
 } from "../core/task-master-core.js";
-import {
-	findComplexityReportPath,
-	findTasksPath,
-} from "../core/utils/path-utils.js";
+import { findTasksPath } from "../core/utils/path-utils.js";
 import {
 	createErrorResponse,
 	generateParameterHelp,
@@ -31,7 +28,7 @@ import {
 const setTaskStatusParameterHelp = generateParameterHelp(
 	"set_task_status",
 	[
-		{ name: "projectRoot", description: "项目根目录的绝对路径" },
+		{ name: "projectRoot", description: "项目根目录（可选，会自动检测）" },
 		{
 			name: "id",
 			description: "任务ID或子任务ID（例如：15, 15.2），多个ID用逗号分隔",
@@ -44,7 +41,6 @@ const setTaskStatusParameterHelp = generateParameterHelp(
 	],
 	[
 		{ name: "file", description: "任务文件路径（默认：tasks/tasks.json）" },
-		{ name: "complexityReport", description: "复杂度报告文件路径" },
 		{ name: "tag", description: "选择要处理的任务分组" },
 	],
 	[
@@ -70,11 +66,10 @@ export function registerSetTaskStatusTool(server) {
 					"新状态，支持'pending', 'done', 'in-progress', 'review', 'deferred', 'cancelled'",
 				),
 			file: z.string().optional().describe("任务文件的绝对路径"),
-			complexityReport: z
+			projectRoot: z
 				.string()
 				.optional()
-				.describe("复杂度报告文件路径，相对于项目根目录或绝对路径"),
-			projectRoot: z.string().optional().describe("项目根目录（可选，会自动检测）"),
+				.describe("项目根目录（可选，会自动检测）"),
 			tag: z.string().optional().describe("可选的标签上下文"),
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
@@ -112,26 +107,11 @@ export function registerSetTaskStatusTool(server) {
 					);
 				}
 
-				let complexityReportPath;
-				try {
-					complexityReportPath = findComplexityReportPath(
-						{
-							projectRoot: args.projectRoot,
-							complexityReport: args.complexityReport,
-							tag: resolvedTag,
-						},
-						log,
-					);
-				} catch (error) {
-					log.error(`Error finding complexity report: ${error.message}`);
-				}
-
 				const result = await setTaskStatusDirect(
 					{
 						tasksJsonPath: tasksJsonPath,
 						id: args.id,
 						status: args.status,
-						complexityReportPath,
 						projectRoot: args.projectRoot,
 						tag: resolvedTag,
 					},

@@ -6,10 +6,7 @@
 import { z } from "zod";
 import { resolveTag } from "../../../scripts/modules/utils.js";
 import { showTaskDirect } from "../core/task-master-core.js";
-import {
-	findComplexityReportPath,
-	findTasksPath,
-} from "../core/utils/path-utils.js";
+import { findTasksPath } from "../core/utils/path-utils.js";
 import {
 	createErrorResponse,
 	generateParameterHelp,
@@ -28,12 +25,11 @@ import {
 const getTaskParameterHelp = generateParameterHelp(
 	"get_task",
 	[
-		{ name: "projectRoot", description: "项目根目录的绝对路径" },
+		{ name: "projectRoot", description: "项目根目录（可选，会自动检测）" },
 		{ name: "id", description: "要查看的任务ID或子任务ID（例如：15, 15.2）" },
 	],
 	[
 		{ name: "file", description: "任务文件路径（默认：tasks/tasks.json）" },
-		{ name: "complexityReport", description: "复杂度报告文件路径" },
 		{ name: "tag", description: "选择要处理的任务分组" },
 	],
 	[
@@ -73,13 +69,10 @@ export function registerShowTaskTool(server) {
 				.optional()
 				.describe("按状态过滤子任务，支持'pending', 'done'等"),
 			file: z.string().optional().describe("相对于项目根目录的任务文件路径"),
-			complexityReport: z
-				.string()
-				.optional()
-				.describe("复杂度报告文件路径，相对于项目根目录或绝对路径"),
 			projectRoot: z
 				.string()
-				.describe("项目根目录的绝对路径，可选，通常从会话获取"),
+				.optional()
+				.describe("项目根目录（可选，会自动检测）"),
 			tag: z.string().optional().describe("选择要处理的任务分组"),
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
@@ -120,24 +113,9 @@ export function registerShowTaskTool(server) {
 				}
 
 				// Call the direct function, passing the normalized projectRoot
-				// Resolve the path to complexity report
-				let complexityReportPath;
-				try {
-					complexityReportPath = findComplexityReportPath(
-						{
-							projectRoot: projectRoot,
-							complexityReport: args.complexityReport,
-							tag: resolvedTag,
-						},
-						log,
-					);
-				} catch (error) {
-					log.error(`Error finding complexity report: ${error.message}`);
-				}
 				const result = await showTaskDirect(
 					{
 						tasksJsonPath: tasksJsonPath,
-						reportPath: complexityReportPath,
 						// Pass other relevant args
 						id: id,
 						status: status,

@@ -21,7 +21,7 @@ import { sampleTasks } from "../fixtures/sample-tasks.js";
  * @returns {obj is MCPSession}
  */
 function hasEnvProperty(obj) {
-	return obj && typeof obj === 'object' && 'env' in obj;
+	return obj && typeof obj === "object" && "env" in obj;
 }
 
 // Disable chalk's color detection which can cause fs.readFileSync calls
@@ -49,7 +49,7 @@ try {
 	);
 	REAL_SUPPORTED_MODELS_CONTENT = "{}"; // Default to empty object on error
 	REAL_SUPPORTED_MODELS_DATA = {};
-	if (typeof jest !== 'undefined') {
+	if (typeof jest !== "undefined") {
 		throw new Error(`Could not load supported-models.json: ${err.message}`);
 	} else {
 		process.exit(1); // Exit if essential test data can't be loaded
@@ -600,7 +600,6 @@ describe("Config Manager Module", () => {
 
 	// --- Getter Functions ---
 	describe("Getter Functions", () => {
-
 		test("getLogLevel should return logLevel from config", () => {
 			// Arrange: Set up readFileSync to return VALID_CUSTOM_CONFIG
 			mockReadFileSync.mockImplementation((filePath) => {
@@ -819,8 +818,8 @@ describe("Config Manager Module", () => {
 					const mcpSession = { env: { [String(envVarName)]: keyValue } };
 					mockResolveEnvVariable.mockImplementation((key, sessionArg) => {
 						return hasEnvProperty(sessionArg)
-							// @ts-ignore - TypeScript cannot infer that env exists after type guard
-							? sessionArg.env[String(key)]
+							? // @ts-ignore - TypeScript cannot infer that env exists after type guard
+								sessionArg.env[String(key)]
 							: undefined;
 					});
 					expect(

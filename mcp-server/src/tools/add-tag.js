@@ -36,7 +36,10 @@ export function registerAddTagTool(server) {
 				.string()
 				.optional()
 				.describe("任务文件路径，默认为tasks/tasks.json"),
-			projectRoot: z.string().optional().describe("项目根目录（可选，会自动检测）"),
+			projectRoot: z
+				.string()
+				.optional()
+				.describe("项目根目录（可选，会自动检测）"),
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
 			try {

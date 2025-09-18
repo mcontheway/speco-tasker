@@ -10,9 +10,8 @@ const __dirname = dirname(__filename);
 
 const rootDir = findRootDir(__dirname);
 
-// Read the extension's package.json
-const extensionDir = join(rootDir, "apps", "extension");
-const pkgPath = join(extensionDir, "package.json");
+// Read the project's package.json
+const pkgPath = join(rootDir, "package.json");
 
 let pkg;
 try {

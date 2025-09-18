@@ -70,7 +70,6 @@ task-master list --tag=feature-branch
 - `status`: 状态过滤（可选，支持逗号分隔多个状态）
 - `withSubtasks`: 是否包含子任务
 - `file`: 任务文件路径
-- `complexityReport`: 复杂度报告路径
 - `projectRoot`: 项目根目录（可选，会自动检测）
 - `tag`: 标签名称
 
@@ -297,7 +296,7 @@ task-master update-task --id=1 --details="添加错误处理逻辑" --append
 - `dependencies`: 新依赖关系
 - `priority`: 新优先级
 - `status`: 新状态
-- `append`: 是否追加模式
+- `append`: 是否追加模式（默认为true，追加到现有内容；设为false则替换）
 - `tag`: 标签名称
 - `file`: 任务文件路径
 - `projectRoot`: 项目根目录（可选，会自动检测）
@@ -326,6 +325,7 @@ task-master update-subtask --id=5.2 --dependencies="5.1,5.3"
 - `status`: 新状态
 - `dependencies`: 新依赖关系
 - `priority`: 新优先级
+- `append`: 是否追加模式（默认为true，追加到现有内容；设为false则替换）
 - `tag`: 标签名称
 - `file`: 任务文件路径
 - `projectRoot`: 项目根目录（可选，会自动检测）

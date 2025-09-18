@@ -24,6 +24,8 @@ import { registerRemoveSubtaskTool } from "./remove-subtask.js";
 import { registerRemoveTaskTool } from "./remove-task.js";
 import { registerRenameTagTool } from "./rename-tag.js";
 import { registerSetTaskStatusTool } from "./set-task-status.js";
+import { registerUpdateSubtaskTool } from "./update-subtask.js";
+import { registerUpdateTaskTool } from "./update-task.js";
 import { registerUseTagTool } from "./use-tag.js";
 import { registerValidateDependenciesTool } from "./validate-dependencies.js";
 
@@ -57,7 +59,9 @@ export function registerSpecoTaskerTools(server) {
 		// Group 5: Task Creation & Modification
 		registerAddTaskTool(server);
 		registerAddSubtaskTool(server);
-		// AI-based update tools removed in phase 3.3
+		// Manual update tools (AI-based update tools removed in phase 3.3)
+		registerUpdateTaskTool(server);
+		registerUpdateSubtaskTool(server);
 		registerRemoveTaskTool(server);
 		registerRemoveSubtaskTool(server);
 		registerClearSubtasksTool(server);

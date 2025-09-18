@@ -16,7 +16,6 @@ import { findTasksPath } from "../utils/path-utils.js";
  * @param {Object} args - Command arguments.
  * @param {string} args.id - Task ID to show.
  * @param {string} [args.file] - Optional path to the tasks file (passed to findTasksPath).
- * @param {string} args.reportPath - Explicit path to the complexity report file.
  * @param {string} [args.status] - Optional status to filter subtasks by.
  * @param {string} args.projectRoot - Absolute path to the project root directory (already normalized by tool).
  * @param {string} [args.tag] - Tag for the task
@@ -27,7 +26,7 @@ import { findTasksPath } from "../utils/path-utils.js";
 export async function showTaskDirect(args, log) {
 	// This function doesn't need session context since it only reads data
 	// Destructure projectRoot and other args. projectRoot is assumed normalized.
-	const { id, file, reportPath, status, projectRoot, tag } = args;
+	const { id, file, status, projectRoot, tag } = args;
 
 	log.info(
 		`Showing task direct function. ID: ${id}, File: ${file}, Status Filter: ${status}, ProjectRoot: ${projectRoot}`,
@@ -64,8 +63,6 @@ export async function showTaskDirect(args, log) {
 			};
 		}
 
-		const complexityReport = readComplexityReport(reportPath);
-
 		// Parse comma-separated IDs
 		const taskIds = id
 			.split(",")
@@ -87,7 +84,7 @@ export async function showTaskDirect(args, log) {
 			const { task, originalSubtaskCount } = findTaskById(
 				tasksData.tasks,
 				taskIds[0],
-				complexityReport,
+				null, // complexityReport parameter removed
 				status,
 			);
 
@@ -120,7 +117,7 @@ export async function showTaskDirect(args, log) {
 			const { task, originalSubtaskCount } = findTaskById(
 				tasksData.tasks,
 				taskId,
-				complexityReport,
+				null, // complexityReport parameter removed
 				status,
 			);
 

@@ -11,7 +11,10 @@ const {
 } = require("../../../src/utils/timeout-manager.js");
 
 // Import the actual classes for testing
-const { StreamingError, STREAMING_ERROR_CODES } = require("../../../src/utils/stream-parser.js");
+const {
+	StreamingError,
+	STREAMING_ERROR_CODES,
+} = require("../../../src/utils/stream-parser.js");
 
 describe("Timeout Manager", () => {
 	afterEach(() => {
@@ -31,17 +34,17 @@ describe("Timeout Manager", () => {
 				setTimeout(() => resolve("too late"), 200);
 			});
 
-			await expect(withTimeout(slowPromise, 100, "Slow operation"))
-				.rejects
-				.toThrow("Slow operation timed out after 0.1 seconds");
+			await expect(
+				withTimeout(slowPromise, 100, "Slow operation"),
+			).rejects.toThrow("Slow operation timed out after 0.1 seconds");
 		});
 
 		test("should reject with original error when promise rejects", async () => {
 			const failingPromise = Promise.reject(new Error("Original error"));
 
-			await expect(withTimeout(failingPromise, 1000, "Failing operation"))
-				.rejects
-				.toThrow("Original error");
+			await expect(
+				withTimeout(failingPromise, 1000, "Failing operation"),
+			).rejects.toThrow("Original error");
 		});
 
 		test("should clear timeout when promise resolves first", async () => {
@@ -113,10 +116,13 @@ describe("Timeout Manager", () => {
 
 	describe("isTimeoutError", () => {
 		test("should return true for timeout errors", () => {
-			const { StreamingError, STREAMING_ERROR_CODES } = require("../../../src/utils/stream-parser.js");
+			const {
+				StreamingError,
+				STREAMING_ERROR_CODES,
+			} = require("../../../src/utils/stream-parser.js");
 			const timeoutError = new StreamingError(
 				"Operation timed out after 5 seconds",
-				STREAMING_ERROR_CODES.STREAM_PROCESSING_FAILED
+				STREAMING_ERROR_CODES.STREAM_PROCESSING_FAILED,
 			);
 
 			expect(isTimeoutError(timeoutError)).toBe(true);
@@ -129,10 +135,11 @@ describe("Timeout Manager", () => {
 		});
 
 		test("should return false for streaming errors without timeout message", () => {
-			const streamingError = new (require("../../../src/utils/stream-parser.js")).StreamingError(
-				"Some other streaming error",
-				"STREAM_PROCESSING_FAILED"
-			);
+			const streamingError =
+				new (require("../../../src/utils/stream-parser.js").StreamingError)(
+					"Some other streaming error",
+					"STREAM_PROCESSING_FAILED",
+				);
 
 			expect(isTimeoutError(streamingError)).toBe(false);
 		});

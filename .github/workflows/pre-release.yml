@@ -9,7 +9,6 @@ jobs:
     runs-on: ubuntu-latest
     # Only allow pre-releases on non-main branches
     if: github.ref != 'refs/heads/main'
-    environment: release
     steps:
       - uses: actions/checkout@v4
         with:
@@ -74,8 +73,9 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Commit & Push changes
-        uses: actions-js/push@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ github.ref }}
-          message: "chore: rc version bump"
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add .
+          git commit -m "chore: rc version bump" || echo "No changes to commit"
+          git push

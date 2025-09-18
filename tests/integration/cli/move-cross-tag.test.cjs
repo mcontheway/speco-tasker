@@ -14,9 +14,12 @@ jest.mock("../../../scripts/modules/task-manager/move-task.js", () => ({
 	moveTasksBetweenTags: mockMoveTasksBetweenTags,
 }));
 
-jest.mock("../../../scripts/modules/task-manager/generate-task-files.js", () => ({
-	default: mockGenerateTaskFiles,
-}));
+jest.mock(
+	"../../../scripts/modules/task-manager/generate-task-files.js",
+	() => ({
+		default: mockGenerateTaskFiles,
+	}),
+);
 
 // Mock utils module with manual mock setup
 const mockUtils = {
@@ -66,7 +69,9 @@ describe("Cross-Tag Move CLI Integration", () => {
 	// Setup module imports before tests run
 	beforeAll(async () => {
 		// Create a temporary directory for testing
-		tempDir = fs.mkdtempSync(path.join(require("os").tmpdir(), "taskmaster-test-"));
+		tempDir = fs.mkdtempSync(
+			path.join(require("os").tmpdir(), "taskmaster-test-"),
+		);
 		process.chdir(tempDir);
 
 		// Create basic project structure

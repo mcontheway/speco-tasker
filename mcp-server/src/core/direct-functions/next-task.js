@@ -18,7 +18,6 @@ import {
  *
  * @param {Object} args - Command arguments
  * @param {string} args.tasksJsonPath - Explicit path to the tasks.json file.
- * @param {string} args.reportPath - Path to the report file.
  * @param {string} args.projectRoot - Project root path (for MCP/env fallback)
  * @param {string} args.tag - Tag for the task (optional)
  * @param {Object} log - Logger object
@@ -26,7 +25,7 @@ import {
  */
 export async function nextTaskDirect(args, log, context = {}) {
 	// Destructure expected args
-	const { tasksJsonPath, reportPath, projectRoot, tag } = args;
+	const { tasksJsonPath, projectRoot, tag } = args;
 	const { session } = context;
 
 	if (!tasksJsonPath) {
@@ -61,11 +60,8 @@ export async function nextTaskDirect(args, log, context = {}) {
 				};
 			}
 
-			// Read the complexity report
-			const complexityReport = readComplexityReport(reportPath);
-
 			// Find the next task
-			const nextTask = findNextTask(data.tasks, complexityReport);
+			const nextTask = findNextTask(data.tasks, null);
 
 			if (!nextTask) {
 				log.info(

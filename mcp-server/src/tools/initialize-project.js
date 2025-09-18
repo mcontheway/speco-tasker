@@ -11,11 +11,16 @@ import {
 // Generate parameter help for initialize_project tool
 const initializeProjectParameterHelp = generateParameterHelp(
 	"initialize_project",
-	[{ name: "projectRoot", description: "项目根目录的绝对路径（可选，会自动检测）" }],
+	[
+		{
+			name: "projectRoot",
+			description: "项目根目录的绝对路径（可选，会自动检测）",
+		},
+	],
 	[],
 	[
-		'{}',  // 无参数，自动检测
-		'{"projectRoot": "/path/to/project"}',  // 指定项目根目录
+		"{}", // 无参数，自动检测
+		'{"projectRoot": "/path/to/project"}', // 指定项目根目录
 	],
 );
 

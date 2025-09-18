@@ -347,7 +347,10 @@ async function initializeProject(options = {}) {
 	const projectRoot = process.cwd(); // Get current working directory as project root
 
 	// Check if we should skip prompts (for MCP mode or CLI mode with yes=true, or CLI mode with yes=false but we want to skip for simplicity)
-	const skipPrompts = options.yes === true || isSilentMode() || (options.yes === false && !process.env.FORCE_INTERACTIVE);
+	const skipPrompts =
+		options.yes === true ||
+		isSilentMode() ||
+		(options.yes === false && !process.env.FORCE_INTERACTIVE);
 
 	if (skipPrompts) {
 		// MCP mode or explicit yes - use intelligent defaults without prompts
@@ -368,11 +371,21 @@ async function initializeProject(options = {}) {
 
 		// Log what we're doing
 		if (!isSilentMode()) {
-			console.log(chalk.blue("🚀 Initializing Speco Tasker with intelligent defaults..."));
+			console.log(
+				chalk.blue("🚀 Initializing Speco Tasker with intelligent defaults..."),
+			);
 			console.log(chalk.gray(`📁 Project root: ${projectRoot}`));
 			console.log(chalk.gray(`📦 Project name: ${finalOptions.name}`));
-			console.log(chalk.gray(`🔧 Git repository: ${finalOptions.initGit ? "Will initialize" : "Already exists"}`));
-			console.log(chalk.gray(`🔗 Shell aliases: ${finalOptions.addAliases ? "Will add" : "Skipping"}`));
+			console.log(
+				chalk.gray(
+					`🔧 Git repository: ${finalOptions.initGit ? "Will initialize" : "Already exists"}`,
+				),
+			);
+			console.log(
+				chalk.gray(
+					`🔗 Shell aliases: ${finalOptions.addAliases ? "Will add" : "Skipping"}`,
+				),
+			);
 			console.log();
 		}
 
@@ -418,8 +431,16 @@ async function initializeProject(options = {}) {
 			// Show summary
 			console.log("\nSpeco Tasker Project settings:");
 			console.log(chalk.blue("Project Name:"), chalk.white(projectName));
-			console.log(chalk.blue("Git repository:"), chalk.white(finalOptions.initGit ? "Will initialize" : "Already exists"));
-			console.log(chalk.blue("Shell aliases:"), chalk.white(finalOptions.addAliases ? "Will add" : "Skipping"));
+			console.log(
+				chalk.blue("Git repository:"),
+				chalk.white(
+					finalOptions.initGit ? "Will initialize" : "Already exists",
+				),
+			);
+			console.log(
+				chalk.blue("Shell aliases:"),
+				chalk.white(finalOptions.addAliases ? "Will add" : "Skipping"),
+			);
 
 			const confirmInput = await promptQuestion(
 				rl,

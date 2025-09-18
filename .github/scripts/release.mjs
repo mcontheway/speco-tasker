@@ -18,9 +18,9 @@ if (existsSync(preJsonPath)) {
 	unlinkSync(preJsonPath);
 }
 
-// Check if the extension version has changed and tag it
+// Check if the project version has changed and tag it
 // This prevents changeset from trying to publish the private package
-runCommand("node", [join(__dirname, "tag-extension.mjs")]);
+runCommand("node", [join(__dirname, "tag-project.mjs")]);
 
 // Run changeset publish for npm packages
 runCommand("npx", ["changeset", "publish"]);

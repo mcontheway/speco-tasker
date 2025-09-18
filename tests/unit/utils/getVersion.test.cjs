@@ -44,7 +44,7 @@ describe("Version Utilities", () => {
 			expect(result).toBe("1.2.3");
 			expect(fs.readFileSync).toHaveBeenCalledWith(
 				"/path/to/src/utils/../../package.json",
-				"utf8"
+				"utf8",
 			);
 		});
 

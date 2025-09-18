@@ -22,17 +22,15 @@ export function registerDeleteTagTool(server) {
 		description: "删除现有标签及其所有任务",
 		parameters: z.object({
 			name: z.string().describe("要删除的标签名称"),
-			yes: z
-				.boolean()
-				.optional()
-				.describe("跳过确认提示（默认：MCP下为true）"),
+			yes: z.boolean().optional().describe("跳过确认提示（默认：MCP下为true）"),
 			file: z
 				.string()
 				.optional()
 				.describe("任务文件路径（默认：tasks/tasks.json）"),
 			projectRoot: z
 				.string()
-				.describe("项目目录，必须是绝对路径"),
+				.optional()
+				.describe("项目根目录（可选，会自动检测）"),
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
 			try {

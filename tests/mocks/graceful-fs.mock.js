@@ -3,7 +3,7 @@
  */
 
 // Use the actual fs module but mock problematic methods
-const fs = require('fs');
+const fs = require("fs");
 
 // Mock process.cwd() to return a safe fallback
 const originalCwd = process.cwd;
@@ -12,7 +12,7 @@ process.cwd = () => {
 		return originalCwd.call(process);
 	} catch (error) {
 		// Fallback for environments where process.cwd() fails
-		return '/tmp';
+		return "/tmp";
 	}
 };
 

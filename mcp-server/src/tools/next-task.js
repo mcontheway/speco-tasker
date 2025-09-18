@@ -6,10 +6,7 @@
 import { z } from "zod";
 import { resolveTag } from "../../../scripts/modules/utils.js";
 import { nextTaskDirect } from "../core/task-master-core.js";
-import {
-	resolveComplexityReportPath,
-	resolveTasksPath,
-} from "../core/utils/path-utils.js";
+import { resolveTasksPath } from "../core/utils/path-utils.js";
 import {
 	createErrorResponse,
 	generateParameterHelp,
@@ -26,10 +23,9 @@ import {
 // Generate parameter help for next_task tool
 const nextTaskParameterHelp = generateParameterHelp(
 	"next_task",
-	[{ name: "projectRoot", description: "项目根目录的绝对路径" }],
+	[{ name: "projectRoot", description: "项目根目录（可选，会自动检测）" }],
 	[
 		{ name: "file", description: "任务文件路径（默认：tasks/tasks.json）" },
-		{ name: "complexityReport", description: "复杂度报告文件路径" },
 		{ name: "tag", description: "选择要处理的任务分组" },
 	],
 	[
@@ -44,11 +40,10 @@ export function registerNextTaskTool(server) {
 		description: "基于依赖关系和状态查找下一个可处理的任务",
 		parameters: z.object({
 			file: z.string().optional().describe("任务文件的绝对路径"),
-			complexityReport: z
+			projectRoot: z
 				.string()
 				.optional()
-				.describe("复杂度报告文件路径，相对于项目根目录或绝对路径"),
-			projectRoot: z.string().optional().describe("项目根目录（可选，会自动检测）"),
+				.describe("项目根目录（可选，会自动检测）"),
 			tag: z.string().optional().describe("选择要处理的任务分组"),
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
@@ -70,23 +65,9 @@ export function registerNextTaskTool(server) {
 					);
 				}
 
-				// Resolve the path to complexity report (optional)
-				let complexityReportPath;
-				try {
-					complexityReportPath = resolveComplexityReportPath(
-						{ ...args, tag: resolvedTag },
-						session,
-					);
-				} catch (error) {
-					log.error(`Error finding complexity report: ${error.message}`);
-					// This is optional, so we don't fail the operation
-					complexityReportPath = null;
-				}
-
 				const result = await nextTaskDirect(
 					{
 						tasksJsonPath: tasksJsonPath,
-						reportPath: complexityReportPath,
 						projectRoot: args.projectRoot,
 						tag: resolvedTag,
 					},

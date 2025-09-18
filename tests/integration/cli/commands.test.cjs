@@ -4,4 +4,3 @@ describe("CLI Commands Integration Tests", () => {
 		expect(true).toBe(true);
 	});
 });
-
