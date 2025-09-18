@@ -43,10 +43,10 @@
 
 ## 阶段 1：设置
 
-- [ ] T001 创建项目目录结构和配置文件
-- [ ] T002 设置Jest测试框架和测试脚本
-- [ ] T003 配置代码质量检查工具（ESLint、Prettier）
-- [ ] T004 安装项目依赖项
+- [x] T001 创建项目目录结构和配置文件
+- [x] T002 设置Jest测试框架和测试脚本
+- [x] T003 配置代码质量检查工具（ESLint、Prettier）
+- [x] T004 安装项目依赖项
 
 ## 阶段 2：先写测试（TDD） ⚠️ 必须在 3 之前完成
 
@@ -54,55 +54,55 @@
 
 ### 合同测试 [P] - 每个API端点一个测试
 
-- [ ] T005 [P] 在 `tests/contract/test_cleanup_api.js` 中编写合同测试 GET /ai-content
-- [ ] T006 [P] 在 `tests/contract/test_cleanup_api.js` 中编写合同测试 DELETE /ai-content
-- [ ] T007 [P] 在 `tests/contract/test_cleanup_api.js` 中编写合同测试 GET /brand-info
-- [ ] T008 [P] 在 `tests/contract/test_cleanup_api.js` 中编写合同测试 PATCH /brand-info
-- [ ] T009 [P] 在 `tests/contract/test_cleanup_api.js` 中编写合同测试 POST /validate
-- [ ] T010 [P] 在 `tests/contract/test_path_config_api.js` 中编写合同测试 GET /paths
-- [ ] T011 [P] 在 `tests/contract/test_path_config_api.js` 中编写合同测试 PUT /paths
-- [ ] T012 [P] 在 `tests/contract/test_path_config_api.js` 中编写合同测试 POST /paths/validate
+- [x] T005 [P] 在 `tests/contract/test_cleanup_api.js` 中编写合同测试 GET /ai-content
+- [x] T006 [P] 在 `tests/contract/test_cleanup_api.js` 中编写合同测试 DELETE /ai-content
+- [x] T007 [P] 在 `tests/contract/test_cleanup_api.js` 中编写合同测试 GET /brand-info
+- [x] T008 [P] 在 `tests/contract/test_cleanup_api.js` 中编写合同测试 PATCH /brand-info
+- [x] T009 [P] 在 `tests/contract/test_cleanup_api.js` 中编写合同测试 POST /validate
+- [x] T010 [P] 在 `tests/contract/test_path_config_api.js` 中编写合同测试 GET /paths
+- [x] T011 [P] 在 `tests/contract/test_path_config_api.js` 中编写合同测试 PUT /paths
+- [x] T012 [P] 在 `tests/contract/test_path_config_api.js` 中编写合同测试 POST /paths/validate
 
 ### 集成测试 [P] - 基于用户故事
 
-- [ ] T013 [P] 在 `tests/integration/test_brand_rebrand.js` 中编写集成测试品牌重塑流程
-- [ ] T014 [P] 在 `tests/integration/test_path_config.js` 中编写集成测试路径配置系统
-- [ ] T015 [P] 在 `tests/integration/test_ai_cleanup.js` 中编写集成测试AI内容清理
-- [ ] T016 [P] 在 `tests/integration/test_command_rename.js` 中编写集成测试命令重命名
+- [x] T013 [P] 在 `tests/integration/test_brand_rebrand.js` 中编写集成测试品牌重塑流程
+- [x] T014 [P] 在 `tests/integration/test_path_config.js` 中编写集成测试路径配置系统
+- [x] T015 [P] 在 `tests/integration/test_ai_cleanup.js` 中编写集成测试AI内容清理
+- [x] T016 [P] 在 `tests/integration/test_command_rename.js` 中编写集成测试命令重命名
 
 ## 阶段 3：核心实现（仅测试失败后）
 
 ### 实体模型实现 [P] - 每个实体一个模型文件
 
-- [ ] T017 [P] 在 `src/models/PathConfig.js` 中实现PathConfig实体和路径解析逻辑
-- [ ] T018 [P] 在 `src/models/BrandInfo.js` 中实现BrandInfo实体和品牌管理逻辑
-- [ ] T019 [P] 在 `src/models/CleanupRule.js` 中实现CleanupRule实体和清理规则引擎
+- [x] T017 [P] 在 `src/models/PathConfig.js` 中实现PathConfig实体和路径解析逻辑
+- [x] T018 [P] 在 `src/models/BrandInfo.js` 中实现BrandInfo实体和品牌管理逻辑
+- [x] T019 [P] 在 `src/models/CleanupRule.js` 中实现CleanupRule实体和清理规则引擎
 
 ### 服务层实现 - 按依赖顺序
 
-- [ ] T020 在 `src/services/PathService.js` 中实现路径配置服务（依赖T017）
-- [ ] T021 在 `src/services/BrandService.js` 中实现品牌信息服务（依赖T018）
-- [ ] T022 在 `src/services/CleanupService.js` 中实现清理服务（依赖T019）
+- [x] T020 在 `src/services/PathService.js` 中实现路径配置服务（依赖T017）
+- [x] T021 在 `src/services/BrandService.js` 中实现品牌信息服务（依赖T018）
+- [x] T022 在 `src/services/CleanupService.js` 中实现清理服务（依赖T019）
 
 ### API端点实现 - 按合约分组
 
 #### 清理API端点实现
-- [ ] T023 在 `src/controllers/CleanupController.js` 中实现 GET /ai-content 端点
-- [ ] T024 在 `src/controllers/CleanupController.js` 中实现 DELETE /ai-content 端点
-- [ ] T025 在 `src/controllers/CleanupController.js` 中实现 GET /brand-info 端点
-- [ ] T026 在 `src/controllers/CleanupController.js` 中实现 PATCH /brand-info 端点
-- [ ] T027 在 `src/controllers/CleanupController.js` 中实现 POST /validate 端点
+- [x] T023 在 `src/controllers/CleanupController.js` 中实现 GET /ai-content 端点
+- [x] T024 在 `src/controllers/CleanupController.js` 中实现 DELETE /ai-content 端点
+- [x] T025 在 `src/controllers/CleanupController.js` 中实现 GET /brand-info 端点
+- [x] T026 在 `src/controllers/CleanupController.js` 中实现 PATCH /brand-info 端点
+- [x] T027 在 `src/controllers/CleanupController.js` 中实现 POST /validate 端点
 
 #### 路径配置API端点实现
-- [ ] T028 在 `src/controllers/PathConfigController.js` 中实现 GET /paths 端点
-- [ ] T029 在 `src/controllers/PathConfigController.js` 中实现 PUT /paths 端点
-- [ ] T030 在 `src/controllers/PathConfigController.js` 中实现 POST /paths/validate 端点
+- [x] T028 在 `src/controllers/PathConfigController.js` 中实现 GET /paths 端点
+- [x] T029 在 `src/controllers/PathConfigController.js` 中实现 PUT /paths 端点
+- [x] T030 在 `src/controllers/PathConfigController.js` 中实现 POST /paths/validate 端点
 
 ### CLI命令实现 - 品牌重塑相关 ⚠️ 高风险
 
-- [ ] T031 ⚠️ 在 `bin/speco-tasker.js` 中实现命令重命名和品牌更新（原子性保障）
-- [ ] T032 在 `scripts/modules/commands.js` 中更新CLI命令处理逻辑
-- [ ] T033 在 `scripts/init.js` 中实现新路径配置初始化
+- [x] T031 ⚠️ 在 `bin/speco-tasker.js` 中实现命令重命名和品牌更新（原子性保障）
+- [x] T032 在 `scripts/modules/commands.js` 中更新CLI命令处理逻辑
+- [x] T033 在 `scripts/init.js` 中实现新路径配置初始化
 
 ## 阶段 4：集成与安全
 

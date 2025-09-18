@@ -79,6 +79,11 @@ import {
 
 import { initTaskMaster } from "../../src/task-master.js";
 
+// 导入新的品牌重塑服务
+import { PathService } from "../../src/services/PathService.js";
+import { BrandService } from "../../src/services/BrandService.js";
+import { CleanupService } from "../../src/services/CleanupService.js";
+
 import {
 	confirmProfilesRemove,
 	confirmRemoveAllRemainingProfiles,
@@ -156,6 +161,289 @@ function registerCommands(programInstance) {
 				projectRoot: taskMaster.getProjectRoot(),
 				tag,
 			});
+		});
+
+	// 品牌重塑相关命令
+
+	// rebrand command - 高风险命令，涉及原子性操作
+	programInstance
+		.command("rebrand")
+		.description("⚠️ 执行品牌重塑（高风险操作）")
+		.requiredOption("--new-name <name>", "新产品名称")
+		.requiredOption("--new-command <command>", "新CLI命令名")
+		.option("--new-description <desc>", "新产品描述")
+		.option("--backup-dir <dir>", "备份目录路径", ".speco/backup")
+		.option("--force", "强制执行，不进行额外确认", false)
+		.option("--dry-run", "试运行模式，显示将要执行的操作但不实际执行", false)
+		.action(async (options) => {
+			try {
+				console.log(chalk.yellow("⚠️  品牌重塑操作 - 这是一个高风险操作"));
+				console.log(chalk.yellow("请确保您已经备份了所有重要数据"));
+				console.log();
+
+				const projectRoot = findProjectRoot();
+				if (!projectRoot) {
+					console.error(chalk.red("错误：找不到项目根目录"));
+					process.exit(1);
+				}
+
+				// 初始化服务
+				const pathService = new PathService();
+				await pathService.initialize({ projectRoot });
+
+				const brandService = new BrandService(pathService);
+				await brandService.initialize();
+
+				// 验证新品牌信息
+				const newBrand = {
+					name: options.newName,
+					command: options.newCommand,
+					description:
+						options.newDescription || `使用 ${options.newName} 管理项目任务`,
+					version: "1.2.0",
+				};
+
+				console.log(chalk.blue("正在验证新品牌信息..."));
+				const validation = this.validateBrandInfo(newBrand);
+				if (!validation.valid) {
+					console.error(chalk.red("品牌信息验证失败:"));
+					validation.errors.forEach((error) =>
+						console.error(chalk.red(`  - ${error}`)),
+					);
+					process.exit(1);
+				}
+
+				// 显示将要执行的操作
+				console.log(chalk.blue("\n将要执行的品牌重塑操作:"));
+				console.log(`  旧品牌: ${brandService.getDisplayInfo().name}`);
+				console.log(`  新品牌: ${newBrand.name}`);
+				console.log(`  旧命令: ${brandService.getCLIInfo().command}`);
+				console.log(`  新命令: ${newBrand.command}`);
+				console.log(`  备份目录: ${options.backupDir}`);
+				console.log();
+
+				if (!options.force && !options.dryRun) {
+					const confirmed = await this.confirmOperation(
+						`确定要将品牌重塑为 "${newBrand.name}" 吗？`,
+					);
+					if (!confirmed) {
+						console.log(chalk.yellow("操作已取消"));
+						return;
+					}
+				}
+
+				if (options.dryRun) {
+					console.log(chalk.cyan("试运行模式：以上是将会执行的操作"));
+					return;
+				}
+
+				// 创建备份
+				console.log(chalk.blue("📦 创建备份..."));
+				await this.createBackup(options.backupDir, projectRoot);
+
+				// 执行品牌重塑
+				console.log(chalk.blue("🔄 执行品牌重塑..."));
+				const result = await brandService.rebrand(newBrand, {
+					renameFiles: true,
+					updateReferences: true,
+				});
+
+				if (result.success) {
+					console.log(chalk.green("✓ 品牌重塑完成！"));
+					console.log(`新品牌名称: ${newBrand.name}`);
+					console.log(`新命令名称: ${newBrand.command}`);
+
+					if (result.changes) {
+						console.log("\n重塑详情:");
+						Object.entries(result.changes).forEach(([key, change]) => {
+							console.log(`- ${key}: ${change.from} → ${change.to}`);
+						});
+					}
+				} else {
+					console.error(chalk.red("✗ 品牌重塑失败:"), result.error);
+					process.exit(1);
+				}
+			} catch (error) {
+				console.error(chalk.red("✗ 品牌重塑过程中出错:"), error.message);
+				process.exit(1);
+			}
+		});
+
+	// cleanup command
+	programInstance
+		.command("cleanup")
+		.description("清理AI内容和旧品牌信息")
+		.option("--ai-only", "仅清理AI相关内容", false)
+		.option("--brand-only", "仅清理品牌相关内容", false)
+		.option("--preview", "预览模式，不执行实际清理", false)
+		.option("--rules <rules>", "指定清理规则文件", ".speco/cleanup-rules.json")
+		.option("--dry-run", "试运行模式，显示将要清理的内容但不实际执行", false)
+		.action(async (options) => {
+			try {
+				const projectRoot = findProjectRoot();
+				if (!projectRoot) {
+					console.error(chalk.red("错误：找不到项目根目录"));
+					process.exit(1);
+				}
+
+				// 初始化服务
+				const pathService = new PathService();
+				await pathService.initialize({ projectRoot });
+
+				const cleanupService = new CleanupService(pathService);
+				await cleanupService.initialize();
+
+				console.log(chalk.blue("🧹 开始清理操作..."));
+
+				const cleanupOptions = {
+					preview: options.preview || options.dryRun,
+					type: options.aiOnly
+						? "ai_service"
+						: options.brandOnly
+							? "brand_info"
+							: "all",
+				};
+
+				if (options.preview || options.dryRun) {
+					console.log(chalk.yellow("预览模式：不会执行实际的清理操作"));
+				}
+
+				const results = await cleanupService.cleanup(cleanupOptions);
+
+				if (results.success) {
+					console.log(chalk.green("✓ 清理完成"));
+					console.log(
+						`处理文件数: ${results.processedFiles}/${results.totalFiles}`,
+					);
+
+					if (results.changes.length > 0) {
+						console.log("\n清理详情:");
+						results.changes.forEach((change) => {
+							console.log(`- ${change.file}: ${change.changes} 处变更`);
+						});
+					}
+				} else {
+					console.error(chalk.red("✗ 清理失败:"), results.error);
+					process.exit(1);
+				}
+			} catch (error) {
+				console.error(chalk.red("✗ 清理过程中出错:"), error.message);
+				process.exit(1);
+			}
+		});
+
+	// config command group
+	const configCommand = programInstance
+		.command("config")
+		.description("配置管理");
+
+	configCommand
+		.command("show")
+		.description("显示当前配置")
+		.option("--paths", "仅显示路径配置", false)
+		.option("--brand", "仅显示品牌配置", false)
+		.option("--cleanup", "仅显示清理配置", false)
+		.action(async (options) => {
+			try {
+				const projectRoot = findProjectRoot();
+				if (!projectRoot) {
+					console.error(chalk.red("错误：找不到项目根目录"));
+					process.exit(1);
+				}
+
+				// 初始化服务
+				const pathService = new PathService();
+				await pathService.initialize({ projectRoot });
+
+				const brandService = new BrandService(pathService);
+				await brandService.initialize();
+
+				const cleanupService = new CleanupService(pathService);
+				await cleanupService.initialize();
+
+				if (options.paths) {
+					const paths = pathService.getPathSnapshot();
+					console.log(JSON.stringify(paths, null, 2));
+				} else if (options.brand) {
+					const brand = brandService.getBrandSummary();
+					console.log(JSON.stringify(brand, null, 2));
+				} else if (options.cleanup) {
+					const stats = cleanupService.getStatistics();
+					console.log(JSON.stringify(stats, null, 2));
+				} else {
+					const paths = pathService.getPathSnapshot();
+					const brand = brandService.getBrandSummary();
+					const cleanupStats = cleanupService.getStatistics();
+
+					console.log(
+						JSON.stringify(
+							{
+								paths,
+								brand,
+								cleanup: cleanupStats,
+							},
+							null,
+							2,
+						),
+					);
+				}
+			} catch (error) {
+				console.error(chalk.red("✗ 获取配置失败:"), error.message);
+				process.exit(1);
+			}
+		});
+
+	configCommand
+		.command("update")
+		.description("更新配置")
+		.option("--paths <file>", "更新路径配置")
+		.option("--brand <file>", "更新品牌配置")
+		.option("--cleanup <file>", "更新清理配置")
+		.action(async (options) => {
+			try {
+				const projectRoot = findProjectRoot();
+				if (!projectRoot) {
+					console.error(chalk.red("错误：找不到项目根目录"));
+					process.exit(1);
+				}
+
+				// 初始化服务
+				const pathService = new PathService();
+				await pathService.initialize({ projectRoot });
+
+				const brandService = new BrandService(pathService);
+				await brandService.initialize();
+
+				const cleanupService = new CleanupService(pathService);
+				await cleanupService.initialize();
+
+				if (options.paths) {
+					const pathsConfig = JSON.parse(
+						await fs.readFile(options.paths, "utf8"),
+					);
+					await pathService.updateConfiguration(pathsConfig);
+					console.log(chalk.green("✓ 路径配置更新完成"));
+				}
+
+				if (options.brand) {
+					const brandConfig = JSON.parse(
+						await fs.readFile(options.brand, "utf8"),
+					);
+					await brandService.updateBrand(brandConfig);
+					console.log(chalk.green("✓ 品牌配置更新完成"));
+				}
+
+				if (options.cleanup) {
+					const cleanupConfig = JSON.parse(
+						await fs.readFile(options.cleanup, "utf8"),
+					);
+					// 这里需要实现清理配置的更新逻辑
+					console.log(chalk.yellow("清理配置更新功能待实现"));
+				}
+			} catch (error) {
+				console.error(chalk.red("✗ 更新配置失败:"), error.message);
+				process.exit(1);
+			}
 		});
 
 	// set-status command
@@ -2826,6 +3114,107 @@ async function runCLI(argv = process.argv) {
 
 		process.exit(1);
 	}
+}
+
+/**
+ * 验证品牌信息
+ * @param {Object} brand - 品牌信息对象
+ * @returns {Object} 验证结果 {valid: boolean, errors: string[]}
+ */
+function validateBrandInfo(brand) {
+	const errors = [];
+
+	// 验证必填字段
+	if (
+		!brand.name ||
+		typeof brand.name !== "string" ||
+		brand.name.trim().length === 0
+	) {
+		errors.push("name 必须是非空字符串");
+	}
+
+	if (
+		!brand.command ||
+		typeof brand.command !== "string" ||
+		brand.command.trim().length === 0
+	) {
+		errors.push("command 必须是非空字符串");
+	}
+
+	// 验证名称长度
+	if (brand.name && brand.name.length > 50) {
+		errors.push("name 长度不能超过50字符");
+	}
+
+	// 验证命令格式
+	if (brand.command && !/^[a-z0-9-]+$/.test(brand.command)) {
+		errors.push("command 只能包含小写字母、数字和中划线");
+	}
+
+	// 验证版本格式
+	if (brand.version && !/^\d+\.\d+\.\d+/.test(brand.version)) {
+		errors.push("version 必须符合语义化版本格式 (MAJOR.MINOR.PATCH)");
+	}
+
+	return {
+		valid: errors.length === 0,
+		errors,
+	};
+}
+
+/**
+ * 确认操作
+ * @param {string} message - 确认消息
+ * @returns {Promise<boolean>} 用户确认结果
+ */
+async function confirmOperation(message) {
+	const readline = require("readline");
+	const rl = readline.createInterface({
+		input: process.stdin,
+		output: process.stdout,
+	});
+
+	return new Promise((resolve) => {
+		rl.question(`${message} (y/N): `, (answer) => {
+			rl.close();
+			resolve(answer.toLowerCase() === "y" || answer.toLowerCase() === "yes");
+		});
+	});
+}
+
+/**
+ * 创建备份
+ * @param {string} backupDir - 备份目录
+ * @param {string} projectRoot - 项目根目录
+ * @returns {Promise<void>}
+ */
+async function createBackup(backupDir, projectRoot) {
+	const fs = require("fs").promises;
+	const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+	const fullBackupDir = path.join(projectRoot, backupDir, timestamp);
+
+	await fs.mkdir(fullBackupDir, { recursive: true });
+
+	// 备份关键文件
+	const filesToBackup = [
+		"package.json",
+		"README.md",
+		".speco/config.json",
+		".speco/brand.json",
+	];
+
+	for (const file of filesToBackup) {
+		try {
+			const content = await fs.readFile(path.join(projectRoot, file), "utf8");
+			const backupFile = path.join(fullBackupDir, path.basename(file));
+			await fs.writeFile(backupFile, content);
+		} catch (error) {
+			// 文件不存在，跳过
+			continue;
+		}
+	}
+
+	console.log(`备份创建在: ${fullBackupDir}`);
 }
 
 /**

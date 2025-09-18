@@ -25,6 +25,11 @@ import gradient from "gradient-string";
 import { isSilentMode } from "./modules/utils.js";
 import { insideGitWorkTree } from "./modules/utils/git-utils.js";
 
+// 导入新的品牌重塑服务
+import { PathService } from "../src/services/PathService.js";
+import { BrandService } from "../src/services/BrandService.js";
+import { CleanupService } from "../src/services/CleanupService.js";
+
 import { execSync } from "node:child_process";
 import {
 	ENV_EXAMPLE_FILE,
@@ -235,6 +240,198 @@ function createInitialTasksFile(targetDir) {
 		log("info", 'Initialized with empty tasks list in "main" tag');
 	} catch (error) {
 		log("error", `Failed to create tasks file: ${error.message}`);
+	}
+}
+
+// Function to create Speco configuration files
+async function createSpecoConfig(targetDir, options) {
+	try {
+		log("info", "正在初始化 Speco 配置系统...");
+
+		// 创建 .speco 目录结构
+		const specoDir = path.join(targetDir, ".speco");
+		const specoConfigDir = path.join(specoDir, "config");
+		const specoTasksDir = path.join(specoDir, "tasks");
+		const specoDocsDir = path.join(specoDir, "docs");
+		const specoReportsDir = path.join(specoDir, "reports");
+		const specoTemplatesDir = path.join(specoDir, "templates");
+		const specoBackupsDir = path.join(specoDir, "backups");
+		const specoLogsDir = path.join(specoDir, "logs");
+
+		ensureDirectoryExists(specoDir);
+		ensureDirectoryExists(specoConfigDir);
+		ensureDirectoryExists(specoTasksDir);
+		ensureDirectoryExists(specoDocsDir);
+		ensureDirectoryExists(specoReportsDir);
+		ensureDirectoryExists(specoTemplatesDir);
+		ensureDirectoryExists(specoBackupsDir);
+		ensureDirectoryExists(specoLogsDir);
+
+		// 创建主配置文件
+		const mainConfig = {
+			project: {
+				name: options.name || "MyProject",
+				version: "1.2.0",
+				description: options.description || "使用 Speco Tasker 管理项目任务",
+				author: options.author || "Speco Team",
+				license: "MIT WITH Commons-Clause",
+			},
+			paths: {
+				root: ".",
+				src: "src",
+				scripts: "scripts/modules",
+				bin: "bin",
+				tests: "tests",
+				config: ".speco",
+				docs: "docs",
+				specs: "specs",
+			},
+			features: {
+				aiCleanup: false,
+				brandRebrand: true,
+				pathConfig: true,
+				mcpServer: true,
+				cli: true,
+			},
+			testing: {
+				framework: "jest",
+				coverage: {
+					enabled: true,
+					thresholds: {
+						branches: 70,
+						functions: 80,
+						lines: 80,
+						statements: 80,
+					},
+				},
+			},
+			quality: {
+				eslint: true,
+				prettier: true,
+				biome: true,
+			},
+			logging: {
+				level: "info",
+				file: ".speco/logs/speco-tasker.log",
+			},
+		};
+
+		// 创建品牌配置文件
+		const brandConfig = {
+			name: "Speco Tasker",
+			command: "speco-tasker",
+			description: "纯净的任务管理系统",
+			version: "1.2.0",
+			shortName: "Speco",
+			tagline: "纯净的任务管理系统",
+			author: options.author || "Speco Team",
+			license: "MIT WITH Commons-Clause",
+			website: "",
+			repository: "",
+			documentation: "",
+			metadata: {
+				created: new Date().toISOString(),
+				updated: new Date().toISOString(),
+				version: "1.0.0",
+			},
+		};
+
+		// 创建清理规则配置文件
+		const cleanupRulesConfig = {
+			rules: [
+				{
+					id: "ai-service-cleanup",
+					name: "AI服务调用清理",
+					type: "ai_service",
+					patterns: ["**/ai/**", "**/services/ai/**"],
+					contentPatterns: [/import.*from.*ai-service/, /require.*ai-service/],
+					action: "remove",
+					safePatterns: ["**/tests/**", "**/mocks/**"],
+					requiresConfirmation: true,
+					metadata: {
+						enabled: true,
+						priority: 1,
+					},
+				},
+				{
+					id: "brand-info-cleanup",
+					name: "品牌信息清理",
+					type: "brand_info",
+					contentPatterns: [/Task Master|task-master|TaskMaster/],
+					action: "replace",
+					replacement: "Speco Tasker",
+					requiresConfirmation: false,
+					metadata: {
+						enabled: true,
+						priority: 2,
+					},
+				},
+			],
+			metadata: {
+				created: new Date().toISOString(),
+				version: "1.0.0",
+				count: 2,
+			},
+		};
+
+		// 创建路径配置文件
+		const pathsConfig = {
+			root: {
+				speco: ".speco",
+				legacy: ".taskmaster",
+			},
+			dirs: {
+				tasks: "tasks",
+				docs: "docs",
+				reports: "reports",
+				templates: "templates",
+				backups: "backups",
+				logs: "logs",
+				config: "config",
+			},
+			files: {
+				tasks: "tasks.json",
+				config: "config.json",
+				state: "state.json",
+				changelog: "changelog.md",
+				brand: "brand.json",
+				paths: "paths.json",
+				cleanup: "cleanup-rules.json",
+			},
+			tags: {},
+			metadata: {
+				created: new Date().toISOString(),
+				updated: new Date().toISOString(),
+				version: "1.0.0",
+			},
+		};
+
+		// 写入配置文件
+		const configPath = path.join(specoDir, "config.json");
+		const brandPath = path.join(specoDir, "brand.json");
+		const cleanupPath = path.join(specoDir, "cleanup-rules.json");
+		const pathsPath = path.join(specoDir, "paths.json");
+
+		fs.writeFileSync(configPath, JSON.stringify(mainConfig, null, 2));
+		fs.writeFileSync(brandPath, JSON.stringify(brandConfig, null, 2));
+		fs.writeFileSync(cleanupPath, JSON.stringify(cleanupRulesConfig, null, 2));
+		fs.writeFileSync(pathsPath, JSON.stringify(pathsConfig, null, 2));
+
+		log("success", "✓ Speco 主配置创建完成");
+		log("success", "✓ 品牌配置创建完成");
+		log("success", "✓ 清理规则配置创建完成");
+		log("success", "✓ 路径配置创建完成");
+
+		// 验证配置
+		try {
+			const pathService = new PathService();
+			await pathService.initialize({ projectRoot: targetDir });
+			log("success", "✓ 路径配置验证通过");
+		} catch (error) {
+			log("warn", `路径配置验证失败: ${error.message}`);
+		}
+	} catch (error) {
+		log("error", `Speco 配置初始化失败: ${error.message}`);
 	}
 }
 
@@ -504,6 +701,11 @@ function createProjectStructure(
 
 	// Create initial tasks.json file
 	createInitialTasksFile(targetDir);
+
+	// 初始化新的路径配置系统
+	if (!dryRun) {
+		createSpecoConfig(targetDir, options);
+	}
 
 	// Copy template files with replacements
 	const replacements = {
