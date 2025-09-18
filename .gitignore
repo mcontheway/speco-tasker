@@ -78,7 +78,6 @@ dev-debug.log
 # NPMRC
 .npmrc
 
-# Added by Task Master AI
 # Editor directories and files
 .idea
 .vscode
@@ -99,5 +98,8 @@ Speco-Tasker.code-workspace
 # apps/extension
 apps/extension/vsix-build/
 
-# Task Master project files
-.taskmaster/
+# 备份文件
+*.backup
+*.bak
+*/*.bak
+*/*.backup
