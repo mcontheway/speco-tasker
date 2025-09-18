@@ -109,7 +109,7 @@ const config = {
     // Contract Tests - API contract verification
     {
       displayName: "contract",
-      testMatch: ["<rootDir>/tests/contract/**/*.test.{js,cjs}"],
+      testMatch: ["**/tests/contract/**/*.test.{js,cjs}"],
       testEnvironment: "node",
       setupFilesAfterEnv: ["<rootDir>/tests/setup/contract.cjs"],
       collectCoverageFrom: [
