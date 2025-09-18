@@ -107,18 +107,18 @@
 ## 阶段 4：集成与安全
 
 ### 核心服务集成
-- [ ] T034 集成PathService、BrandService、CleanupService到系统架构（合并T034-T036）
+- [x] T034 集成PathService、BrandService、CleanupService到系统架构（合并T034-T036）
 
 ### 中间件和验证
-- [ ] T035 实现路径配置、品牌信息、清理规则的中间件和安全验证（合并T037-T039）
+- [x] T035 实现路径配置、品牌信息、清理规则的中间件和安全验证（合并T037-T039）
 
 ### 日志和监控
-- [ ] T036 集成结构化日志、审计日志和监控报告（合并T040-T042）
+- [x] T036 集成结构化日志、审计日志和监控报告（合并T040-T042）
 
 ### 配置管理功能（新增）
-- [ ] T037 在 `scripts/modules/config-manager.js` 中实现配置参数查看和修改
-- [ ] T038 在 `scripts/modules/commands.js` 中添加配置管理CLI命令
-- [ ] T039 在 `mcp-server/src/tools/config.js` 中实现MCP配置管理工具
+- [x] T037 在 `scripts/modules/config-manager.js` 中实现配置参数查看和修改
+- [x] T038 在 `scripts/modules/commands.js` 中添加配置管理CLI命令
+- [x] T039 在 `mcp-server/src/tools/config.js` 中实现MCP配置管理工具
 
 ## 阶段 5：精细调整与优化
 
