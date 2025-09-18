@@ -1,7 +1,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const { fileURLToPath } = require("node:url");
-const { jest } = require("@jest/globals");
+// const { jest } = require("@jest/globals"); // Jest is already global
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

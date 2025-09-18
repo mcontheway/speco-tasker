@@ -28,6 +28,7 @@ import { registerUpdateSubtaskTool } from "./update-subtask.js";
 import { registerUpdateTaskTool } from "./update-task.js";
 import { registerUseTagTool } from "./use-tag.js";
 import { registerValidateDependenciesTool } from "./validate-dependencies.js";
+import { registerConfigTools } from "./config.js";
 
 /**
  * Register all Speco Tasker tools with the MCP server
@@ -81,7 +82,10 @@ export function registerSpecoTaskerTools(server) {
 		registerRenameTagTool(server);
 		registerCopyTagTool(server);
 
-		// Group 8: Research Features
+		// Group 8: Configuration Management
+		registerConfigTools(server);
+
+		// Group 9: Research Features
 		// AI-based research tool removed in phase 3.3
 	} catch (error) {
 		logger.error(`Error registering Speco Tasker tools: ${error.message}`);
