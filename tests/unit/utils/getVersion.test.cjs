@@ -4,6 +4,7 @@
 
 const fs = require("node:fs");
 const path = require("node:path");
+const { fileURLToPath } = require("node:url");
 
 // Mock fs and path modules
 jest.mock("node:fs");
@@ -39,6 +40,7 @@ describe("Version Utilities", () => {
 
 			fs.existsSync.mockReturnValue(true);
 			fs.readFileSync.mockReturnValue(JSON.stringify(mockPackageJson));
+			fs.readFileSync.mockName('readFileSync');
 
 			const result = getTaskMasterVersion();
 			expect(result).toBe("1.2.3");
@@ -79,6 +81,7 @@ describe("Version Utilities", () => {
 
 			fs.existsSync.mockReturnValue(true);
 			fs.readFileSync.mockReturnValue(JSON.stringify(mockPackageJson));
+			fs.readFileSync.mockName('readFileSync');
 
 			const result = getTaskMasterVersion();
 			expect(result).toBe(undefined);

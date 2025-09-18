@@ -28,33 +28,12 @@ function hasEnvProperty(obj) {
 process.env.FORCE_COLOR = "0";
 
 // --- Read REAL supported-models.json data BEFORE mocks ---
-const __filename = fileURLToPath(import.meta.url); // Get current file path
-const __dirname = path.dirname(__filename); // Get current directory
-const realSupportedModelsPath = path.resolve(
-	__dirname,
-	"../../scripts/modules/supported-models.json",
-);
+// These will be initialized in beforeAll to avoid import.meta.url issues
+let __filename;
+let __dirname;
+let realSupportedModelsPath;
 let REAL_SUPPORTED_MODELS_CONTENT;
 let REAL_SUPPORTED_MODELS_DATA;
-try {
-	REAL_SUPPORTED_MODELS_CONTENT = fs.readFileSync(
-		realSupportedModelsPath,
-		"utf-8",
-	);
-	REAL_SUPPORTED_MODELS_DATA = JSON.parse(REAL_SUPPORTED_MODELS_CONTENT);
-} catch (err) {
-	console.error(
-		"FATAL TEST SETUP ERROR: Could not read or parse real supported-models.json",
-		err,
-	);
-	REAL_SUPPORTED_MODELS_CONTENT = "{}"; // Default to empty object on error
-	REAL_SUPPORTED_MODELS_DATA = {};
-	if (typeof jest !== "undefined") {
-		throw new Error(`Could not load supported-models.json: ${err.message}`);
-	} else {
-		process.exit(1); // Exit if essential test data can't be loaded
-	}
-}
 
 // --- Define Mock Function Instances ---
 const mockFindProjectRoot = jest.fn();
@@ -200,6 +179,31 @@ describe("Config Manager Module", () => {
 			log: mockLog, // Use the mock function instance
 			resolveEnvVariable: mockResolveEnvVariable, // Use the mock function instance
 		}));
+
+		// Initialize path variables to avoid import.meta.url issues
+		__filename = "/mock/test/file.js"; // Mock file path for testing
+		__dirname = "/mock/test"; // Mock directory for testing
+		realSupportedModelsPath = path.resolve(
+			__dirname,
+			"../../scripts/modules/supported-models.json",
+		);
+
+		// Load real supported-models.json data
+		try {
+			REAL_SUPPORTED_MODELS_CONTENT = fs.readFileSync(
+				realSupportedModelsPath,
+				"utf-8",
+			);
+			REAL_SUPPORTED_MODELS_DATA = JSON.parse(REAL_SUPPORTED_MODELS_CONTENT);
+		} catch (err) {
+			console.error(
+				"FATAL TEST SETUP ERROR: Could not read or parse real supported-models.json",
+				err,
+			);
+			REAL_SUPPORTED_MODELS_CONTENT = "{}"; // Default to empty object on error
+			REAL_SUPPORTED_MODELS_DATA = {};
+			throw new Error(`Could not load supported-models.json: ${err.message}`);
+		}
 
 		// Dynamically import the module under test AFTER mocking dependencies
 		configManager = await import("../../scripts/modules/config-manager.js");

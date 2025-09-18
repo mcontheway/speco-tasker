@@ -1,30 +1,38 @@
-import { jest } from "@jest/globals";
+// Mock the cli-progress module first
+jest.mock("cli-progress", () => ({
+	MultiBar: jest.fn().mockImplementation(() => ({
+		create: jest.fn(),
+		stop: jest.fn(),
+	})),
+	Presets: {
+		shades_classic: {},
+		shades_grey: {},
+		rect: {},
+		legacy: {},
+	},
+}));
 
-// Mock cli-progress factory before importing BaseProgressTracker
-jest.unstable_mockModule(
-	"../../../src/progress/cli-progress-factory.js",
-	() => ({
-		newMultiBar: jest.fn(() => ({
-			create: jest.fn(() => ({
-				update: jest.fn(),
-			})),
-			stop: jest.fn(),
-		})),
-	}),
-);
+// Mock the cli-progress-factory module
+const mockNewMultiBar = jest.fn();
+jest.mock("../../../src/progress/cli-progress-factory.js", () => ({
+	newMultiBar: mockNewMultiBar,
+}));
 
-const { newMultiBar } = await import(
-	"../../../src/progress/cli-progress-factory.js"
-);
-const { BaseProgressTracker } = await import(
-	"../../../src/progress/base-progress-tracker.js"
-);
+let BaseProgressTracker;
+
+beforeAll(async () => {
+	const baseProgressTracker = await import(
+		"../../../src/progress/base-progress-tracker.js"
+	);
+
+	BaseProgressTracker = baseProgressTracker.BaseProgressTracker;
+});
 
 describe("BaseProgressTracker", () => {
 	let tracker;
-	let mockMultiBar;
 	let mockProgressBar;
 	let mockTimeTokensBar;
+	let mockMultiBar;
 
 	beforeEach(() => {
 		jest.clearAllMocks();
@@ -40,7 +48,9 @@ describe("BaseProgressTracker", () => {
 				.mockReturnValueOnce(mockProgressBar),
 			stop: jest.fn(),
 		};
-		newMultiBar.mockReturnValue(mockMultiBar);
+
+		// Mock the newMultiBar function
+		mockNewMultiBar.mockReturnValue(mockMultiBar);
 
 		tracker = new BaseProgressTracker({ numUnits: 10, unitName: "task" });
 	});

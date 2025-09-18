@@ -63,21 +63,26 @@ const config = {
 
   // Transform configuration for both CommonJS and ES modules
   transform: {
-    "^.+\\.js$": "babel-jest",
-    "^.+\\.mjs$": "babel-jest",
+    "^.+\\.(js|jsx|mjs|cjs)$": "babel-jest",
   },
 
   // Module name mapping for ES modules
   moduleNameMapper: {
     "^(\\.{1,2}/.*)\\.js$": "$1",
-    // Mock import.meta.url for ES modules
-    "import\\.meta\\.url": "jest.fn(() => \"file:///mock/path\")",
+    // Remove the mock for import.meta.url as it's handled by Babel now
   },
 
   // Don't transform node_modules except specific ones
   transformIgnorePatterns: [
     "node_modules/(?!(supertest|chalk|boxen|@inquirer|fastmcp)/)",
   ],
+
+  // Support for ES modules
+  globals: {
+    "ts-jest": {
+      useESM: true,
+    },
+  },
 
   // Test timeout (global)
   testTimeout: 10000,
@@ -135,7 +140,7 @@ const config = {
     // Unit Tests - Isolated function and module testing
     {
       displayName: "unit",
-      testMatch: ["<rootDir>/tests/unit/**/*.test.{js,cjs}"],
+      testMatch: ["<rootDir>/tests/unit/**/*.test.{js,cjs,mjs}"],
       testEnvironment: "node",
       setupFilesAfterEnv: ["<rootDir>/tests/setup/unit.cjs"],
       maxWorkers: 4, // High parallelism for fast unit tests

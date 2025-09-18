@@ -9,6 +9,20 @@ const fs = require("node:fs");
 jest.mock("node:fs");
 jest.mock("node:path");
 
+// Mock the utils module to avoid import.meta.url issues
+jest.mock("../../../scripts/modules/utils.js", () => ({
+	log: jest.fn(),
+	findProjectRoot: jest.fn(() => "/mock/project/root"),
+	isEmpty: jest.fn(() => false),
+	resolveEnvVariable: jest.fn(() => "mock_value"),
+}));
+
+// Mock config-manager to avoid import.meta.url issues
+jest.mock("../../../scripts/modules/config-manager.js", () => ({
+	getDebugFlag: jest.fn(() => false),
+	getLogLevel: jest.fn(() => "info"),
+}));
+
 // Import after mocking
 const {
 	normalizeProjectRoot,
