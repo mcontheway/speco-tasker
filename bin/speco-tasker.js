@@ -206,6 +206,10 @@ class SpecoTaskerCLI {
 			const child = spawn("node", [devScriptPath, ...finalArgs], {
 				stdio: "inherit",
 				cwd: process.cwd(),
+				env: {
+					...process.env,
+					PARENT_COMMAND: "speco-tasker", // Set environment variable for command detection
+				},
 			});
 
 			child.on("close", (code) => {

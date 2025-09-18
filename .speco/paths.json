@@ -1,20 +1,30 @@
 {
-	"mappings": {
-		"task-master": "speco-tasker",
-		"task-master-mcp": "speco-tasker-mcp",
-		"bin/task-master.js": "bin/speco-tasker.js",
-		".taskmaster": ".speco",
-		"scripts/task-manager.js": "scripts/modules/task-manager.js",
-		"scripts/commands.js": "scripts/modules/commands.js"
-	},
-	"cleanup": {
-		"patterns": [
-			"**/*.ai",
-			"**/ai-*",
-			"**/*-ai.*",
-			"**/task-master*",
-			"**/.taskmaster/**"
-		],
-		"exclude": [".speco/**", "specs/**", "node_modules/**"]
-	}
+  "root": {
+    "speco": ".speco",
+    "legacy": ".taskmaster"
+  },
+  "dirs": {
+    "tasks": "tasks",
+    "docs": "docs",
+    "reports": "reports",
+    "templates": "templates",
+    "backups": "backups",
+    "logs": "logs",
+    "config": "config"
+  },
+  "files": {
+    "tasks": "tasks.json",
+    "config": "config.json",
+    "state": "state.json",
+    "changelog": "changelog.md",
+    "brand": "brand.json",
+    "paths": "paths.json",
+    "cleanup": "cleanup-rules.json"
+  },
+  "tags": {},
+  "metadata": {
+    "created": "2025-09-18T10:47:03.868Z",
+    "updated": "2025-09-18T10:47:03.868Z",
+    "version": "1.0.0"
+  }
 }

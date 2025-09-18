@@ -85,7 +85,7 @@ Speco Tasker 通过 `--from-branch` 选项提供手动 git 集成：
 
 Speco Tasker provides manual git integration through the `--from-branch` option:
 
-- **手动标签创建**：使用 `task-master add-tag --from-branch` 根据当前 git 分支名称创建标签 | **Manual Tag Creation**: Use `task-master add-tag --from-branch` to create tags based on current git branch name
+- **手动标签创建**：使用 `speco-tasker add-tag --from-branch` 根据当前 git 分支名称创建标签 | **Manual Tag Creation**: Use `speco-tasker add-tag --from-branch` to create tags based on current git branch name
 - **用户控制**：没有自动标签切换 - 您控制何时以及如何创建标签 | **User Control**: No automatic tag switching - you control when and how tags are created
 - **灵活工作流**：支持任何 git 工作流，而不强制分支-标签映射 | **Flexible Workflow**: Supports any git workflow without forcing branch-tag mapping
 
@@ -109,17 +109,17 @@ Since Speco Tasker has completely removed AI features, environment variable conf
 
 ### 配置错误 | Configuration Errors
 
-- 如果 Speco Tasker 报告缺少配置或找不到配置文件错误，请在项目根目录运行 `task-master init` 来创建必要的配置文件。 | If Speco Tasker reports missing configuration or cannot find configuration file errors, please run `task-master init` in the project root directory to create the necessary configuration files.
-- 对于新项目，配置将在 `task-master init` 时自动创建。 | For new projects, configuration will be created automatically during `task-master init`.
+- 如果 Speco Tasker 报告缺少配置或找不到配置文件错误，请在项目根目录运行 `speco-tasker init` 来创建必要的配置文件。 | If Speco Tasker reports missing configuration or cannot find configuration file errors, please run `speco-tasker init` in the project root directory to create the necessary configuration files.
+- 对于新项目，配置将在 `speco-tasker init` 时自动创建。 | For new projects, configuration will be created automatically during `speco-tasker init`.
 - 标签系统将在首次使用时自动初始化。 | The tag system will be automatically initialized on first use.
 
 ### 标签系统错误 | Tag System Errors
 
 - 如果遇到标签相关错误，请检查 `.taskmaster/state.json` 文件是否存在 | If you encounter tag-related errors, please check if the `.taskmaster/state.json` file exists
-- 使用 `task-master tags` 查看可用标签 | Use `task-master tags` to view available tags
-- 使用 `task-master use-tag <tag-name>` 切换到特定标签 | Use `task-master use-tag <tag-name>` to switch to a specific tag
+- 使用 `speco-tasker tags` 查看可用标签 | Use `speco-tasker tags` to view available tags
+- 使用 `speco-tasker use-tag <tag-name>` 切换到特定标签 | Use `speco-tasker use-tag <tag-name>` to switch to a specific tag
 
-### 如果 `task-master init` 没有响应：| If `task-master init` doesn't respond:
+### 如果 `speco-tasker init` 没有响应：| If `speco-tasker init` doesn't respond:
 
 尝试直接使用 Node 运行它：
 

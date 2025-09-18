@@ -167,10 +167,10 @@ You can manually break down complex tasks into smaller subtasks:
 
 ```bash
 # 将任务分解为子任务 | Break down task into subtasks
-task-master add-subtask --parent=<task-id> --title="子任务标题" --description="子任务描述"
+speco-tasker add-subtask --parent=<task-id> --title="子任务标题" --description="子任务描述"
 
 # 为子任务设置依赖关系 | Set dependencies for subtasks
-task-master add-subtask --parent=<task-id> --title="依赖任务" --dependencies="1.1,1.2"
+speco-tasker add-subtask --parent=<task-id> --title="依赖任务" --dependencies="1.1,1.2"
 ```
 
 ### 任务重组 | Task Reorganization
