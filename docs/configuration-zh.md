@@ -4,15 +4,15 @@ Speco Tasker 是一个纯净的手动任务管理系统，已经完全移除了A
 
 Speco Tasker is a pure manual task management system with all AI features completely removed. Configuration focuses mainly on the tag system and other project settings.
 
-## `.taskmaster/config.json` 文件 | `.taskmaster/config.json` File
+## `.speco/config.json` 文件 | `.speco/config.json` File
 
 此 JSON 文件存储项目配置设置，包括日志级别、标签系统设置和项目默认值。
 
 This JSON file stores project configuration settings, including log levels, tag system settings, and project defaults.
 
-**位置：** 当您运行 `task-master init` 初始化新项目时，此文件将在 `.taskmaster/` 目录中创建。
+**位置：** 当您运行 `speco-tasker init` 初始化新项目时，此文件将在 `.speco/` 目录中创建。
 
-**Location:** This file is created in the `.taskmaster/` directory when you run `task-master init` to initialize a new project.
+**Location:** This file is created in the `.speco/` directory when you run `speco-tasker init` to initialize a new project.
 
 **管理：** 文件会在项目初始化时自动创建。您也可以手动编辑此文件，但建议通过命令行工具进行管理。
 
@@ -43,9 +43,9 @@ This JSON file stores project configuration settings, including log levels, tag 
 
 ## 状态管理文件 | State Management File
 
-Speco Tasker 使用 `.taskmaster/state.json` 来跟踪标签系统运行时信息：
+Speco Tasker 使用 `.speco/state.json` 来跟踪标签系统运行时信息：
 
-Speco Tasker uses `.taskmaster/state.json` to track tag system runtime information:
+Speco Tasker uses `.speco/state.json` to track tag system runtime information:
 
 ```json
 {

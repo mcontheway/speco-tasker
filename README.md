@@ -12,7 +12,6 @@
 - [📋 命令参考](docs/command-reference-zh.md) - 详细命令说明 | Detailed Command Reference
 - [⚙️ 配置指南](docs/configuration-zh.md) - 配置选项详解 | Configuration Options Details
 - [🛡️ 路径配置指南](docs/path-config-guide.md) - 路径配置和安全验证 | Path Configuration and Security Guide
-- [🧹 清理指南](docs/cleanup-guide.md) - AI内容清理指南 | AI Content Cleanup Guide
 - [📚 使用教程](docs/tutorial.md) - 完整使用教程 | Complete Usage Tutorial
 
 ---
@@ -298,7 +297,7 @@ speco-tasker validate-migration
 
 ```bash
 # 克隆仓库
-git clone https://github.com/your-org/speco-tasker.git
+git clone https://github.com/mcontheway/speco-tasker.git
 cd speco-tasker
 
 # 安装依赖
