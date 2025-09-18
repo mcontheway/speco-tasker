@@ -268,7 +268,7 @@ const program = new Command();
 
 program
 	.name("task-master")
-	.description("Speco Tasker CLI")
+	.description("Speco Tasker CLI (Legacy Command)")
 	.version(version)
 	.addHelpText("afterAll", () => {
 		// Use the same help display function as dev.js for consistency
@@ -291,6 +291,29 @@ program
 	.action(() => {
 		const args = process.argv.slice(process.argv.indexOf("dev") + 1);
 		runDevScript(args);
+	});
+
+program
+	.command("task <command>")
+	.description("任务管理命令")
+	.allowUnknownOption()
+	.action((command, options, cmd) => {
+		// Get all arguments after the command
+		const commandIndex = process.argv.indexOf(command);
+		const args = commandIndex !== -1 ? process.argv.slice(commandIndex) : [command];
+
+		const child = spawn("node", [devScriptPath, ...args], {
+			stdio: "inherit",
+			cwd: process.cwd(),
+			env: {
+				...process.env,
+				PARENT_COMMAND: "task-master", // Set environment variable for command detection
+			},
+		});
+
+		child.on("close", (code) => {
+			process.exit(code);
+		});
 	});
 
 // Use a temporary Command instance to get all command definitions
