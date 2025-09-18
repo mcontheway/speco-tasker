@@ -3,6 +3,7 @@
 		"ignore": [
 			"build",
 			"coverage",
+			"coverage/**",
 			".changeset",
 			"tasks",
 			"package-lock.json",
@@ -10,7 +11,12 @@
 			"dist",
 			"node_modules",
 			"apps/docs/build",
-			"*.d.ts"
+			"*.d.ts",
+			".speco/logs/**",
+			".speco/backups/**",
+			"tmp/**",
+			"tests/fixtures/**",
+			"specs/**"
 		],
 		"include": ["**/*.js", "**/*.ts", "**/*.json"]
 	},

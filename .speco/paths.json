@@ -1,0 +1,20 @@
+{
+	"mappings": {
+		"task-master": "speco-tasker",
+		"task-master-mcp": "speco-tasker-mcp",
+		"bin/task-master.js": "bin/speco-tasker.js",
+		".taskmaster": ".speco",
+		"scripts/task-manager.js": "scripts/modules/task-manager.js",
+		"scripts/commands.js": "scripts/modules/commands.js"
+	},
+	"cleanup": {
+		"patterns": [
+			"**/*.ai",
+			"**/ai-*",
+			"**/*-ai.*",
+			"**/task-master*",
+			"**/.taskmaster/**"
+		],
+		"exclude": [".speco/**", "specs/**", "node_modules/**"]
+	}
+}

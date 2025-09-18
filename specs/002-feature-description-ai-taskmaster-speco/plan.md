@@ -1,6 +1,6 @@
 # 实施计划：品牌重塑与AI功能移除
 
-**分支：** `002-feature-description-ai-taskmaster-speco` | **日期：** 2025年1月15日 | **规格：** [链接](specs/002-feature-description-ai-taskmaster-speco/spec.md) 输入：来自 `/Volumes/Data_SSD/Coding/startkits/Speco-Tasker/specs/002-feature-description-ai-taskmaster-speco/spec.md` 的功能规范
+**分支：** `002-feature-description-ai-taskmaster-speco` | **日期：** 2025年9月18日 | **规格：** [链接](specs/002-feature-description-ai-taskmaster-speco/spec.md) 输入：来自 `/Volumes/Data_SSD/Coding/startkits/Speco-Tasker/specs/002-feature-description-ai-taskmaster-speco/spec.md` 的功能规范
 
 ## 执行流程 (/plan 命令范围)
 

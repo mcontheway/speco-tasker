@@ -5,7 +5,7 @@
  */
 
 // Disable graceful-fs polyfills to avoid uv_cwd issues
-process.env.GRACEFUL_FS_PATCH = '0';
+process.env.GRACEFUL_FS_PATCH = "0";
 
 const path = require("node:path");
 

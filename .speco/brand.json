@@ -1,0 +1,26 @@
+{
+	"current": {
+		"name": "Speco-Tasker",
+		"description": "A pure manual task management system for efficient development workflows",
+		"author": "Speco Team",
+		"bin": "speco-tasker",
+		"mcpBin": "speco-tasker-mcp"
+	},
+	"previous": {
+		"name": "Task Master AI",
+		"description": "AI-powered task management system",
+		"author": "Task Master Team",
+		"bin": "task-master",
+		"mcpBin": "task-master-mcp"
+	},
+	"rebrand": {
+		"completed": false,
+		"timestamp": null,
+		"changes": [
+			"package.json: name, description, author, bin commands",
+			"README files: branding and feature descriptions",
+			"Documentation: remove AI references",
+			"Configuration: update paths and settings"
+		]
+	}
+}

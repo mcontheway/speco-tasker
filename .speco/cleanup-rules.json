@@ -1,0 +1,46 @@
+{
+	"rules": [
+		{
+			"id": "ai-content-removal",
+			"name": "AI内容清理",
+			"description": "移除所有AI相关的文件和内容",
+			"patterns": ["**/*.ai", "**/ai-*", "**/*-ai.*", "**/ai/**"],
+			"exclude": [".speco/**", "specs/**", "node_modules/**", ".git/**"],
+			"actions": ["delete", "backup"],
+			"enabled": true
+		},
+		{
+			"id": "taskmaster-rename",
+			"name": "TaskMaster重命名",
+			"description": "将所有task-master相关文件重命名为speco-tasker",
+			"patterns": ["**/task-master*", "**/taskmaster*"],
+			"exclude": [
+				".speco/**",
+				"specs/**",
+				"node_modules/**",
+				".git/**",
+				"**/*.md"
+			],
+			"actions": ["rename"],
+			"enabled": true
+		},
+		{
+			"id": "config-migration",
+			"name": "配置迁移",
+			"description": "将.taskmaster目录迁移到.speco",
+			"patterns": ["**/.taskmaster/**"],
+			"exclude": [],
+			"actions": ["move"],
+			"enabled": true
+		}
+	],
+	"backup": {
+		"enabled": true,
+		"directory": ".speco/backups",
+		"retention": 7
+	},
+	"validation": {
+		"dryRun": true,
+		"confirmBeforeExecute": true
+	}
+}

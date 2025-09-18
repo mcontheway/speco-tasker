@@ -1,91 +1,172 @@
+// Jest configuration for Speco-Tasker TDD workflow
 // Disable graceful-fs patching globally
-process.env.GRACEFUL_FS_PATCH = '0';
+process.env.GRACEFUL_FS_PATCH = "0";
 
 const config = {
-	// Use Node.js environment for testing
-	testEnvironment: "node",
+  // Use Node.js environment for testing
+  testEnvironment: "node",
 
-	// Automatically clear mock calls between every test
-	clearMocks: true,
+  // Automatically clear mock calls between every test
+  clearMocks: true,
 
-	// Indicates whether the coverage information should be collected while executing the test
-	collectCoverage: false,
+  // Enable coverage collection
+  collectCoverage: true,
 
-	// The directory where Jest should output its coverage files
-	coverageDirectory: "coverage",
+  // Coverage directory
+  coverageDirectory: "coverage",
 
-	// Transform configuration for both CommonJS and ES modules
-	transform: {
-		"^.+\\.js$": "babel-jest",
-		"^.+\\.mjs$": "babel-jest",
-	},
+  // Coverage reporters
+  coverageReporters: ["text", "text-summary", "lcov", "html", "json"],
 
-	// Module name mapping for ES modules
-	moduleNameMapper: {
-		"^(\\.{1,2}/.*)\\.js$": "$1",
-		// Mock import.meta.url for ES modules
-		"import\\.meta\\.url": 'jest.fn(() => "file:///mock/path")',
-	},
+  // Coverage thresholds (TaskMaster standards)
+  coverageThreshold: {
+    global: {
+      branches: 70,
+      functions: 80,
+      lines: 80,
+      statements: 80,
+    },
+    // Higher standards for critical business logic
+    "./src/models/": {
+      branches: 85,
+      functions: 90,
+      lines: 90,
+      statements: 90,
+    },
+    "./src/services/": {
+      branches: 80,
+      functions: 85,
+      lines: 85,
+      statements: 85,
+    },
+    "./src/controllers/": {
+      branches: 80,
+      functions: 85,
+      lines: 85,
+      statements: 85,
+    },
+  },
 
-	// Don't transform node_modules except specific ones
-	transformIgnorePatterns: [
-		"node_modules/(?!(supertest|chalk|boxen|@inquirer|fastmcp)/)",
-	],
+  // Files to collect coverage from
+  collectCoverageFrom: [
+    "src/**/*.js",
+    "!src/**/*.test.js",
+    "!src/**/index.js",
+    "!src/**/test-helpers.js",
+    "!src/**/mocks/**",
+    "!coverage/**",
+    "!node_modules/**",
+  ],
 
-	// Setup files
-	setupFilesAfterEnv: ["<rootDir>/tests/setup.cjs"],
+  // Transform configuration for both CommonJS and ES modules
+  transform: {
+    "^.+\\.js$": "babel-jest",
+    "^.+\\.mjs$": "babel-jest",
+  },
 
-	// Module file extensions
-	moduleFileExtensions: ["js", "cjs", "mjs", "json"],
+  // Module name mapping for ES modules
+  moduleNameMapper: {
+    "^(\\.{1,2}/.*)\\.js$": "$1",
+    // Mock import.meta.url for ES modules
+    "import\\.meta\\.url": "jest.fn(() => \"file:///mock/path\")",
+  },
 
-	// Test file patterns - include both CommonJS and ES module tests
-	testMatch: [
-		"**/?(*.)+(spec|test).cjs",
-		"**/?(*.)+(spec|test).mjs",
-		"**/contract/**/*.cjs",
-		"**/contract/**/*.mjs",
-		"**/integration/**/*.cjs",
-		"**/integration/**/*.mjs",
-		"**/unit/**/*.cjs",
-		"**/unit/**/*.mjs",
-		"**/performance/**/*.cjs",
-		"**/performance/**/*.mjs",
-	],
+  // Don't transform node_modules except specific ones
+  transformIgnorePatterns: [
+    "node_modules/(?!(supertest|chalk|boxen|@inquirer|fastmcp)/)",
+  ],
 
-	// Exclude problematic tests with syntax errors or complex dependencies
-	testPathIgnorePatterns: [
-		"mcp-server/src/core/__tests__", // MCP server tests with complex dependencies
-		"tests/integration/cli/commands.test.cjs", // Uses dynamic imports without vm-modules
-		"tests/integration/cli/complex-cross-tag-scenarios.test.cjs", // Syntax error
-		"tests/integration/move-task-cross-tag.integration.test.cjs", // Jest redeclaration error
-		"tests/integration/move-task-simple.integration.test.cjs", // Jest redeclaration error
-		"tests/integration/manage-gitignore.test.cjs", // Syntax error
-		"tests/unit/utils/path-utils.test.cjs", // ES module dependencies
-		"tests/unit/utils/getVersion.test.cjs", // ES module dependencies
-		"tests/unit/es-module-test.mjs", // ES module test
-		"tests/unit/config-manager.test.mjs", // ES module test
-	],
+  // Test timeout (global)
+  testTimeout: 10000,
 
-	// Optimize for integration tests
-	resetModules: false, // Keep modules cached between tests for speed
-	resetMocks: true,
-	restoreMocks: true,
+  // Setup files
+  setupFilesAfterEnv: ["<rootDir>/tests/setup.cjs"],
 
-	// Allow more workers for integration tests (they're more isolated)
-	maxWorkers: 2,
+  // Module file extensions
+  moduleFileExtensions: ["js", "cjs", "mjs", "json"],
 
-	// Minimal output for stability
-	verbose: false,
+  // Test file patterns - organized by test type
+  testMatch: [
+    // Contract tests (API behavior verification)
+    "**/tests/contract/**/*.test.js",
+    "**/tests/contract/**/*.test.cjs",
 
-	// Reasonable timeout
-	testTimeout: 5000,
+    // Integration tests (end-to-end scenarios)
+    "**/tests/integration/**/*.test.js",
+    "**/tests/integration/**/*.test.cjs",
 
-	// Force exit
-	forceExit: true,
+    // Unit tests (isolated component testing)
+    "**/tests/unit/**/*.test.js",
+    "**/tests/unit/**/*.test.cjs",
 
-	// Bail on first failure for faster feedback
-	bail: 1,
+    // E2E tests (full system testing)
+    "**/tests/e2e/**/*.test.js",
+    "**/tests/e2e/**/*.test.cjs",
+  ],
 
+  // Projects for different test types with specific configurations
+  projects: [
+    // Contract Tests - API contract verification
+    {
+      displayName: "contract",
+      testMatch: ["<rootDir>/tests/contract/**/*.test.{js,cjs}"],
+      testEnvironment: "node",
+      setupFilesAfterEnv: ["<rootDir>/tests/setup/contract.cjs"],
+      collectCoverageFrom: [
+        "src/controllers/**/*.js",
+        "src/services/**/*.js",
+        "!src/**/*.test.js",
+      ],
+    },
+
+    // Integration Tests - Component and service integration
+    {
+      displayName: "integration",
+      testMatch: ["<rootDir>/tests/integration/**/*.test.{js,cjs}"],
+      testEnvironment: "node",
+      setupFilesAfterEnv: ["<rootDir>/tests/setup/integration.cjs"],
+      maxWorkers: 2, // Parallel execution for integration tests
+      collectCoverageFrom: ["src/**/*.js", "!src/**/*.test.js", "!tests/**"],
+    },
+
+    // Unit Tests - Isolated function and module testing
+    {
+      displayName: "unit",
+      testMatch: ["<rootDir>/tests/unit/**/*.test.{js,cjs}"],
+      testEnvironment: "node",
+      setupFilesAfterEnv: ["<rootDir>/tests/setup/unit.cjs"],
+      maxWorkers: 4, // High parallelism for fast unit tests
+      collectCoverageFrom: [
+        "src/models/**/*.js",
+        "src/utils/**/*.js",
+        "src/constants/**/*.js",
+        "!src/**/*.test.js",
+      ],
+    },
+
+    // E2E Tests - Full system verification
+    {
+      displayName: "e2e",
+      testMatch: ["<rootDir>/tests/e2e/**/*.test.{js,cjs}"],
+      testEnvironment: "node",
+      setupFilesAfterEnv: ["<rootDir>/tests/setup/e2e.cjs"],
+      maxWorkers: 1, // Sequential execution for E2E stability
+      collectCoverage: false, // E2E tests don't contribute to coverage
+    },
+  ],
+
+  // Global test configuration
+  resetMocks: true,
+  restoreMocks: true,
+
+  // Test execution settings
+  verbose: true,
+
+  // Force exit to prevent hanging
+  forceExit: true,
+
+  // Bail on first failure for faster feedback during development
+  bail: 0, // Set to 1 during strict TDD development
 };
 
 module.exports = config;
