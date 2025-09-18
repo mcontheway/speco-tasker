@@ -3,7 +3,6 @@
  * 处理清理相关的API端点
  */
 
-import { CleanupService } from "../services/CleanupService.js";
 
 /**
  * CleanupController 类

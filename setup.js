@@ -65,7 +65,7 @@ async function main() {
 		console.log("\n🎉 安装完成！");
 		console.log("\n📋 下一步：");
 		console.log("1. 重启你的编辑器 (Cursor/VSCode/Windsurf)");
-		console.log('2. 在聊天中输入: "初始化 Speco Tasker 项目"');
+		console.log('2. 在聊天中输入: "初始化 Speco Tasker"');
 		console.log("3. 或者使用命令: npx task-master init");
 
 		console.log("\n💡 如果遇到问题，可以重新运行: npm run setup");

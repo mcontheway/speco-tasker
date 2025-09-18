@@ -791,4 +791,4 @@ export function setLogger(logger) {
 	globalLogger = logger;
 }
 
-export { Logger, LogEntry };
+// Logger and LogEntry are already exported via class/function declarations

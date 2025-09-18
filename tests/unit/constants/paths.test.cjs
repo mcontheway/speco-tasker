@@ -12,27 +12,28 @@ const {
 
 describe("Path Constants", () => {
 	describe("Directory paths", () => {
-		test("should define taskmaster directory", () => {
-			expect(TASKMASTER_DIR).toBe(".taskmaster");
+		test("should define speco directory", () => {
+			expect(TASKMASTER_DIR).toBe(".speco");
 		});
 
-		test("should define taskmaster tasks directory", () => {
-			expect(TASKMASTER_TASKS_DIR).toBe(".taskmaster/tasks");
+		test("should define speco tasks directory", () => {
+			expect(TASKMASTER_TASKS_DIR).toBe(".speco/tasks");
 		});
 	});
 
 	describe("File paths", () => {
 		test("should define config file path", () => {
-			expect(TASKMASTER_CONFIG_FILE).toBe(".taskmaster/config.json");
+			expect(TASKMASTER_CONFIG_FILE).toBe(".speco/config.json");
 		});
 
 		test("should define tasks file path", () => {
-			expect(TASKMASTER_TASKS_FILE).toBe(".taskmaster/tasks/tasks.json");
+			expect(TASKMASTER_TASKS_FILE).toBe(".speco/tasks/tasks.json");
 		});
 	});
 
 	describe("Project markers", () => {
 		test("should include essential project markers", () => {
+			expect(PROJECT_MARKERS).toContain(".speco");
 			expect(PROJECT_MARKERS).toContain(".taskmaster");
 			expect(PROJECT_MARKERS).toContain(".git");
 			expect(PROJECT_MARKERS).toContain(".taskmasterconfig");

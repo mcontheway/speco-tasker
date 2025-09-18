@@ -182,28 +182,6 @@ export class ServiceMiddleware {
 		return result;
 	}
 
-	/**
-	 * 品牌信息验证中间件
-	 * @param {Object} brandInfo - 品牌信息对象
-	 * @param {Object} context - 验证上下文
-	 * @returns {ValidationResult} 验证结果
-	 */
-	validateBrandInfo(brandInfo, context = {}) {
-		const result = new ValidationResult();
-
-		try {
-			// 1. 基础结构验证
-			if (!brandInfo || typeof brandInfo !== "object") {
-				result.addError("品牌信息必须是对象", "INVALID_TYPE");
-				return result;
-			}
-
-			// 2. 必需字段验证
-			const requiredFields = ["name", "command", "version"];
-			for (const field of requiredFields) {
-				if (!brandInfo[field]) {
-					result.addError(`缺少必需字段: ${field}`, "MISSING_REQUIRED_FIELD", {
-						field,
 					});
 				}
 			}
@@ -972,4 +950,4 @@ export class ServiceMiddleware {
 	}
 }
 
-export { ServiceMiddleware, ValidationResult };
+// ServiceMiddleware and ValidationResult are already exported via class declarations

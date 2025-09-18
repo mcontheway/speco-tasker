@@ -884,4 +884,4 @@ export function setMonitoringSystem(system) {
 	globalMonitoringSystem = system;
 }
 
-export { MonitoringSystem, MonitoringMetrics, AuditTracker };
+// MonitoringSystem, MonitoringMetrics, and AuditTracker are already exported via class/function declarations

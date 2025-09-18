@@ -25,10 +25,8 @@ import gradient from "gradient-string";
 import { isSilentMode } from "./modules/utils.js";
 import { insideGitWorkTree } from "./modules/utils/git-utils.js";
 
-// 导入新的品牌重塑服务
+// 导入核心服务
 import { PathService } from "../src/services/PathService.js";
-import { BrandService } from "../src/services/BrandService.js";
-import { CleanupService } from "../src/services/CleanupService.js";
 
 import { execSync } from "node:child_process";
 import {
@@ -316,63 +314,6 @@ async function createSpecoConfig(targetDir, options) {
 			},
 		};
 
-		// 创建品牌配置文件
-		const brandConfig = {
-			name: "Speco Tasker",
-			command: "speco-tasker",
-			description: "纯净的任务管理系统",
-			version: "1.2.0",
-			shortName: "Speco",
-			tagline: "纯净的任务管理系统",
-			author: options.author || "Speco Team",
-			license: "MIT WITH Commons-Clause",
-			website: "",
-			repository: "",
-			documentation: "",
-			metadata: {
-				created: new Date().toISOString(),
-				updated: new Date().toISOString(),
-				version: "1.0.0",
-			},
-		};
-
-		// 创建清理规则配置文件
-		const cleanupRulesConfig = {
-			rules: [
-				{
-					id: "ai-service-cleanup",
-					name: "AI服务调用清理",
-					type: "ai_service",
-					patterns: ["**/ai/**", "**/services/ai/**"],
-					contentPatterns: [/import.*from.*ai-service/, /require.*ai-service/],
-					action: "remove",
-					safePatterns: ["**/tests/**", "**/mocks/**"],
-					requiresConfirmation: true,
-					metadata: {
-						enabled: true,
-						priority: 1,
-					},
-				},
-				{
-					id: "brand-info-cleanup",
-					name: "品牌信息清理",
-					type: "brand_info",
-					contentPatterns: [/Task Master|task-master|TaskMaster/],
-					action: "replace",
-					replacement: "Speco Tasker",
-					requiresConfirmation: false,
-					metadata: {
-						enabled: true,
-						priority: 2,
-					},
-				},
-			],
-			metadata: {
-				created: new Date().toISOString(),
-				version: "1.0.0",
-				count: 2,
-			},
-		};
 
 		// 创建路径配置文件
 		const pathsConfig = {
@@ -408,18 +349,12 @@ async function createSpecoConfig(targetDir, options) {
 
 		// 写入配置文件
 		const configPath = path.join(specoDir, "config.json");
-		const brandPath = path.join(specoDir, "brand.json");
-		const cleanupPath = path.join(specoDir, "cleanup-rules.json");
 		const pathsPath = path.join(specoDir, "paths.json");
 
 		fs.writeFileSync(configPath, JSON.stringify(mainConfig, null, 2));
-		fs.writeFileSync(brandPath, JSON.stringify(brandConfig, null, 2));
-		fs.writeFileSync(cleanupPath, JSON.stringify(cleanupRulesConfig, null, 2));
 		fs.writeFileSync(pathsPath, JSON.stringify(pathsConfig, null, 2));
 
 		log("success", "✓ Speco 主配置创建完成");
-		log("success", "✓ 品牌配置创建完成");
-		log("success", "✓ 清理规则配置创建完成");
 		log("success", "✓ 路径配置创建完成");
 
 		// 验证配置

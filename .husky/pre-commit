@@ -1,28 +1,116 @@
 #!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
 
-# 运行 lint-staged（只检查暂存的文件）
-echo "🔍 正在检查暂存文件的代码质量..."
-npx lint-staged
+# Speco Tasker v1.2.0 - 严格的 pre-commit 检查
+echo "🔍 Speco Tasker v1.2.0 - 正在执行严格的代码质量检查..."
 
-# 运行测试（运行所有CLI命令和MCP工具相关的测试）
-echo "🧪 正在运行全面测试覆盖..."
+# 1. 运行 lint-staged（只检查暂存的文件）
+echo "📏 正在检查暂存文件的代码质量和格式..."
+if ! npx lint-staged; then
+    echo "❌ 代码质量检查失败！请修复以下问题："
+    echo "   - 运行 'npm run lint' 检查代码风格问题"
+    echo "   - 运行 'npm run format' 自动修复格式问题"
+    exit 1
+fi
 
-# TDD阶段2：临时放宽测试要求，专注代码质量
-echo "  📋 当前处于TDD阶段2，先写测试后实现功能"
-echo "  ⚠️  测试套件预期存在失败，待实现功能后修复"
-echo "  ✅ 代码质量检查必须通过"
+# 2. 运行完整的测试套件
+echo "🧪 正在运行完整的测试套件（严格模式）..."
 
-# 运行快速测试检查（不中断提交流程）
-echo "  📄 运行合同测试（预期失败）..."
-npm run test:contract >/dev/null 2>&1 || echo "  ⚠️  合同测试失败（预期行为）"
+# 设置测试环境变量
+export GRACEFUL_FS_PATCH=0
+export NODE_OPTIONS="--experimental-specifier-resolution=node"
 
-echo "  📦 运行单元测试..."
-npm run test:unit >/dev/null 2>&1 || echo "  ⚠️  单元测试失败（可能ES模块兼容性问题）"
+# 2.1 运行合同测试
+echo "📄 运行合同测试..."
+if ! npm run test:contract; then
+    echo "❌ 合同测试失败！请检查："
+    echo "   - API 合约是否正确实现"
+    echo "   - 测试用例是否覆盖所有端点"
+    echo "   - 运行 'npm run test:contract' 查看详细错误"
+    exit 1
+fi
 
-echo "  🔧 运行MCP测试..."
-NODE_PATH=$(pwd)/node_modules NODE_OPTIONS="--experimental-vm-modules --experimental-specifier-resolution=node" node_modules/.bin/jest mcp-server/src/core/__tests__/ --passWithNoTests >/dev/null 2>&1 || echo "  ⚠️  MCP测试失败"
+# 2.2 运行单元测试
+echo "📦 运行单元测试..."
+if ! npm run test:unit; then
+    echo "❌ 单元测试失败！请检查："
+    echo "   - 所有单元测试是否通过"
+    echo "   - 新增代码是否有对应的测试"
+    echo "   - 运行 'npm run test:unit' 查看详细错误"
+    exit 1
+fi
 
-echo "  🔗 运行集成测试..."
-NODE_PATH=$(pwd)/node_modules NODE_OPTIONS="--experimental-vm-modules --experimental-specifier-resolution=node" node_modules/.bin/jest tests/integration/ --passWithNoTests >/dev/null 2>&1 || echo "  ⚠️  集成测试失败"
+# 2.3 运行集成测试
+echo "🔗 运行集成测试..."
+if ! npm run test:integration; then
+    echo "❌ 集成测试失败！请检查："
+    echo "   - 组件间集成是否正常"
+    echo "   - 数据库操作是否正确"
+    echo "   - API 调用是否成功"
+    echo "   - 运行 'npm run test:integration' 查看详细错误"
+    exit 1
+fi
 
-echo "  ✅ 测试运行完成，代码质量检查通过即可提交"
+# 2.4 运行性能测试（如果存在）
+echo "⚡ 运行性能测试..."
+if [ -d "tests/performance" ]; then
+    if ! npm run test:performance; then
+        echo "❌ 性能测试失败！请检查："
+        echo "   - 性能指标是否达标"
+        echo "   - 内存泄漏是否修复"
+        echo "   - 运行 'npm run test:performance' 查看详细错误"
+        exit 1
+    fi
+fi
+
+# 3. 运行安全验证
+echo "🛡️ 运行文件系统安全验证..."
+if ! node scripts/modules/commands.js validate-security --project-root="$(pwd)"; then
+    echo "❌ 安全验证失败！请检查："
+    echo "   - 文件权限是否正确"
+    echo "   - 路径配置是否安全"
+    echo "   - 敏感文件是否被保护"
+    exit 1
+fi
+
+# 4. 验证配置文件
+echo "⚙️ 验证配置文件..."
+if ! node scripts/modules/commands.js config validate; then
+    echo "❌ 配置文件验证失败！请检查："
+    echo "   - .speco/config.json 是否有效"
+    echo "   - 路径配置是否正确"
+    echo "   - 安全配置是否完整"
+    exit 1
+fi
+
+# 5. 检查依赖关系
+echo "🔗 检查依赖关系..."
+if ! npm run depcheck; then
+    echo "⚠️  依赖检查发现问题，请手动确认："
+    echo "   - 检查是否有未使用的依赖"
+    echo "   - 检查是否有缺失的依赖"
+    echo "   - 运行 'npm run depcheck' 查看详情"
+fi
+
+# 6. 验证版本一致性
+echo "📋 验证版本一致性..."
+PACKAGE_VERSION=$(node -p "require('./package.json').version")
+if [ "$PACKAGE_VERSION" != "1.2.0" ]; then
+    echo "❌ 版本不一致！当前版本: $PACKAGE_VERSION，期望版本: 1.2.0"
+    echo "   请更新 package.json 中的版本号"
+    exit 1
+fi
+
+# 7. 最终验证
+echo "✅ 所有检查通过！"
+echo ""
+echo "🎉 代码质量检查完成！"
+echo "   ✅ 代码格式和风格检查通过"
+echo "   ✅ 合同测试通过"
+echo "   ✅ 单元测试通过"
+echo "   ✅ 集成测试通过"
+echo "   ✅ 文件系统安全验证通过"
+echo "   ✅ 配置文件验证通过"
+echo "   ✅ 版本一致性验证通过"
+echo ""
+echo "🚀 准备提交代码..."
