@@ -14,32 +14,26 @@ class BrandInfo {
 	 */
 	constructor(config = {}) {
 		// 基础品牌信息
-		this.name = config.name || "Speco Tasker";
-		this.command = config.command || "speco-tasker";
-		this.description =
-			config.description ||
-			"A pure manual task management system for efficient development workflows";
-		this.version = config.version || "1.2.0";
+		this.name = config.name;
+		this.command = config.command;
+		this.description = config.description;
+		this.version = config.version;
 
 		// 显示相关
-		this.shortName = config.shortName || "Speco";
-		this.tagline = config.tagline || "纯净的任务管理系统";
+		this.shortName = config.shortName;
+		this.tagline = config.tagline;
 
 		// 技术信息
-		this.author = config.author || "Speco Team";
-		this.license = config.license || "MIT WITH Commons-Clause";
+		this.author = config.author;
+		this.license = config.license;
 
 		// 扩展信息
-		this.website = config.website || "";
-		this.repository = config.repository || "";
-		this.documentation = config.documentation || "";
+		this.website = config.website;
+		this.repository = config.repository;
+		this.documentation = config.documentation;
 
 		// 元数据
-		this.metadata = {
-			created: config.metadata?.created || new Date().toISOString(),
-			updated: config.metadata?.updated || new Date().toISOString(),
-			version: config.metadata?.version || "1.0.0",
-		};
+		this.metadata = config.metadata || {};
 	}
 
 	/**
@@ -104,14 +98,15 @@ class BrandInfo {
 	 * @returns {Object} 显示信息
 	 */
 	getDisplayInfo() {
+		const config = this.getConfigWithDefaults();
 		return {
-			name: this.name,
-			shortName: this.shortName,
-			tagline: this.tagline,
-			description: this.description,
-			version: this.version,
-			command: this.command,
-			author: this.author,
+			name: config.name,
+			shortName: config.shortName,
+			tagline: config.tagline,
+			description: config.description,
+			version: config.version,
+			command: config.command,
+			author: config.author,
 		};
 	}
 
@@ -120,13 +115,14 @@ class BrandInfo {
 	 * @returns {Object} 技术信息
 	 */
 	getTechInfo() {
+		const config = this.getConfigWithDefaults();
 		return {
-			version: this.version,
-			license: this.license,
-			author: this.author,
-			website: this.website,
-			repository: this.repository,
-			documentation: this.documentation,
+			version: config.version,
+			license: config.license,
+			author: config.author,
+			website: config.website,
+			repository: config.repository,
+			documentation: config.documentation,
 		};
 	}
 
@@ -135,11 +131,12 @@ class BrandInfo {
 	 * @returns {Object} CLI信息
 	 */
 	getCLIInfo() {
+		const config = this.getConfigWithDefaults();
 		return {
-			command: this.command,
-			name: this.name,
-			description: this.description,
-			version: this.version,
+			command: config.command,
+			name: config.name,
+			description: config.description,
+			version: config.version,
 		};
 	}
 
@@ -157,24 +154,91 @@ class BrandInfo {
 	}
 
 	/**
+	 * 获取默认配置
+	 * @returns {Object} 默认配置
+	 */
+	getDefaults() {
+		return {
+			name: "Speco Tasker",
+			command: "speco-tasker",
+			description:
+				"A pure manual task management system for efficient development workflows",
+			version: "1.2.0",
+			shortName: "Speco",
+			tagline: "纯净的任务管理系统",
+			author: "Speco Team",
+			license: "MIT WITH Commons-Clause",
+			website: "",
+			repository: "",
+			documentation: "",
+		};
+	}
+
+	/**
+	 * 获取带默认值的配置
+	 * @returns {Object} 带默认值的配置
+	 */
+	getConfigWithDefaults() {
+		const defaults = this.getDefaults();
+		return {
+			name:
+				this.name !== undefined && this.name !== null
+					? this.name
+					: defaults.name,
+			command:
+				this.command !== undefined && this.command !== null
+					? this.command
+					: defaults.command,
+			description:
+				this.description !== undefined && this.description !== null
+					? this.description
+					: defaults.description,
+			version:
+				this.version !== undefined && this.version !== null
+					? this.version
+					: defaults.version,
+			shortName:
+				this.shortName !== undefined && this.shortName !== null
+					? this.shortName
+					: defaults.shortName,
+			tagline:
+				this.tagline !== undefined && this.tagline !== null
+					? this.tagline
+					: defaults.tagline,
+			author:
+				this.author !== undefined && this.author !== null
+					? this.author
+					: defaults.author,
+			license:
+				this.license !== undefined && this.license !== null
+					? this.license
+					: defaults.license,
+			website:
+				this.website !== undefined && this.website !== null
+					? this.website
+					: defaults.website,
+			repository:
+				this.repository !== undefined && this.repository !== null
+					? this.repository
+					: defaults.repository,
+			documentation:
+				this.documentation !== undefined && this.documentation !== null
+					? this.documentation
+					: defaults.documentation,
+			metadata: {
+				created: this.metadata.created || new Date().toISOString(),
+				updated: this.metadata.updated || new Date().toISOString(),
+				version: this.metadata.version || "1.0.0",
+			},
+		};
+	}
+
+	/**
 	 * 转换为JSON格式
 	 * @returns {Object} JSON对象
 	 */
 	toJSON() {
-		return {
-			name: this.name,
-			command: this.command,
-			description: this.description,
-			version: this.version,
-			shortName: this.shortName,
-			tagline: this.tagline,
-			author: this.author,
-			license: this.license,
-			website: this.website,
-			repository: this.repository,
-			documentation: this.documentation,
-			metadata: this.metadata,
-		};
+		return this.getConfigWithDefaults();
 	}
 
 	/**
@@ -191,7 +255,7 @@ class BrandInfo {
 	 * @returns {BrandInfo} 默认品牌信息实例
 	 */
 	static getDefaultBrand() {
-		return new BrandInfo();
+		return new BrandInfo({});
 	}
 
 	/**
@@ -215,7 +279,10 @@ class BrandInfo {
 			},
 		};
 
-		return new BrandInfo(rebrandConfig);
+		const brand = new BrandInfo(rebrandConfig);
+		// 确保metadata.rebrand被正确设置
+		brand.metadata = rebrandConfig.metadata;
+		return brand;
 	}
 
 	/**

@@ -33,36 +33,77 @@ class CleanupRule {
 	 */
 	constructor(config = {}) {
 		// 规则标识
-		this.id = config.id || this.generateId();
-		this.name = config.name || "未命名规则";
-		this.type = config.type || CleanupType.AI_SERVICE;
+		this.id = (config && config.id) || this.generateId();
+		this.name = (config && config.name) || "未命名规则";
+		this.type = (config && config.type) || CleanupType.AI_SERVICE;
+
+		// 性能优化：编译正则表达式缓存
+		this._compiledPatterns = null;
+		this._lastContent = null;
+		this._contentHash = null;
+
+		// 配置缓存管理器
+		this._cacheManager = null;
 
 		// 匹配规则
-		this.patterns = config.patterns || [];
-		this.contentPatterns = config.contentPatterns || [];
+		this.patterns =
+			config && Array.isArray(config.patterns) ? [...config.patterns] : [];
+		this.contentPatterns =
+			config && Array.isArray(config.contentPatterns)
+				? config.contentPatterns.map((p) => {
+						if (p instanceof RegExp) return p;
+						try {
+							return new RegExp(p);
+						} catch (error) {
+							// 如果正则表达式无效，返回一个永不匹配的模式
+							return /(?!)/;
+						}
+					})
+				: [];
 
 		// 处理规则
-		this.action = config.action || CleanupAction.MARK;
-		this.replacement = config.replacement || "";
+		this.action = (config && config.action) || CleanupAction.MARK;
+		this.replacement = (config && config.replacement) || "";
 
 		// 安全规则
-		this.safePatterns = config.safePatterns || [];
+		this.safePatterns =
+			config && Array.isArray(config.safePatterns)
+				? [...config.safePatterns]
+				: [];
 		this.requiresConfirmation =
-			config.requiresConfirmation !== undefined
+			config && config.requiresConfirmation !== undefined
 				? config.requiresConfirmation
 				: true;
 
 		// 验证规则
-		this.validationPatterns = config.validationPatterns || [];
+		this.validationPatterns =
+			config && Array.isArray(config.validationPatterns)
+				? config.validationPatterns.map((p) => {
+						if (p instanceof RegExp) return p;
+						try {
+							return new RegExp(p);
+						} catch (error) {
+							// 如果正则表达式无效，返回一个永不匹配的模式
+							return /(?!)/;
+						}
+					})
+				: [];
 
 		// 元数据
 		this.metadata = {
-			created: config.metadata?.created || new Date().toISOString(),
-			updated: config.metadata?.updated || new Date().toISOString(),
-			version: config.metadata?.version || "1.0.0",
+			created:
+				(config && config.metadata && config.metadata.created) ||
+				new Date().toISOString(),
+			updated:
+				(config && config.metadata && config.metadata.updated) ||
+				new Date().toISOString(),
+			version:
+				(config && config.metadata && config.metadata.version) || "1.0.0",
 			enabled:
-				config.metadata?.enabled !== undefined ? config.metadata.enabled : true,
-			priority: config.metadata?.priority || 0,
+				config && config.metadata && config.metadata.enabled !== undefined
+					? config.metadata.enabled
+					: true,
+			priority: (config && config.metadata && config.metadata.priority) || 0,
 		};
 
 		// 统计信息
@@ -90,7 +131,11 @@ class CleanupRule {
 		const errors = [];
 
 		// 验证必填字段
-		if (!this.id || typeof this.id !== "string") {
+		if (
+			!this.id ||
+			typeof this.id !== "string" ||
+			this.id.trim().length === 0
+		) {
 			errors.push("id 必须是非空字符串");
 		}
 
@@ -199,7 +244,7 @@ class CleanupRule {
 		this.safePatterns.forEach((pattern) => {
 			if (
 				this.matchPattern(filePath, pattern) ||
-				(content && pattern.test(content))
+				(content && this.matchPattern(content, pattern))
 			) {
 				details.safeMatches.push(pattern);
 			}
@@ -238,6 +283,45 @@ class CleanupRule {
 	}
 
 	/**
+	 * 获取缓存管理器 (延迟初始化)
+	 * @returns {ConfigCache} 缓存管理器实例
+	 */
+	async _getCacheManager() {
+		if (!this._cacheManager) {
+			const { ConfigCache } = await import("../utils/ConfigCache.js");
+			this._cacheManager = new ConfigCache({
+				maxSize: 200, // 规则缓存较小
+				ttl: 600000, // 10分钟 (规则变化较频繁)
+			});
+		}
+		return this._cacheManager;
+	}
+
+	/**
+	 * 编译正则表达式模式以提高性能
+	 * @returns {Object} 编译后的模式
+	 */
+	_compilePatterns() {
+		if (!this._compiledPatterns) {
+			this._compiledPatterns = {
+				contentPatterns: this.contentPatterns.map((p) => ({
+					original: p,
+					regex: p instanceof RegExp ? p : new RegExp(p),
+				})),
+				safePatterns: this.safePatterns.map((p) => ({
+					original: p,
+					regex: p instanceof RegExp ? p : new RegExp(p),
+				})),
+				validationPatterns: this.validationPatterns.map((p) => ({
+					original: p,
+					regex: p instanceof RegExp ? p : new RegExp(p),
+				})),
+			};
+		}
+		return this._compiledPatterns;
+	}
+
+	/**
 	 * 匹配单个模式
 	 * @param {string} target - 匹配目标
 	 * @param {string|RegExp} pattern - 匹配模式
@@ -268,17 +352,18 @@ class CleanupRule {
 
 		try {
 			let result = content;
+			const compiledPatterns = this._compilePatterns();
 
 			switch (this.action) {
 				case CleanupAction.REMOVE:
 					// 完全移除匹配的内容
-					this.contentPatterns.forEach((pattern) => {
-						const matches = result.match(pattern);
+					compiledPatterns.contentPatterns.forEach(({ original, regex }) => {
+						const matches = result.match(regex);
 						if (matches) {
-							result = result.replace(pattern, "");
+							result = result.replace(regex, "");
 							details.changes.push({
 								action: "remove",
-								pattern: pattern.toString(),
+								pattern: original.toString(),
 								matches: matches.length,
 							});
 						}
@@ -287,13 +372,13 @@ class CleanupRule {
 
 				case CleanupAction.REPLACE:
 					// 替换匹配的内容
-					this.contentPatterns.forEach((pattern) => {
-						const matches = result.match(pattern);
+					compiledPatterns.contentPatterns.forEach(({ original, regex }) => {
+						const matches = result.match(regex);
 						if (matches) {
-							result = result.replace(pattern, this.replacement);
+							result = result.replace(regex, this.replacement);
 							details.changes.push({
 								action: "replace",
-								pattern: pattern.toString(),
+								pattern: original.toString(),
 								replacement: this.replacement,
 								matches: matches.length,
 							});
@@ -303,14 +388,14 @@ class CleanupRule {
 
 				case CleanupAction.MARK:
 					// 标记需要手动处理的内容
-					this.contentPatterns.forEach((pattern) => {
-						const matches = result.match(pattern);
+					compiledPatterns.contentPatterns.forEach(({ original, regex }) => {
+						const matches = result.match(regex);
 						if (matches) {
-							const marker = `/* CLEANUP MARKER: ${this.name} */\n`;
-							result = result.replace(pattern, marker + matches[0]);
+							const marker = `/* CLEANUP MARKER: ${this.name} */`;
+							result = result.replace(regex, marker + matches[0]);
 							details.changes.push({
 								action: "mark",
-								pattern: pattern.toString(),
+								pattern: original.toString(),
 								marker,
 								matches: matches.length,
 							});
@@ -360,10 +445,11 @@ class CleanupRule {
 	 */
 	validateResult(result) {
 		const errors = [];
+		const compiledPatterns = this._compilePatterns();
 
-		this.validationPatterns.forEach((pattern) => {
-			if (!pattern.test(result)) {
-				errors.push(`验证失败: ${pattern.toString()}`);
+		compiledPatterns.validationPatterns.forEach(({ original, regex }) => {
+			if (!regex.test(result)) {
+				errors.push(`验证失败: ${original.toString()}`);
 			}
 		});
 
@@ -403,8 +489,24 @@ class CleanupRule {
 		// 转换正则表达式字符串回RegExp对象
 		const config = {
 			...json,
-			contentPatterns: json.contentPatterns.map((p) => new RegExp(p)),
-			validationPatterns: json.validationPatterns.map((p) => new RegExp(p)),
+			contentPatterns: json.contentPatterns.map((p) => {
+				if (p instanceof RegExp) return p;
+				// 移除包围的斜杠和标志
+				const match = p.match(/^\/(.*)\/([gimuy]*)$/);
+				if (match) {
+					return new RegExp(match[1], match[2]);
+				}
+				return new RegExp(p);
+			}),
+			validationPatterns: json.validationPatterns.map((p) => {
+				if (p instanceof RegExp) return p;
+				// 移除包围的斜杠和标志
+				const match = p.match(/^\/(.*)\/([gimuy]*)$/);
+				if (match) {
+					return new RegExp(match[1], match[2]);
+				}
+				return new RegExp(p);
+			}),
 		};
 
 		return new CleanupRule(config);
@@ -483,7 +585,23 @@ class CleanupRule {
 	 * @returns {CleanupRule} 克隆实例
 	 */
 	clone() {
-		return new CleanupRule(this.toJSON());
+		const json = this.toJSON();
+		// 直接从当前实例创建配置，避免JSON序列化问题
+		const config = {
+			id: this.id,
+			name: this.name,
+			type: this.type,
+			patterns: [...this.patterns],
+			contentPatterns: [...this.contentPatterns],
+			action: this.action,
+			replacement: this.replacement,
+			safePatterns: [...this.safePatterns],
+			requiresConfirmation: this.requiresConfirmation,
+			validationPatterns: [...this.validationPatterns],
+			metadata: { ...this.metadata },
+			stats: { ...this.stats },
+		};
+		return new CleanupRule(config);
 	}
 
 	/**
@@ -498,7 +616,98 @@ class CleanupRule {
 			action: this.action,
 			enabled: this.metadata.enabled,
 			priority: this.metadata.priority,
-			stats: this.stats,
+			stats: {
+				...this.stats,
+				errors: this.stats.errors,
+				matches: this.stats.matches,
+				processed: this.stats.processed,
+				lastRun: this.stats.lastRun,
+			},
+		};
+	}
+
+	/**
+	 * 清除编译缓存
+	 * 当规则发生变化时调用
+	 */
+	clearCompiledCache() {
+		this._compiledPatterns = null;
+		this._lastContent = null;
+		this._contentHash = null;
+
+		// 同时清除配置缓存
+		if (this._cacheManager) {
+			this._cacheManager.clear();
+		}
+	}
+
+	/**
+	 * 获取性能统计信息
+	 * @returns {Object} 性能统计
+	 */
+	async getPerformanceStats() {
+		const cacheManager = this._cacheManager
+			? await this._getCacheManager()
+			: null;
+		const cacheStats = cacheManager ? cacheManager.getStats() : null;
+
+		return {
+			compiled: this._compiledPatterns !== null,
+			contentPatternsCount: this.contentPatterns.length,
+			safePatternsCount: this.safePatterns.length,
+			validationPatternsCount: this.validationPatterns.length,
+			cache: cacheStats,
+			stats: { ...this.stats },
+		};
+	}
+
+	/**
+	 * 性能测试：测量清理操作性能
+	 * @param {number} iterations - 测试迭代次数
+	 * @returns {Object} 性能测试结果
+	 */
+	benchmarkCleanup(iterations = 100) {
+		const testContents = [
+			"const AI_SERVICE = require('ai-service'); console.log('test');",
+			"import { OpenAI } from 'openai'; const client = new OpenAI();",
+			"// This is a normal JavaScript file without AI content",
+			"function processData(data) { return data.map(item => item.value); }",
+			"const config = { database: 'postgres', cache: 'redis' };",
+		];
+
+		const startTime = Date.now();
+
+		// 预热编译缓存
+		this._compilePatterns();
+
+		// 执行性能测试
+		let totalMatches = 0;
+		let totalProcessed = 0;
+
+		for (let i = 0; i < iterations; i++) {
+			const content = testContents[i % testContents.length];
+			const result = this.execute(content);
+
+			if (result.success) {
+				totalProcessed++;
+				if (result.details.changes.length > 0) {
+					totalMatches++;
+				}
+			}
+		}
+
+		const endTime = Date.now();
+		const totalTime = endTime - startTime;
+		const avgTime = totalTime / iterations;
+
+		return {
+			totalTime,
+			avgTime,
+			iterations,
+			totalMatches,
+			totalProcessed,
+			withinLimit: avgTime < 10, // 小于10ms（比路径解析要求更严格）
+			efficiency: totalMatches / iterations, // 匹配效率
 		};
 	}
 }

@@ -15,40 +15,100 @@ class PathConfig {
 	constructor(config = {}) {
 		// 根目录配置
 		this.root = {
-			speco: config.root?.speco || ".speco",
-			legacy: config.root?.legacy || ".taskmaster",
+			speco:
+				config && config.root && typeof config.root.speco === "string"
+					? config.root.speco
+					: ".speco",
+			legacy:
+				config && config.root && typeof config.root.legacy === "string"
+					? config.root.legacy
+					: ".taskmaster",
 		};
+
+		// 性能优化：延迟初始化缓存管理器
+		this._cacheManager = null;
 
 		// 子目录映射
 		this.dirs = {
-			tasks: config.dirs?.tasks || "tasks",
-			docs: config.dirs?.docs || "docs",
-			reports: config.dirs?.reports || "reports",
-			templates: config.dirs?.templates || "templates",
-			backups: config.dirs?.backups || "backups",
-			logs: config.dirs?.logs || "logs",
-			config: config.dirs?.config || "config",
+			tasks:
+				config && config.dirs && typeof config.dirs.tasks === "string"
+					? config.dirs.tasks
+					: "tasks",
+			docs:
+				config && config.dirs && typeof config.dirs.docs === "string"
+					? config.dirs.docs
+					: "docs",
+			reports:
+				config && config.dirs && typeof config.dirs.reports === "string"
+					? config.dirs.reports
+					: "reports",
+			templates:
+				config && config.dirs && typeof config.dirs.templates === "string"
+					? config.dirs.templates
+					: "templates",
+			backups:
+				config && config.dirs && typeof config.dirs.backups === "string"
+					? config.dirs.backups
+					: "backups",
+			logs:
+				config && config.dirs && typeof config.dirs.logs === "string"
+					? config.dirs.logs
+					: "logs",
+			config:
+				config && config.dirs && typeof config.dirs.config === "string"
+					? config.dirs.config
+					: "config",
 		};
 
 		// 文件映射
 		this.files = {
-			tasks: config.files?.tasks || "tasks.json",
-			config: config.files?.config || "config.json",
-			state: config.files?.state || "state.json",
-			changelog: config.files?.changelog || "changelog.md",
-			brand: config.files?.brand || "brand.json",
-			paths: config.files?.paths || "paths.json",
-			cleanup: config.files?.cleanup || "cleanup-rules.json",
+			tasks:
+				config && config.files && typeof config.files.tasks === "string"
+					? config.files.tasks
+					: "tasks.json",
+			config:
+				config && config.files && typeof config.files.config === "string"
+					? config.files.config
+					: "config.json",
+			state:
+				config && config.files && typeof config.files.state === "string"
+					? config.files.state
+					: "state.json",
+			changelog:
+				config && config.files && typeof config.files.changelog === "string"
+					? config.files.changelog
+					: "changelog.md",
+			brand:
+				config && config.files && typeof config.files.brand === "string"
+					? config.files.brand
+					: "brand.json",
+			paths:
+				config && config.files && typeof config.files.paths === "string"
+					? config.files.paths
+					: "paths.json",
+			cleanup:
+				config && config.files && typeof config.files.cleanup === "string"
+					? config.files.cleanup
+					: "cleanup-rules.json",
 		};
 
 		// 标签配置（用于多任务上下文）
-		this.tags = config.tags || {};
+		this.tags = (config && config.tags) || {};
 
 		// 元数据
 		this.metadata = {
-			created: config.metadata?.created || new Date().toISOString(),
-			updated: config.metadata?.updated || new Date().toISOString(),
-			version: config.metadata?.version || "1.0.0",
+			created:
+				config && config.metadata && typeof config.metadata.created === "string"
+					? config.metadata.created
+					: new Date().toISOString(),
+			updated:
+				config && config.metadata && typeof config.metadata.updated === "string"
+					? config.metadata.updated
+					: new Date().toISOString(),
+			version:
+				config && config.metadata && typeof config.metadata.version === "string"
+					? config.metadata.version
+					: "1.0.0",
 		};
 	}
 
@@ -119,7 +179,32 @@ class PathConfig {
 	 * @param {string} tag - 可选的标签，用于多上下文支持
 	 * @returns {string} 完整路径
 	 */
-	getPath(type, key, tag = null) {
+	/**
+	 * 获取缓存管理器 (延迟初始化)
+	 * @returns {ConfigCache} 缓存管理器实例
+	 */
+	async _getCacheManager() {
+		if (!this._cacheManager) {
+			const { ConfigCache } = await import("../utils/ConfigCache.js");
+			this._cacheManager = new ConfigCache({
+				maxSize: 500, // 路径缓存相对较小
+				ttl: 1800000, // 30分钟
+			});
+		}
+		return this._cacheManager;
+	}
+
+	async getPath(type, key, tag = null) {
+		// 生成缓存键
+		const cacheKey = `${type}:${key}:${tag || ""}`;
+
+		// 检查缓存
+		const cacheManager = await this._getCacheManager();
+		const cached = cacheManager.get(cacheKey);
+		if (cached !== null) {
+			return cached;
+		}
+
 		let basePath = "";
 
 		switch (type) {
@@ -149,6 +234,8 @@ class PathConfig {
 			}
 		}
 
+		// 缓存结果
+		cacheManager.set(cacheKey, basePath);
 		return basePath;
 	}
 
@@ -169,6 +256,62 @@ class PathConfig {
 		};
 
 		return fileDirMap[fileKey] || "config";
+	}
+
+	/**
+	 * 清除路径缓存
+	 * 当配置发生变化时调用
+	 */
+	clearCache() {
+		if (this._cacheManager) {
+			this._cacheManager.clear();
+		}
+	}
+
+	/**
+	 * 获取缓存统计信息
+	 * @returns {Object} 缓存统计
+	 */
+	async getCacheStats() {
+		const cacheManager = await this._getCacheManager();
+		return cacheManager.getStats();
+	}
+
+	/**
+	 * 性能测试：测量路径解析性能
+	 * @param {number} iterations - 测试迭代次数
+	 * @returns {Object} 性能测试结果
+	 */
+	benchmarkPathResolution(iterations = 1000) {
+		const startTime = Date.now();
+		const testPaths = [
+			{ type: "root", key: "speco" },
+			{ type: "dir", key: "tasks" },
+			{ type: "file", key: "tasks" },
+			{ type: "dir", key: "config" },
+			{ type: "file", key: "config" },
+		];
+
+		// 预热缓存
+		testPaths.forEach(({ type, key }) => this.getPath(type, key));
+
+		// 执行性能测试
+		for (let i = 0; i < iterations; i++) {
+			const pathSpec = testPaths[i % testPaths.length];
+			this.getPath(pathSpec.type, pathSpec.key);
+		}
+
+		const endTime = Date.now();
+		const totalTime = endTime - startTime;
+		const avgTime = totalTime / iterations;
+
+		return {
+			totalTime,
+			avgTime,
+			iterations,
+			cacheSize: this._pathCache.size,
+			withinLimit: avgTime < 100, // 小于100ms
+		};
 	}
 
 	/**
