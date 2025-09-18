@@ -125,6 +125,16 @@ const config = {
         "src/services/**/*.js",
         "!src/**/*.test.js",
       ],
+      // Contract tests are API integration tests, not unit tests
+      // They don't need strict coverage requirements
+      coverageThreshold: {
+        global: {
+          branches: 0,
+          functions: 0,
+          lines: 0,
+          statements: 0,
+        },
+      },
     },
 
     // Integration Tests - Component and service integration

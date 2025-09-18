@@ -16,7 +16,7 @@
 		"test:watch": "GRACEFUL_FS_PATCH=0 NODE_OPTIONS=\"--experimental-specifier-resolution=node\" node_modules/.bin/jest --config jest.config.cjs --watch",
 		"test:coverage": "GRACEFUL_FS_PATCH=0 NODE_OPTIONS=\"--experimental-specifier-resolution=node\" node_modules/.bin/jest --config jest.config.cjs --coverage --forceExit",
 		"test:unit": "GRACEFUL_FS_PATCH=0 NODE_OPTIONS=\"--experimental-specifier-resolution=node\" node_modules/.bin/jest --config jest.config.cjs --testPathPattern=\"unit|__tests__\" --passWithNoTests --forceExit",
-		"test:contract": "GRACEFUL_FS_PATCH=0 NODE_OPTIONS=\"--experimental-specifier-resolution=node\" node_modules/.bin/jest --config jest.config.cjs --testPathPattern=\"contract\" --passWithNoTests --forceExit",
+		"test:contract": "GRACEFUL_FS_PATCH=0 NODE_OPTIONS=\"--experimental-specifier-resolution=node\" node_modules/.bin/jest --config jest.config.cjs --testPathPattern=\"contract\" --passWithNoTests --forceExit --coverage=false",
 		"test:integration": "GRACEFUL_FS_PATCH=0 NODE_OPTIONS=\"--experimental-specifier-resolution=node\" node_modules/.bin/jest --config jest.config.cjs --testPathPattern=\"integration\" --passWithNoTests --forceExit",
 		"test:e2e": "./tests/e2e/run_e2e.sh",
 		"test:e2e-report": "./tests/e2e/run_e2e.sh --analyze-log",

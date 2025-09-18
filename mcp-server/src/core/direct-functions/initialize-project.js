@@ -21,9 +21,17 @@ export async function initializeProjectDirect(args, log, context = {}) {
 	log.info(`Args received in direct function: ${JSON.stringify(args)}`);
 
 	// --- Determine Target Directory ---
-	// TRUST the projectRoot passed from the tool layer via args
-	// The HOF in the tool layer already normalized and validated it came from a reliable source (args or session)
-	const targetDirectory = args.projectRoot;
+	// Check for SPECO_PROJECT_ROOT environment variable first (for test isolation)
+	let targetDirectory = args.projectRoot;
+	if (process.env.SPECO_PROJECT_ROOT) {
+		targetDirectory = process.env.SPECO_PROJECT_ROOT;
+		log.info(
+			`Using project root from SPECO_PROJECT_ROOT environment variable: ${targetDirectory}`,
+		);
+	} else if (args.projectRoot) {
+		targetDirectory = args.projectRoot;
+		log.info(`Using project root from args.projectRoot: ${targetDirectory}`);
+	}
 
 	// --- Validate the targetDirectory (basic sanity checks) ---
 	if (
