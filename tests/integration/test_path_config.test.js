@@ -202,42 +202,46 @@ require('../mcp-server/server.js');
 		// 模拟命令执行结果
 		switch (command) {
 			case "init-paths":
+				// 模拟创建paths.json文件
+				const initPaths = {
+					mappings: {
+						"task-master": "speco-tasker",
+						".taskmaster": ".speco",
+						"scripts/task-manager.js": "scripts/modules/task-manager.js",
+					},
+					cleanup: {
+						patterns: ["**/task-master*", "**/.taskmaster/**"],
+						exclude: [".speco/**", "specs/**"],
+					},
+				};
+				fs.writeFileSync(pathsFile, JSON.stringify(initPaths, null, 2));
+
 				return {
 					stdout: JSON.stringify({
 						success: true,
 						message: "Path configuration initialized",
-						paths: {
-							mappings: {
-								"task-master": "speco-tasker",
-								".taskmaster": ".speco",
-								"scripts/task-manager.js": "scripts/modules/task-manager.js",
-							},
-							cleanup: {
-								patterns: ["**/task-master*", "**/.taskmaster/**"],
-								exclude: [".speco/**", "specs/**"],
-							},
-						},
+						paths: initPaths,
 					}),
 					stderr: "",
 					code: 0,
 				};
 
 			case "show-paths":
-				return {
-					stdout: JSON.stringify({
-						mappings: {
-							"task-master": "speco-tasker",
-							".taskmaster": ".speco",
-							"scripts/task-manager.js": "scripts/modules/task-manager.js",
-						},
-						cleanup: {
-							patterns: ["**/task-master*", "**/.taskmaster/**"],
-							exclude: [".speco/**", "specs/**"],
-						},
-					}),
-					stderr: "",
-					code: 0,
-				};
+				// 读取实际的paths.json文件内容
+				if (fs.existsSync(pathsFile)) {
+					const pathsConfig = JSON.parse(fs.readFileSync(pathsFile, "utf8"));
+					return {
+						stdout: JSON.stringify(pathsConfig),
+						stderr: "",
+						code: 0,
+					};
+				} else {
+					return {
+						stdout: "",
+						stderr: "Path configuration file not found",
+						code: 1,
+					};
+				}
 
 			case "update-paths":
 				// 模拟更新路径配置
@@ -327,6 +331,11 @@ require('../mcp-server/server.js');
 
 	describe("Path Configuration Reading Phase", () => {
 		it("should read path configuration using CLI command", async () => {
+			// 确保配置文件存在
+			if (!fs.existsSync(pathsFile)) {
+				await mockExecuteCLICommand("init-paths");
+			}
+
 			// 当CLI命令实现后，替换为:
 			// const result = await executeCLICommand("show-paths");
 
@@ -337,7 +346,11 @@ require('../mcp-server/server.js');
 			const pathsConfig = JSON.parse(result.stdout);
 			expect(pathsConfig.mappings).toHaveProperty("task-master");
 			expect(pathsConfig.mappings["task-master"]).toBe("speco-tasker");
-			expect(pathsConfig.mappings).toHaveProperty(".taskmaster");
+			// 检查是否包含.taskmaster映射（可能是.taskmaster或".taskmaster"）
+			const hasTaskmasterMapping = Object.keys(pathsConfig.mappings).some(
+				(key) => key.includes("taskmaster") || key.includes(".taskmaster"),
+			);
+			expect(hasTaskmasterMapping).toBe(true);
 			expect(pathsConfig.mappings[".taskmaster"]).toBe(".speco");
 		});
 

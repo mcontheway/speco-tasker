@@ -56,6 +56,9 @@ const config = {
     "!src/**/mocks/**",
     "!coverage/**",
     "!node_modules/**",
+    // Exclude E2E tests and related files
+    "!tests/e2e/**",
+    "!tests/setup/e2e.cjs",
   ],
 
   // Transform configuration for both CommonJS and ES modules
@@ -151,7 +154,8 @@ const config = {
       testEnvironment: "node",
       setupFilesAfterEnv: ["<rootDir>/tests/setup/e2e.cjs"],
       maxWorkers: 1, // Sequential execution for E2E stability
-      collectCoverage: false, // E2E tests don't contribute to coverage
+      // Note: collectCoverage cannot be set at project level
+      // E2E tests are excluded from coverage via collectCoverageFrom patterns
     },
   ],
 
