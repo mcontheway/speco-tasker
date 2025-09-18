@@ -1,7 +1,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const { fileURLToPath } = require("node:url");
-const { jest } = require("@jest/globals");
+// const { jest } = require("@jest/globals"); // Jest is already global
 const mockFs = require("mock-fs");
 
 // Import the actual move task functionality
