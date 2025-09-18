@@ -44,10 +44,10 @@ describe("Stream Parser", () => {
 		});
 
 		test("should have string values for all codes", () => {
-			Object.values(STREAMING_ERROR_CODES).forEach((code) => {
+			for (const code of Object.values(STREAMING_ERROR_CODES)) {
 				expect(typeof code).toBe("string");
 				expect(code.length).toBeGreaterThan(0);
-			});
+			}
 		});
 
 		test("should have unique error codes", () => {

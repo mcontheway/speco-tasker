@@ -4,6 +4,7 @@
 			"build",
 			"coverage",
 			"coverage/**",
+			"coverage/**/*",
 			".changeset",
 			"tasks",
 			"package-lock.json",
@@ -16,7 +17,9 @@
 			".speco/backups/**",
 			"tmp/**",
 			"tests/fixtures/**",
-			"specs/**"
+			"specs/**",
+			"tests/unit/utils/stream-parser.test.cjs",
+			"bin/task-master.js"
 		],
 		"include": ["**/*.js", "**/*.ts", "**/*.json"]
 	},
