@@ -3,15 +3,15 @@
  * Tool for clearing subtasks from parent tasks
  */
 
-import { z } from 'zod';
+import { z } from "zod";
+import { resolveTag } from "../../../scripts/modules/utils.js";
+import { clearSubtasksDirect } from "../core/task-master-core.js";
+import { findTasksPath } from "../core/utils/path-utils.js";
 import {
-	handleApiResult,
 	createErrorResponse,
-	withNormalizedProjectRoot
-} from './utils.js';
-import { clearSubtasksDirect } from '../core/task-master-core.js';
-import { findTasksPath } from '../core/utils/path-utils.js';
-import { resolveTag } from '../../../scripts/modules/utils.js';
+	handleApiResult,
+	withNormalizedProjectRoot,
+} from "./utils.js";
 
 /**
  * Register the clearSubtasks tool with the MCP server
@@ -19,29 +19,28 @@ import { resolveTag } from '../../../scripts/modules/utils.js';
  */
 export function registerClearSubtasksTool(server) {
 	server.addTool({
-		name: 'clear_subtasks',
-		description: 'Clear subtasks from specified tasks',
+		name: "clear_subtasks",
+		description: "清除指定任务的子任务",
 		parameters: z
 			.object({
 				id: z
 					.string()
 					.optional()
-					.describe('Task IDs (comma-separated) to clear subtasks from'),
-				all: z.boolean().optional().describe('Clear subtasks from all tasks'),
+					.describe("要清除子任务的任务ID，支持逗号分隔"),
+				all: z.boolean().optional().describe("清除所有任务的子任务"),
 				file: z
 					.string()
 					.optional()
-					.describe(
-						'Absolute path to the tasks file (default: tasks/tasks.json)'
-					),
+					.describe("任务文件的绝对路径，默认为tasks/tasks.json"),
 				projectRoot: z
 					.string()
-					.describe('The directory of the project. Must be an absolute path.'),
-				tag: z.string().optional().describe('Tag context to operate on')
+					.optional()
+					.describe("项目根目录（可选，会自动检测）"),
+				tag: z.string().optional().describe("选择要处理的任务分组"),
 			})
 			.refine((data) => data.id || data.all, {
 				message: "Either 'id' or 'all' parameter must be provided",
-				path: ['id', 'all']
+				path: ["id", "all"],
 			}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
 			try {
@@ -49,7 +48,7 @@ export function registerClearSubtasksTool(server) {
 
 				const resolvedTag = resolveTag({
 					projectRoot: args.projectRoot,
-					tag: args.tag
+					tag: args.tag,
 				});
 
 				// Use args.projectRoot directly (guaranteed by withNormalizedProjectRoot)
@@ -57,12 +56,12 @@ export function registerClearSubtasksTool(server) {
 				try {
 					tasksJsonPath = findTasksPath(
 						{ projectRoot: args.projectRoot, file: args.file },
-						log
+						log,
 					);
 				} catch (error) {
 					log.error(`Error finding tasks.json: ${error.message}`);
 					return createErrorResponse(
-						`Failed to find tasks.json: ${error.message}`
+						`Failed to find tasks.json: ${error.message}`,
 					);
 				}
 
@@ -73,10 +72,10 @@ export function registerClearSubtasksTool(server) {
 						all: args.all,
 
 						projectRoot: args.projectRoot,
-						tag: resolvedTag
+						tag: resolvedTag,
 					},
 					log,
-					{ session }
+					{ session },
 				);
 
 				if (result.success) {
@@ -88,14 +87,14 @@ export function registerClearSubtasksTool(server) {
 				return handleApiResult(
 					result,
 					log,
-					'Error clearing subtasks',
+					"Error clearing subtasks",
 					undefined,
-					args.projectRoot
+					args.projectRoot,
 				);
 			} catch (error) {
 				log.error(`Error in clearSubtasks tool: ${error.message}`);
 				return createErrorResponse(error.message);
 			}
-		})
+		}),
 	});
 }

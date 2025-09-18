@@ -3,14 +3,14 @@
  * Tool to list all available tags
  */
 
-import { z } from 'zod';
+import { z } from "zod";
+import { listTagsDirect } from "../core/task-master-core.js";
+import { findTasksPath } from "../core/utils/path-utils.js";
 import {
 	createErrorResponse,
 	handleApiResult,
-	withNormalizedProjectRoot
-} from './utils.js';
-import { listTagsDirect } from '../core/task-master-core.js';
-import { findTasksPath } from '../core/utils/path-utils.js';
+	withNormalizedProjectRoot,
+} from "./utils.js";
 
 /**
  * Register the listTags tool with the MCP server
@@ -18,20 +18,21 @@ import { findTasksPath } from '../core/utils/path-utils.js';
  */
 export function registerListTagsTool(server) {
 	server.addTool({
-		name: 'list_tags',
-		description: 'List all available tags with task counts and metadata',
+		name: "list_tags",
+		description: "列出所有可用标签及其任务数量和元数据",
 		parameters: z.object({
 			showMetadata: z
 				.boolean()
 				.optional()
-				.describe('Whether to include metadata in the output (default: false)'),
+				.describe("是否在输出中包含元数据，默认为false"),
 			file: z
 				.string()
 				.optional()
-				.describe('Path to the tasks file (default: tasks/tasks.json)'),
+				.describe("任务文件路径，默认为tasks/tasks.json"),
 			projectRoot: z
 				.string()
-				.describe('The directory of the project. Must be an absolute path.')
+				.optional()
+				.describe("项目根目录（可选，会自动检测）"),
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
 			try {
@@ -42,12 +43,12 @@ export function registerListTagsTool(server) {
 				try {
 					tasksJsonPath = findTasksPath(
 						{ projectRoot: args.projectRoot, file: args.file },
-						log
+						log,
 					);
 				} catch (error) {
 					log.error(`Error finding tasks.json: ${error.message}`);
 					return createErrorResponse(
-						`Failed to find tasks.json: ${error.message}`
+						`Failed to find tasks.json: ${error.message}`,
 					);
 				}
 
@@ -56,23 +57,23 @@ export function registerListTagsTool(server) {
 					{
 						tasksJsonPath: tasksJsonPath,
 						showMetadata: args.showMetadata,
-						projectRoot: args.projectRoot
+						projectRoot: args.projectRoot,
 					},
 					log,
-					{ session }
+					{ session },
 				);
 
 				return handleApiResult(
 					result,
 					log,
-					'Error listing tags',
+					"Error listing tags",
 					undefined,
-					args.projectRoot
+					args.projectRoot,
 				);
 			} catch (error) {
 				log.error(`Error in list-tags tool: ${error.message}`);
 				return createErrorResponse(error.message);
 			}
-		})
+		}),
 	});
 }

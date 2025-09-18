@@ -1,9 +1,9 @@
-import fs from 'fs';
-import path from 'path';
-import chalk from 'chalk';
-import { log, findProjectRoot } from './utils.js';
-import { getProjectName } from './config-manager.js';
-import listTasks from './task-manager/list-tasks.js';
+import fs from "node:fs";
+import path from "node:path";
+import chalk from "chalk";
+import { getProjectName } from "./config-manager.js";
+import listTasks from "./task-manager/list-tasks.js";
+import { findProjectRoot, log } from "./utils.js";
 
 /**
  * Creates a basic README structure if one doesn't exist
@@ -30,15 +30,15 @@ function createTaskMasterUrl(projectRoot) {
 	// Clean folder name for UTM (replace spaces/special chars with hyphens)
 	const cleanFolderName = folderName
 		.toLowerCase()
-		.replace(/[^a-z0-9]/g, '-')
-		.replace(/-+/g, '-')
-		.replace(/^-|-$/g, '');
+		.replace(/[^a-z0-9]/g, "-")
+		.replace(/-+/g, "-")
+		.replace(/^-|-$/g, "");
 
 	const utmParams = new URLSearchParams({
-		utm_source: 'github-readme',
-		utm_medium: 'readme-export',
-		utm_campaign: cleanFolderName || 'task-sync',
-		utm_content: 'task-export-link'
+		utm_source: "github-readme",
+		utm_medium: "readme-export",
+		utm_campaign: cleanFolderName || "task-sync",
+		utm_content: "task-export-link",
 	});
 
 	return `https://task-master.dev?${utmParams.toString()}`;
@@ -55,8 +55,8 @@ function createStartMarker(options) {
 	// Format status filter text
 	const statusText = status
 		? `Status filter: ${status}`
-		: 'Status filter: none';
-	const subtasksText = withSubtasks ? 'with subtasks' : 'without subtasks';
+		: "Status filter: none";
+	const subtasksText = withSubtasks ? "with subtasks" : "without subtasks";
 
 	// Create the export info content
 	const exportInfo =
@@ -65,9 +65,7 @@ function createStartMarker(options) {
 		`🔗 Powered by [Task Master](${createTaskMasterUrl(projectRoot)})`;
 
 	// Create a markdown box using code blocks and emojis to mimic our UI style
-	const boxContent =
-		`<!-- TASKMASTER_EXPORT_START -->\n` +
-		`> ${exportInfo.split('\n').join('\n> ')}\n\n`;
+	const boxContent = `<!-- TASKMASTER_EXPORT_START -->\n> ${exportInfo.split("\n").join("\n> ")}\n\n`;
 
 	return boxContent;
 }
@@ -78,8 +76,8 @@ function createStartMarker(options) {
  */
 function createEndMarker() {
 	return (
-		`\n> 📋 **End of Taskmaster Export** - Tasks are synced from your project using the \`sync-readme\` command.\n` +
-		`<!-- TASKMASTER_EXPORT_END -->\n`
+		"\n> 📋 **End of Taskmaster Export** - Tasks are synced from your project using the `sync-readme` command.\n" +
+		"<!-- TASKMASTER_EXPORT_END -->\n"
 	);
 }
 
@@ -95,28 +93,27 @@ function createEndMarker() {
  */
 export async function syncTasksToReadme(projectRoot = null, options = {}) {
 	try {
-		const actualProjectRoot = projectRoot || findProjectRoot() || '.';
+		const actualProjectRoot = projectRoot || findProjectRoot() || ".";
 		const { withSubtasks = false, status, tasksPath, tag } = options;
 
 		// Get current tasks using the list-tasks functionality with markdown-readme format
 		const tasksOutput = await listTasks(
 			tasksPath ||
-				path.join(actualProjectRoot, '.taskmaster', 'tasks', 'tasks.json'),
+				path.join(actualProjectRoot, ".taskmaster", "tasks", "tasks.json"),
 			status,
 			null,
 			withSubtasks,
-			'markdown-readme',
-			{ projectRoot, tag }
+			"markdown-readme",
+			{ projectRoot, tag },
 		);
 
 		if (!tasksOutput) {
-			console.log(chalk.red('❌ Failed to generate task output'));
+			console.log(chalk.red("❌ Failed to generate task output"));
 			return false;
 		}
 
 		// Generate timestamp and metadata
-		const timestamp =
-			new Date().toISOString().replace('T', ' ').substring(0, 19) + ' UTC';
+		const timestamp = `${new Date().toISOString().replace("T", " ").substring(0, 19)} UTC`;
 		const projectName = getProjectName(actualProjectRoot);
 
 		// Create the export markers with metadata
@@ -124,7 +121,7 @@ export async function syncTasksToReadme(projectRoot = null, options = {}) {
 			timestamp,
 			withSubtasks,
 			status,
-			projectRoot: actualProjectRoot
+			projectRoot: actualProjectRoot,
 		});
 
 		const endMarker = createEndMarker();
@@ -133,12 +130,12 @@ export async function syncTasksToReadme(projectRoot = null, options = {}) {
 		const taskSection = startMarker + tasksOutput + endMarker;
 
 		// Read current README content
-		const readmePath = path.join(actualProjectRoot, 'README.md');
-		let readmeContent = '';
+		const readmePath = path.join(actualProjectRoot, "README.md");
+		let readmeContent = "";
 		try {
-			readmeContent = fs.readFileSync(readmePath, 'utf8');
+			readmeContent = fs.readFileSync(readmePath, "utf8");
 		} catch (err) {
-			if (err.code === 'ENOENT') {
+			if (err.code === "ENOENT") {
 				// Create basic README if it doesn't exist
 				readmeContent = createBasicReadme(projectName);
 			} else {
@@ -147,8 +144,8 @@ export async function syncTasksToReadme(projectRoot = null, options = {}) {
 		}
 
 		// Check if export markers exist and replace content between them
-		const startComment = '<!-- TASKMASTER_EXPORT_START -->';
-		const endComment = '<!-- TASKMASTER_EXPORT_END -->';
+		const startComment = "<!-- TASKMASTER_EXPORT_START -->";
+		const endComment = "<!-- TASKMASTER_EXPORT_END -->";
 
 		let updatedContent;
 		const startIndex = readmeContent.indexOf(startComment);
@@ -161,24 +158,24 @@ export async function syncTasksToReadme(projectRoot = null, options = {}) {
 			updatedContent = beforeTasks + taskSection + afterTasks;
 		} else {
 			// Append to end of README
-			updatedContent = readmeContent + '\n' + taskSection;
+			updatedContent = `${readmeContent}\n${taskSection}`;
 		}
 
 		// Write updated content to README
-		fs.writeFileSync(readmePath, updatedContent, 'utf8');
+		fs.writeFileSync(readmePath, updatedContent, "utf8");
 
-		console.log(chalk.green('✅ Successfully synced tasks to README.md'));
+		console.log(chalk.green("✅ Successfully synced tasks to README.md"));
 		console.log(
 			chalk.cyan(
-				`📋 Export details: ${withSubtasks ? 'with' : 'without'} subtasks${status ? `, status: ${status}` : ''}`
-			)
+				`📋 Export details: ${withSubtasks ? "with" : "without"} subtasks${status ? `, status: ${status}` : ""}`,
+			),
 		);
 		console.log(chalk.gray(`📍 Location: ${readmePath}`));
 
 		return true;
 	} catch (error) {
-		console.log(chalk.red('❌ Failed to sync tasks to README:'), error.message);
-		log('error', `README sync error: ${error.message}`);
+		console.log(chalk.red("❌ Failed to sync tasks to README:"), error.message);
+		log("error", `README sync error: ${error.message}`);
 		return false;
 	}
 }

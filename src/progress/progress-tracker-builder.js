@@ -5,7 +5,7 @@ class TrackerConfig {
 	constructor() {
 		this.features = new Set();
 		this.spinnerFrames = null;
-		this.unitName = 'unit';
+		this.unitName = "unit";
 		this.totalUnits = 100;
 	}
 
@@ -22,7 +22,7 @@ class TrackerConfig {
 			numUnits: this.totalUnits,
 			unitName: this.unitName,
 			spinnerFrames: this.spinnerFrames,
-			features: Array.from(this.features)
+			features: Array.from(this.features),
 		};
 	}
 }
@@ -36,29 +36,29 @@ export class ProgressTrackerBuilder {
 	}
 
 	withPercent() {
-		this.config.addFeature('percent');
+		this.config.addFeature("percent");
 		return this;
 	}
 
 	withTokens() {
-		this.config.addFeature('tokens');
+		this.config.addFeature("tokens");
 		return this;
 	}
 
 	withTasks() {
-		this.config.addFeature('tasks');
+		this.config.addFeature("tasks");
 		return this;
 	}
 
 	withSpinner(messages) {
 		if (!messages || !Array.isArray(messages)) {
-			throw new Error('Spinner messages must be an array');
+			throw new Error("Spinner messages must be an array");
 		}
 		this.config.spinnerFrames = messages;
 		return this;
 	}
 
-	withUnits(total, unitName = 'unit') {
+	withUnits(total, unitName = "unit") {
 		this.config.totalUnits = total;
 		this.config.unitName = unitName;
 		return this;
@@ -123,13 +123,13 @@ class ProgressTracker {
 	_buildProgressData(data) {
 		const progress = { ...data };
 
-		if (this.config.hasFeature('percent')) {
+		if (this.config.hasFeature("percent")) {
 			progress.percentage = Math.round(
-				(this.current / this.config.totalUnits) * 100
+				(this.current / this.config.totalUnits) * 100,
 			);
 		}
 
-		if (this.config.hasFeature('tasks')) {
+		if (this.config.hasFeature("tasks")) {
 			progress.tasks = `${this.current}/${this.config.totalUnits}`;
 		}
 
@@ -146,7 +146,7 @@ class ProgressTracker {
 			total: this.config.totalUnits,
 			completed: this.current,
 			elapsedMs: elapsed,
-			features: Array.from(this.config.features)
+			features: Array.from(this.config.features),
 		};
 	}
 }

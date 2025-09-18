@@ -21,6 +21,12 @@ while [[ $# -gt 0 ]]; do
       echo "[INFO] Argument '--skip-verification' detected. Fallback verification will be skipped."
       shift # Consume the flag
       ;;
+    --quick-verify)
+      echo "[INFO] Quick verification mode enabled. Will perform basic functionality check."
+      # Set quick mode flags
+      export QUICK_VERIFY_MODE=true
+      shift
+      ;;
     --analyze-log)
       # Keep the analyze-log flag handling separate for now
       # It exits early, so doesn't conflict with the main run flags
@@ -47,7 +53,7 @@ fi
 
 
 # --- Configuration ---
-# Assumes script is run from the project root (claude-task-master)
+# Assumes script is run from the project root (speco-tasker)
 TASKMASTER_SOURCE_DIR="." # Current directory is the source
 # Base directory for test runs, relative to project root
 BASE_TEST_DIR="$TASKMASTER_SOURCE_DIR/tests/e2e/_runs"
@@ -339,44 +345,28 @@ log_step() {
   fi
   log_success "Project initialized."
 
-  log_step "Parsing PRD"
-  cmd_output_prd=$(task-master parse-prd ./prd.txt --force 2>&1)
-  exit_status_prd=$?
-  echo "$cmd_output_prd"
-  extract_and_sum_cost "$cmd_output_prd"
-  if [ $exit_status_prd -ne 0 ] || [ ! -s ".taskmaster/tasks/tasks.json" ]; then
-    log_error "Parsing PRD failed: .taskmaster/tasks/tasks.json not found or is empty. Exit status: $exit_status_prd"
+  log_step "Creating initial tasks manually"
+  # Create initial tasks manually since PRD parsing is removed
+  task-master add-task --title="Setup project structure" --description="Create basic project structure with folders and configuration files" --priority=high
+  task-master add-task --title="Implement backend API" --description="Create REST API endpoints for data management" --priority=high
+  task-master add-task --title="Setup database connection" --description="Configure database connection and schema" --priority=medium --dependencies=1
+  task-master add-task --title="Create frontend UI" --description="Build user interface components" --priority=medium --dependencies=2
+  task-master add-task --title="Add authentication" --description="Implement user authentication system" --priority=medium --dependencies=2
+  task-master add-task --title="Write tests" --description="Create unit and integration tests" --priority=low --dependencies=1,2,3,4,5
+
+  if [ ! -s ".taskmaster/tasks/tasks.json" ]; then
+    log_error "Task creation failed: .taskmaster/tasks/tasks.json not found or is empty."
     exit 1
   else
-    log_success "PRD parsed successfully."
+    log_success "Initial tasks created successfully."
   fi
 
-  log_step "Expanding Task 1 (to ensure subtask 1.1 exists)"
-  cmd_output_analyze=$(task-master analyze-complexity --research --output complexity_results.json 2>&1)
-  exit_status_analyze=$?
-  echo "$cmd_output_analyze"
-  extract_and_sum_cost "$cmd_output_analyze"
-  if [ $exit_status_analyze -ne 0 ] || [ ! -f "complexity_results.json" ]; then
-    log_error "Complexity analysis failed: complexity_results.json not found. Exit status: $exit_status_analyze"
-    exit 1
-  else
-    log_success "Complexity analysis saved to complexity_results.json"
-  fi
-
-  log_step "Generating complexity report"
-  task-master complexity-report --file complexity_results.json > complexity_report_formatted.log
-  log_success "Formatted complexity report saved to complexity_report_formatted.log"
-
-  log_step "Expanding Task 1 (assuming it exists)"
-  cmd_output_expand1=$(task-master expand --id=1 --cr complexity_results.json 2>&1)
-  exit_status_expand1=$?
-  echo "$cmd_output_expand1"
-  extract_and_sum_cost "$cmd_output_expand1"
-  if [ $exit_status_expand1 -ne 0 ]; then
-    log_error "Expanding Task 1 failed. Exit status: $exit_status_expand1"
-  else
-    log_success "Attempted to expand Task 1."
-  fi
+  log_step "Adding subtasks manually (to ensure subtask 1.1 exists)"
+  # Add subtasks manually since expand functionality is removed
+  task-master add-subtask --parent=1 --title="Setup basic project structure" --description="Create folders and initial files"
+  task-master add-subtask --parent=1 --title="Configure build system" --description="Setup package.json and build configuration"
+  task-master add-subtask --parent=1 --title="Initialize version control" --description="Setup git repository and initial commit"
+  log_success "Added manual subtasks to Task 1."
 
   log_step "Setting status for Subtask 1.1 (assuming it exists)"
   task-master set-status --id=1.1 --status=done
@@ -387,91 +377,31 @@ log_step() {
   log_success "Task list after changes saved to task_list_after_changes.log"
 
   # === Start New Test Section: Tag-Aware Expand Testing ===
-  log_step "Creating additional tag for expand testing"
-  task-master add-tag feature-expand --description="Tag for testing expand command with tag preservation"
-  log_success "Created feature-expand tag."
+  log_step "Testing tag functionality with manual subtasks"
+  task-master add-tag feature-manual --description="Tag for testing manual subtask creation"
+  log_success "Created feature-manual tag."
 
-  log_step "Adding task to feature-expand tag"
-  task-master add-task --tag=feature-expand --prompt="Test task for tag-aware expansion" --priority=medium
+  log_step "Adding task to feature-manual tag"
+  task-master add-task --tag=feature-manual --title="Manual test task" --description="Test task for manual subtask creation" --priority=medium
   # Get the new task ID dynamically
-  new_expand_task_id=$(jq -r '.["feature-expand"].tasks[-1].id' .taskmaster/tasks/tasks.json)
-  log_success "Added task $new_expand_task_id to feature-expand tag."
+  manual_task_id=$(jq -r '.["feature-manual"].tasks[-1].id' .taskmaster/tasks/tasks.json)
+  log_success "Added task $manual_task_id to feature-manual tag."
 
-  log_step "Verifying tags exist before expand test"
-  task-master tags > tags_before_expand.log
-  tag_count_before=$(jq 'keys | length' .taskmaster/tasks/tasks.json)
-  log_success "Tag count before expand: $tag_count_before"
+  log_step "Adding manual subtasks to tagged task"
+  task-master add-subtask --tag=feature-manual --parent="$manual_task_id" --title="Manual subtask 1" --description="First manual subtask"
+  task-master add-subtask --tag=feature-manual --parent="$manual_task_id" --title="Manual subtask 2" --description="Second manual subtask"
+  log_success "Added manual subtasks to tagged task."
 
-  log_step "Expanding task in feature-expand tag (testing tag corruption fix)"
-  cmd_output_expand_tagged=$(task-master expand --tag=feature-expand --id="$new_expand_task_id" 2>&1)
-  exit_status_expand_tagged=$?
-  echo "$cmd_output_expand_tagged"
-  extract_and_sum_cost "$cmd_output_expand_tagged"
-  if [ $exit_status_expand_tagged -ne 0 ]; then
-    log_error "Tagged expand failed. Exit status: $exit_status_expand_tagged"
+  log_step "Verifying tag functionality"
+  task_master_tag_count=$(jq -r '.master.tasks | length' .taskmaster/tasks/tasks.json 2>/dev/null || echo "0")
+  feature_manual_tag_count=$(jq -r '.["feature-manual"].tasks | length' .taskmaster/tasks/tasks.json 2>/dev/null || echo "0")
+
+  if [ "$task_master_tag_count" -gt "0" ] && [ "$feature_manual_tag_count" -gt "0" ]; then
+    log_success "Tag functionality working: main has $task_master_tag_count tasks, feature-manual has $feature_manual_tag_count tasks"
   else
-    log_success "Tagged expand completed."
+    log_error "Tag functionality issue: main=$task_master_tag_count, feature-manual=$feature_manual_tag_count"
   fi
 
-  log_step "Verifying tag preservation after expand"
-  task-master tags > tags_after_expand.log
-  tag_count_after=$(jq 'keys | length' .taskmaster/tasks/tasks.json)
-  
-  if [ "$tag_count_before" -eq "$tag_count_after" ]; then
-    log_success "Tag count preserved: $tag_count_after (no corruption detected)"
-  else
-    log_error "Tag corruption detected! Before: $tag_count_before, After: $tag_count_after"
-  fi
-
-  log_step "Verifying master tag still exists and has tasks"
-  master_task_count=$(jq -r '.master.tasks | length' .taskmaster/tasks/tasks.json 2>/dev/null || echo "0")
-  if [ "$master_task_count" -gt "0" ]; then
-    log_success "Master tag preserved with $master_task_count tasks"
-  else
-    log_error "Master tag corrupted or empty after tagged expand"
-  fi
-
-  log_step "Verifying feature-expand tag has expanded subtasks"
-  expanded_subtask_count=$(jq -r ".\"feature-expand\".tasks[] | select(.id == $new_expand_task_id) | .subtasks | length" .taskmaster/tasks/tasks.json 2>/dev/null || echo "0")
-  if [ "$expanded_subtask_count" -gt "0" ]; then
-    log_success "Expand successful: $expanded_subtask_count subtasks created in feature-expand tag"
-  else
-    log_error "Expand failed: No subtasks found in feature-expand tag"
-  fi
-
-  log_step "Testing force expand with tag preservation"
-  cmd_output_force_expand=$(task-master expand --tag=feature-expand --id="$new_expand_task_id" --force 2>&1)
-  exit_status_force_expand=$?
-  echo "$cmd_output_force_expand"
-  extract_and_sum_cost "$cmd_output_force_expand"
-  
-  # Verify tags still preserved after force expand
-  tag_count_after_force=$(jq 'keys | length' .taskmaster/tasks/tasks.json)
-  if [ "$tag_count_before" -eq "$tag_count_after_force" ]; then
-    log_success "Force expand preserved all tags"
-  else
-    log_error "Force expand caused tag corruption"
-  fi
-
-  log_step "Testing expand --all with tag preservation"
-  # Add another task to feature-expand for expand-all testing
-  task-master add-task --tag=feature-expand --prompt="Second task for expand-all testing" --priority=low
-  second_expand_task_id=$(jq -r '.["feature-expand"].tasks[-1].id' .taskmaster/tasks/tasks.json)
-  
-  cmd_output_expand_all=$(task-master expand --tag=feature-expand --all 2>&1)
-  exit_status_expand_all=$?
-  echo "$cmd_output_expand_all"
-  extract_and_sum_cost "$cmd_output_expand_all"
-  
-  # Verify tags preserved after expand-all
-  tag_count_after_all=$(jq 'keys | length' .taskmaster/tasks/tasks.json)
-  if [ "$tag_count_before" -eq "$tag_count_after_all" ]; then
-    log_success "Expand --all preserved all tags"
-  else
-    log_error "Expand --all caused tag corruption"
-  fi
-  
-  log_success "Completed expand --all tag preservation test."
 
   # === End New Test Section: Tag-Aware Expand Testing ===
 

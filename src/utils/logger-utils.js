@@ -1,9 +1,9 @@
 /**
- * Logger utility functions for Task Master
+ * Logger utility functions for Speco Tasker
  * Provides standardized logging patterns for both CLI and utility contexts
  */
 
-import { log as utilLog } from '../../scripts/modules/utils.js';
+import { log as utilLog } from "../../scripts/modules/utils.js";
 
 /**
  * Creates a standard logger object that wraps the utility log function
@@ -12,11 +12,11 @@ import { log as utilLog } from '../../scripts/modules/utils.js';
  */
 export function createStandardLogger() {
 	return {
-		info: (msg, ...args) => utilLog('info', msg, ...args),
-		warn: (msg, ...args) => utilLog('warn', msg, ...args),
-		error: (msg, ...args) => utilLog('error', msg, ...args),
-		debug: (msg, ...args) => utilLog('debug', msg, ...args),
-		success: (msg, ...args) => utilLog('success', msg, ...args)
+		info: (msg, ...args) => utilLog("info", msg, ...args),
+		warn: (msg, ...args) => utilLog("warn", msg, ...args),
+		error: (msg, ...args) => utilLog("error", msg, ...args),
+		debug: (msg, ...args) => utilLog("debug", msg, ...args),
+		success: (msg, ...args) => utilLog("success", msg, ...args),
 	};
 }
 

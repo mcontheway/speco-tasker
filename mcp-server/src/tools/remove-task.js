@@ -3,15 +3,15 @@
  * Tool to remove a task by ID
  */
 
-import { z } from 'zod';
+import { z } from "zod";
+import { resolveTag } from "../../../scripts/modules/utils.js";
+import { removeTaskDirect } from "../core/task-master-core.js";
+import { findTasksPath } from "../core/utils/path-utils.js";
 import {
-	handleApiResult,
 	createErrorResponse,
-	withNormalizedProjectRoot
-} from './utils.js';
-import { removeTaskDirect } from '../core/task-master-core.js';
-import { findTasksPath } from '../core/utils/path-utils.js';
-import { resolveTag } from '../../../scripts/modules/utils.js';
+	handleApiResult,
+	withNormalizedProjectRoot,
+} from "./utils.js";
 
 /**
  * Register the remove-task tool with the MCP server
@@ -19,28 +19,27 @@ import { resolveTag } from '../../../scripts/modules/utils.js';
  */
 export function registerRemoveTaskTool(server) {
 	server.addTool({
-		name: 'remove_task',
-		description: 'Remove a task or subtask permanently from the tasks list',
+		name: "remove_task",
+		description: "从任务列表中永久删除任务或子任务",
 		parameters: z.object({
 			id: z
 				.string()
 				.describe(
-					"ID of the task or subtask to remove (e.g., '5' or '5.2'). Can be comma-separated to update multiple tasks/subtasks at once."
+					"要删除的任务或子任务ID（例如：'5' 或 '5.2'）。可逗号分隔同时更新多个任务/子任务。",
 				),
-			file: z.string().optional().describe('Absolute path to the tasks file'),
+			file: z.string().optional().describe("任务文件的绝对路径"),
 			projectRoot: z
 				.string()
-				.describe('The directory of the project. Must be an absolute path.'),
+				.optional()
+				.describe("项目根目录（可选，会自动检测）"),
 			confirm: z
 				.boolean()
 				.optional()
-				.describe('Whether to skip confirmation prompt (default: false)'),
+				.describe("是否跳过确认提示（默认：false）"),
 			tag: z
 				.string()
 				.optional()
-				.describe(
-					'Specify which tag context to operate on. Defaults to the current active tag.'
-				)
+				.describe("指定要操作的标签上下文。默认为当前活动的标签。"),
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
 			try {
@@ -48,7 +47,7 @@ export function registerRemoveTaskTool(server) {
 
 				const resolvedTag = resolveTag({
 					projectRoot: args.projectRoot,
-					tag: args.tag
+					tag: args.tag,
 				});
 
 				// Use args.projectRoot directly (guaranteed by withNormalizedProjectRoot)
@@ -56,12 +55,12 @@ export function registerRemoveTaskTool(server) {
 				try {
 					tasksJsonPath = findTasksPath(
 						{ projectRoot: args.projectRoot, file: args.file },
-						log
+						log,
 					);
 				} catch (error) {
 					log.error(`Error finding tasks.json: ${error.message}`);
 					return createErrorResponse(
-						`Failed to find tasks.json: ${error.message}`
+						`Failed to find tasks.json: ${error.message}`,
 					);
 				}
 
@@ -72,10 +71,10 @@ export function registerRemoveTaskTool(server) {
 						tasksJsonPath: tasksJsonPath,
 						id: args.id,
 						projectRoot: args.projectRoot,
-						tag: resolvedTag
+						tag: resolvedTag,
 					},
 					log,
-					{ session }
+					{ session },
 				);
 
 				if (result.success) {
@@ -87,14 +86,14 @@ export function registerRemoveTaskTool(server) {
 				return handleApiResult(
 					result,
 					log,
-					'Error removing task',
+					"Error removing task",
 					undefined,
-					args.projectRoot
+					args.projectRoot,
 				);
 			} catch (error) {
 				log.error(`Error in remove-task tool: ${error.message}`);
 				return createErrorResponse(`Failed to remove task: ${error.message}`);
 			}
-		})
+		}),
 	});
 }

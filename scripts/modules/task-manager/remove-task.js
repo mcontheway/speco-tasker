@@ -1,8 +1,8 @@
-import path from 'path';
-import * as fs from 'fs';
-import { readJSON, writeJSON, log, findTaskById } from '../utils.js';
-import generateTaskFiles from './generate-task-files.js';
-import taskExists from './task-exists.js';
+import * as fs from "node:fs";
+import path from "node:path";
+import { findTaskById, log, readJSON, writeJSON } from "../utils.js";
+import generateTaskFiles from "./generate-task-files.js";
+import taskExists from "./task-exists.js";
 
 /**
  * Removes one or more tasks or subtasks from the tasks file
@@ -19,16 +19,16 @@ async function removeTask(tasksPath, taskIds, context = {}) {
 		success: true,
 		messages: [],
 		errors: [],
-		removedTasks: []
+		removedTasks: [],
 	};
 	const taskIdsToRemove = taskIds
-		.split(',')
+		.split(",")
 		.map((id) => id.trim())
 		.filter(Boolean); // Remove empty strings if any
 
 	if (taskIdsToRemove.length === 0) {
 		results.success = false;
-		results.errors.push('No valid task IDs provided.');
+		results.errors.push("No valid task IDs provided.");
 		return results;
 	}
 
@@ -61,33 +61,33 @@ async function removeTask(tasksPath, taskIds, context = {}) {
 
 			try {
 				// Handle subtask removal (e.g., '5.2')
-				if (typeof taskId === 'string' && taskId.includes('.')) {
+				if (typeof taskId === "string" && taskId.includes(".")) {
 					const [parentTaskId, subtaskId] = taskId
-						.split('.')
-						.map((id) => parseInt(id, 10));
+						.split(".")
+						.map((id) => Number.parseInt(id, 10));
 
 					// Find the parent task
 					const parentTask = tasks.find((t) => t.id === parentTaskId);
 					if (!parentTask || !parentTask.subtasks) {
 						throw new Error(
-							`Parent task ${parentTaskId} or its subtasks not found for subtask ${taskId}`
+							`Parent task ${parentTaskId} or its subtasks not found for subtask ${taskId}`,
 						);
 					}
 
 					// Find the subtask to remove
 					const subtaskIndex = parentTask.subtasks.findIndex(
-						(st) => st.id === subtaskId
+						(st) => st.id === subtaskId,
 					);
 					if (subtaskIndex === -1) {
 						throw new Error(
-							`Subtask ${subtaskId} not found in parent task ${parentTaskId}`
+							`Subtask ${subtaskId} not found in parent task ${parentTaskId}`,
 						);
 					}
 
 					// Store the subtask info before removal
 					const removedSubtask = {
 						...parentTask.subtasks[subtaskIndex],
-						parentTaskId: parentTaskId
+						parentTaskId: parentTaskId,
 					};
 					results.removedTasks.push(removedSubtask);
 
@@ -95,12 +95,12 @@ async function removeTask(tasksPath, taskIds, context = {}) {
 					parentTask.subtasks.splice(subtaskIndex, 1);
 
 					results.messages.push(
-						`Successfully removed subtask ${taskId} from tag '${tag}'`
+						`Successfully removed subtask ${taskId} from tag '${tag}'`,
 					);
 				}
 				// Handle main task removal
 				else {
-					const taskIdNum = parseInt(taskId, 10);
+					const taskIdNum = Number.parseInt(taskId, 10);
 					const taskIndex = tasks.findIndex((t) => t.id === taskIdNum);
 					if (taskIndex === -1) {
 						throw new Error(`Task with ID ${taskId} not found in tag '${tag}'`);
@@ -115,7 +115,7 @@ async function removeTask(tasksPath, taskIds, context = {}) {
 					tasks.splice(taskIndex, 1);
 
 					results.messages.push(
-						`Successfully removed task ${taskId} from tag '${tag}'`
+						`Successfully removed task ${taskId} from tag '${tag}'`,
 					);
 				}
 			} catch (innerError) {
@@ -123,7 +123,7 @@ async function removeTask(tasksPath, taskIds, context = {}) {
 				const errorMsg = `Error processing ID ${taskId}: ${innerError.message}`;
 				results.errors.push(errorMsg);
 				results.success = false;
-				log('warn', errorMsg); // Log as warning and continue with next ID
+				log("warn", errorMsg); // Log as warning and continue with next ID
 			}
 		} // End of loop through taskIdsToRemove
 
@@ -133,8 +133,10 @@ async function removeTask(tasksPath, taskIds, context = {}) {
 		if (results.removedTasks.length > 0) {
 			const allRemovedIds = new Set(
 				taskIdsToRemove.map((id) =>
-					typeof id === 'string' && id.includes('.') ? id : parseInt(id, 10)
-				)
+					typeof id === "string" && id.includes(".")
+						? id
+						: Number.parseInt(id, 10),
+				),
 			);
 
 			// Update the tasks in the current tag of the full data structure
@@ -151,7 +153,7 @@ async function removeTask(tasksPath, taskIds, context = {}) {
 					currentTagTasks.forEach((task) => {
 						if (task.dependencies) {
 							task.dependencies = task.dependencies.filter(
-								(depId) => !allRemovedIds.has(depId)
+								(depId) => !allRemovedIds.has(depId),
 							);
 						}
 						if (task.subtasks) {
@@ -160,7 +162,7 @@ async function removeTask(tasksPath, taskIds, context = {}) {
 									subtask.dependencies = subtask.dependencies.filter(
 										(depId) =>
 											!allRemovedIds.has(`${task.id}.${depId}`) &&
-											!allRemovedIds.has(depId)
+											!allRemovedIds.has(depId),
 									);
 								}
 							});
@@ -176,7 +178,7 @@ async function removeTask(tasksPath, taskIds, context = {}) {
 			for (const taskIdNum of tasksToDeleteFiles) {
 				const taskFileName = path.join(
 					path.dirname(tasksPath),
-					`task_${taskIdNum.toString().padStart(3, '0')}.txt`
+					`task_${taskIdNum.toString().padStart(3, "0")}.txt`,
 				);
 				if (fs.existsSync(taskFileName)) {
 					try {
@@ -186,7 +188,7 @@ async function removeTask(tasksPath, taskIds, context = {}) {
 						const unlinkMsg = `Failed to delete task file ${taskFileName}: ${unlinkError.message}`;
 						results.errors.push(unlinkMsg);
 						results.success = false;
-						log('warn', unlinkMsg);
+						log("warn", unlinkMsg);
 					}
 				}
 			}
@@ -205,27 +207,27 @@ async function removeTask(tasksPath, taskIds, context = {}) {
 			// 	log('warn', genErrMsg);
 			// }
 		} else if (results.errors.length === 0) {
-			results.messages.push('No tasks found matching the provided IDs.');
+			results.messages.push("No tasks found matching the provided IDs.");
 		}
 
 		// Consolidate messages for final output
-		const finalMessage = results.messages.join('\n');
-		const finalError = results.errors.join('\n');
+		const finalMessage = results.messages.join("\n");
+		const finalError = results.errors.join("\n");
 
 		return {
 			success: results.success,
-			message: finalMessage || 'No tasks were removed.',
+			message: finalMessage || "No tasks were removed.",
 			error: finalError || null,
-			removedTasks: results.removedTasks
+			removedTasks: results.removedTasks,
 		};
 	} catch (error) {
 		// Catch errors from reading file or other initial setup
-		log('error', `Error removing tasks: ${error.message}`);
+		log("error", `Error removing tasks: ${error.message}`);
 		return {
 			success: false,
-			message: '',
+			message: "",
 			error: `Operation failed: ${error.message}`,
-			removedTasks: []
+			removedTasks: [],
 		};
 	}
 }

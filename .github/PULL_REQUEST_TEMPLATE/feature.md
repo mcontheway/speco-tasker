@@ -32,7 +32,7 @@
 - [ ] Created changeset: `npm run changeset`
 - [ ] Tests pass: `npm test`
 - [ ] Format check passes: `npm run format-check`
-- [ ] Addressed CodeRabbit comments
+- [ ] Linting passes: `npm run lint`
 - [ ] Added tests for new functionality
 - [ ] Manually tested in CLI mode
 - [ ] Manually tested in MCP mode (if applicable)

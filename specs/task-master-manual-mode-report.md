@@ -1,8 +1,8 @@
-# Task Master 功能探查报告 - 手动模式使用指南
+# Speco Tasker 功能探查报告 - 手动模式使用指南
 
 ## 概述
 
-本文档专注于 Task Master 系统中**手动模式**的使用方法。所有功能按照功能类型分组，清晰标注是否集成 AI 功能。
+本文档专注于 Speco Tasker 系统中**手动模式**的使用方法。所有功能按照功能类型分组，清晰标注是否集成 AI 功能。
 
 ## 🎯 模式类型说明
 
@@ -13,7 +13,7 @@
 - ✅ **依赖关系管理**：add-dependency, remove-dependency, validate-dependencies, fix-dependencies
 - ✅ **标签管理**：add-tag, delete-tag, list-tags, use-tag, rename-tag, copy-tag
 - ✅ **文件与报告**：generate, complexity-report, sync-readme
-- ✅ **系统管理**：init, migrate, models, rules, lang
+- ✅ **系统管理**：init, migrate, rules
 
 ### 🔄 **混合模式** (1个功能)
 部分支持手动模式，可以通过特定参数完全跳过 AI：
@@ -391,25 +391,7 @@ task-master migrate
 }
 ```
 
-#### 6.3 models / models - AI 模型配置
-```bash
-# 查看当前模型配置
-task-master models
-
-# 配置模型
-task-master models --set-main gpt-4o
-
-# 交互式设置
-task-master models --setup
-
-# MCP 使用
-{
-  "setMain": "gpt-4o",
-  "projectRoot": "/path/to/project"
-}
-```
-
-#### 6.4 rules / rules - 规则管理
+#### 6.3 rules / rules - 规则管理
 ```bash
 # 查看可用规则
 task-master rules list
@@ -427,21 +409,6 @@ task-master rules setup
 {
   "action": "add",
   "profiles": ["cursor", "roo"],
-  "projectRoot": "/path/to/project"
-}
-```
-
-#### 6.5 lang / response-language - 响应语言设置
-```bash
-# 设置响应语言为中文
-task-master lang zh
-
-# 设置响应语言为英文
-task-master lang en
-
-# MCP 使用
-{
-  "language": "zh",
   "projectRoot": "/path/to/project"
 }
 ```
@@ -667,7 +634,7 @@ task-master research "如何实现用户认证" \
 | **依赖关系管理** | 🔧 纯手动 | 4 | ✅ 完全支持 | add-dependency, remove-dependency, validate-dependencies, fix-dependencies |
 | **标签管理** | 🔧 纯手动 | 6 | ✅ 完全支持 | add-tag, delete-tag, list-tags, use-tag, rename-tag, copy-tag |
 | **文件与报告** | 🔧 纯手动 | 3 | ✅ 完全支持 | generate, complexity-report, sync-readme |
-| **系统管理** | 🔧 纯手动 | 5 | ✅ 完全支持 | init, migrate, models, rules, lang |
+| **系统管理** | 🔧 纯手动 | 4 | ✅ 完全支持 | init, migrate, rules |
 | **任务解析与生成** | 🔄 混合模式 | 1 | 🔄 部分支持 | add-task |
 | **任务解析与生成** | 🤖 完全 AI | 1 | ❌ 不支持 | parse-prd |
 | **任务更新** | 🤖 完全 AI | 3 | ❌ 不支持 | update, update-task, update-subtask |

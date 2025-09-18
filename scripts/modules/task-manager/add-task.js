@@ -1,59 +1,93 @@
-import path from 'path';
-import chalk from 'chalk';
-import boxen from 'boxen';
-import Table from 'cli-table3';
-import { z } from 'zod';
-import Fuse from 'fuse.js'; // Import Fuse.js for advanced fuzzy search
+import path from "node:path";
+import boxen from "boxen";
+import chalk from "chalk";
+import Table from "cli-table3";
+import Fuse from "fuse.js"; // Import Fuse.js for advanced fuzzy search
+import { z } from "zod";
+import {
+	findProjectRoot,
+	parseDependencies,
+	parseLogs,
+	parseSpecFiles,
+	validateFieldUpdatePermission,
+	validateSpecFiles,
+} from "../utils.js";
 
 import {
+	DEFAULT_TASK_PRIORITY,
+	TASK_PRIORITY_OPTIONS,
+	isValidTaskPriority,
+	normalizeTaskPriority,
+} from "../../../src/constants/task-priority.js";
+import { getDefaultPriority } from "../config-manager.js";
+import {
 	displayBanner,
+	failLoadingIndicator,
 	getStatusWithColor,
 	startLoadingIndicator,
 	stopLoadingIndicator,
 	succeedLoadingIndicator,
-	failLoadingIndicator,
-	displayAiUsageSummary,
-	displayContextAnalysis
-} from '../ui.js';
+} from "../ui.js";
 import {
-	readJSON,
-	writeJSON,
 	log as consoleLog,
-	truncate,
 	ensureTagMetadata,
+	markMigrationForNotice,
 	performCompleteTagMigration,
-	markMigrationForNotice
-} from '../utils.js';
-import { generateObjectService } from '../ai-services-unified.js';
-import { getDefaultPriority, hasCodebaseAnalysis } from '../config-manager.js';
-import { getPromptManager } from '../prompt-manager.js';
-import ContextGatherer from '../utils/contextGatherer.js';
-import generateTaskFiles from './generate-task-files.js';
+	readJSON,
+	truncate,
+	writeJSON,
+} from "../utils.js";
 import {
-	TASK_PRIORITY_OPTIONS,
-	DEFAULT_TASK_PRIORITY,
-	isValidTaskPriority,
-	normalizeTaskPriority
-} from '../../../src/constants/task-priority.js';
+	formatValidationError,
+	validateTaskData,
+} from "../utils/task-validation.js";
+import generateTaskFiles from "./generate-task-files.js";
 
-// Define Zod schema for the expected AI output object
-const AiTaskDataSchema = z.object({
-	title: z.string().describe('Clear, concise title for the task'),
+// Define Zod schema for manual task validation (strict validation for spec-driven development)
+const TaskDataSchema = z.object({
+	title: z
+		.string()
+		.min(1, "Title is required and cannot be empty")
+		.describe("Clear, concise title for the task"),
 	description: z
 		.string()
-		.describe('A one or two sentence description of the task'),
+		.min(1, "Description is required and cannot be empty")
+		.describe("A one or two sentence description of the task"),
 	details: z
 		.string()
-		.describe('In-depth implementation details, considerations, and guidance'),
+		.min(1, "Details are required and cannot be empty")
+		.describe("In-depth implementation details, considerations, and guidance"),
 	testStrategy: z
 		.string()
-		.describe('Detailed approach for verifying task completion'),
+		.min(1, "Test strategy is required and cannot be empty")
+		.describe("Detailed approach for verifying task completion"),
 	dependencies: z
 		.array(z.number())
 		.nullable()
 		.describe(
-			'Array of task IDs that this task depends on (must be completed before this task can start)'
+			"Array of task IDs that this task depends on (must be completed before this task can start)",
+		),
+	priority: z
+		.enum(["high", "medium", "low"], {
+			required_error: "Priority is required",
+			invalid_type_error: "Priority must be one of: high, medium, low",
+		})
+		.describe("Task priority level"),
+	spec_files: z
+		.array(
+			z.object({
+				type: z
+					.string()
+					.describe('Document type, e.g., "plan", "spec", "requirement"'),
+				title: z.string().describe("Document title"),
+				file: z
+					.string()
+					.describe("Relative file path to the specification document"),
+			}),
 		)
+		.min(1, "At least one specification document is required")
+		.describe("Associated specification documents"),
+	logs: z.string().optional().describe("Implementation process logs"),
 });
 
 /**
@@ -76,34 +110,26 @@ function getAllTasks(rawData) {
 }
 
 /**
- * Add a new task using AI
+ * Add a new task manually (spec-driven development)
  * @param {string} tasksPath - Path to the tasks.json file
- * @param {string} prompt - Description of the task to add (required for AI-driven creation)
  * @param {Array} dependencies - Task dependencies
  * @param {string} priority - Task priority
- * @param {function} reportProgress - Function to report progress to MCP server (optional)
- * @param {Object} mcpLog - MCP logger object (optional)
- * @param {Object} session - Session object from MCP server (optional)
- * @param {string} outputFormat - Output format (text or json)
- * @param {Object} customEnv - Custom environment variables (optional) - Note: AI params override deprecated
- * @param {Object} manualTaskData - Manual task data (optional, for direct task creation without AI)
- * @param {boolean} useResearch - Whether to use the research model (passed to unified service)
  * @param {Object} context - Context object containing session and potentially projectRoot
  * @param {string} [context.projectRoot] - Project root path (for MCP/env fallback)
  * @param {string} [context.commandName] - The name of the command being executed (for telemetry)
  * @param {string} [context.outputType] - The output type ('cli' or 'mcp', for telemetry)
  * @param {string} [context.tag] - Tag for the task (optional)
- * @returns {Promise<object>} An object containing newTaskId and telemetryData
+ * @param {string} outputFormat - Output format (text or json)
+ * @param {Object} manualTaskData - Manual task data (required for spec-driven development)
+ * @returns {Promise<object>} An object containing newTaskId
  */
 async function addTask(
 	tasksPath,
-	prompt,
-	dependencies = [],
-	priority = null,
-	context = {},
-	outputFormat = 'text', // Default to text for CLI
-	manualTaskData = null,
-	useResearch = false
+	dependencies,
+	priority,
+	context,
+	outputFormat, // Default to text for CLI
+	manualTaskData, // Required for spec-driven development
 ) {
 	const { session, mcpLog, projectRoot, commandName, outputType, tag } =
 		context;
@@ -114,11 +140,11 @@ async function addTask(
 		? mcpLog // Use MCP logger if provided
 		: {
 				// Create a wrapper around consoleLog for CLI
-				info: (...args) => consoleLog('info', ...args),
-				warn: (...args) => consoleLog('warn', ...args),
-				error: (...args) => consoleLog('error', ...args),
-				debug: (...args) => consoleLog('debug', ...args),
-				success: (...args) => consoleLog('success', ...args)
+				info: (...args) => consoleLog("info", ...args),
+				warn: (...args) => consoleLog("warn", ...args),
+				error: (...args) => consoleLog("error", ...args),
+				debug: (...args) => consoleLog("debug", ...args),
+				success: (...args) => consoleLog("success", ...args),
 			};
 
 	// Validate priority - only accept high, medium, or low
@@ -131,10 +157,10 @@ async function addTask(
 		if (normalizedPriority) {
 			effectivePriority = normalizedPriority;
 		} else {
-			if (outputFormat === 'text') {
+			if (outputFormat === "text") {
 				consoleLog(
-					'warn',
-					`Invalid priority "${priority}". Using default priority "${DEFAULT_TASK_PRIORITY}".`
+					"warn",
+					`Invalid priority "${priority}". Using default priority "${DEFAULT_TASK_PRIORITY}".`,
 				);
 			}
 			effectivePriority = DEFAULT_TASK_PRIORITY;
@@ -142,20 +168,19 @@ async function addTask(
 	}
 
 	logFn.info(
-		`Adding new task with prompt: "${prompt}", Priority: ${effectivePriority}, Dependencies: ${dependencies.join(', ') || 'None'}, Research: ${useResearch}, ProjectRoot: ${projectRoot}`
+		`Adding new task manually, Priority: ${effectivePriority}, Dependencies: ${dependencies.join(", ") || "None"}, ProjectRoot: ${projectRoot}`,
 	);
 	if (tag) {
 		logFn.info(`Using tag context: ${tag}`);
 	}
 
 	let loadingIndicator = null;
-	let aiServiceResponse = null; // To store the full response from AI service
 
 	// Create custom reporter that checks for MCP log
-	const report = (message, level = 'info') => {
+	const report = (message, level = "info") => {
 		if (mcpLog) {
 			mcpLog[level](message);
-		} else if (outputFormat === 'text') {
+		} else if (outputFormat === "text") {
 			consoleLog(level, message);
 		}
 	};
@@ -174,7 +199,7 @@ async function addTask(
 		taskId,
 		visited = new Set(),
 		depthMap = new Map(),
-		depth = 0
+		depth = 0,
 	) {
 		// Skip if we've already visited this task or it doesn't exist
 		if (visited.has(taskId)) {
@@ -204,7 +229,7 @@ async function addTask(
 					depId,
 					visited,
 					depthMap,
-					depth + 1
+					depth + 1,
 				);
 				if (depData) {
 					dependencyData.push(depData);
@@ -217,7 +242,7 @@ async function addTask(
 			title: task.title,
 			description: task.description,
 			status: task.status,
-			dependencies: dependencyData
+			dependencies: dependencyData,
 		};
 	}
 
@@ -226,7 +251,7 @@ async function addTask(
 		let rawData = readJSON(tasksPath, projectRoot, tag); // No tag parameter
 
 		// Handle the case where readJSON returns resolved data with _rawTaggedData
-		if (rawData && rawData._rawTaggedData) {
+		if (rawData?._rawTaggedData) {
 			// Use the raw tagged data and discard the resolved view
 			rawData = rawData._rawTaggedData;
 		}
@@ -234,24 +259,24 @@ async function addTask(
 		// If file doesn't exist or is invalid, create a new structure in memory
 		if (!rawData) {
 			report(
-				'tasks.json not found or invalid. Initializing new structure.',
-				'info'
+				"tasks.json not found or invalid. Initializing new structure.",
+				"info",
 			);
 			rawData = {
 				master: {
 					tasks: [],
 					metadata: {
 						created: new Date().toISOString(),
-						description: 'Default tasks context'
-					}
-				}
+						description: "Default tasks context",
+					},
+				},
 			};
 			// Do not write the file here; it will be written later with the new task.
 		}
 
 		// Handle legacy format migration using utilities
 		if (rawData && Array.isArray(rawData.tasks) && !rawData._rawTaggedData) {
-			report('Legacy format detected. Migrating to tagged format...', 'info');
+			report("Legacy format detected. Migrating to tagged format...", "info");
 
 			// This is legacy format - migrate it to tagged format
 			rawData = {
@@ -260,13 +285,13 @@ async function addTask(
 					metadata: rawData.metadata || {
 						created: new Date().toISOString(),
 						updated: new Date().toISOString(),
-						description: 'Tasks for master context'
-					}
-				}
+						description: "Tasks for master context",
+					},
+				},
 			};
 			// Ensure proper metadata using utility
 			ensureTagMetadata(rawData.master, {
-				description: 'Tasks for master context'
+				description: "Tasks for master context",
 			});
 			// Do not write the file here; it will be written later with the new task.
 
@@ -274,17 +299,17 @@ async function addTask(
 			performCompleteTagMigration(tasksPath);
 			markMigrationForNotice(tasksPath);
 
-			report('Successfully migrated to tagged format.', 'success');
+			report("Successfully migrated to tagged format.", "success");
 		}
 
-		// Use the provided tag, or the current active tag, or default to 'master'
+		// Use the provided tag, or the current active tag, or default to 'main'
 		const targetTag = tag;
 
 		// Ensure the target tag exists
 		if (!rawData[targetTag]) {
 			report(
 				`Tag "${targetTag}" does not exist. Please create it first using the 'add-tag' command.`,
-				'error'
+				"error",
 			);
 			throw new Error(`Tag "${targetTag}" not found.`);
 		}
@@ -297,7 +322,7 @@ async function addTask(
 			rawData[targetTag].metadata = {
 				created: new Date().toISOString(),
 				updated: new Date().toISOString(),
-				description: ``
+				description: "",
 			};
 		}
 
@@ -313,36 +338,34 @@ async function addTask(
 		const newTaskId = highestId + 1;
 
 		// Only show UI box for CLI mode
-		if (outputFormat === 'text') {
+		if (outputFormat === "text") {
 			console.log(
 				boxen(chalk.white.bold(`Creating New Task #${newTaskId}`), {
 					padding: 1,
-					borderColor: 'blue',
-					borderStyle: 'round',
-					margin: { top: 1, bottom: 1 }
-				})
+					borderColor: "blue",
+					borderStyle: "round",
+					margin: { top: 1, bottom: 1 },
+				}),
 			);
 		}
 
-		// Validate dependencies before proceeding
-		const invalidDeps = dependencies.filter((depId) => {
-			// Ensure depId is parsed as a number for comparison
-			const numDepId = parseInt(depId, 10);
-			return Number.isNaN(numDepId) || !allTasks.some((t) => t.id === numDepId);
-		});
+		// Parse and validate dependencies using utility function
+		const dependenciesResult = parseDependencies(dependencies, allTasks);
+		const numericDependencies = dependenciesResult.dependencies;
 
-		if (invalidDeps.length > 0) {
+		// Log dependency parsing results
+		if (dependenciesResult.errors.length > 0) {
 			report(
-				`The following dependencies do not exist or are invalid: ${invalidDeps.join(', ')}`,
-				'warn'
-			);
-			report('Removing invalid dependencies...', 'info');
-			dependencies = dependencies.filter(
-				(depId) => !invalidDeps.includes(depId)
+				`Dependency parsing errors: ${dependenciesResult.errors.join(", ")}`,
+				"warn",
 			);
 		}
-		// Ensure dependencies are numbers
-		const numericDependencies = dependencies.map((dep) => parseInt(dep, 10));
+		if (dependenciesResult.warnings.length > 0) {
+			report(
+				`Dependency warnings: ${dependenciesResult.warnings.join(", ")}`,
+				"warn",
+			);
+		}
 
 		// Build dependency graphs for explicitly specified dependencies
 		const dependencyGraphs = [];
@@ -364,154 +387,109 @@ async function addTask(
 
 		let taskData;
 
-		// Check if manual task data is provided
-		if (manualTaskData) {
-			report('Using manually provided task data', 'info');
-			taskData = manualTaskData;
-			report('DEBUG: Taking MANUAL task data path.', 'debug');
+		// Check if manual task data is provided (required now)
+		if (!manualTaskData) {
+			throw new Error("Manual task data is required for task creation.");
+		}
 
-			// Basic validation for manual data
-			if (
-				!taskData.title ||
-				typeof taskData.title !== 'string' ||
-				!taskData.description ||
-				typeof taskData.description !== 'string'
-			) {
-				throw new Error(
-					'Manual task data must include at least a title and description.'
-				);
-			}
-		} else {
-			report('DEBUG: Taking AI task generation path.', 'debug');
-			// --- Refactored AI Interaction ---
-			report(`Generating task data with AI with prompt:\n${prompt}`, 'info');
+		report("Using manually provided task data", "info");
+		taskData = manualTaskData;
+		report("DEBUG: Taking MANUAL task data path.", "debug");
 
-			// --- Use the new ContextGatherer ---
-			const contextGatherer = new ContextGatherer(projectRoot, tag);
-			const gatherResult = await contextGatherer.gather({
-				semanticQuery: prompt,
-				dependencyTasks: numericDependencies,
-				format: 'research'
-			});
-
-			const gatheredContext = gatherResult.context;
-			const analysisData = gatherResult.analysisData;
-
-			// Display context analysis if not in silent mode
-			if (outputFormat === 'text' && analysisData) {
-				displayContextAnalysis(analysisData, prompt, gatheredContext.length);
-			}
-
-			// Add any manually provided details to the prompt for context
-			let contextFromArgs = '';
-			if (manualTaskData?.title)
-				contextFromArgs += `\n- Suggested Title: "${manualTaskData.title}"`;
-			if (manualTaskData?.description)
-				contextFromArgs += `\n- Suggested Description: "${manualTaskData.description}"`;
-			if (manualTaskData?.details)
-				contextFromArgs += `\n- Additional Details Context: "${manualTaskData.details}"`;
-			if (manualTaskData?.testStrategy)
-				contextFromArgs += `\n- Additional Test Strategy Context: "${manualTaskData.testStrategy}"`;
-
-			// Load prompts using PromptManager
-			const promptManager = getPromptManager();
-			const { systemPrompt, userPrompt } = await promptManager.loadPrompt(
-				'add-task',
-				{
-					prompt,
-					newTaskId,
-					existingTasks: allTasks,
-					gatheredContext,
-					contextFromArgs,
-					useResearch,
-					priority: effectivePriority,
-					dependencies: numericDependencies,
-					hasCodebaseAnalysis: hasCodebaseAnalysis(
-						useResearch,
-						projectRoot,
-						session
-					),
-					projectRoot: projectRoot
-				}
+		// Basic validation for manual data
+		if (
+			!taskData.title ||
+			typeof taskData.title !== "string" ||
+			!taskData.description ||
+			typeof taskData.description !== "string"
+		) {
+			throw new Error(
+				"Manual task data must include at least a title and description.",
 			);
+		}
 
-			// Start the loading indicator - only for text mode
-			if (outputFormat === 'text') {
-				loadingIndicator = startLoadingIndicator(
-					`Generating new task with ${useResearch ? 'Research' : 'Main'} AI... \n`
+		// Manual task creation without AI - use provided field values directly
+		if (outputFormat === "text") {
+			loadingIndicator = startLoadingIndicator(
+				"Creating new task manually... \n",
+			);
+		}
+
+		try {
+			report("DEBUG: Creating task data manually...", "debug");
+
+			// Parse and validate spec_files using utility function
+			let processedSpecFiles = [];
+			if (manualTaskData.spec_files) {
+				const parsedSpecFiles = parseSpecFiles(
+					manualTaskData.spec_files,
+					projectRoot,
+				);
+				const validationResult = validateSpecFiles(
+					parsedSpecFiles,
+					projectRoot,
+				);
+				processedSpecFiles = parsedSpecFiles;
+
+				// Log validation results
+				if (validationResult.errors.length > 0) {
+					report(
+						`Spec files validation errors: ${validationResult.errors.join(", ")}`,
+						"warn",
+					);
+				}
+				if (validationResult.warnings.length > 0) {
+					report(
+						`Spec files warnings: ${validationResult.warnings.join(", ")}`,
+						"warn",
+					);
+				}
+			}
+
+			// Parse logs using utility function
+			const processedLogs = parseLogs(manualTaskData.logs || "");
+
+			// Use provided field values directly (no AI processing)
+			taskData = {
+				title: manualTaskData.title,
+				description: manualTaskData.description,
+				details: manualTaskData.details || "",
+				testStrategy: manualTaskData.testStrategy || "",
+				dependencies: [], // Required array for dependencies
+				priority: manualTaskData.priority || effectivePriority,
+				spec_files: processedSpecFiles,
+				logs: processedLogs,
+			};
+
+			// Validate the task data structure using strict schema for spec-driven development
+			const validationResult = TaskDataSchema.safeParse(taskData);
+			if (!validationResult.success) {
+				throw new Error(
+					`Invalid task data structure: ${validationResult.error.message}`,
 				);
 			}
 
-			try {
-				const serviceRole = useResearch ? 'research' : 'main';
-				report('DEBUG: Calling generateObjectService...', 'debug');
+			report("Successfully created task data manually.", "success");
 
-				aiServiceResponse = await generateObjectService({
-					// Capture the full response
-					role: serviceRole,
-					session: session,
-					projectRoot: projectRoot,
-					schema: AiTaskDataSchema,
-					objectName: 'newTaskData',
-					systemPrompt: systemPrompt,
-					prompt: userPrompt,
-					commandName: commandName || 'add-task', // Use passed commandName or default
-					outputType: outputType || (isMCP ? 'mcp' : 'cli') // Use passed outputType or derive
-				});
-				report('DEBUG: generateObjectService returned successfully.', 'debug');
-
-				if (!aiServiceResponse || !aiServiceResponse.mainResult) {
-					throw new Error(
-						'AI service did not return the expected object structure.'
-					);
-				}
-
-				// Prefer mainResult if it looks like a valid task object, otherwise try mainResult.object
-				if (
-					aiServiceResponse.mainResult.title &&
-					aiServiceResponse.mainResult.description
-				) {
-					taskData = aiServiceResponse.mainResult;
-				} else if (
-					aiServiceResponse.mainResult.object &&
-					aiServiceResponse.mainResult.object.title &&
-					aiServiceResponse.mainResult.object.description
-				) {
-					taskData = aiServiceResponse.mainResult.object;
-				} else {
-					throw new Error('AI service did not return a valid task object.');
-				}
-
-				report('Successfully generated task data from AI.', 'success');
-
-				// Success! Show checkmark
-				if (loadingIndicator) {
-					succeedLoadingIndicator(
-						loadingIndicator,
-						'Task generated successfully'
-					);
-					loadingIndicator = null; // Clear it
-				}
-			} catch (error) {
-				// Failure! Show X
-				if (loadingIndicator) {
-					failLoadingIndicator(loadingIndicator, 'AI generation failed');
-					loadingIndicator = null;
-				}
-				report(
-					`DEBUG: generateObjectService caught error: ${error.message}`,
-					'debug'
-				);
-				report(`Error generating task with AI: ${error.message}`, 'error');
-				throw error; // Re-throw error after logging
-			} finally {
-				report('DEBUG: generateObjectService finally block reached.', 'debug');
-				// Clean up if somehow still running
-				if (loadingIndicator) {
-					stopLoadingIndicator(loadingIndicator);
-				}
+			// Success! Show checkmark
+			if (loadingIndicator) {
+				succeedLoadingIndicator(loadingIndicator, "Task created successfully");
+				loadingIndicator = null; // Clear it
 			}
-			// --- End Refactored AI Interaction ---
+		} catch (error) {
+			// Failure! Show X
+			if (loadingIndicator) {
+				failLoadingIndicator(loadingIndicator, "Manual task creation failed");
+				loadingIndicator = null;
+			}
+			report(`DEBUG: Manual task creation error: ${error.message}`, "debug");
+			report(`Error creating task: ${error.message}`, "error");
+			throw error; // Re-throw error after logging
+		} finally {
+			// Clean up if somehow still running
+			if (loadingIndicator) {
+				stopLoadingIndicator(loadingIndicator);
+			}
 		}
 
 		// Create the new task object
@@ -519,32 +497,48 @@ async function addTask(
 			id: newTaskId,
 			title: taskData.title,
 			description: taskData.description,
-			details: taskData.details || '',
-			testStrategy: taskData.testStrategy || '',
-			status: 'pending',
+			details: taskData.details || "",
+			testStrategy: taskData.testStrategy || "",
+			status: "pending",
 			dependencies: taskData.dependencies?.length
 				? taskData.dependencies
-				: numericDependencies, // Use AI-suggested dependencies if available, fallback to manually specified
+				: numericDependencies, // Use provided dependencies if available, fallback to manually specified
 			priority: effectivePriority,
-			subtasks: [] // Initialize with empty subtasks array
+			spec_files: taskData.spec_files || [], // Initialize with empty array or provided spec files
+			logs: taskData.logs || "", // Initialize with empty string or provided logs
+			subtasks: [], // Initialize with empty subtasks array
 		};
 
-		// Additional check: validate all dependencies in the AI response
+		// Validate the new task data (strict validation for spec-driven development)
+		const validationResult = validateTaskData(
+			newTask,
+			projectRoot,
+			report,
+			false,
+		);
+		if (!validationResult.isValid) {
+			const errorMessage = formatValidationError(
+				validationResult,
+				newTaskId,
+				false,
+			);
+			report("error", errorMessage);
+			throw new Error(errorMessage);
+		}
+
+		// Additional check: validate all dependencies
 		if (taskData.dependencies?.length) {
 			const allValidDeps = taskData.dependencies.every((depId) => {
-				const numDepId = parseInt(depId, 10);
+				const numDepId = Number.parseInt(depId, 10);
 				return (
 					!Number.isNaN(numDepId) && allTasks.some((t) => t.id === numDepId)
 				);
 			});
 
 			if (!allValidDeps) {
-				report(
-					'AI suggested invalid dependencies. Filtering them out...',
-					'warn'
-				);
+				report("Some dependencies are invalid. Filtering them out...", "warn");
 				newTask.dependencies = taskData.dependencies.filter((depId) => {
-					const numDepId = parseInt(depId, 10);
+					const numDepId = Number.parseInt(depId, 10);
 					return (
 						!Number.isNaN(numDepId) && allTasks.some((t) => t.id === numDepId)
 					);
@@ -556,55 +550,55 @@ async function addTask(
 		rawData[targetTag].tasks.push(newTask);
 		// Update the tag's metadata
 		ensureTagMetadata(rawData[targetTag], {
-			description: `Tasks for ${targetTag} context`
+			description: `Tasks for ${targetTag} context`,
 		});
 
-		report('DEBUG: Writing tasks.json...', 'debug');
+		report("DEBUG: Writing tasks.json...", "debug");
 		// Write the updated raw data back to the file
 		// The writeJSON function will automatically filter out _rawTaggedData
 		writeJSON(tasksPath, rawData, projectRoot, targetTag);
-		report('DEBUG: tasks.json written.', 'debug');
+		report("DEBUG: tasks.json written.", "debug");
 
 		// Show success message - only for text output (CLI)
-		if (outputFormat === 'text') {
+		if (outputFormat === "text") {
 			const table = new Table({
 				head: [
-					chalk.cyan.bold('ID'),
-					chalk.cyan.bold('Title'),
-					chalk.cyan.bold('Description')
+					chalk.cyan.bold("ID"),
+					chalk.cyan.bold("Title"),
+					chalk.cyan.bold("Description"),
 				],
-				colWidths: [5, 30, 50] // Adjust widths as needed
+				colWidths: [5, 30, 50], // Adjust widths as needed
 			});
 
 			table.push([
 				newTask.id,
 				truncate(newTask.title, 27),
-				truncate(newTask.description, 47)
+				truncate(newTask.description, 47),
 			]);
 
-			console.log(chalk.green('✓ New task created successfully:'));
+			console.log(chalk.green("✓ New task created successfully:"));
 			console.log(table.toString());
 
 			// Helper to get priority color
 			const getPriorityColor = (p) => {
 				switch (p?.toLowerCase()) {
-					case 'high':
-						return 'red';
-					case 'low':
-						return 'gray';
+					case "high":
+						return "red";
+					case "low":
+						return "gray";
 					default:
-						return 'yellow';
+						return "yellow";
 				}
 			};
 
-			// Check if AI added new dependencies that weren't explicitly provided
-			const aiAddedDeps = newTask.dependencies.filter(
-				(dep) => !numericDependencies.includes(dep)
+			// Check if system added new dependencies that weren't explicitly provided
+			const addedDeps = newTask.dependencies.filter(
+				(dep) => !numericDependencies.includes(dep),
 			);
 
-			// Check if AI removed any dependencies that were explicitly provided
-			const aiRemovedDeps = numericDependencies.filter(
-				(dep) => !newTask.dependencies.includes(dep)
+			// Check if system removed any dependencies that were explicitly provided
+			const removedDeps = numericDependencies.filter(
+				(dep) => !newTask.dependencies.includes(dep),
 			);
 
 			// Get task titles for dependencies to display
@@ -617,103 +611,68 @@ async function addTask(
 			});
 
 			// Prepare dependency display string
-			let dependencyDisplay = '';
+			let dependencyDisplay = "";
 			if (newTask.dependencies.length > 0) {
-				dependencyDisplay = chalk.white('Dependencies:') + '\n';
+				dependencyDisplay = `${chalk.white("Dependencies:")}\n`;
 				newTask.dependencies.forEach((dep) => {
-					const isAiAdded = aiAddedDeps.includes(dep);
-					const depType = isAiAdded ? chalk.yellow(' (AI suggested)') : '';
-					dependencyDisplay +=
-						chalk.white(
-							`  - ${dep}: ${depTitles[dep] || 'Unknown task'}${depType}`
-						) + '\n';
+					const isAdded = addedDeps.includes(dep);
+					const depType = isAdded ? chalk.yellow(" (automatically added)") : "";
+					dependencyDisplay += `${chalk.white(
+						`  - ${dep}: ${depTitles[dep] || "Unknown task"}${depType}`,
+					)}\n`;
 				});
 			} else {
-				dependencyDisplay = chalk.white('Dependencies: None') + '\n';
+				dependencyDisplay = `${chalk.white("Dependencies: None")}\n`;
 			}
 
 			// Add info about removed dependencies if any
-			if (aiRemovedDeps.length > 0) {
-				dependencyDisplay +=
-					chalk.gray('\nUser-specified dependencies that were not used:') +
-					'\n';
-				aiRemovedDeps.forEach((dep) => {
+			if (removedDeps.length > 0) {
+				dependencyDisplay += `${chalk.gray("\nUser-specified dependencies that were not used:")}\n`;
+				removedDeps.forEach((dep) => {
 					const depTask = allTasks.find((t) => t.id === dep);
-					const title = depTask ? truncate(depTask.title, 30) : 'Unknown task';
-					dependencyDisplay += chalk.gray(`  - ${dep}: ${title}`) + '\n';
+					const title = depTask ? truncate(depTask.title, 30) : "Unknown task";
+					dependencyDisplay += `${chalk.gray(`  - ${dep}: ${title}`)}\n`;
 				});
 			}
 
 			// Add dependency analysis summary
-			let dependencyAnalysis = '';
-			if (aiAddedDeps.length > 0 || aiRemovedDeps.length > 0) {
-				dependencyAnalysis =
-					'\n' + chalk.white.bold('Dependency Analysis:') + '\n';
-				if (aiAddedDeps.length > 0) {
-					dependencyAnalysis +=
-						chalk.green(
-							`AI identified ${aiAddedDeps.length} additional dependencies`
-						) + '\n';
+			let dependencyAnalysis = "";
+			if (addedDeps.length > 0 || removedDeps.length > 0) {
+				dependencyAnalysis = `\n${chalk.white.bold("Dependency Analysis:")}\n`;
+				if (addedDeps.length > 0) {
+					dependencyAnalysis += `${chalk.green(
+						`System identified ${addedDeps.length} additional dependencies`,
+					)}\n`;
 				}
-				if (aiRemovedDeps.length > 0) {
-					dependencyAnalysis +=
-						chalk.yellow(
-							`AI excluded ${aiRemovedDeps.length} user-provided dependencies`
-						) + '\n';
+				if (removedDeps.length > 0) {
+					dependencyAnalysis += `${chalk.yellow(
+						`System excluded ${removedDeps.length} user-provided dependencies`,
+					)}\n`;
 				}
 			}
 
 			// Show success message box
 			console.log(
 				boxen(
-					chalk.white.bold(`Task ${newTaskId} Created Successfully`) +
-						'\n\n' +
-						chalk.white(`Title: ${newTask.title}`) +
-						'\n' +
-						chalk.white(`Status: ${getStatusWithColor(newTask.status)}`) +
-						'\n' +
-						chalk.white(
-							`Priority: ${chalk[getPriorityColor(newTask.priority)](newTask.priority)}`
-						) +
-						'\n\n' +
-						dependencyDisplay +
-						dependencyAnalysis +
-						'\n' +
-						chalk.white.bold('Next Steps:') +
-						'\n' +
-						chalk.cyan(
-							`1. Run ${chalk.yellow(`task-master show ${newTaskId}`)} to see complete task details`
-						) +
-						'\n' +
-						chalk.cyan(
-							`2. Run ${chalk.yellow(`task-master set-status --id=${newTaskId} --status=in-progress`)} to start working on it`
-						) +
-						'\n' +
-						chalk.cyan(
-							`3. Run ${chalk.yellow(`task-master expand --id=${newTaskId}`)} to break it down into subtasks`
-						),
-					{ padding: 1, borderColor: 'green', borderStyle: 'round' }
-				)
+					`${chalk.white.bold(`Task ${newTaskId} Created Successfully`)}\n\n${chalk.white(`Title: ${newTask.title}`)}\n${chalk.white(`Status: ${getStatusWithColor(newTask.status)}`)}\n${chalk.white(
+						`Priority: ${chalk[getPriorityColor(newTask.priority)](newTask.priority)}`,
+					)}\n\n${dependencyDisplay}${dependencyAnalysis}\n${chalk.white.bold("下一步操作:")}\n${chalk.cyan(
+						`1. 查看任务详情: ${chalk.yellow(`task-master show ${newTaskId}`)}`,
+					)}\n${chalk.cyan(
+						`2. 开始处理任务: ${chalk.yellow(`task-master set-status --id=${newTaskId} --status=in-progress`)}`,
+					)}\n${chalk.cyan(
+						`3. 添加子任务: ${chalk.yellow(`task-master add-subtask --parent=${newTaskId} --title="子任务标题"`)}`,
+					)}\n${chalk.cyan(`4. 查看所有任务: ${chalk.yellow("task-master list")}`)}`,
+					{ padding: 1, borderColor: "green", borderStyle: "round" },
+				),
 			);
 
-			// Display AI Usage Summary if telemetryData is available
-			if (
-				aiServiceResponse &&
-				aiServiceResponse.telemetryData &&
-				(outputType === 'cli' || outputType === 'text')
-			) {
-				displayAiUsageSummary(aiServiceResponse.telemetryData, 'cli');
-			}
+			// No AI usage summary to display in manual mode
 		}
 
-		report(
-			`DEBUG: Returning new task ID: ${newTaskId} and telemetry.`,
-			'debug'
-		);
+		report(`DEBUG: Returning new task ID: ${newTaskId}.`, "debug");
 		return {
 			newTaskId: newTaskId,
-			telemetryData: aiServiceResponse ? aiServiceResponse.telemetryData : null,
-			tagInfo: aiServiceResponse ? aiServiceResponse.tagInfo : null
 		};
 	} catch (error) {
 		// Stop any loading indicator on error
@@ -721,8 +680,8 @@ async function addTask(
 			stopLoadingIndicator(loadingIndicator);
 		}
 
-		report(`Error adding task: ${error.message}`, 'error');
-		if (outputFormat === 'text') {
+		report(`Error adding task: ${error.message}`, "error");
+		if (outputFormat === "text") {
 			console.error(chalk.red(`Error: ${error.message}`));
 		}
 		// In MCP mode, we let the direct function handler catch and format

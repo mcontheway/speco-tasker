@@ -1,20 +1,20 @@
 #!/usr/bin/env node
 
-async function githubRequest(endpoint, token, method = 'GET', body) {
+async function githubRequest(endpoint, token, method, body) {
 	const response = await fetch(`https://api.github.com${endpoint}`, {
 		method,
 		headers: {
 			Authorization: `Bearer ${token}`,
-			Accept: 'application/vnd.github.v3+json',
-			'User-Agent': 'backfill-duplicate-comments-script',
-			...(body && { 'Content-Type': 'application/json' })
+			Accept: "application/vnd.github.v3+json",
+			"User-Agent": "backfill-duplicate-comments-script",
+			...(body && { "Content-Type": "application/json" }),
 		},
-		...(body && { body: JSON.stringify(body) })
+		...(body && { body: JSON.stringify(body) }),
 	});
 
 	if (!response.ok) {
 		throw new Error(
-			`GitHub API request failed: ${response.status} ${response.statusText}`
+			`GitHub API request failed: ${response.status} ${response.statusText}`,
 		);
 	}
 
@@ -26,11 +26,11 @@ async function triggerDedupeWorkflow(
 	repo,
 	issueNumber,
 	token,
-	dryRun = true
+	dryRun = true,
 ) {
 	if (dryRun) {
 		console.log(
-			`[DRY RUN] Would trigger dedupe workflow for issue #${issueNumber}`
+			`[DRY RUN] Would trigger dedupe workflow for issue #${issueNumber}`,
 		);
 		return;
 	}
@@ -38,18 +38,18 @@ async function triggerDedupeWorkflow(
 	await githubRequest(
 		`/repos/${owner}/${repo}/actions/workflows/claude-dedupe-issues.yml/dispatches`,
 		token,
-		'POST',
+		"POST",
 		{
-			ref: 'main',
+			ref: "main",
 			inputs: {
-				issue_number: issueNumber.toString()
-			}
-		}
+				issue_number: issueNumber.toString(),
+			},
+		},
 	);
 }
 
 async function backfillDuplicateComments() {
-	console.log('[DEBUG] Starting backfill duplicate comments script');
+	console.log("[DEBUG] Starting backfill duplicate comments script");
 
 	const token = process.env.GITHUB_TOKEN;
 	if (!token) {
@@ -63,12 +63,12 @@ Environment Variables:
   DRY_RUN - Set to "false" to actually trigger workflows (default: true for safety)
   DAYS_BACK - How many days back to look for old issues (default: 90)`);
 	}
-	console.log('[DEBUG] GitHub token found');
+	console.log("[DEBUG] GitHub token found");
 
-	const owner = process.env.GITHUB_REPOSITORY_OWNER || 'eyaltoledano';
-	const repo = process.env.GITHUB_REPOSITORY_NAME || 'claude-task-master';
-	const dryRun = process.env.DRY_RUN !== 'false';
-	const daysBack = parseInt(process.env.DAYS_BACK || '90', 10);
+	const owner = process.env.GITHUB_REPOSITORY_OWNER || "eyaltoledano";
+	const repo = process.env.GITHUB_REPOSITORY_NAME || "claude-task-master";
+	const dryRun = process.env.DRY_RUN !== "false";
+	const daysBack = Number.parseInt(process.env.DAYS_BACK || "90", 10);
 
 	console.log(`[DEBUG] Repository: ${owner}/${repo}`);
 	console.log(`[DEBUG] Dry run mode: ${dryRun}`);
@@ -78,7 +78,7 @@ Environment Variables:
 	cutoffDate.setDate(cutoffDate.getDate() - daysBack);
 
 	console.log(
-		`[DEBUG] Fetching issues created since ${cutoffDate.toISOString()}...`
+		`[DEBUG] Fetching issues created since ${cutoffDate.toISOString()}...`,
 	);
 	const allIssues = [];
 	let page = 1;
@@ -87,7 +87,7 @@ Environment Variables:
 	while (true) {
 		const pageIssues = await githubRequest(
 			`/repos/${owner}/${repo}/issues?state=all&per_page=${perPage}&page=${page}&since=${cutoffDate.toISOString()}`,
-			token
+			token,
 		);
 
 		if (pageIssues.length === 0) break;
@@ -97,13 +97,13 @@ Environment Variables:
 
 		// Safety limit to avoid infinite loops
 		if (page > 100) {
-			console.log('[DEBUG] Reached page limit, stopping pagination');
+			console.log("[DEBUG] Reached page limit, stopping pagination");
 			break;
 		}
 	}
 
 	console.log(
-		`[DEBUG] Found ${allIssues.length} issues from the last ${daysBack} days`
+		`[DEBUG] Found ${allIssues.length} issues from the last ${daysBack} days`,
 	);
 
 	let processedCount = 0;
@@ -113,34 +113,34 @@ Environment Variables:
 	for (const issue of allIssues) {
 		processedCount++;
 		console.log(
-			`[DEBUG] Processing issue #${issue.number} (${processedCount}/${allIssues.length}): ${issue.title}`
+			`[DEBUG] Processing issue #${issue.number} (${processedCount}/${allIssues.length}): ${issue.title}`,
 		);
 
 		console.log(`[DEBUG] Fetching comments for issue #${issue.number}...`);
 		const comments = await githubRequest(
 			`/repos/${owner}/${repo}/issues/${issue.number}/comments`,
-			token
+			token,
 		);
 		console.log(
-			`[DEBUG] Issue #${issue.number} has ${comments.length} comments`
+			`[DEBUG] Issue #${issue.number} has ${comments.length} comments`,
 		);
 
 		// Look for existing duplicate detection comments (from the dedupe bot)
 		const dupeDetectionComments = comments.filter(
 			(comment) =>
-				comment.body.includes('Found') &&
-				comment.body.includes('possible duplicate') &&
-				comment.user.type === 'Bot'
+				comment.body.includes("Found") &&
+				comment.body.includes("possible duplicate") &&
+				comment.user.type === "Bot",
 		);
 
 		console.log(
-			`[DEBUG] Issue #${issue.number} has ${dupeDetectionComments.length} duplicate detection comments`
+			`[DEBUG] Issue #${issue.number} has ${dupeDetectionComments.length} duplicate detection comments`,
 		);
 
 		// Skip if there's already a duplicate detection comment
 		if (dupeDetectionComments.length > 0) {
 			console.log(
-				`[DEBUG] Issue #${issue.number} already has duplicate detection comment, skipping`
+				`[DEBUG] Issue #${issue.number} already has duplicate detection comment, skipping`,
 			);
 			continue;
 		}
@@ -150,19 +150,19 @@ Environment Variables:
 
 		try {
 			console.log(
-				`[INFO] ${dryRun ? '[DRY RUN] ' : ''}Triggering dedupe workflow for issue #${issue.number}: ${issueUrl}`
+				`[INFO] ${dryRun ? "[DRY RUN] " : ""}Triggering dedupe workflow for issue #${issue.number}: ${issueUrl}`,
 			);
 			await triggerDedupeWorkflow(owner, repo, issue.number, token, dryRun);
 
 			if (!dryRun) {
 				console.log(
-					`[SUCCESS] Successfully triggered dedupe workflow for issue #${issue.number}`
+					`[SUCCESS] Successfully triggered dedupe workflow for issue #${issue.number}`,
 				);
 			}
 			triggeredCount++;
 		} catch (error) {
 			console.error(
-				`[ERROR] Failed to trigger workflow for issue #${issue.number}: ${error}`
+				`[ERROR] Failed to trigger workflow for issue #${issue.number}: ${error}`,
 			);
 		}
 
@@ -171,7 +171,7 @@ Environment Variables:
 	}
 
 	console.log(
-		`[DEBUG] Script completed. Processed ${processedCount} issues, found ${candidateCount} candidates without duplicate comments, ${dryRun ? 'would trigger' : 'triggered'} ${triggeredCount} workflows`
+		`[DEBUG] Script completed. Processed ${processedCount} issues, found ${candidateCount} candidates without duplicate comments, ${dryRun ? "would trigger" : "triggered"} ${triggeredCount} workflows`,
 	);
 }
 

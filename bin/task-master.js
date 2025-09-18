@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 /**
- * Task Master
- * Copyright (c) 2025 TaskMaster Team
+ * Speco Tasker
+ * Copyright (c) 2025 Speco Team
  *
  * This software is licensed under the MIT License with Commons Clause.
  * You may use this software for any purpose, including commercial applications,
@@ -16,68 +16,64 @@
  */
 
 /**
- * Claude Task Master CLI
+ * Speco Tasker CLI
  * Main entry point for globally installed package
  */
 
-import { fileURLToPath } from 'url';
-import { dirname, resolve } from 'path';
-import { createRequire } from 'module';
-import { spawn } from 'child_process';
-import { Command } from 'commander';
-import { displayHelp, displayBanner } from '../scripts/modules/ui.js';
-import { registerCommands } from '../scripts/modules/commands.js';
-import { detectCamelCaseFlags } from '../scripts/modules/utils.js';
-import chalk from 'chalk';
+import { spawn } from "node:child_process";
+import { createRequire } from "node:module";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import chalk from "chalk";
+import { Command } from "commander";
+import { registerCommands } from "../scripts/modules/commands.js";
+import { displayBanner, displayHelp } from "../scripts/modules/ui.js";
+import { detectCamelCaseFlags } from "../scripts/modules/utils.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const require = createRequire(import.meta.url);
 
 // Get package information
-const packageJson = require('../package.json');
+const packageJson = require("../package.json");
 const version = packageJson.version;
 
 // Get paths to script files
-const devScriptPath = resolve(__dirname, '../scripts/dev.js');
-const initScriptPath = resolve(__dirname, '../scripts/init.js');
+const devScriptPath = resolve(__dirname, "../scripts/dev.js");
+const initScriptPath = resolve(__dirname, "../scripts/init.js");
 
 // Helper function to run dev.js with arguments
 function runDevScript(args) {
 	// Debug: Show the transformed arguments when DEBUG=1 is set
-	if (process.env.DEBUG === '1') {
-		console.error('\nDEBUG - CLI Wrapper Analysis:');
-		console.error('- Original command: ' + process.argv.join(' '));
-		console.error('- Transformed args: ' + args.join(' '));
+	if (process.env.DEBUG === "1") {
+		console.error("\nDEBUG - CLI Wrapper Analysis:");
+		console.error(`- Original command: ${process.argv.join(" ")}`);
+		console.error(`- Transformed args: ${args.join(" ")}`);
 		console.error(
-			'- dev.js will receive: node ' +
-				devScriptPath +
-				' ' +
-				args.join(' ') +
-				'\n'
+			`- dev.js will receive: node ${devScriptPath} ${args.join(" ")}\n`,
 		);
 	}
 
 	// For testing: If TEST_MODE is set, just print args and exit
-	if (process.env.TEST_MODE === '1') {
-		console.log('Would execute:');
-		console.log(`node ${devScriptPath} ${args.join(' ')}`);
+	if (process.env.TEST_MODE === "1") {
+		console.log("Would execute:");
+		console.log(`node ${devScriptPath} ${args.join(" ")}`);
 		process.exit(0);
 		return;
 	}
 
-	const child = spawn('node', [devScriptPath, ...args], {
-		stdio: 'inherit',
-		cwd: process.cwd()
+	const child = spawn("node", [devScriptPath, ...args], {
+		stdio: "inherit",
+		cwd: process.cwd(),
 	});
 
-	child.on('close', (code) => {
+	child.on("close", (code) => {
 		process.exit(code);
 	});
 }
 
 // Helper function to detect camelCase and convert to kebab-case
-const toKebabCase = (str) => str.replace(/([A-Z])/g, '-$1').toLowerCase();
+const toKebabCase = (str) => str.replace(/([A-Z])/g, "-$1").toLowerCase();
 
 /**
  * Create a wrapper action that passes the command to dev.js
@@ -91,13 +87,13 @@ function createDevScriptAction(commandName) {
 
 		// If camelCase flags were found, show error and exit
 		if (camelCaseFlags.length > 0) {
-			console.error('\nError: Please use kebab-case for CLI flags:');
+			console.error("\nError: Please use kebab-case for CLI flags:");
 			camelCaseFlags.forEach((flag) => {
 				console.error(`  Instead of: --${flag.original}`);
 				console.error(`  Use:        --${flag.kebabCase}`);
 			});
 			console.error(
-				'\nExample: task-master parse-prd --num-tasks=5 instead of --numTasks=5\n'
+				"\nExample: task-master parse-prd --num-tasks=5 instead of --numTasks=5\n",
 			);
 			process.exit(1);
 		}
@@ -117,14 +113,14 @@ function createDevScriptAction(commandName) {
 			for (let i = commandIndex + 1; i < process.argv.length; i++) {
 				const arg = process.argv[i];
 
-				if (arg.startsWith('--')) {
+				if (arg.startsWith("--")) {
 					// It's a flag - pass through as is
 					commandArgs.push(arg);
 					// Skip the next arg if this is a flag with a value (not --flag=value format)
 					if (
-						!arg.includes('=') &&
+						!arg.includes("=") &&
 						i + 1 < process.argv.length &&
-						!process.argv[i + 1].startsWith('--')
+						!process.argv[i + 1].startsWith("--")
 					) {
 						commandArgs.push(process.argv[++i]);
 					}
@@ -143,18 +139,18 @@ function createDevScriptAction(commandName) {
 		// Track which options we've seen on the command line
 		const userOptions = new Set();
 		for (const arg of commandArgs) {
-			if (arg.startsWith('--')) {
+			if (arg.startsWith("--")) {
 				// Extract option name (without -- and value)
-				const name = arg.split('=')[0].slice(2);
+				const name = arg.split("=")[0].slice(2);
 				userOptions.add(name);
 
 				// Add the kebab-case version too, to prevent duplicates
-				const kebabName = name.replace(/([A-Z])/g, '-$1').toLowerCase();
+				const kebabName = name.replace(/([A-Z])/g, "-$1").toLowerCase();
 				userOptions.add(kebabName);
 
 				// Add the camelCase version as well
 				const camelName = kebabName.replace(/-([a-z])/g, (_, letter) =>
-					letter.toUpperCase()
+					letter.toUpperCase(),
 				);
 				userOptions.add(camelName);
 			}
@@ -163,16 +159,16 @@ function createDevScriptAction(commandName) {
 		// Add Commander-provided defaults for options not specified by user
 		Object.entries(options).forEach(([key, value]) => {
 			// Debug output to see what keys we're getting
-			if (process.env.DEBUG === '1') {
+			if (process.env.DEBUG === "1") {
 				console.error(`DEBUG - Processing option: ${key} = ${value}`);
 			}
 
 			// Special case for numTasks > num-tasks (a known problem case)
-			if (key === 'numTasks') {
-				if (process.env.DEBUG === '1') {
-					console.error('DEBUG - Converting numTasks to num-tasks');
+			if (key === "numTasks") {
+				if (process.env.DEBUG === "1") {
+					console.error("DEBUG - Converting numTasks to num-tasks");
 				}
-				if (!userOptions.has('num-tasks') && !userOptions.has('numTasks')) {
+				if (!userOptions.has("num-tasks") && !userOptions.has("numTasks")) {
 					args.push(`--num-tasks=${value}`);
 				}
 				return;
@@ -180,25 +176,25 @@ function createDevScriptAction(commandName) {
 
 			// Skip built-in Commander properties and options the user provided
 			if (
-				['parent', 'commands', 'options', 'rawArgs'].includes(key) ||
+				["parent", "commands", "options", "rawArgs"].includes(key) ||
 				userOptions.has(key)
 			) {
 				return;
 			}
 
 			// Also check the kebab-case version of this key
-			const kebabKey = key.replace(/([A-Z])/g, '-$1').toLowerCase();
+			const kebabKey = key.replace(/([A-Z])/g, "-$1").toLowerCase();
 			if (userOptions.has(kebabKey)) {
 				return;
 			}
 
 			// Add default values, using kebab-case for the parameter name
 			if (value !== undefined) {
-				if (typeof value === 'boolean') {
+				if (typeof value === "boolean") {
 					if (value === true) {
 						args.push(`--${kebabKey}`);
-					} else if (value === false && key === 'generate') {
-						args.push('--skip-generate');
+					} else if (value === false && key === "generate") {
+						args.push("--skip-generate");
 					}
 				} else {
 					// Always use kebab-case for option names
@@ -208,16 +204,16 @@ function createDevScriptAction(commandName) {
 		});
 
 		// Special handling for parent parameter (uses -p)
-		if (options.parent && !args.includes('-p') && !userOptions.has('parent')) {
-			args.push('-p', options.parent);
+		if (options.parent && !args.includes("-p") && !userOptions.has("parent")) {
+			args.push("-p", options.parent);
 		}
 
 		// Debug output for troubleshooting
-		if (process.env.DEBUG === '1') {
-			console.error('DEBUG - Command args:', commandArgs);
-			console.error('DEBUG - User options:', Array.from(userOptions));
-			console.error('DEBUG - Commander options:', options);
-			console.error('DEBUG - Final args:', args);
+		if (process.env.DEBUG === "1") {
+			console.error("DEBUG - Command args:", commandArgs);
+			console.error("DEBUG - User options:", Array.from(userOptions));
+			console.error("DEBUG - Commander options:", options);
+			console.error("DEBUG - Final args:", args);
 		}
 
 		// Run the script with our processed args
@@ -271,18 +267,18 @@ function createDevScriptAction(commandName) {
 const program = new Command();
 
 program
-	.name('task-master')
-	.description('Claude Task Master CLI')
+	.name("task-master")
+	.description("Speco Tasker CLI")
 	.version(version)
-	.addHelpText('afterAll', () => {
+	.addHelpText("afterAll", () => {
 		// Use the same help display function as dev.js for consistency
 		displayHelp();
-		return ''; // Return empty string to prevent commander's default help
+		return ""; // Return empty string to prevent commander's default help
 	});
 
 // Add custom help option to directly call our help display
-program.helpOption('-h, --help', 'Display help information');
-program.on('--help', () => {
+program.helpOption("-h, --help", "Display help information");
+program.on("--help", () => {
 	displayHelp();
 });
 
@@ -290,10 +286,10 @@ program.on('--help', () => {
 // registerInitCommand(program);
 
 program
-	.command('dev')
-	.description('Run the dev.js script')
+	.command("dev")
+	.description("Run the dev.js script")
 	.action(() => {
-		const args = process.argv.slice(process.argv.indexOf('dev') + 1);
+		const args = process.argv.slice(process.argv.indexOf("dev") + 1);
 		runDevScript(args);
 	});
 
@@ -303,7 +299,7 @@ registerCommands(tempProgram);
 
 // For each command in the temp instance, add a modified version to our actual program
 tempProgram.commands.forEach((cmd) => {
-	if (['dev'].includes(cmd.name())) {
+	if (["dev"].includes(cmd.name())) {
 		// Skip commands we've already defined specially
 		return;
 	}
@@ -324,42 +320,42 @@ tempProgram.commands.forEach((cmd) => {
 program.parse(process.argv);
 
 // Add global error handling for unknown commands and options
-process.on('uncaughtException', (err) => {
+process.on("uncaughtException", (err) => {
 	// Check if this is a commander.js unknown option error
-	if (err.code === 'commander.unknownOption') {
+	if (err.code === "commander.unknownOption") {
 		const option = err.message.match(/'([^']+)'/)?.[1];
 		const commandArg = process.argv.find(
 			(arg) =>
-				!arg.startsWith('-') &&
-				arg !== 'task-master' &&
-				!arg.includes('/') &&
-				arg !== 'node'
+				!arg.startsWith("-") &&
+				arg !== "task-master" &&
+				!arg.includes("/") &&
+				arg !== "node",
 		);
-		const command = commandArg || 'unknown';
+		const command = commandArg || "unknown";
 
 		console.error(chalk.red(`Error: Unknown option '${option}'`));
 		console.error(
 			chalk.yellow(
-				`Run 'task-master ${command} --help' to see available options for this command`
-			)
+				`Run 'task-master ${command} --help' to see available options for this command`,
+			),
 		);
 		process.exit(1);
 	}
 
 	// Check if this is a commander.js unknown command error
-	if (err.code === 'commander.unknownCommand') {
+	if (err.code === "commander.unknownCommand") {
 		const command = err.message.match(/'([^']+)'/)?.[1];
 
 		console.error(chalk.red(`Error: Unknown command '${command}'`));
 		console.error(
-			chalk.yellow(`Run 'task-master --help' to see available commands`)
+			chalk.yellow(`Run 'task-master --help' to see available commands`),
 		);
 		process.exit(1);
 	}
 
 	// Handle other uncaught exceptions
 	console.error(chalk.red(`Error: ${err.message}`));
-	if (process.env.DEBUG === '1') {
+	if (process.env.DEBUG === "1") {
 		console.error(err);
 	}
 	process.exit(1);

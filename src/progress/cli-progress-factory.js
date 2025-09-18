@@ -1,4 +1,4 @@
-import cliProgress from 'cli-progress';
+import cliProgress from "cli-progress";
 
 /**
  * Default configuration for progress bars
@@ -8,7 +8,7 @@ const DEFAULT_CONFIG = {
 	clearOnComplete: false,
 	stopOnComplete: true,
 	hideCursor: true,
-	barsize: 40 // Standard terminal width for progress bar
+	barsize: 40, // Standard terminal width for progress bar
 };
 
 /**
@@ -19,7 +19,7 @@ const PRESETS = {
 	shades_classic: cliProgress.Presets.shades_classic,
 	shades_grey: cliProgress.Presets.shades_grey,
 	rect: cliProgress.Presets.rect,
-	legacy: cliProgress.Presets.legacy
+	legacy: cliProgress.Presets.legacy,
 };
 
 /**

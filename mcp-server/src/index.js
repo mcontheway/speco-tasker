@@ -1,36 +1,32 @@
-import { FastMCP } from 'fastmcp';
-import path from 'path';
-import dotenv from 'dotenv';
-import { fileURLToPath } from 'url';
-import fs from 'fs';
-import logger from './logger.js';
-import { registerTaskMasterTools } from './tools/index.js';
-import ProviderRegistry from '../../src/provider-registry/index.js';
-import { MCPProvider } from './providers/mcp-provider.js';
-
-// Load environment variables
-dotenv.config();
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { FastMCP } from "fastmcp";
+import logger from "./logger.js";
+import { MCPProvider } from "./providers/mcp-provider.js";
+import { registerSpecoTaskerTools } from "./tools/index.js";
 
 // Constants
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 /**
- * Main MCP server class that integrates with Task Master
+ * Main MCP server class that integrates with Speco Tasker
  */
 class TaskMasterMCPServer {
 	constructor() {
 		// Get version from package.json using synchronous fs
-		const packagePath = path.join(__dirname, '../../package.json');
-		const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
+		const packagePath = path.join(__dirname, "../../package.json");
+		const packageJson = JSON.parse(fs.readFileSync(packagePath, "utf8"));
 
 		this.options = {
-			name: 'Task Master MCP Server',
-			version: packageJson.version
+			name: "Speco Tasker MCP Server",
+			version: packageJson.version,
 		};
 
 		this.server = new FastMCP(this.options);
 		this.initialized = false;
+		this.asyncManager = null; // Initialize asyncManager as null since it's not used
 
 		// Bind methods
 		this.init = this.init.bind(this);
@@ -48,7 +44,7 @@ class TaskMasterMCPServer {
 		if (this.initialized) return;
 
 		// Pass the manager instance to the tool registration function
-		registerTaskMasterTools(this.server, this.asyncManager);
+		registerSpecoTaskerTools(this.server, this.asyncManager);
 
 		this.initialized = true;
 
@@ -58,73 +54,61 @@ class TaskMasterMCPServer {
 	/**
 	 * Start the MCP server
 	 */
-	async start() {
+	async start(options = {}) {
 		if (!this.initialized) {
 			await this.init();
 		}
 
-		this.server.on('connect', (event) => {
+		this.server.on("connect", (event) => {
 			event.session.server.sendLoggingMessage({
 				data: {
 					context: event.session.context,
-					message: `MCP Server connected: ${event.session.name}`
+					message: `MCP Server connected: ${event.session.name}`,
 				},
-				level: 'info'
+				level: "info",
 			});
 			this.registerRemoteProvider(event.session);
 		});
 
-		// Start the FastMCP server with increased timeout
-		await this.server.start({
-			transportType: 'stdio',
-			timeout: 120000 // 2 minutes timeout (in milliseconds)
-		});
+		// Start the FastMCP server with provided options or defaults
+		const startOptions = {
+			transportType: "stdio",
+			timeout: 120000, // 2 minutes timeout (in milliseconds)
+			...options,
+		};
+
+		await this.server.start(startOptions);
 
 		return this;
 	}
 
 	/**
-	 * Register both MCP providers with the provider registry
+	 * Register MCP provider for the session
 	 */
 	registerRemoteProvider(session) {
 		// Check if the server has at least one session
 		if (session) {
-			// Make sure session has required capabilities
-			if (!session.clientCapabilities || !session.clientCapabilities.sampling) {
-				session.server.sendLoggingMessage({
-					data: {
-						context: session.context,
-						message: `MCP session missing required sampling capabilities, providers not registered`
-					},
-					level: 'info'
-				});
-				return;
-			}
+			// Note: Removed sampling capability requirement since AI features were removed
+			// The server now works as a pure task management interface
 
-			// Register MCP provider with the Provider Registry
-
-			// Register the unified MCP provider
+			// Register the unified MCP provider (simplified after AI removal)
 			const mcpProvider = new MCPProvider();
 			mcpProvider.setSession(session);
-
-			// Register provider with the registry
-			const providerRegistry = ProviderRegistry.getInstance();
-			providerRegistry.registerProvider('mcp', mcpProvider);
 
 			session.server.sendLoggingMessage({
 				data: {
 					context: session.context,
-					message: `MCP Server connected`
+					message: "MCP Server connected - Speco Tasker tools available",
 				},
-				level: 'info'
+				level: "info",
 			});
 		} else {
 			session.server.sendLoggingMessage({
 				data: {
 					context: session.context,
-					message: `No MCP sessions available, providers not registered`
+					message: "No MCP sessions available, provider not registered",
 				},
-				level: 'warn'
+				level: "warn",
 			});
 		}
 	}

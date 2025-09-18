@@ -624,7 +624,7 @@ Refer to [`context_gathering.mdc`](mdc:.cursor/rules/context_gathering.mdc) for 
       const isTasksFile = filepath.includes('tasks.json') || path.basename(filepath) === 'tasks.json';
       
       if (data && data.tasks && Array.isArray(data.tasks) && !data.master && isTasksFile) {
-        // Migrate from old format { "tasks": [...] } to new format { "master": { "tasks": [...] } }
+        // Migrate from old format { "tasks": [...] } to new format { "main": { "tasks": [...] } }
         const migratedData = {
           master: {
             tasks: data.tasks
@@ -689,11 +689,11 @@ Refer to [`context_gathering.mdc`](mdc:.cursor/rules/context_gathering.mdc) for 
 - **Tag Resolution Functions**:
   - ✅ DO: Use tag resolution layer for all task data access
   - ✅ DO: Provide backward compatibility with legacy format
-  - ✅ DO: Default to "master" tag when no tag is specified
+  - ✅ DO: Default to "main" tag when no tag is specified
 
   ```javascript
   // ✅ DO: Implement tag resolution functions
-  function getTasksForTag(data, tagName = 'master') {
+  function getTasksForTag(data, tagName = 'main') {
     if (!data) {
       return [];
     }
@@ -711,7 +711,7 @@ Refer to [`context_gathering.mdc`](mdc:.cursor/rules/context_gathering.mdc) for 
     return [];
   }
   
-  function setTasksForTag(data, tagName = 'master', tasks) {
+  function setTasksForTag(data, tagName = 'main', tasks) {
     // Ensure data object exists
     if (!data) {
       data = {};
@@ -729,21 +729,21 @@ Refer to [`context_gathering.mdc`](mdc:.cursor/rules/context_gathering.mdc) for 
   }
   
   function getCurrentTag() {
-    // Get current tag from state.json or default to 'master'
+    // Get current tag from state.json or default to 'main'
     try {
       const projectRoot = findProjectRoot();
-      if (!projectRoot) return 'master';
+      if (!projectRoot) return 'main';
       
       const statePath = path.join(projectRoot, '.taskmaster', 'state.json');
       if (fs.existsSync(statePath)) {
         const state = readJSON(statePath);
-        return state.currentTag || 'master';
+        return state.currentTag || 'main';
       }
     } catch (error) {
       log('debug', `Error reading current tag: ${error.message}`);
     }
     
-    return 'master';
+    return 'main';
   }
   ```
 
@@ -793,7 +793,7 @@ Refer to [`context_gathering.mdc`](mdc:.cursor/rules/context_gathering.mdc) for 
         config.global = {};
       }
       if (!config.global.defaultTag) {
-        config.global.defaultTag = 'master';
+        config.global.defaultTag = 'main';
         modified = true;
       }
       
@@ -821,7 +821,7 @@ Refer to [`context_gathering.mdc`](mdc:.cursor/rules/context_gathering.mdc) for 
   function createStateJson(statePath) {
     try {
       const initialState = {
-        currentTag: 'master',
+        currentTag: 'main',
         lastSwitched: new Date().toISOString(),
         migrationNoticeShown: false
       };

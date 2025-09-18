@@ -1,12 +1,12 @@
-import path from 'path';
+import path from "node:path";
+import { PROJECT_MARKERS } from "../../../../src/constants/paths.js";
 import {
-	findTasksPath as coreFindTasksPath,
-	findPRDPath as coreFindPrdPath,
 	findComplexityReportPath as coreFindComplexityReportPath,
+	findPRDPath as coreFindPrdPath,
 	findProjectRoot as coreFindProjectRoot,
-	normalizeProjectRoot
-} from '../../../../src/utils/path-utils.js';
-import { PROJECT_MARKERS } from '../../../../src/constants/paths.js';
+	findTasksPath as coreFindTasksPath,
+	normalizeProjectRoot,
+} from "../../../../src/utils/path-utils.js";
 
 /**
  * MCP-specific path utilities that extend core path utilities with session support
@@ -21,7 +21,7 @@ const silentLogger = {
 	warn: () => {},
 	error: () => {},
 	debug: () => {},
-	success: () => {}
+	success: () => {},
 };
 
 /**
@@ -143,7 +143,7 @@ export function resolveComplexityReportPath(args, log = silentLogger) {
 		return coreFindComplexityReportPath(
 			explicitPath,
 			{ projectRoot, tag },
-			log
+			log,
 		);
 	}
 
@@ -160,7 +160,7 @@ export function resolveComplexityReportPath(args, log = silentLogger) {
 export function resolveProjectPath(relativePath, args) {
 	// Ensure we have a projectRoot from args
 	if (!args?.projectRoot) {
-		throw new Error('projectRoot is required in args to resolve project paths');
+		throw new Error("projectRoot is required in args to resolve project paths");
 	}
 
 	// Normalize the project root to prevent double .taskmaster paths

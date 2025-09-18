@@ -211,8 +211,8 @@ Taskmaster offers two primary ways to interact:
 
 ## How the Tag System Works (For Your Reference)
 
-- **Data Structure**: Tasks are organized into separate contexts (tags) like "master", "feature-branch", or "v2.0".
-- **Silent Migration**: Existing projects automatically migrate to use a "master" tag with zero disruption.
+- **Data Structure**: Tasks are organized into separate contexts (tags) like "main", "feature-branch", or "v2.0".
+- **Silent Migration**: Existing projects automatically migrate to use a "main" tag with zero disruption.
 - **Context Isolation**: Tasks in different tags are completely separate. Changes in one tag do not affect any other tag.
 - **Manual Control**: The user is always in control. There is no automatic switching. You facilitate switching by using `use-tag <name>`.
 - **Full CLI & MCP Support**: All tag management commands are available through both the CLI and MCP tools for you to use. Refer to [`taskmaster.mdc`](mdc:.cursor/rules/taskmaster.mdc) for a full command list.
@@ -275,7 +275,7 @@ Taskmaster configuration is managed through two main mechanisms:
 1.  **`.taskmaster/config.json` File (Primary):**
     *   Located in the project root directory.
     *   Stores most configuration settings: AI model selections (main, research, fallback), parameters (max tokens, temperature), logging level, default subtasks/priority, project name, etc.
-    *   **Tagged System Settings**: Includes `global.defaultTag` (defaults to "master") and `tags` section for tag management configuration.
+    *   **Tagged System Settings**: Includes `global.defaultTag` (defaults to "main") and `tags` section for tag management configuration.
     *   **Managed via `task-master models --setup` command.** Do not edit manually unless you know what you are doing.
     *   **View/Set specific models via `task-master models` command or `models` MCP tool.**
     *   Created automatically when you run `task-master models --setup` for the first time or during tagged system migration.

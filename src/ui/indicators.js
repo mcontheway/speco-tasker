@@ -3,8 +3,8 @@
  * UI functions for displaying priority and complexity indicators in different contexts
  */
 
-import chalk from 'chalk';
-import { TASK_PRIORITY_OPTIONS } from '../constants/task-priority.js';
+import chalk from "chalk";
+import { TASK_PRIORITY_OPTIONS } from "../constants/task-priority.js";
 
 // Extract priority values for cleaner object keys
 const [HIGH, MEDIUM, LOW] = TASK_PRIORITY_OPTIONS;
@@ -43,28 +43,28 @@ class IndicatorConfig {
  */
 const VISUAL_STYLES = {
 	cli: {
-		filled: '●', // ●
-		empty: '○' // ○
+		filled: "●", // ●
+		empty: "○", // ○
 	},
 	statusBar: {
-		high: '⋮', // ⋮
-		medium: ':', // :
-		low: '.' // .
+		high: "⋮", // ⋮
+		medium: ":", // :
+		low: ".", // .
 	},
 	mcp: {
-		high: '🔴', // 🔴
-		medium: '🟠', // 🟠
-		low: '🟢' // 🟢
-	}
+		high: "🔴", // 🔴
+		medium: "🟠", // 🟠
+		low: "🟢", // 🟢
+	},
 };
 
 /**
  * Priority configuration
  */
-const PRIORITY_CONFIG = new IndicatorConfig('priority', [HIGH, MEDIUM, LOW], {
-	[HIGH]: chalk.hex('#CC0000'),
-	[MEDIUM]: chalk.hex('#FF8800'),
-	[LOW]: chalk.yellow
+const PRIORITY_CONFIG = new IndicatorConfig("priority", [HIGH, MEDIUM, LOW], {
+	[HIGH]: chalk.hex("#CC0000"),
+	[MEDIUM]: chalk.hex("#FF8800"),
+	[LOW]: chalk.yellow,
 });
 
 /**
@@ -74,7 +74,7 @@ function generateCliIndicator(intensity, color) {
 	const filled = VISUAL_STYLES.cli.filled;
 	const empty = VISUAL_STYLES.cli.empty;
 
-	let indicator = '';
+	let indicator = "";
 	for (let i = 0; i < 3; i++) {
 		if (i < intensity) {
 			indicator += color(filled);
@@ -114,10 +114,10 @@ function getCachedIndicators(cacheKey, generator) {
  * @returns {Object} Priority to emoji mapping
  */
 export function getMcpPriorityIndicators() {
-	return getCachedIndicators('mcp-priority-all', () => ({
+	return getCachedIndicators("mcp-priority-all", () => ({
 		[HIGH]: VISUAL_STYLES.mcp.high,
 		[MEDIUM]: VISUAL_STYLES.mcp.medium,
-		[LOW]: VISUAL_STYLES.mcp.low
+		[LOW]: VISUAL_STYLES.mcp.low,
 	}));
 }
 
@@ -126,7 +126,7 @@ export function getMcpPriorityIndicators() {
  * @returns {Object} Priority to colored dot string mapping
  */
 export function getCliPriorityIndicators() {
-	return getCachedIndicators('cli-priority-all', () => {
+	return getCachedIndicators("cli-priority-all", () => {
 		const indicators = {};
 		PRIORITY_CONFIG.levels.forEach((level) => {
 			const intensity = getIntensityFromLevel(level, PRIORITY_CONFIG.levels);
@@ -142,7 +142,7 @@ export function getCliPriorityIndicators() {
  * @returns {Object} Priority to single character indicator mapping
  */
 export function getStatusBarPriorityIndicators() {
-	return getCachedIndicators('statusbar-priority-all', () => {
+	return getCachedIndicators("statusbar-priority-all", () => {
 		const indicators = {};
 		PRIORITY_CONFIG.levels.forEach((level, index) => {
 			const style =
@@ -166,7 +166,7 @@ export function getPriorityColors() {
 	return {
 		[HIGH]: PRIORITY_CONFIG.colors[HIGH],
 		[MEDIUM]: PRIORITY_CONFIG.colors[MEDIUM],
-		[LOW]: PRIORITY_CONFIG.colors[LOW]
+		[LOW]: PRIORITY_CONFIG.colors[LOW],
 	};
 }
 
@@ -198,18 +198,18 @@ export function getPriorityIndicator(priority, isMcp = false) {
  * Complexity configuration
  */
 const COMPLEXITY_CONFIG = new IndicatorConfig(
-	'complexity',
-	['high', 'medium', 'low'],
+	"complexity",
+	["high", "medium", "low"],
 	{
-		high: chalk.hex('#CC0000'),
-		medium: chalk.hex('#FF8800'),
-		low: chalk.green
+		high: chalk.hex("#CC0000"),
+		medium: chalk.hex("#FF8800"),
+		low: chalk.green,
 	},
 	{
 		high: (score) => score >= 7,
 		medium: (score) => score >= 4 && score <= 6,
-		low: (score) => score <= 3
-	}
+		low: (score) => score <= 3,
+	},
 );
 
 /**
@@ -218,7 +218,7 @@ const COMPLEXITY_CONFIG = new IndicatorConfig(
  * @returns {Object} Complexity level to colored dot string mapping
  */
 export function getCliComplexityIndicators() {
-	return getCachedIndicators('cli-complexity-all', () => {
+	return getCachedIndicators("cli-complexity-all", () => {
 		const indicators = {};
 		COMPLEXITY_CONFIG.levels.forEach((level) => {
 			const intensity = getIntensityFromLevel(level, COMPLEXITY_CONFIG.levels);
@@ -234,7 +234,7 @@ export function getCliComplexityIndicators() {
  * @returns {Object} Complexity level to single character indicator mapping
  */
 export function getStatusBarComplexityIndicators() {
-	return getCachedIndicators('statusbar-complexity-all', () => {
+	return getCachedIndicators("statusbar-complexity-all", () => {
 		const indicators = {};
 		COMPLEXITY_CONFIG.levels.forEach((level, index) => {
 			const style =

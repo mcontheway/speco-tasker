@@ -91,6 +91,13 @@ dev-debug.log
 # VS Code extension test files
 .vscode-test/
 apps/extension/.vscode-test/
+**/*.code-workspace
+
+# Project-specific workspace files
+Speco-Tasker.code-workspace
 
 # apps/extension
 apps/extension/vsix-build/
+
+# Task Master project files
+.taskmaster/

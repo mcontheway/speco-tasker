@@ -3,15 +3,15 @@
  * Tool for removing subtasks from parent tasks
  */
 
-import { z } from 'zod';
+import { z } from "zod";
+import { resolveTag } from "../../../scripts/modules/utils.js";
+import { removeSubtaskDirect } from "../core/task-master-core.js";
+import { findTasksPath } from "../core/utils/path-utils.js";
 import {
-	handleApiResult,
 	createErrorResponse,
-	withNormalizedProjectRoot
-} from './utils.js';
-import { removeSubtaskDirect } from '../core/task-master-core.js';
-import { findTasksPath } from '../core/utils/path-utils.js';
-import { resolveTag } from '../../../scripts/modules/utils.js';
+	handleApiResult,
+	withNormalizedProjectRoot,
+} from "./utils.js";
 
 /**
  * Register the removeSubtask tool with the MCP server
@@ -19,40 +19,36 @@ import { resolveTag } from '../../../scripts/modules/utils.js';
  */
 export function registerRemoveSubtaskTool(server) {
 	server.addTool({
-		name: 'remove_subtask',
-		description: 'Remove a subtask from its parent task',
+		name: "remove_subtask",
+		description: "从父任务中移除子任务",
 		parameters: z.object({
 			id: z
 				.string()
 				.describe(
-					"Subtask ID to remove in format 'parentId.subtaskId' (required)"
+					"Subtask ID to remove in format 'parentId.subtaskId' (required)",
 				),
 			convert: z
 				.boolean()
 				.optional()
 				.describe(
-					'Convert the subtask to a standalone task instead of deleting it'
+					"Convert the subtask to a standalone task instead of deleting it",
 				),
 			file: z
 				.string()
 				.optional()
-				.describe(
-					'Absolute path to the tasks file (default: tasks/tasks.json)'
-				),
-			skipGenerate: z
-				.boolean()
-				.optional()
-				.describe('Skip regenerating task files'),
+				.describe("任务文件的绝对路径（默认：tasks/tasks.json）"),
+			skipGenerate: z.boolean().optional().describe("跳过重新生成任务文件"),
 			projectRoot: z
 				.string()
-				.describe('The directory of the project. Must be an absolute path.'),
-			tag: z.string().optional().describe('Tag context to operate on')
+				.optional()
+				.describe("项目根目录（可选，会自动检测）"),
+			tag: z.string().optional().describe("选择要处理的任务分组"),
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
 			try {
 				const resolvedTag = resolveTag({
 					projectRoot: args.projectRoot,
-					tag: args.tag
+					tag: args.tag,
 				});
 				log.info(`Removing subtask with args: ${JSON.stringify(args)}`);
 
@@ -61,12 +57,12 @@ export function registerRemoveSubtaskTool(server) {
 				try {
 					tasksJsonPath = findTasksPath(
 						{ projectRoot: args.projectRoot, file: args.file },
-						log
+						log,
 					);
 				} catch (error) {
 					log.error(`Error finding tasks.json: ${error.message}`);
 					return createErrorResponse(
-						`Failed to find tasks.json: ${error.message}`
+						`Failed to find tasks.json: ${error.message}`,
 					);
 				}
 
@@ -77,10 +73,10 @@ export function registerRemoveSubtaskTool(server) {
 						convert: args.convert,
 						skipGenerate: args.skipGenerate,
 						projectRoot: args.projectRoot,
-						tag: resolvedTag
+						tag: resolvedTag,
 					},
 					log,
-					{ session }
+					{ session },
 				);
 
 				if (result.success) {
@@ -92,14 +88,14 @@ export function registerRemoveSubtaskTool(server) {
 				return handleApiResult(
 					result,
 					log,
-					'Error removing subtask',
+					"Error removing subtask",
 					undefined,
-					args.projectRoot
+					args.projectRoot,
 				);
 			} catch (error) {
 				log.error(`Error in removeSubtask tool: ${error.message}`);
 				return createErrorResponse(error.message);
 			}
-		})
+		}),
 	});
 }

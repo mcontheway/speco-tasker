@@ -2,14 +2,14 @@
  * Direct function wrapper for clearSubtasks
  */
 
-import { clearSubtasks } from '../../../../scripts/modules/task-manager.js';
+import fs from "node:fs";
+import path from "node:path";
+import { clearSubtasks } from "../../../../scripts/modules/task-manager.js";
 import {
-	enableSilentMode,
 	disableSilentMode,
-	readJSON
-} from '../../../../scripts/modules/utils.js';
-import fs from 'fs';
-import path from 'path';
+	enableSilentMode,
+	readJSON,
+} from "../../../../scripts/modules/utils.js";
 
 /**
  * Clear subtasks from specified tasks
@@ -30,13 +30,13 @@ export async function clearSubtasksDirect(args, log) {
 
 		// Check if tasksJsonPath was provided
 		if (!tasksJsonPath) {
-			log.error('clearSubtasksDirect called without tasksJsonPath');
+			log.error("clearSubtasksDirect called without tasksJsonPath");
 			return {
 				success: false,
 				error: {
-					code: 'MISSING_ARGUMENT',
-					message: 'tasksJsonPath is required'
-				}
+					code: "MISSING_ARGUMENT",
+					message: "tasksJsonPath is required",
+				},
 			};
 		}
 
@@ -45,10 +45,10 @@ export async function clearSubtasksDirect(args, log) {
 			return {
 				success: false,
 				error: {
-					code: 'INPUT_VALIDATION_ERROR',
+					code: "INPUT_VALIDATION_ERROR",
 					message:
-						'Either task IDs with id parameter or all parameter must be provided'
-				}
+						"Either task IDs with id parameter or all parameter must be provided",
+				},
 			};
 		}
 
@@ -60,9 +60,9 @@ export async function clearSubtasksDirect(args, log) {
 			return {
 				success: false,
 				error: {
-					code: 'FILE_NOT_FOUND_ERROR',
-					message: `Tasks file not found at ${tasksPath}`
-				}
+					code: "FILE_NOT_FOUND_ERROR",
+					message: `Tasks file not found at ${tasksPath}`,
+				},
 			};
 		}
 
@@ -75,9 +75,9 @@ export async function clearSubtasksDirect(args, log) {
 			return {
 				success: false,
 				error: {
-					code: 'INPUT_VALIDATION_ERROR',
-					message: `No tasks found in tasks file: ${tasksPath}`
-				}
+					code: "INPUT_VALIDATION_ERROR",
+					message: `No tasks found in tasks file: ${tasksPath}`,
+				},
 			};
 		}
 
@@ -91,12 +91,12 @@ export async function clearSubtasksDirect(args, log) {
 				return {
 					success: false,
 					error: {
-						code: 'INPUT_VALIDATION_ERROR',
-						message: `No tasks found in tag context '${currentTag}'`
-					}
+						code: "INPUT_VALIDATION_ERROR",
+						message: `No tasks found in tag context '${currentTag}'`,
+					},
 				};
 			}
-			taskIds = tasks.map((t) => t.id).join(',');
+			taskIds = tasks.map((t) => t.id).join(",");
 		} else {
 			// Use the provided task IDs
 			taskIds = id;
@@ -115,7 +115,9 @@ export async function clearSubtasksDirect(args, log) {
 
 		// Read the updated data to provide a summary
 		const updatedData = readJSON(tasksPath, projectRoot, currentTag);
-		const taskIdArray = taskIds.split(',').map((id) => parseInt(id.trim(), 10));
+		const taskIdArray = taskIds
+			.split(",")
+			.map((id) => Number.parseInt(id.trim(), 10));
 
 		// Build a summary of what was done
 		const clearedTasksCount = taskIdArray.length;
@@ -123,7 +125,7 @@ export async function clearSubtasksDirect(args, log) {
 
 		const taskSummary = taskIdArray.map((id) => {
 			const task = updatedTasks.find((t) => t.id === id);
-			return task ? { id, title: task.title } : { id, title: 'Task not found' };
+			return task ? { id, title: task.title } : { id, title: "Task not found" };
 		});
 
 		return {
@@ -131,8 +133,8 @@ export async function clearSubtasksDirect(args, log) {
 			data: {
 				message: `Successfully cleared subtasks from ${clearedTasksCount} task(s) in tag '${currentTag}'`,
 				tasksCleared: taskSummary,
-				tag: currentTag
-			}
+				tag: currentTag,
+			},
 		};
 	} catch (error) {
 		// Make sure to restore normal logging even if there's an error
@@ -142,9 +144,9 @@ export async function clearSubtasksDirect(args, log) {
 		return {
 			success: false,
 			error: {
-				code: 'CORE_FUNCTION_ERROR',
-				message: error.message
-			}
+				code: "CORE_FUNCTION_ERROR",
+				message: error.message,
+			},
 		};
 	}
 }

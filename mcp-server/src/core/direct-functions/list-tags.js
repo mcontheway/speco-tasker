@@ -3,12 +3,12 @@
  * Direct function implementation for listing all tags
  */
 
-import { tags } from '../../../../scripts/modules/task-manager/tag-management.js';
+import { tags } from "../../../../scripts/modules/task-manager/tag-management.js";
 import {
+	disableSilentMode,
 	enableSilentMode,
-	disableSilentMode
-} from '../../../../scripts/modules/utils.js';
-import { createLogWrapper } from '../../tools/utils.js';
+} from "../../../../scripts/modules/utils.js";
+import { createLogWrapper } from "../../tools/utils.js";
 
 /**
  * Direct function wrapper for listing all tags with error handling.
@@ -35,22 +35,22 @@ export async function listTagsDirect(args, log, context = {}) {
 	try {
 		// Check if tasksJsonPath was provided
 		if (!tasksJsonPath) {
-			log.error('listTagsDirect called without tasksJsonPath');
+			log.error("listTagsDirect called without tasksJsonPath");
 			disableSilentMode();
 			return {
 				success: false,
 				error: {
-					code: 'MISSING_ARGUMENT',
-					message: 'tasksJsonPath is required'
-				}
+					code: "MISSING_ARGUMENT",
+					message: "tasksJsonPath is required",
+				},
 			};
 		}
 
-		log.info('Listing all tags');
+		log.info("Listing all tags");
 
 		// Prepare options
 		const options = {
-			showMetadata
+			showMetadata,
 		};
 
 		// Call the tags function
@@ -60,9 +60,9 @@ export async function listTagsDirect(args, log, context = {}) {
 			{
 				session,
 				mcpLog,
-				projectRoot
+				projectRoot,
 			},
-			'json' // outputFormat - use 'json' to suppress CLI UI
+			"json", // outputFormat - use 'json' to suppress CLI UI
 		);
 
 		// Transform the result to remove full task data and provide summary info
@@ -71,7 +71,7 @@ export async function listTagsDirect(args, log, context = {}) {
 
 			// Calculate status breakdown
 			const statusBreakdown = tasks.reduce((acc, task) => {
-				const status = task.status || 'pending';
+				const status = task.status || "pending";
 				acc[status] = (acc[status] || 0) + 1;
 				return acc;
 			}, {});
@@ -82,14 +82,14 @@ export async function listTagsDirect(args, log, context = {}) {
 					if (task.subtasks && task.subtasks.length > 0) {
 						acc.totalSubtasks += task.subtasks.length;
 						task.subtasks.forEach((subtask) => {
-							const subStatus = subtask.status || 'pending';
+							const subStatus = subtask.status || "pending";
 							acc.subtasksByStatus[subStatus] =
 								(acc.subtasksByStatus[subStatus] || 0) + 1;
 						});
 					}
 					return acc;
 				},
-				{ totalSubtasks: 0, subtasksByStatus: {} }
+				{ totalSubtasks: 0, subtasksByStatus: {} },
 			);
 
 			return {
@@ -100,7 +100,7 @@ export async function listTagsDirect(args, log, context = {}) {
 				statusBreakdown,
 				subtaskCounts,
 				created: tag.created,
-				description: tag.description
+				description: tag.description,
 			};
 		});
 
@@ -113,8 +113,8 @@ export async function listTagsDirect(args, log, context = {}) {
 				tags: tagsSummary,
 				currentTag: result.currentTag,
 				totalTags: result.totalTags,
-				message: `Found ${result.totalTags} tag(s)`
-			}
+				message: `Found ${result.totalTags} tag(s)`,
+			},
 		};
 	} catch (error) {
 		// Make sure to restore normal logging even if there's an error
@@ -124,9 +124,9 @@ export async function listTagsDirect(args, log, context = {}) {
 		return {
 			success: false,
 			error: {
-				code: error.code || 'LIST_TAGS_ERROR',
-				message: error.message
-			}
+				code: error.code || "LIST_TAGS_ERROR",
+				message: error.message,
+			},
 		};
 	}
 }

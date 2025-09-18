@@ -5,13 +5,13 @@
 
 import {
 	removeTask,
-	taskExists
-} from '../../../../scripts/modules/task-manager.js';
+	taskExists,
+} from "../../../../scripts/modules/task-manager.js";
 import {
-	enableSilentMode,
 	disableSilentMode,
-	readJSON
-} from '../../../../scripts/modules/utils.js';
+	enableSilentMode,
+	readJSON,
+} from "../../../../scripts/modules/utils.js";
 
 /**
  * Direct function wrapper for removeTask with error handling.
@@ -32,33 +32,33 @@ export async function removeTaskDirect(args, log, context = {}) {
 	try {
 		// Check if tasksJsonPath was provided
 		if (!tasksJsonPath) {
-			log.error('removeTaskDirect called without tasksJsonPath');
+			log.error("removeTaskDirect called without tasksJsonPath");
 			return {
 				success: false,
 				error: {
-					code: 'MISSING_ARGUMENT',
-					message: 'tasksJsonPath is required'
-				}
+					code: "MISSING_ARGUMENT",
+					message: "tasksJsonPath is required",
+				},
 			};
 		}
 
 		// Validate task ID parameter
 		if (!id) {
-			log.error('Task ID is required');
+			log.error("Task ID is required");
 			return {
 				success: false,
 				error: {
-					code: 'INPUT_VALIDATION_ERROR',
-					message: 'Task ID is required'
-				}
+					code: "INPUT_VALIDATION_ERROR",
+					message: "Task ID is required",
+				},
 			};
 		}
 
 		// Split task IDs if comma-separated
-		const taskIdArray = id.split(',').map((taskId) => taskId.trim());
+		const taskIdArray = id.split(",").map((taskId) => taskId.trim());
 
 		log.info(
-			`Removing ${taskIdArray.length} task(s) with ID(s): ${taskIdArray.join(', ')} from ${tasksJsonPath}${tag ? ` in tag '${tag}'` : ''}`
+			`Removing ${taskIdArray.length} task(s) with ID(s): ${taskIdArray.join(", ")} from ${tasksJsonPath}${tag ? ` in tag '${tag}'` : ""}`,
 		);
 
 		// Validate all task IDs exist before proceeding
@@ -67,23 +67,23 @@ export async function removeTaskDirect(args, log, context = {}) {
 			return {
 				success: false,
 				error: {
-					code: 'INVALID_TASKS_FILE',
-					message: `No valid tasks found in ${tasksJsonPath}${tag ? ` for tag '${tag}'` : ''}`
-				}
+					code: "INVALID_TASKS_FILE",
+					message: `No valid tasks found in ${tasksJsonPath}${tag ? ` for tag '${tag}'` : ""}`,
+				},
 			};
 		}
 
 		const invalidTasks = taskIdArray.filter(
-			(taskId) => !taskExists(data.tasks, taskId)
+			(taskId) => !taskExists(data.tasks, taskId),
 		);
 
 		if (invalidTasks.length > 0) {
 			return {
 				success: false,
 				error: {
-					code: 'INVALID_TASK_ID',
-					message: `The following tasks were not found${tag ? ` in tag '${tag}'` : ''}: ${invalidTasks.join(', ')}`
-				}
+					code: "INVALID_TASK_ID",
+					message: `The following tasks were not found${tag ? ` in tag '${tag}'` : ""}: ${invalidTasks.join(", ")}`,
+				},
 			};
 		}
 
@@ -94,16 +94,16 @@ export async function removeTaskDirect(args, log, context = {}) {
 			// Call removeTask with proper context including tag
 			const result = await removeTask(tasksJsonPath, id, {
 				projectRoot,
-				tag
+				tag,
 			});
 
 			if (!result.success) {
 				return {
 					success: false,
 					error: {
-						code: 'REMOVE_TASK_ERROR',
-						message: result.error || 'Failed to remove tasks'
-					}
+						code: "REMOVE_TASK_ERROR",
+						message: result.error || "Failed to remove tasks",
+					},
 				};
 			}
 
@@ -118,8 +118,8 @@ export async function removeTaskDirect(args, log, context = {}) {
 					removedTasks: result.removedTasks,
 					message: result.message,
 					tasksPath: tasksJsonPath,
-					tag
-				}
+					tag,
+				},
 			};
 		} finally {
 			// Restore normal logging
@@ -134,9 +134,9 @@ export async function removeTaskDirect(args, log, context = {}) {
 		return {
 			success: false,
 			error: {
-				code: 'UNEXPECTED_ERROR',
-				message: error.message
-			}
+				code: "UNEXPECTED_ERROR",
+				message: error.message,
+			},
 		};
 	}
 }

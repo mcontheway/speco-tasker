@@ -3,12 +3,12 @@
  * Direct function implementation for renaming a tag
  */
 
-import { renameTag } from '../../../../scripts/modules/task-manager/tag-management.js';
+import { renameTag } from "../../../../scripts/modules/task-manager/tag-management.js";
 import {
+	disableSilentMode,
 	enableSilentMode,
-	disableSilentMode
-} from '../../../../scripts/modules/utils.js';
-import { createLogWrapper } from '../../tools/utils.js';
+} from "../../../../scripts/modules/utils.js";
+import { createLogWrapper } from "../../tools/utils.js";
 
 /**
  * Direct function wrapper for renaming a tag with error handling.
@@ -36,39 +36,39 @@ export async function renameTagDirect(args, log, context = {}) {
 	try {
 		// Check if tasksJsonPath was provided
 		if (!tasksJsonPath) {
-			log.error('renameTagDirect called without tasksJsonPath');
+			log.error("renameTagDirect called without tasksJsonPath");
 			disableSilentMode();
 			return {
 				success: false,
 				error: {
-					code: 'MISSING_ARGUMENT',
-					message: 'tasksJsonPath is required'
-				}
+					code: "MISSING_ARGUMENT",
+					message: "tasksJsonPath is required",
+				},
 			};
 		}
 
 		// Check required parameters
-		if (!oldName || typeof oldName !== 'string') {
-			log.error('Missing required parameter: oldName');
+		if (!oldName || typeof oldName !== "string") {
+			log.error("Missing required parameter: oldName");
 			disableSilentMode();
 			return {
 				success: false,
 				error: {
-					code: 'MISSING_PARAMETER',
-					message: 'Old tag name is required and must be a string'
-				}
+					code: "MISSING_PARAMETER",
+					message: "Old tag name is required and must be a string",
+				},
 			};
 		}
 
-		if (!newName || typeof newName !== 'string') {
-			log.error('Missing required parameter: newName');
+		if (!newName || typeof newName !== "string") {
+			log.error("Missing required parameter: newName");
 			disableSilentMode();
 			return {
 				success: false,
 				error: {
-					code: 'MISSING_PARAMETER',
-					message: 'New tag name is required and must be a string'
-				}
+					code: "MISSING_PARAMETER",
+					message: "New tag name is required and must be a string",
+				},
 			};
 		}
 
@@ -83,9 +83,9 @@ export async function renameTagDirect(args, log, context = {}) {
 			{
 				session,
 				mcpLog,
-				projectRoot
+				projectRoot,
 			},
-			'json' // outputFormat - use 'json' to suppress CLI UI
+			"json", // outputFormat - use 'json' to suppress CLI UI
 		);
 
 		// Restore normal logging
@@ -99,8 +99,8 @@ export async function renameTagDirect(args, log, context = {}) {
 				renamed: result.renamed,
 				taskCount: result.taskCount,
 				wasCurrentTag: result.wasCurrentTag,
-				message: `Successfully renamed tag from "${result.oldName}" to "${result.newName}"`
-			}
+				message: `Successfully renamed tag from "${result.oldName}" to "${result.newName}"`,
+			},
 		};
 	} catch (error) {
 		// Make sure to restore normal logging even if there's an error
@@ -110,9 +110,9 @@ export async function renameTagDirect(args, log, context = {}) {
 		return {
 			success: false,
 			error: {
-				code: error.code || 'RENAME_TAG_ERROR',
-				message: error.message
-			}
+				code: error.code || "RENAME_TAG_ERROR",
+				message: error.message,
+			},
 		};
 	}
 }

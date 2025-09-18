@@ -3,11 +3,11 @@
  * Direct function implementation for adding a dependency to a task
  */
 
-import { addDependency } from '../../../../scripts/modules/dependency-manager.js';
+import { addDependency } from "../../../../scripts/modules/dependency-manager.js";
 import {
+	disableSilentMode,
 	enableSilentMode,
-	disableSilentMode
-} from '../../../../scripts/modules/utils.js';
+} from "../../../../scripts/modules/utils.js";
 
 /**
  * Direct function wrapper for addDependency with error handling.
@@ -29,13 +29,13 @@ export async function addDependencyDirect(args, log) {
 
 		// Check if tasksJsonPath was provided
 		if (!tasksJsonPath) {
-			log.error('addDependencyDirect called without tasksJsonPath');
+			log.error("addDependencyDirect called without tasksJsonPath");
 			return {
 				success: false,
 				error: {
-					code: 'MISSING_ARGUMENT',
-					message: 'tasksJsonPath is required'
-				}
+					code: "MISSING_ARGUMENT",
+					message: "tasksJsonPath is required",
+				},
 			};
 		}
 
@@ -44,9 +44,9 @@ export async function addDependencyDirect(args, log) {
 			return {
 				success: false,
 				error: {
-					code: 'INPUT_VALIDATION_ERROR',
-					message: 'Task ID (id) is required'
-				}
+					code: "INPUT_VALIDATION_ERROR",
+					message: "Task ID (id) is required",
+				},
 			};
 		}
 
@@ -54,9 +54,9 @@ export async function addDependencyDirect(args, log) {
 			return {
 				success: false,
 				error: {
-					code: 'INPUT_VALIDATION_ERROR',
-					message: 'Dependency ID (dependsOn) is required'
-				}
+					code: "INPUT_VALIDATION_ERROR",
+					message: "Dependency ID (dependsOn) is required",
+				},
 			};
 		}
 
@@ -64,15 +64,13 @@ export async function addDependencyDirect(args, log) {
 		const tasksPath = tasksJsonPath;
 
 		// Format IDs for the core function
-		const taskId =
-			id && id.includes && id.includes('.') ? id : parseInt(id, 10);
-		const dependencyId =
-			dependsOn && dependsOn.includes && dependsOn.includes('.')
-				? dependsOn
-				: parseInt(dependsOn, 10);
+		const taskId = id?.includes?.(".") ? id : Number.parseInt(id, 10);
+		const dependencyId = dependsOn?.includes?.(".")
+			? dependsOn
+			: Number.parseInt(dependsOn, 10);
 
 		log.info(
-			`Adding dependency: task ${taskId} will depend on ${dependencyId}`
+			`Adding dependency: task ${taskId} will depend on ${dependencyId}`,
 		);
 
 		// Enable silent mode to prevent console logs from interfering with JSON response
@@ -92,8 +90,8 @@ export async function addDependencyDirect(args, log) {
 			data: {
 				message: `Successfully added dependency: Task ${taskId} now depends on ${dependencyId}`,
 				taskId: taskId,
-				dependencyId: dependencyId
-			}
+				dependencyId: dependencyId,
+			},
 		};
 	} catch (error) {
 		// Make sure to restore normal logging even if there's an error
@@ -103,9 +101,9 @@ export async function addDependencyDirect(args, log) {
 		return {
 			success: false,
 			error: {
-				code: 'CORE_FUNCTION_ERROR',
-				message: error.message
-			}
+				code: "CORE_FUNCTION_ERROR",
+				message: error.message,
+			},
 		};
 	}
 }

@@ -3,15 +3,15 @@
  * Tool for adding subtasks to existing tasks
  */
 
-import { z } from 'zod';
+import { z } from "zod";
+import { resolveTag } from "../../../scripts/modules/utils.js";
+import { addSubtaskDirect } from "../core/task-master-core.js";
+import { findTasksPath } from "../core/utils/path-utils.js";
 import {
-	handleApiResult,
 	createErrorResponse,
-	withNormalizedProjectRoot
-} from './utils.js';
-import { addSubtaskDirect } from '../core/task-master-core.js';
-import { findTasksPath } from '../core/utils/path-utils.js';
-import { resolveTag } from '../../../scripts/modules/utils.js';
+	handleApiResult,
+	withNormalizedProjectRoot,
+} from "./utils.js";
 
 /**
  * Register the addSubtask tool with the MCP server
@@ -19,54 +19,38 @@ import { resolveTag } from '../../../scripts/modules/utils.js';
  */
 export function registerAddSubtaskTool(server) {
 	server.addTool({
-		name: 'add_subtask',
-		description: 'Add a subtask to an existing task',
+		name: "add_subtask",
+		description: "为现有任务添加子任务",
 		parameters: z.object({
-			id: z.string().describe('Parent task ID (required)'),
-			taskId: z
-				.string()
-				.optional()
-				.describe('Existing task ID to convert to subtask'),
+			id: z.string().describe("父任务ID，必填"),
+			taskId: z.string().optional().describe("要转换为子任务的现有任务ID"),
 			title: z
 				.string()
 				.optional()
-				.describe('Title for the new subtask (when creating a new subtask)'),
-			description: z
-				.string()
-				.optional()
-				.describe('Description for the new subtask'),
-			details: z
-				.string()
-				.optional()
-				.describe('Implementation details for the new subtask'),
-			status: z
-				.string()
-				.optional()
-				.describe("Status for the new subtask (default: 'pending')"),
+				.describe("新子任务的标题，创建新子任务时使用"),
+			description: z.string().optional().describe("新子任务的描述"),
+			details: z.string().optional().describe("新子任务的实现细节"),
+			status: z.string().optional().describe("新子任务的状态，默认为'pending'"),
 			dependencies: z
 				.string()
 				.optional()
-				.describe('Comma-separated list of dependency IDs for the new subtask'),
+				.describe("新子任务的依赖ID列表，用逗号分隔"),
 			file: z
 				.string()
 				.optional()
-				.describe(
-					'Absolute path to the tasks file (default: tasks/tasks.json)'
-				),
-			skipGenerate: z
-				.boolean()
-				.optional()
-				.describe('Skip regenerating task files'),
+				.describe("任务文件的绝对路径，默认为tasks/tasks.json"),
+			skipGenerate: z.boolean().optional().describe("跳过重新生成任务文件"),
 			projectRoot: z
 				.string()
-				.describe('The directory of the project. Must be an absolute path.'),
-			tag: z.string().optional().describe('Tag context to operate on')
+				.optional()
+				.describe("项目根目录（可选，会自动检测）"),
+			tag: z.string().optional().describe("选择要处理的任务分组"),
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
 			try {
 				const resolvedTag = resolveTag({
 					projectRoot: args.projectRoot,
-					tag: args.tag
+					tag: args.tag,
 				});
 				log.info(`Adding subtask with args: ${JSON.stringify(args)}`);
 
@@ -75,12 +59,12 @@ export function registerAddSubtaskTool(server) {
 				try {
 					tasksJsonPath = findTasksPath(
 						{ projectRoot: args.projectRoot, file: args.file },
-						log
+						log,
 					);
 				} catch (error) {
 					log.error(`Error finding tasks.json: ${error.message}`);
 					return createErrorResponse(
-						`Failed to find tasks.json: ${error.message}`
+						`Failed to find tasks.json: ${error.message}`,
 					);
 				}
 
@@ -96,10 +80,10 @@ export function registerAddSubtaskTool(server) {
 						dependencies: args.dependencies,
 						skipGenerate: args.skipGenerate,
 						projectRoot: args.projectRoot,
-						tag: resolvedTag
+						tag: resolvedTag,
 					},
 					log,
-					{ session }
+					{ session },
 				);
 
 				if (result.success) {
@@ -111,14 +95,14 @@ export function registerAddSubtaskTool(server) {
 				return handleApiResult(
 					result,
 					log,
-					'Error adding subtask',
+					"Error adding subtask",
 					undefined,
-					args.projectRoot
+					args.projectRoot,
 				);
 			} catch (error) {
 				log.error(`Error in addSubtask tool: ${error.message}`);
 				return createErrorResponse(error.message);
 			}
-		})
+		}),
 	});
 }

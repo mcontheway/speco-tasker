@@ -1,23 +1,23 @@
-import path from 'path';
-import fs from 'fs';
-import inquirer from 'inquirer';
-import chalk from 'chalk';
-import boxen from 'boxen';
-import Table from 'cli-table3';
+import fs from "node:fs";
+import path from "node:path";
+import boxen from "boxen";
+import chalk from "chalk";
+import Table from "cli-table3";
+import inquirer from "inquirer";
 
+import { displayBanner, getStatusWithColor } from "../ui.js";
 import {
+	findProjectRoot,
+	getCurrentTag,
+	getTasksForTag,
 	log,
 	readJSON,
-	writeJSON,
-	getCurrentTag,
 	resolveTag,
-	getTasksForTag,
 	setTasksForTag,
-	findProjectRoot,
-	truncate
-} from '../utils.js';
-import { displayBanner, getStatusWithColor } from '../ui.js';
-import findNextTask from './find-next-task.js';
+	truncate,
+	writeJSON,
+} from "../utils.js";
+import findNextTask from "./find-next-task.js";
 
 /**
  * Create a new tag context
@@ -38,35 +38,35 @@ async function createTag(
 	tagName,
 	options = {},
 	context = {},
-	outputFormat = 'text'
+	outputFormat = "text",
 ) {
 	const { mcpLog, projectRoot } = context;
 	const { copyFromCurrent = false, copyFromTag, description } = options;
 
 	// Create a consistent logFn object regardless of context
 	const logFn = mcpLog || {
-		info: (...args) => log('info', ...args),
-		warn: (...args) => log('warn', ...args),
-		error: (...args) => log('error', ...args),
-		debug: (...args) => log('debug', ...args),
-		success: (...args) => log('success', ...args)
+		info: (...args) => log("info", ...args),
+		warn: (...args) => log("warn", ...args),
+		error: (...args) => log("error", ...args),
+		debug: (...args) => log("debug", ...args),
+		success: (...args) => log("success", ...args),
 	};
 
 	try {
 		// Validate tag name
-		if (!tagName || typeof tagName !== 'string') {
-			throw new Error('Tag name is required and must be a string');
+		if (!tagName || typeof tagName !== "string") {
+			throw new Error("Tag name is required and must be a string");
 		}
 
 		// Validate tag name format (alphanumeric, hyphens, underscores only)
 		if (!/^[a-zA-Z0-9_-]+$/.test(tagName)) {
 			throw new Error(
-				'Tag name can only contain letters, numbers, hyphens, and underscores'
+				"Tag name can only contain letters, numbers, hyphens, and underscores",
 			);
 		}
 
 		// Reserved tag names
-		const reservedNames = ['master', 'main', 'default'];
+		const reservedNames = ["main", "main", "default"];
 		if (reservedNames.includes(tagName.toLowerCase())) {
 			throw new Error(`"${tagName}" is a reserved tag name`);
 		}
@@ -84,23 +84,23 @@ async function createTag(
 		if (data._rawTaggedData) {
 			// If we have _rawTaggedData, use it (this is the clean tagged structure)
 			rawData = data._rawTaggedData;
-		} else if (data.tasks && !data.master) {
-			// This is legacy format - create a master tag structure
+		} else if (data.tasks && !data.main) {
+			// This is legacy format - create a main tag structure
 			rawData = {
-				master: {
+				main: {
 					tasks: data.tasks,
 					metadata: data.metadata || {
 						created: new Date().toISOString(),
 						updated: new Date().toISOString(),
-						description: 'Tasks live here by default'
-					}
-				}
+						description: "Tasks live here by default",
+					},
+				},
 			};
 		} else {
 			// This is already in tagged format, use it directly but exclude internal fields
 			rawData = {};
 			for (const [key, value] of Object.entries(data)) {
-				if (key !== '_rawTaggedData' && key !== 'tag') {
+				if (key !== "_rawTaggedData" && key !== "tag") {
 					rawData[key] = value;
 				}
 			}
@@ -123,7 +123,7 @@ async function createTag(
 
 			logFn.info(`Copying ${sourceTasks.length} tasks from tag "${sourceTag}"`);
 		} else {
-			logFn.info('Creating empty tag (no tasks copied)');
+			logFn.info("Creating empty tag (no tasks copied)");
 		}
 
 		// Create the new tag structure in raw data
@@ -133,14 +133,14 @@ async function createTag(
 				created: new Date().toISOString(),
 				updated: new Date().toISOString(),
 				description:
-					description || `Tag created on ${new Date().toLocaleDateString()}`
-			}
+					description || `Tag created on ${new Date().toLocaleDateString()}`,
+			},
 		};
 
 		// Create clean data for writing (exclude _rawTaggedData to prevent corruption)
 		const cleanData = {};
 		for (const [key, value] of Object.entries(rawData)) {
-			if (key !== '_rawTaggedData') {
+			if (key !== "_rawTaggedData") {
 				cleanData[key] = value;
 			}
 		}
@@ -151,7 +151,7 @@ async function createTag(
 		logFn.success(`Successfully created tag "${tagName}"`);
 
 		// For JSON output, return structured data
-		if (outputFormat === 'json') {
+		if (outputFormat === "json") {
 			return {
 				tagName,
 				created: true,
@@ -161,28 +161,26 @@ async function createTag(
 						? copyFromTag || getCurrentTag(projectRoot)
 						: null,
 				description:
-					description || `Tag created on ${new Date().toLocaleDateString()}`
+					description || `Tag created on ${new Date().toLocaleDateString()}`,
 			};
 		}
 
 		// For text output, display success message
-		if (outputFormat === 'text') {
+		if (outputFormat === "text") {
 			console.log(
 				boxen(
-					chalk.green.bold('✓ Tag Created Successfully') +
-						`\n\nTag Name: ${chalk.cyan(tagName)}` +
-						`\nTasks Copied: ${chalk.yellow(sourceTasks.length)}` +
-						(copyFromCurrent || copyFromTag
+					`${chalk.green.bold("✓ Tag Created Successfully")}\n\nTag Name: ${chalk.cyan(tagName)}\nTasks Copied: ${chalk.yellow(sourceTasks.length)}${
+						copyFromCurrent || copyFromTag
 							? `\nSource Tag: ${chalk.cyan(copyFromTag || getCurrentTag(projectRoot))}`
-							: '') +
-						(description ? `\nDescription: ${chalk.gray(description)}` : ''),
+							: ""
+					}${description ? `\nDescription: ${chalk.gray(description)}` : ""}`,
 					{
 						padding: 1,
-						borderColor: 'green',
-						borderStyle: 'round',
-						margin: { top: 1, bottom: 1 }
-					}
-				)
+						borderColor: "green",
+						borderStyle: "round",
+						margin: { top: 1, bottom: 1 },
+					},
+				),
 			);
 		}
 
@@ -195,7 +193,7 @@ async function createTag(
 					? copyFromTag || getCurrentTag(projectRoot)
 					: null,
 			description:
-				description || `Tag created on ${new Date().toLocaleDateString()}`
+				description || `Tag created on ${new Date().toLocaleDateString()}`,
 		};
 	} catch (error) {
 		logFn.error(`Error creating tag: ${error.message}`);
@@ -220,29 +218,29 @@ async function deleteTag(
 	tagName,
 	options = {},
 	context = {},
-	outputFormat = 'text'
+	outputFormat = "text",
 ) {
 	const { mcpLog, projectRoot } = context;
 	const { yes = false } = options;
 
 	// Create a consistent logFn object regardless of context
 	const logFn = mcpLog || {
-		info: (...args) => log('info', ...args),
-		warn: (...args) => log('warn', ...args),
-		error: (...args) => log('error', ...args),
-		debug: (...args) => log('debug', ...args),
-		success: (...args) => log('success', ...args)
+		info: (...args) => log("info", ...args),
+		warn: (...args) => log("warn", ...args),
+		error: (...args) => log("error", ...args),
+		debug: (...args) => log("debug", ...args),
+		success: (...args) => log("success", ...args),
 	};
 
 	try {
 		// Validate tag name
-		if (!tagName || typeof tagName !== 'string') {
-			throw new Error('Tag name is required and must be a string');
+		if (!tagName || typeof tagName !== "string") {
+			throw new Error("Tag name is required and must be a string");
 		}
 
-		// Prevent deletion of master tag
-		if (tagName === 'master') {
-			throw new Error('Cannot delete the "master" tag');
+		// Prevent deletion of main tag
+		if (tagName === "main") {
+			throw new Error('Cannot delete the "main" tag');
 		}
 
 		logFn.info(`Deleting tag: ${tagName}`);
@@ -258,23 +256,23 @@ async function deleteTag(
 		if (data._rawTaggedData) {
 			// If we have _rawTaggedData, use it (this is the clean tagged structure)
 			rawData = data._rawTaggedData;
-		} else if (data.tasks && !data.master) {
-			// This is legacy format - create a master tag structure
+		} else if (data.tasks && !data.main) {
+			// This is legacy format - create a main tag structure
 			rawData = {
-				master: {
+				main: {
 					tasks: data.tasks,
 					metadata: data.metadata || {
 						created: new Date().toISOString(),
 						updated: new Date().toISOString(),
-						description: 'Tasks live here by default'
-					}
-				}
+						description: "Tasks live here by default",
+					},
+				},
 			};
 		} else {
 			// This is already in tagged format, use it directly but exclude internal fields
 			rawData = {};
 			for (const [key, value] of Object.entries(data)) {
-				if (key !== '_rawTaggedData' && key !== 'tag') {
+				if (key !== "_rawTaggedData" && key !== "tag") {
 					rawData[key] = value;
 				}
 			}
@@ -294,73 +292,70 @@ async function deleteTag(
 		const taskCount = tasks.length;
 
 		// If not forced and has tasks, require confirmation (for CLI)
-		if (!yes && taskCount > 0 && outputFormat === 'text') {
+		if (!yes && taskCount > 0 && outputFormat === "text") {
 			console.log(
 				boxen(
-					chalk.yellow.bold('⚠ WARNING: Tag Deletion') +
-						`\n\nYou are about to delete tag "${chalk.cyan(tagName)}"` +
-						`\nThis will permanently delete ${chalk.red.bold(taskCount)} tasks` +
-						'\n\nThis action cannot be undone!',
+					`${chalk.yellow.bold("⚠ WARNING: Tag Deletion")}\n\nYou are about to delete tag "${chalk.cyan(tagName)}"\nThis will permanently delete ${chalk.red.bold(taskCount)} tasks\n\nThis action cannot be undone!`,
 					{
 						padding: 1,
-						borderColor: 'yellow',
-						borderStyle: 'round',
-						margin: { top: 1, bottom: 1 }
-					}
-				)
+						borderColor: "yellow",
+						borderStyle: "round",
+						margin: { top: 1, bottom: 1 },
+					},
+				),
 			);
 
 			// First confirmation
 			const firstConfirm = await inquirer.prompt([
 				{
-					type: 'confirm',
-					name: 'proceed',
+					type: "confirm",
+					name: "proceed",
 					message: `Are you sure you want to delete tag "${tagName}" and its ${taskCount} tasks?`,
-					default: false
-				}
+					default: false,
+				},
 			]);
 
 			if (!firstConfirm.proceed) {
-				logFn.info('Tag deletion cancelled by user');
-				throw new Error('Tag deletion cancelled');
+				logFn.info("Tag deletion cancelled by user");
+				throw new Error("Tag deletion cancelled");
 			}
 
 			// Second confirmation (double-check)
 			const secondConfirm = await inquirer.prompt([
 				{
-					type: 'input',
-					name: 'tagNameConfirm',
+					type: "input",
+					name: "tagNameConfirm",
 					message: `To confirm deletion, please type the tag name "${tagName}":`,
 					validate: (input) => {
 						if (input === tagName) {
 							return true;
 						}
 						return `Please type exactly "${tagName}" to confirm deletion`;
-					}
-				}
+					},
+				},
 			]);
 
 			if (secondConfirm.tagNameConfirm !== tagName) {
-				logFn.info('Tag deletion cancelled - incorrect tag name confirmation');
-				throw new Error('Tag deletion cancelled');
+				logFn.info("Tag deletion cancelled - incorrect tag name confirmation");
+				throw new Error("Tag deletion cancelled");
 			}
 
-			logFn.info('Double confirmation received, proceeding with deletion...');
+			logFn.info("Double confirmation received, proceeding with deletion...");
 		}
 
 		// Delete the tag
 		delete rawData[tagName];
 
-		// If we're deleting the current tag, switch to master
+		// If we're deleting the current tag, switch to main
 		if (isCurrentTag) {
-			await switchCurrentTag(projectRoot, 'master');
-			logFn.info('Switched current tag to "master"');
+			await switchCurrentTag(projectRoot, "main");
+			logFn.info('Switched current tag to "main"');
 		}
 
 		// Create clean data for writing (exclude _rawTaggedData to prevent corruption)
 		const cleanData = {};
 		for (const [key, value] of Object.entries(rawData)) {
-			if (key !== '_rawTaggedData') {
+			if (key !== "_rawTaggedData") {
 				cleanData[key] = value;
 			}
 		}
@@ -371,33 +366,32 @@ async function deleteTag(
 		logFn.success(`Successfully deleted tag "${tagName}"`);
 
 		// For JSON output, return structured data
-		if (outputFormat === 'json') {
+		if (outputFormat === "json") {
 			return {
 				tagName,
 				deleted: true,
 				tasksDeleted: taskCount,
 				wasCurrentTag: isCurrentTag,
-				switchedToMaster: isCurrentTag
+				switchedToMaster: isCurrentTag,
 			};
 		}
 
 		// For text output, display success message
-		if (outputFormat === 'text') {
+		if (outputFormat === "text") {
 			console.log(
 				boxen(
-					chalk.red.bold('✓ Tag Deleted Successfully') +
-						`\n\nTag Name: ${chalk.cyan(tagName)}` +
-						`\nTasks Deleted: ${chalk.yellow(taskCount)}` +
-						(isCurrentTag
-							? `\n${chalk.yellow('⚠ Switched current tag to "master"')}`
-							: ''),
+					`${chalk.red.bold("✓ Tag Deleted Successfully")}\n\nTag Name: ${chalk.cyan(tagName)}\nTasks Deleted: ${chalk.yellow(taskCount)}${
+						isCurrentTag
+							? `\n${chalk.yellow('⚠ Switched current tag to "main"')}`
+							: ""
+					}`,
 					{
 						padding: 1,
-						borderColor: 'red',
-						borderStyle: 'round',
-						margin: { top: 1, bottom: 1 }
-					}
-				)
+						borderColor: "red",
+						borderStyle: "round",
+						margin: { top: 1, bottom: 1 },
+					},
+				),
 			);
 		}
 
@@ -406,7 +400,7 @@ async function deleteTag(
 			deleted: true,
 			tasksDeleted: taskCount,
 			wasCurrentTag: isCurrentTag,
-			switchedToMaster: isCurrentTag
+			switchedToMaster: isCurrentTag,
 		};
 	} catch (error) {
 		logFn.error(`Error deleting tag: ${error.message}`);
@@ -438,11 +432,11 @@ async function enhanceTagsWithMetadata(tasksPath, rawData, context = {}) {
 		for (const [tagName, tagData] of Object.entries(rawData)) {
 			// Skip non-tag properties
 			if (
-				tagName === 'tasks' ||
-				tagName === 'tag' ||
-				tagName === '_rawTaggedData' ||
+				tagName === "tasks" ||
+				tagName === "tag" ||
+				tagName === "_rawTaggedData" ||
 				!tagData ||
-				typeof tagData !== 'object' ||
+				typeof tagData !== "object" ||
 				!Array.isArray(tagData.tasks)
 			) {
 				continue;
@@ -461,8 +455,8 @@ async function enhanceTagsWithMetadata(tasksPath, rawData, context = {}) {
 			}
 
 			if (!tagData.metadata.description) {
-				if (tagName === 'master') {
-					tagData.metadata.description = 'Tasks live here by default';
+				if (tagName === "main") {
+					tagData.metadata.description = "Tasks live here by default";
 				} else {
 					tagData.metadata.description = `Tag created on ${new Date(tagData.metadata.created).toLocaleDateString()}`;
 				}
@@ -481,7 +475,7 @@ async function enhanceTagsWithMetadata(tasksPath, rawData, context = {}) {
 			// Create clean data for writing (exclude _rawTaggedData to prevent corruption)
 			const cleanData = {};
 			for (const [key, value] of Object.entries(rawData)) {
-				if (key !== '_rawTaggedData') {
+				if (key !== "_rawTaggedData") {
 					cleanData[key] = value;
 				}
 			}
@@ -490,7 +484,7 @@ async function enhanceTagsWithMetadata(tasksPath, rawData, context = {}) {
 	} catch (error) {
 		// Don't throw - just log and continue
 		const logFn = context.mcpLog || {
-			warn: (...args) => log('warn', ...args)
+			warn: (...args) => log("warn", ...args),
 		};
 		logFn.warn(`Could not enhance tag metadata: ${error.message}`);
 	}
@@ -514,22 +508,22 @@ async function tags(
 	tasksPath,
 	options = {},
 	context = {},
-	outputFormat = 'text'
+	outputFormat = "text",
 ) {
 	const { mcpLog, projectRoot } = context;
 	const { showTaskCounts = true, showMetadata = false } = options;
 
 	// Create a consistent logFn object regardless of context
 	const logFn = mcpLog || {
-		info: (...args) => log('info', ...args),
-		warn: (...args) => log('warn', ...args),
-		error: (...args) => log('error', ...args),
-		debug: (...args) => log('debug', ...args),
-		success: (...args) => log('success', ...args)
+		info: (...args) => log("info", ...args),
+		warn: (...args) => log("warn", ...args),
+		error: (...args) => log("error", ...args),
+		debug: (...args) => log("debug", ...args),
+		success: (...args) => log("success", ...args),
 	};
 
 	try {
-		logFn.info('Listing available tags');
+		logFn.info("Listing available tags");
 
 		// Read current tasks data
 		const data = readJSON(tasksPath, projectRoot);
@@ -551,11 +545,11 @@ async function tags(
 		for (const [tagName, tagData] of Object.entries(rawData)) {
 			// Skip non-tag properties (like legacy 'tasks' array, 'tag', '_rawTaggedData')
 			if (
-				tagName === 'tasks' ||
-				tagName === 'tag' ||
-				tagName === '_rawTaggedData' ||
+				tagName === "tasks" ||
+				tagName === "tag" ||
+				tagName === "_rawTaggedData" ||
 				!tagData ||
-				typeof tagData !== 'object' ||
+				typeof tagData !== "object" ||
 				!Array.isArray(tagData.tasks)
 			) {
 				continue;
@@ -568,11 +562,11 @@ async function tags(
 				name: tagName,
 				isCurrent: tagName === currentTag,
 				completedTasks: tasks.filter(
-					(t) => t.status === 'done' || t.status === 'completed'
+					(t) => t.status === "done" || t.status === "completed",
 				).length,
 				tasks: tasks || [],
-				created: metadata.created || 'Unknown',
-				description: metadata.description || 'No description'
+				created: metadata.created || "Unknown",
+				description: metadata.description || "No description",
 			});
 		}
 
@@ -586,42 +580,42 @@ async function tags(
 		logFn.success(`Found ${tagList.length} tags`);
 
 		// For JSON output, return structured data
-		if (outputFormat === 'json') {
+		if (outputFormat === "json") {
 			return {
 				tags: tagList,
 				currentTag,
-				totalTags: tagList.length
+				totalTags: tagList.length,
 			};
 		}
 
 		// For text output, display formatted table
-		if (outputFormat === 'text') {
+		if (outputFormat === "text") {
 			if (tagList.length === 0) {
 				console.log(
-					boxen(chalk.yellow('No tags found'), {
+					boxen(chalk.yellow("No tags found"), {
 						padding: 1,
-						borderColor: 'yellow',
-						borderStyle: 'round',
-						margin: { top: 1, bottom: 1 }
-					})
+						borderColor: "yellow",
+						borderStyle: "round",
+						margin: { top: 1, bottom: 1 },
+					}),
 				);
 				return { tags: [], currentTag, totalTags: 0 };
 			}
 
 			// Create table headers based on options
-			const headers = [chalk.cyan.bold('Tag Name')];
+			const headers = [chalk.cyan.bold("Tag Name")];
 			if (showTaskCounts) {
-				headers.push(chalk.cyan.bold('Tasks'));
-				headers.push(chalk.cyan.bold('Completed'));
+				headers.push(chalk.cyan.bold("Tasks"));
+				headers.push(chalk.cyan.bold("Completed"));
 			}
 			if (showMetadata) {
-				headers.push(chalk.cyan.bold('Created'));
-				headers.push(chalk.cyan.bold('Description'));
+				headers.push(chalk.cyan.bold("Created"));
+				headers.push(chalk.cyan.bold("Description"));
 			}
 
 			const table = new Table({
 				head: headers,
-				colWidths: showMetadata ? [20, 10, 12, 15, 50] : [25, 10, 12]
+				colWidths: showMetadata ? [20, 10, 12, 15, 50] : [25, 10, 12],
 			});
 
 			// Add rows
@@ -630,7 +624,7 @@ async function tags(
 
 				// Tag name with current indicator
 				const tagDisplay = tag.isCurrent
-					? `${chalk.green('●')} ${chalk.green.bold(tag.name)} ${chalk.gray('(current)')}`
+					? `${chalk.green("●")} ${chalk.green.bold(tag.name)} ${chalk.gray("(current)")}`
 					: `  ${tag.name}`;
 				row.push(tagDisplay);
 
@@ -641,9 +635,9 @@ async function tags(
 
 				if (showMetadata) {
 					const createdDate =
-						tag.created !== 'Unknown'
+						tag.created !== "Unknown"
 							? new Date(tag.created).toLocaleDateString()
-							: 'Unknown';
+							: "Unknown";
 					row.push(chalk.gray(createdDate));
 					row.push(chalk.gray(truncate(tag.description, 50)));
 				}
@@ -670,7 +664,7 @@ async function tags(
 		return {
 			tags: tagList,
 			currentTag,
-			totalTags: tagList.length
+			totalTags: tagList.length,
 		};
 	} catch (error) {
 		logFn.error(`Error listing tags: ${error.message}`);
@@ -694,23 +688,23 @@ async function useTag(
 	tagName,
 	options = {},
 	context = {},
-	outputFormat = 'text'
+	outputFormat = "text",
 ) {
 	const { mcpLog, projectRoot } = context;
 
 	// Create a consistent logFn object regardless of context
 	const logFn = mcpLog || {
-		info: (...args) => log('info', ...args),
-		warn: (...args) => log('warn', ...args),
-		error: (...args) => log('error', ...args),
-		debug: (...args) => log('debug', ...args),
-		success: (...args) => log('success', ...args)
+		info: (...args) => log("info", ...args),
+		warn: (...args) => log("warn", ...args),
+		error: (...args) => log("error", ...args),
+		debug: (...args) => log("debug", ...args),
+		success: (...args) => log("success", ...args),
 	};
 
 	try {
 		// Validate tag name
-		if (!tagName || typeof tagName !== 'string') {
-			throw new Error('Tag name is required and must be a string');
+		if (!tagName || typeof tagName !== "string") {
+			throw new Error("Tag name is required and must be a string");
 		}
 
 		logFn.info(`Switching to tag: ${tagName}`);
@@ -746,39 +740,35 @@ async function useTag(
 		logFn.success(`Successfully switched to tag "${tagName}"`);
 
 		// For JSON output, return structured data
-		if (outputFormat === 'json') {
+		if (outputFormat === "json") {
 			return {
 				previousTag,
 				currentTag: tagName,
 				switched: true,
 				taskCount,
-				nextTask
+				nextTask,
 			};
 		}
 
 		// For text output, display success message
-		if (outputFormat === 'text') {
-			let nextTaskInfo = '';
+		if (outputFormat === "text") {
+			let nextTaskInfo = "";
 			if (nextTask) {
 				nextTaskInfo = `\nNext Task: ${chalk.cyan(`#${nextTask.id}`)} - ${chalk.white(nextTask.title)}`;
 			} else {
-				nextTaskInfo = `\nNext Task: ${chalk.gray('No eligible tasks available')}`;
+				nextTaskInfo = `\nNext Task: ${chalk.gray("No eligible tasks available")}`;
 			}
 
 			console.log(
 				boxen(
-					chalk.green.bold('✓ Tag Switched Successfully') +
-						`\n\nPrevious Tag: ${chalk.cyan(previousTag)}` +
-						`\nCurrent Tag: ${chalk.green.bold(tagName)}` +
-						`\nAvailable Tasks: ${chalk.yellow(taskCount)}` +
-						nextTaskInfo,
+					`${chalk.green.bold("✓ Tag Switched Successfully")}\n\nPrevious Tag: ${chalk.cyan(previousTag)}\nCurrent Tag: ${chalk.green.bold(tagName)}\nAvailable Tasks: ${chalk.yellow(taskCount)}${nextTaskInfo}`,
 					{
 						padding: 1,
-						borderColor: 'green',
-						borderStyle: 'round',
-						margin: { top: 1, bottom: 1 }
-					}
-				)
+						borderColor: "green",
+						borderStyle: "round",
+						margin: { top: 1, bottom: 1 },
+					},
+				),
 			);
 		}
 
@@ -787,7 +777,7 @@ async function useTag(
 			currentTag: tagName,
 			switched: true,
 			taskCount,
-			nextTask
+			nextTask,
 		};
 	} catch (error) {
 		logFn.error(`Error switching tag: ${error.message}`);
@@ -813,42 +803,42 @@ async function renameTag(
 	newName,
 	options = {},
 	context = {},
-	outputFormat = 'text'
+	outputFormat = "text",
 ) {
 	const { mcpLog, projectRoot } = context;
 
 	// Create a consistent logFn object regardless of context
 	const logFn = mcpLog || {
-		info: (...args) => log('info', ...args),
-		warn: (...args) => log('warn', ...args),
-		error: (...args) => log('error', ...args),
-		debug: (...args) => log('debug', ...args),
-		success: (...args) => log('success', ...args)
+		info: (...args) => log("info", ...args),
+		warn: (...args) => log("warn", ...args),
+		error: (...args) => log("error", ...args),
+		debug: (...args) => log("debug", ...args),
+		success: (...args) => log("success", ...args),
 	};
 
 	try {
 		// Validate parameters
-		if (!oldName || typeof oldName !== 'string') {
-			throw new Error('Old tag name is required and must be a string');
+		if (!oldName || typeof oldName !== "string") {
+			throw new Error("Old tag name is required and must be a string");
 		}
-		if (!newName || typeof newName !== 'string') {
-			throw new Error('New tag name is required and must be a string');
+		if (!newName || typeof newName !== "string") {
+			throw new Error("New tag name is required and must be a string");
 		}
 
 		// Validate new tag name format
 		if (!/^[a-zA-Z0-9_-]+$/.test(newName)) {
 			throw new Error(
-				'New tag name can only contain letters, numbers, hyphens, and underscores'
+				"New tag name can only contain letters, numbers, hyphens, and underscores",
 			);
 		}
 
-		// Prevent renaming master tag
-		if (oldName === 'master') {
-			throw new Error('Cannot rename the "master" tag');
+		// Prevent renaming main tag
+		if (oldName === "main") {
+			throw new Error('Cannot rename the "main" tag');
 		}
 
 		// Reserved tag names
-		const reservedNames = ['master', 'main', 'default'];
+		const reservedNames = ["main", "main", "default"];
 		if (reservedNames.includes(newName.toLowerCase())) {
 			throw new Error(`"${newName}" is a reserved tag name`);
 		}
@@ -885,7 +875,7 @@ async function renameTag(
 		if (rawData[newName].metadata) {
 			rawData[newName].metadata.renamed = {
 				from: oldName,
-				date: new Date().toISOString()
+				date: new Date().toISOString(),
 			};
 		}
 
@@ -900,7 +890,7 @@ async function renameTag(
 		// Create clean data for writing (exclude _rawTaggedData to prevent corruption)
 		const cleanData = {};
 		for (const [key, value] of Object.entries(rawData)) {
-			if (key !== '_rawTaggedData') {
+			if (key !== "_rawTaggedData") {
 				cleanData[key] = value;
 			}
 		}
@@ -915,33 +905,29 @@ async function renameTag(
 		logFn.success(`Successfully renamed tag from "${oldName}" to "${newName}"`);
 
 		// For JSON output, return structured data
-		if (outputFormat === 'json') {
+		if (outputFormat === "json") {
 			return {
 				oldName,
 				newName,
 				renamed: true,
 				taskCount,
 				wasCurrentTag: isCurrentTag,
-				isCurrentTag: isCurrentTag
+				isCurrentTag: isCurrentTag,
 			};
 		}
 
 		// For text output, display success message
-		if (outputFormat === 'text') {
+		if (outputFormat === "text") {
 			console.log(
 				boxen(
-					chalk.green.bold('✓ Tag Renamed Successfully') +
-						`\n\nOld Name: ${chalk.cyan(oldName)}` +
-						`\nNew Name: ${chalk.green.bold(newName)}` +
-						`\nTasks: ${chalk.yellow(taskCount)}` +
-						(isCurrentTag ? `\n${chalk.green('✓ Current tag updated')}` : ''),
+					`${chalk.green.bold("✓ Tag Renamed Successfully")}\n\nOld Name: ${chalk.cyan(oldName)}\nNew Name: ${chalk.green.bold(newName)}\nTasks: ${chalk.yellow(taskCount)}${isCurrentTag ? `\n${chalk.green("✓ Current tag updated")}` : ""}`,
 					{
 						padding: 1,
-						borderColor: 'green',
-						borderStyle: 'round',
-						margin: { top: 1, bottom: 1 }
-					}
-				)
+						borderColor: "green",
+						borderStyle: "round",
+						margin: { top: 1, bottom: 1 },
+					},
+				),
 			);
 		}
 
@@ -951,7 +937,7 @@ async function renameTag(
 			renamed: true,
 			taskCount,
 			wasCurrentTag: isCurrentTag,
-			isCurrentTag: isCurrentTag
+			isCurrentTag: isCurrentTag,
 		};
 	} catch (error) {
 		logFn.error(`Error renaming tag: ${error.message}`);
@@ -978,38 +964,38 @@ async function copyTag(
 	targetName,
 	options = {},
 	context = {},
-	outputFormat = 'text'
+	outputFormat = "text",
 ) {
 	const { mcpLog, projectRoot } = context;
 	const { description } = options;
 
 	// Create a consistent logFn object regardless of context
 	const logFn = mcpLog || {
-		info: (...args) => log('info', ...args),
-		warn: (...args) => log('warn', ...args),
-		error: (...args) => log('error', ...args),
-		debug: (...args) => log('debug', ...args),
-		success: (...args) => log('success', ...args)
+		info: (...args) => log("info", ...args),
+		warn: (...args) => log("warn", ...args),
+		error: (...args) => log("error", ...args),
+		debug: (...args) => log("debug", ...args),
+		success: (...args) => log("success", ...args),
 	};
 
 	try {
 		// Validate parameters
-		if (!sourceName || typeof sourceName !== 'string') {
-			throw new Error('Source tag name is required and must be a string');
+		if (!sourceName || typeof sourceName !== "string") {
+			throw new Error("Source tag name is required and must be a string");
 		}
-		if (!targetName || typeof targetName !== 'string') {
-			throw new Error('Target tag name is required and must be a string');
+		if (!targetName || typeof targetName !== "string") {
+			throw new Error("Target tag name is required and must be a string");
 		}
 
 		// Validate target tag name format
 		if (!/^[a-zA-Z0-9_-]+$/.test(targetName)) {
 			throw new Error(
-				'Target tag name can only contain letters, numbers, hyphens, and underscores'
+				"Target tag name can only contain letters, numbers, hyphens, and underscores",
 			);
 		}
 
 		// Reserved tag names
-		const reservedNames = ['master', 'main', 'default'];
+		const reservedNames = ["main", "main", "default"];
 		if (reservedNames.includes(targetName.toLowerCase())) {
 			throw new Error(`"${targetName}" is a reserved tag name`);
 		}
@@ -1049,15 +1035,15 @@ async function copyTag(
 					`Copy of "${sourceName}" created on ${new Date().toLocaleDateString()}`,
 				copiedFrom: {
 					tag: sourceName,
-					date: new Date().toISOString()
-				}
-			}
+					date: new Date().toISOString(),
+				},
+			},
 		};
 
 		// Create clean data for writing (exclude _rawTaggedData to prevent corruption)
 		const cleanData = {};
 		for (const [key, value] of Object.entries(rawData)) {
-			if (key !== '_rawTaggedData') {
+			if (key !== "_rawTaggedData") {
 				cleanData[key] = value;
 			}
 		}
@@ -1066,37 +1052,33 @@ async function copyTag(
 		writeJSON(tasksPath, cleanData, projectRoot);
 
 		logFn.success(
-			`Successfully copied tag from "${sourceName}" to "${targetName}"`
+			`Successfully copied tag from "${sourceName}" to "${targetName}"`,
 		);
 
 		// For JSON output, return structured data
-		if (outputFormat === 'json') {
+		if (outputFormat === "json") {
 			return {
 				sourceName,
 				targetName,
 				copied: true,
 				description:
 					description ||
-					`Copy of "${sourceName}" created on ${new Date().toLocaleDateString()}`
+					`Copy of "${sourceName}" created on ${new Date().toLocaleDateString()}`,
 			};
 		}
 
 		// For text output, display success message
-		if (outputFormat === 'text') {
+		if (outputFormat === "text") {
 			console.log(
 				boxen(
-					chalk.green.bold('✓ Tag Copied Successfully') +
-						`\n\nSource Tag: ${chalk.cyan(sourceName)}` +
-						`\nTarget Tag: ${chalk.green.bold(targetName)}` +
-						`\nTasks Copied: ${chalk.yellow(sourceTasks.length)}` +
-						(description ? `\nDescription: ${chalk.gray(description)}` : ''),
+					`${chalk.green.bold("✓ Tag Copied Successfully")}\n\nSource Tag: ${chalk.cyan(sourceName)}\nTarget Tag: ${chalk.green.bold(targetName)}\nTasks Copied: ${chalk.yellow(sourceTasks.length)}${description ? `\nDescription: ${chalk.gray(description)}` : ""}`,
 					{
 						padding: 1,
-						borderColor: 'green',
-						borderStyle: 'round',
-						margin: { top: 1, bottom: 1 }
-					}
-				)
+						borderColor: "green",
+						borderStyle: "round",
+						margin: { top: 1, bottom: 1 },
+					},
+				),
 			);
 		}
 
@@ -1106,7 +1088,7 @@ async function copyTag(
 			copied: true,
 			description:
 				description ||
-				`Copy of "${sourceName}" created on ${new Date().toLocaleDateString()}`
+				`Copy of "${sourceName}" created on ${new Date().toLocaleDateString()}`,
 		};
 	} catch (error) {
 		logFn.error(`Error copying tag: ${error.message}`);
@@ -1122,12 +1104,12 @@ async function copyTag(
  */
 async function switchCurrentTag(projectRoot, tagName) {
 	try {
-		const statePath = path.join(projectRoot, '.taskmaster', 'state.json');
+		const statePath = path.join(projectRoot, ".taskmaster", "state.json");
 
 		// Read current state or create default
 		let state = {};
 		if (fs.existsSync(statePath)) {
-			const rawState = fs.readFileSync(statePath, 'utf8');
+			const rawState = fs.readFileSync(statePath, "utf8");
 			state = JSON.parse(rawState);
 		}
 
@@ -1144,9 +1126,9 @@ async function switchCurrentTag(projectRoot, tagName) {
 		}
 
 		// Write updated state
-		fs.writeFileSync(statePath, JSON.stringify(state, null, 2), 'utf8');
+		fs.writeFileSync(statePath, JSON.stringify(state, null, 2), "utf8");
 	} catch (error) {
-		log('warn', `Could not update current tag in state.json: ${error.message}`);
+		log("warn", `Could not update current tag in state.json: ${error.message}`);
 		// Don't throw - this is not critical for tag operations
 	}
 }
@@ -1160,12 +1142,12 @@ async function switchCurrentTag(projectRoot, tagName) {
  */
 async function updateBranchTagMapping(projectRoot, branchName, tagName) {
 	try {
-		const statePath = path.join(projectRoot, '.taskmaster', 'state.json');
+		const statePath = path.join(projectRoot, ".taskmaster", "state.json");
 
 		// Read current state or create default
 		let state = {};
 		if (fs.existsSync(statePath)) {
-			const rawState = fs.readFileSync(statePath, 'utf8');
+			const rawState = fs.readFileSync(statePath, "utf8");
 			state = JSON.parse(rawState);
 		}
 
@@ -1178,9 +1160,9 @@ async function updateBranchTagMapping(projectRoot, branchName, tagName) {
 		state.branchTagMapping[branchName] = tagName;
 
 		// Write updated state
-		fs.writeFileSync(statePath, JSON.stringify(state, null, 2), 'utf8');
+		fs.writeFileSync(statePath, JSON.stringify(state, null, 2), "utf8");
 	} catch (error) {
-		log('warn', `Could not update branch-tag mapping: ${error.message}`);
+		log("warn", `Could not update branch-tag mapping: ${error.message}`);
 		// Don't throw - this is not critical for tag operations
 	}
 }
@@ -1193,13 +1175,13 @@ async function updateBranchTagMapping(projectRoot, branchName, tagName) {
  */
 async function getTagForBranch(projectRoot, branchName) {
 	try {
-		const statePath = path.join(projectRoot, '.taskmaster', 'state.json');
+		const statePath = path.join(projectRoot, ".taskmaster", "state.json");
 
 		if (!fs.existsSync(statePath)) {
 			return null;
 		}
 
-		const rawState = fs.readFileSync(statePath, 'utf8');
+		const rawState = fs.readFileSync(statePath, "utf8");
 		const state = JSON.parse(rawState);
 
 		return state.branchTagMapping?.[branchName] || null;
@@ -1228,35 +1210,35 @@ async function createTagFromBranch(
 	branchName,
 	options = {},
 	context = {},
-	outputFormat = 'text'
+	outputFormat = "text",
 ) {
 	const { mcpLog, projectRoot } = context;
 	const { copyFromCurrent, copyFromTag, description, autoSwitch } = options;
 
 	// Import git utilities
 	const { sanitizeBranchNameForTag, isValidBranchForTag } = await import(
-		'../utils/git-utils.js'
+		"../utils/git-utils.js"
 	);
 
 	// Create a consistent logFn object regardless of context
 	const logFn = mcpLog || {
-		info: (...args) => log('info', ...args),
-		warn: (...args) => log('warn', ...args),
-		error: (...args) => log('error', ...args),
-		debug: (...args) => log('debug', ...args),
-		success: (...args) => log('success', ...args)
+		info: (...args) => log("info", ...args),
+		warn: (...args) => log("warn", ...args),
+		error: (...args) => log("error", ...args),
+		debug: (...args) => log("debug", ...args),
+		success: (...args) => log("success", ...args),
 	};
 
 	try {
 		// Validate branch name
-		if (!branchName || typeof branchName !== 'string') {
-			throw new Error('Branch name is required and must be a string');
+		if (!branchName || typeof branchName !== "string") {
+			throw new Error("Branch name is required and must be a string");
 		}
 
 		// Check if branch name is valid for tag creation
 		if (!isValidBranchForTag(branchName)) {
 			throw new Error(
-				`Branch "${branchName}" cannot be converted to a valid tag name`
+				`Branch "${branchName}" cannot be converted to a valid tag name`,
 			);
 		}
 
@@ -1273,10 +1255,10 @@ async function createTagFromBranch(
 				copyFromCurrent,
 				copyFromTag,
 				description:
-					description || `Tag created from git branch "${branchName}"`
+					description || `Tag created from git branch "${branchName}"`,
 			},
 			context,
-			outputFormat
+			outputFormat,
 		);
 
 		// Update branch-tag mapping
@@ -1290,13 +1272,13 @@ async function createTagFromBranch(
 		}
 
 		// For JSON output, return structured data
-		if (outputFormat === 'json') {
+		if (outputFormat === "json") {
 			return {
 				...createResult,
 				branchName,
 				tagName,
 				mappingUpdated: true,
-				autoSwitched: autoSwitch || false
+				autoSwitched: autoSwitch || false,
 			};
 		}
 
@@ -1306,7 +1288,7 @@ async function createTagFromBranch(
 			tagName,
 			created: true,
 			mappingUpdated: true,
-			autoSwitched: autoSwitch || false
+			autoSwitched: autoSwitch || false,
 		};
 	} catch (error) {
 		logFn.error(`Error creating tag from branch: ${error.message}`);
@@ -1330,7 +1312,7 @@ async function autoSwitchTagForBranch(
 	tasksPath,
 	options = {},
 	context = {},
-	outputFormat = 'text'
+	outputFormat = "text",
 ) {
 	const { mcpLog, projectRoot } = context;
 	const { createIfMissing, copyFromCurrent } = options;
@@ -1340,30 +1322,30 @@ async function autoSwitchTagForBranch(
 		getCurrentBranch,
 		isGitRepository,
 		sanitizeBranchNameForTag,
-		isValidBranchForTag
-	} = await import('../utils/git-utils.js');
+		isValidBranchForTag,
+	} = await import("../utils/git-utils.js");
 
 	// Create a consistent logFn object regardless of context
 	const logFn = mcpLog || {
-		info: (...args) => log('info', ...args),
-		warn: (...args) => log('warn', ...args),
-		error: (...args) => log('error', ...args),
-		debug: (...args) => log('debug', ...args),
-		success: (...args) => log('success', ...args)
+		info: (...args) => log("info", ...args),
+		warn: (...args) => log("warn", ...args),
+		error: (...args) => log("error", ...args),
+		debug: (...args) => log("debug", ...args),
+		success: (...args) => log("success", ...args),
 	};
 
 	try {
 		// Check if we're in a git repository
 		if (!(await isGitRepository(projectRoot))) {
-			logFn.warn('Not in a git repository, cannot auto-switch tags');
-			return { switched: false, reason: 'not_git_repo' };
+			logFn.warn("Not in a git repository, cannot auto-switch tags");
+			return { switched: false, reason: "not_git_repo" };
 		}
 
 		// Get current git branch
 		const currentBranch = await getCurrentBranch(projectRoot);
 		if (!currentBranch) {
-			logFn.warn('Could not determine current git branch');
-			return { switched: false, reason: 'no_current_branch' };
+			logFn.warn("Could not determine current git branch");
+			return { switched: false, reason: "no_current_branch" };
 		}
 
 		logFn.info(`Current git branch: ${currentBranch}`);
@@ -1373,8 +1355,8 @@ async function autoSwitchTagForBranch(
 			logFn.info(`Branch "${currentBranch}" is not suitable for tag creation`);
 			return {
 				switched: false,
-				reason: 'invalid_branch_for_tag',
-				branchName: currentBranch
+				reason: "invalid_branch_for_tag",
+				branchName: currentBranch,
 			};
 		}
 
@@ -1400,10 +1382,10 @@ async function autoSwitchTagForBranch(
 				currentBranch,
 				{
 					copyFromCurrent,
-					autoSwitch: true
+					autoSwitch: true,
 				},
 				context,
-				outputFormat
+				outputFormat,
 			);
 
 			return {
@@ -1411,12 +1393,13 @@ async function autoSwitchTagForBranch(
 				created: true,
 				branchName: currentBranch,
 				tagName,
-				...createResult
+				...createResult,
 			};
-		} else if (tagExists) {
+		}
+		if (tagExists) {
 			// Tag exists, switch to it
 			logFn.info(
-				`Switching to existing tag "${tagName}" for branch "${currentBranch}"`
+				`Switching to existing tag "${tagName}" for branch "${currentBranch}"`,
 			);
 
 			const switchResult = await useTag(
@@ -1424,7 +1407,7 @@ async function autoSwitchTagForBranch(
 				tagName,
 				{},
 				context,
-				outputFormat
+				outputFormat,
 			);
 
 			// Update mapping if it didn't exist
@@ -1437,20 +1420,17 @@ async function autoSwitchTagForBranch(
 				created: false,
 				branchName: currentBranch,
 				tagName,
-				...switchResult
-			};
-		} else {
-			// Tag doesn't exist and createIfMissing is false
-			logFn.warn(
-				`Tag "${tagName}" for branch "${currentBranch}" does not exist`
-			);
-			return {
-				switched: false,
-				reason: 'tag_not_found',
-				branchName: currentBranch,
-				tagName
+				...switchResult,
 			};
 		}
+		// Tag doesn't exist and createIfMissing is false
+		logFn.warn(`Tag "${tagName}" for branch "${currentBranch}" does not exist`);
+		return {
+			switched: false,
+			reason: "tag_not_found",
+			branchName: currentBranch,
+			tagName,
+		};
 	} catch (error) {
 		logFn.error(`Error in auto-switch tag for branch: ${error.message}`);
 		throw error;
@@ -1467,12 +1447,12 @@ async function autoSwitchTagForBranch(
 async function checkAndAutoSwitchTag(projectRoot, tasksPath, context = {}) {
 	try {
 		// Read configuration
-		const configPath = path.join(projectRoot, '.taskmaster', 'config.json');
+		const configPath = path.join(projectRoot, ".taskmaster", "config.json");
 		if (!fs.existsSync(configPath)) {
 			return null;
 		}
 
-		const rawConfig = fs.readFileSync(configPath, 'utf8');
+		const rawConfig = fs.readFileSync(configPath, "utf8");
 		const config = JSON.parse(rawConfig);
 
 		// Git workflow has been removed - return null to disable auto-switching
@@ -1483,7 +1463,7 @@ async function checkAndAutoSwitchTag(projectRoot, tasksPath, context = {}) {
 			tasksPath,
 			{ createIfMissing: true, copyFromCurrent: false },
 			context,
-			'json'
+			"json",
 		);
 	} catch (error) {
 		// Silently fail - this is not critical
@@ -1504,5 +1484,5 @@ export {
 	getTagForBranch,
 	createTagFromBranch,
 	autoSwitchTagForBranch,
-	checkAndAutoSwitchTag
+	checkAndAutoSwitchTag,
 };

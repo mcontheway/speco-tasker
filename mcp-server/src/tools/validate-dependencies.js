@@ -3,15 +3,15 @@
  * Tool for validating task dependencies
  */
 
-import { z } from 'zod';
+import { z } from "zod";
+import { resolveTag } from "../../../scripts/modules/utils.js";
+import { validateDependenciesDirect } from "../core/task-master-core.js";
+import { findTasksPath } from "../core/utils/path-utils.js";
 import {
-	handleApiResult,
 	createErrorResponse,
-	withNormalizedProjectRoot
-} from './utils.js';
-import { validateDependenciesDirect } from '../core/task-master-core.js';
-import { findTasksPath } from '../core/utils/path-utils.js';
-import { resolveTag } from '../../../scripts/modules/utils.js';
+	handleApiResult,
+	withNormalizedProjectRoot,
+} from "./utils.js";
 
 /**
  * Register the validateDependencies tool with the MCP server
@@ -19,21 +19,22 @@ import { resolveTag } from '../../../scripts/modules/utils.js';
  */
 export function registerValidateDependenciesTool(server) {
 	server.addTool({
-		name: 'validate_dependencies',
+		name: "validate_dependencies",
 		description:
-			'Check tasks for dependency issues (like circular references or links to non-existent tasks) without making changes.',
+			"检查任务的依赖关系问题（如循环引用或指向不存在的任务），不进行任何修改。",
 		parameters: z.object({
-			file: z.string().optional().describe('Absolute path to the tasks file'),
+			file: z.string().optional().describe("任务文件的绝对路径"),
 			projectRoot: z
 				.string()
-				.describe('The directory of the project. Must be an absolute path.'),
-			tag: z.string().optional().describe('Tag context to operate on')
+				.optional()
+				.describe("项目根目录（可选，会自动检测）"),
+			tag: z.string().optional().describe("选择要处理的任务分组"),
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
 			try {
 				const resolvedTag = resolveTag({
 					projectRoot: args.projectRoot,
-					tag: args.tag
+					tag: args.tag,
 				});
 				log.info(`Validating dependencies with args: ${JSON.stringify(args)}`);
 
@@ -42,12 +43,12 @@ export function registerValidateDependenciesTool(server) {
 				try {
 					tasksJsonPath = findTasksPath(
 						{ projectRoot: args.projectRoot, file: args.file },
-						log
+						log,
 					);
 				} catch (error) {
 					log.error(`Error finding tasks.json: ${error.message}`);
 					return createErrorResponse(
-						`Failed to find tasks.json: ${error.message}`
+						`Failed to find tasks.json: ${error.message}`,
 					);
 				}
 
@@ -55,14 +56,14 @@ export function registerValidateDependenciesTool(server) {
 					{
 						tasksJsonPath: tasksJsonPath,
 						projectRoot: args.projectRoot,
-						tag: resolvedTag
+						tag: resolvedTag,
 					},
-					log
+					log,
 				);
 
 				if (result.success) {
 					log.info(
-						`Successfully validated dependencies: ${result.data.message}`
+						`Successfully validated dependencies: ${result.data.message}`,
 					);
 				} else {
 					log.error(`Failed to validate dependencies: ${result.error.message}`);
@@ -71,14 +72,14 @@ export function registerValidateDependenciesTool(server) {
 				return handleApiResult(
 					result,
 					log,
-					'Error validating dependencies',
+					"Error validating dependencies",
 					undefined,
-					args.projectRoot
+					args.projectRoot,
 				);
 			} catch (error) {
 				log.error(`Error in validateDependencies tool: ${error.message}`);
 				return createErrorResponse(error.message);
 			}
-		})
+		}),
 	});
 }

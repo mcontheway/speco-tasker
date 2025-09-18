@@ -1,58 +1,39 @@
-import { z } from 'zod';
+import { z } from "zod";
+import { initializeProjectDirect } from "../core/task-master-core.js";
 import {
 	createErrorResponse,
+	generateParameterHelp,
+	getTagInfo,
 	handleApiResult,
-	withNormalizedProjectRoot
-} from './utils.js';
-import { initializeProjectDirect } from '../core/task-master-core.js';
-import { RULE_PROFILES } from '../../../src/constants/profiles.js';
+	withNormalizedProjectRoot,
+} from "./utils.js";
+
+// Generate parameter help for initialize_project tool
+const initializeProjectParameterHelp = generateParameterHelp(
+	"initialize_project",
+	[
+		{
+			name: "projectRoot",
+			description: "项目根目录的绝对路径（可选，会自动检测）",
+		},
+	],
+	[],
+	[
+		"{}", // 无参数，自动检测
+		'{"projectRoot": "/path/to/project"}', // 指定项目根目录
+	],
+);
 
 export function registerInitializeProjectTool(server) {
 	server.addTool({
-		name: 'initialize_project',
+		name: "initialize_project",
 		description:
-			'Initializes a new Task Master project structure by calling the core initialization logic. Creates necessary folders and configuration files for Task Master in the current directory.',
+			"初始化新的Speco Tasker项目结构，调用核心初始化逻辑，在当前目录创建必要的文件夹和配置文件。",
 		parameters: z.object({
-			skipInstall: z
-				.boolean()
-				.optional()
-				.default(false)
-				.describe(
-					'Skip installing dependencies automatically. Never do this unless you are sure the project is already installed.'
-				),
-			addAliases: z
-				.boolean()
-				.optional()
-				.default(true)
-				.describe('Add shell aliases (tm, taskmaster) to shell config file.'),
-			initGit: z
-				.boolean()
-				.optional()
-				.default(true)
-				.describe('Initialize Git repository in project root.'),
-			storeTasksInGit: z
-				.boolean()
-				.optional()
-				.default(true)
-				.describe('Store tasks in Git (tasks.json and tasks/ directory).'),
-			yes: z
-				.boolean()
-				.optional()
-				.default(true)
-				.describe(
-					'Skip prompts and use default values. Always set to true for MCP tools.'
-				),
 			projectRoot: z
 				.string()
-				.describe(
-					'The root directory for the project. ALWAYS SET THIS TO THE PROJECT ROOT DIRECTORY. IF NOT SET, THE TOOL WILL NOT WORK.'
-				),
-			rules: z
-				.array(z.enum(RULE_PROFILES))
 				.optional()
-				.describe(
-					`List of rule profiles to include at initialization. If omitted, defaults to Cursor profile only. Available options: ${RULE_PROFILES.join(', ')}`
-				)
+				.describe("项目的根目录（可选，会自动检测当前工作目录）"),
 		}),
 		execute: withNormalizedProjectRoot(async (args, context) => {
 			const { log } = context;
@@ -60,7 +41,7 @@ export function registerInitializeProjectTool(server) {
 
 			try {
 				log.info(
-					`Executing initialize_project tool with args: ${JSON.stringify(args)}`
+					`Executing initialize_project tool with args: ${JSON.stringify(args)}`,
 				);
 
 				const result = await initializeProjectDirect(args, log, { session });
@@ -68,15 +49,27 @@ export function registerInitializeProjectTool(server) {
 				return handleApiResult(
 					result,
 					log,
-					'Initialization failed',
+					"Initialization failed",
 					undefined,
-					args.projectRoot
+					args.projectRoot,
 				);
 			} catch (error) {
-				const errorMessage = `Project initialization tool failed: ${error.message || 'Unknown error'}`;
+				const errorMessage = `Project initialization failed: ${error.message || "Unknown error"}`;
 				log.error(errorMessage, error);
-				return createErrorResponse(errorMessage, { details: error.stack });
+
+				// Get tag info for better error context
+				const tagInfo = args.projectRoot
+					? getTagInfo(args.projectRoot, log)
+					: null;
+
+				return createErrorResponse(
+					errorMessage,
+					undefined,
+					tagInfo,
+					"INITIALIZE_PROJECT_FAILED",
+					initializeProjectParameterHelp,
+				);
 			}
-		})
+		}),
 	});
 }

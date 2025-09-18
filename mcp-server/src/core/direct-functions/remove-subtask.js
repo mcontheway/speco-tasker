@@ -2,11 +2,11 @@
  * Direct function wrapper for removeSubtask
  */
 
-import { removeSubtask } from '../../../../scripts/modules/task-manager.js';
+import { removeSubtask } from "../../../../scripts/modules/task-manager.js";
 import {
+	disableSilentMode,
 	enableSilentMode,
-	disableSilentMode
-} from '../../../../scripts/modules/utils.js';
+} from "../../../../scripts/modules/utils.js";
 
 /**
  * Remove a subtask from its parent task
@@ -31,14 +31,14 @@ export async function removeSubtaskDirect(args, log) {
 
 		// Check if tasksJsonPath was provided
 		if (!tasksJsonPath) {
-			log.error('removeSubtaskDirect called without tasksJsonPath');
+			log.error("removeSubtaskDirect called without tasksJsonPath");
 			disableSilentMode(); // Disable before returning
 			return {
 				success: false,
 				error: {
-					code: 'MISSING_ARGUMENT',
-					message: 'tasksJsonPath is required'
-				}
+					code: "MISSING_ARGUMENT",
+					message: "tasksJsonPath is required",
+				},
 			};
 		}
 
@@ -47,22 +47,22 @@ export async function removeSubtaskDirect(args, log) {
 			return {
 				success: false,
 				error: {
-					code: 'INPUT_VALIDATION_ERROR',
+					code: "INPUT_VALIDATION_ERROR",
 					message:
-						'Subtask ID is required and must be in format "parentId.subtaskId"'
-				}
+						'Subtask ID is required and must be in format "parentId.subtaskId"',
+				},
 			};
 		}
 
 		// Validate subtask ID format
-		if (!id.includes('.')) {
+		if (!id.includes(".")) {
 			disableSilentMode(); // Disable before returning
 			return {
 				success: false,
 				error: {
-					code: 'INPUT_VALIDATION_ERROR',
-					message: `Invalid subtask ID format: ${id}. Expected format: "parentId.subtaskId"`
-				}
+					code: "INPUT_VALIDATION_ERROR",
+					message: `Invalid subtask ID format: ${id}. Expected format: "parentId.subtaskId"`,
+				},
 			};
 		}
 
@@ -76,7 +76,7 @@ export async function removeSubtaskDirect(args, log) {
 		const generateFiles = !skipGenerate;
 
 		log.info(
-			`Removing subtask ${id} (convertToTask: ${convertToTask}, generateFiles: ${generateFiles})`
+			`Removing subtask ${id} (convertToTask: ${convertToTask}, generateFiles: ${generateFiles})`,
 		);
 
 		// Use the provided tasksPath
@@ -87,8 +87,8 @@ export async function removeSubtaskDirect(args, log) {
 			generateFiles,
 			{
 				projectRoot,
-				tag
-			}
+				tag,
+			},
 		);
 
 		// Restore normal logging
@@ -100,18 +100,17 @@ export async function removeSubtaskDirect(args, log) {
 				success: true,
 				data: {
 					message: `Subtask ${id} successfully converted to task #${result.id}`,
-					task: result
-				}
-			};
-		} else {
-			// Return simple success message for deletion
-			return {
-				success: true,
-				data: {
-					message: `Subtask ${id} successfully removed`
-				}
+					task: result,
+				},
 			};
 		}
+		// Return simple success message for deletion
+		return {
+			success: true,
+			data: {
+				message: `Subtask ${id} successfully removed`,
+			},
+		};
 	} catch (error) {
 		// Ensure silent mode is disabled even if an outer error occurs
 		disableSilentMode();
@@ -120,9 +119,9 @@ export async function removeSubtaskDirect(args, log) {
 		return {
 			success: false,
 			error: {
-				code: 'CORE_FUNCTION_ERROR',
-				message: error.message
-			}
+				code: "CORE_FUNCTION_ERROR",
+				message: error.message,
+			},
 		};
 	}
 }

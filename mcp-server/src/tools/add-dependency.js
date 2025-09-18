@@ -3,15 +3,15 @@
  * Tool for adding a dependency to a task
  */
 
-import { z } from 'zod';
+import { z } from "zod";
+import { resolveTag } from "../../../scripts/modules/utils.js";
+import { addDependencyDirect } from "../core/task-master-core.js";
+import { findTasksPath } from "../core/utils/path-utils.js";
 import {
-	handleApiResult,
 	createErrorResponse,
-	withNormalizedProjectRoot
-} from './utils.js';
-import { addDependencyDirect } from '../core/task-master-core.js';
-import { findTasksPath } from '../core/utils/path-utils.js';
-import { resolveTag } from '../../../scripts/modules/utils.js';
+	handleApiResult,
+	withNormalizedProjectRoot,
+} from "./utils.js";
 
 /**
  * Register the addDependency tool with the MCP server
@@ -19,43 +19,40 @@ import { resolveTag } from '../../../scripts/modules/utils.js';
  */
 export function registerAddDependencyTool(server) {
 	server.addTool({
-		name: 'add_dependency',
-		description: 'Add a dependency relationship between two tasks',
+		name: "add_dependency",
+		description: "在两个任务之间添加依赖关系",
 		parameters: z.object({
-			id: z.string().describe('ID of task that will depend on another task'),
-			dependsOn: z
-				.string()
-				.describe('ID of task that will become a dependency'),
+			id: z.string().describe("将依赖其他任务的任务ID"),
+			dependsOn: z.string().describe("将成为依赖项的任务ID"),
 			file: z
 				.string()
 				.optional()
-				.describe(
-					'Absolute path to the tasks file (default: tasks/tasks.json)'
-				),
+				.describe("任务文件的绝对路径，默认为tasks/tasks.json"),
 			projectRoot: z
 				.string()
-				.describe('The directory of the project. Must be an absolute path.'),
-			tag: z.string().optional().describe('Tag context to operate on')
+				.optional()
+				.describe("项目根目录（可选，会自动检测）"),
+			tag: z.string().optional().describe("选择要处理的任务分组"),
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
 			try {
 				log.info(
-					`Adding dependency for task ${args.id} to depend on ${args.dependsOn}`
+					`Adding dependency for task ${args.id} to depend on ${args.dependsOn}`,
 				);
 				const resolvedTag = resolveTag({
 					projectRoot: args.projectRoot,
-					tag: args.tag
+					tag: args.tag,
 				});
 				let tasksJsonPath;
 				try {
 					tasksJsonPath = findTasksPath(
 						{ projectRoot: args.projectRoot, file: args.file },
-						log
+						log,
 					);
 				} catch (error) {
 					log.error(`Error finding tasks.json: ${error.message}`);
 					return createErrorResponse(
-						`Failed to find tasks.json: ${error.message}`
+						`Failed to find tasks.json: ${error.message}`,
 					);
 				}
 
@@ -68,9 +65,9 @@ export function registerAddDependencyTool(server) {
 						id: args.id,
 						dependsOn: args.dependsOn,
 						projectRoot: args.projectRoot,
-						tag: resolvedTag
+						tag: resolvedTag,
 					},
-					log
+					log,
 					// Remove context object
 				);
 
@@ -85,14 +82,14 @@ export function registerAddDependencyTool(server) {
 				return handleApiResult(
 					result,
 					log,
-					'Error adding dependency',
+					"Error adding dependency",
 					undefined,
-					args.projectRoot
+					args.projectRoot,
 				);
 			} catch (error) {
 				log.error(`Error in addDependency tool: ${error.message}`);
 				return createErrorResponse(error.message);
 			}
-		})
+		}),
 	});
 }

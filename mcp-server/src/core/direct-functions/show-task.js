@@ -6,9 +6,9 @@
 import {
 	findTaskById,
 	readComplexityReport,
-	readJSON
-} from '../../../../scripts/modules/utils.js';
-import { findTasksPath } from '../utils/path-utils.js';
+	readJSON,
+} from "../../../../scripts/modules/utils.js";
+import { findTasksPath } from "../utils/path-utils.js";
 
 /**
  * Direct function wrapper for getting task details.
@@ -16,7 +16,6 @@ import { findTasksPath } from '../utils/path-utils.js';
  * @param {Object} args - Command arguments.
  * @param {string} args.id - Task ID to show.
  * @param {string} [args.file] - Optional path to the tasks file (passed to findTasksPath).
- * @param {string} args.reportPath - Explicit path to the complexity report file.
  * @param {string} [args.status] - Optional status to filter subtasks by.
  * @param {string} args.projectRoot - Absolute path to the project root directory (already normalized by tool).
  * @param {string} [args.tag] - Tag for the task
@@ -27,10 +26,10 @@ import { findTasksPath } from '../utils/path-utils.js';
 export async function showTaskDirect(args, log) {
 	// This function doesn't need session context since it only reads data
 	// Destructure projectRoot and other args. projectRoot is assumed normalized.
-	const { id, file, reportPath, status, projectRoot, tag } = args;
+	const { id, file, status, projectRoot, tag } = args;
 
 	log.info(
-		`Showing task direct function. ID: ${id}, File: ${file}, Status Filter: ${status}, ProjectRoot: ${projectRoot}`
+		`Showing task direct function. ID: ${id}, File: ${file}, Status Filter: ${status}, ProjectRoot: ${projectRoot}`,
 	);
 
 	// --- Path Resolution using the passed (already normalized) projectRoot ---
@@ -39,7 +38,7 @@ export async function showTaskDirect(args, log) {
 		// Use the projectRoot passed directly from args
 		tasksJsonPath = findTasksPath(
 			{ projectRoot: projectRoot, file: file },
-			log
+			log,
 		);
 		log.info(`Resolved tasks path: ${tasksJsonPath}`);
 	} catch (error) {
@@ -47,9 +46,9 @@ export async function showTaskDirect(args, log) {
 		return {
 			success: false,
 			error: {
-				code: 'TASKS_FILE_NOT_FOUND',
-				message: `Failed to find tasks.json: ${error.message}`
-			}
+				code: "TASKS_FILE_NOT_FOUND",
+				message: `Failed to find tasks.json: ${error.message}`,
+			},
 		};
 	}
 	// --- End Path Resolution ---
@@ -60,15 +59,13 @@ export async function showTaskDirect(args, log) {
 		if (!tasksData || !tasksData.tasks) {
 			return {
 				success: false,
-				error: { code: 'INVALID_TASKS_DATA', message: 'Invalid tasks data' }
+				error: { code: "INVALID_TASKS_DATA", message: "Invalid tasks data" },
 			};
 		}
 
-		const complexityReport = readComplexityReport(reportPath);
-
 		// Parse comma-separated IDs
 		const taskIds = id
-			.split(',')
+			.split(",")
 			.map((taskId) => taskId.trim())
 			.filter((taskId) => taskId.length > 0);
 
@@ -76,9 +73,9 @@ export async function showTaskDirect(args, log) {
 			return {
 				success: false,
 				error: {
-					code: 'INVALID_TASK_ID',
-					message: 'No valid task IDs provided'
-				}
+					code: "INVALID_TASK_ID",
+					message: "No valid task IDs provided",
+				},
 			};
 		}
 
@@ -87,17 +84,17 @@ export async function showTaskDirect(args, log) {
 			const { task, originalSubtaskCount } = findTaskById(
 				tasksData.tasks,
 				taskIds[0],
-				complexityReport,
-				status
+				null, // complexityReport parameter removed
+				status,
 			);
 
 			if (!task) {
 				return {
 					success: false,
 					error: {
-						code: 'TASK_NOT_FOUND',
-						message: `Task or subtask with ID ${taskIds[0]} not found`
-					}
+						code: "TASK_NOT_FOUND",
+						message: `Task or subtask with ID ${taskIds[0]} not found`,
+					},
 				};
 			}
 
@@ -120,8 +117,8 @@ export async function showTaskDirect(args, log) {
 			const { task, originalSubtaskCount } = findTaskById(
 				tasksData.tasks,
 				taskId,
-				complexityReport,
-				status
+				null, // complexityReport parameter removed
+				status,
 			);
 
 			if (task) {
@@ -137,7 +134,7 @@ export async function showTaskDirect(args, log) {
 		});
 
 		log.info(
-			`Successfully retrieved ${foundTasks.length} of ${taskIds.length} requested tasks.`
+			`Successfully retrieved ${foundTasks.length} of ${taskIds.length} requested tasks.`,
 		);
 
 		// Return multiple tasks with metadata
@@ -148,17 +145,17 @@ export async function showTaskDirect(args, log) {
 				requestedIds: taskIds,
 				foundCount: foundTasks.length,
 				notFoundIds: notFoundIds,
-				isMultiple: true
-			}
+				isMultiple: true,
+			},
 		};
 	} catch (error) {
 		log.error(`Error showing task ${id}: ${error.message}`);
 		return {
 			success: false,
 			error: {
-				code: 'TASK_OPERATION_ERROR',
-				message: error.message
-			}
+				code: "TASK_OPERATION_ERROR",
+				message: error.message,
+			},
 		};
 	}
 }

@@ -1,322 +1,134 @@
-<a name="readme-top"></a>
-
-<div align='center'>
-<a href="https://github.com/mcontheway/taskmaster-no-ai" target="_blank"><img src="https://img.shields.io/badge/TaskMaster-Project-blue?style=for-the-badge&logo=github" alt="TaskMaster Project" style="width: 250px; height: 55px;" width="250" height="55"/></a>
+<div align="center">
+  <h1>Speco Tasker</h1>
+  <p><strong>纯净的任务管理系统 | Pure Task Management System</strong></p>
+  <p>专为 Cursor、Windsurf 等 AI 编辑器内置 Agent 优化的任务管理工具</p>
+  <p>Task management tool optimized for built-in Agents in AI editors like Cursor and Windsurf</p>
 </div>
 
-<p align="center">
-  <img src="./images/logo.png?raw=true" alt="Taskmaster logo">
-</p>
+## 📚 文档导航 | Documentation Navigation
 
-<p align="center">
-<b>Taskmaster</b>: A task management system for AI-driven development, designed to work seamlessly with any AI chat.
-</p>
+- [📖 快速开始](docs/installation-guide.md) - 安装和配置指南 | Installation and Configuration Guide
+- [📝 更新日志](docs/changelog.md) - 版本更新历史 | Version Update History
+- [📋 命令参考](docs/command-reference-zh.md) - 详细命令说明 | Detailed Command Reference
+- [⚙️ 配置指南](docs/configuration-zh.md) - 配置选项详解 | Configuration Options Details
 
-<p align="center">
-  <!-- TODO: Add Discord server link when available -->
-  <!-- TODO: Add documentation site link when available -->
-</p>
+---
 
-<p align="center">
-  <a href="https://github.com/mcontheway/taskmaster-no-ai/actions/workflows/ci.yml"><img src="https://github.com/mcontheway/taskmaster-no-ai/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <a href="https://github.com/mcontheway/taskmaster-no-ai/stargazers"><img src="https://img.shields.io/github/stars/mcontheway/taskmaster-no-ai?style=social" alt="GitHub stars"></a>
-  <!-- TODO: Add npm version badge when package is published -->
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT%20with%20Commons%20Clause-blue.svg" alt="License"></a>
-</p>
+## 📖 关于 Speco Tasker | About Speco Tasker
 
-<p align="center">
-  <!-- TODO: Add NPM download badges when package is published -->
-</p>
+**Speco Tasker** 是 [TaskMaster-AI](https://github.com/eyaltoledano/claude-task-master) 的纯净版本，完全移除了所有AI功能，专为现代AI编辑器设计。
 
-## TaskMaster Project
+**Speco Tasker** is a pure version of [TaskMaster-AI](https://github.com/eyaltoledano/claude-task-master), with all AI features completely removed, specifically designed for modern AI editors.
 
-*Transforming AI-driven development workflows*
+### 🤔 为什么移除AI功能？ | Why Remove AI Features?
 
-A task management system for AI-driven development with Claude, designed to work seamlessly with Cursor AI.
+在 Cursor、Windsurf 等 AI 编辑器中，内置 Agent 具有天然优势：
 
-## Documentation
+Built-in Agents in AI editors like Cursor and Windsurf have natural advantages:
 
-📚 <!-- TODO: Add documentation site link when available -->
+- **免除配置步骤** - 无需额外配置外部AI服务 | **No Configuration Required** - No need to configure external AI services
+- **降低使用成本** - 直接使用编辑器内置资源 | **Reduced Usage Cost** - Directly use built-in editor resources
+- **上下文更充分** - Agent 对项目情况更为了解 | **More Context** - Agent has better understanding of project context
+- **集成更自然** - 与编辑器生态系统完美融合 | **Natural Integration** - Perfect integration with editor ecosystem
 
-<!-- TODO: Add documentation site description when available -->
+### ✅ 核心功能 | Core Features
 
-### Quick Reference
+#### 📋 任务管理系统 | Task Management System
+- **完整的CRUD操作** - 创建、读取、更新、删除任务 | **Complete CRUD Operations** - Create, Read, Update, Delete tasks
+- **状态跟踪** - pending、in-progress、done、review、deferred、cancelled | **Status Tracking** - pending, in-progress, done, review, deferred, cancelled
+- **子任务管理** - 支持多层级任务分解和组织 | **Subtask Management** - Support for multi-level task decomposition and organization
+- **批量操作** - 支持多个任务的批量状态更新和操作 | **Batch Operations** - Support for batch status updates and operations on multiple tasks
 
-The following documentation is also available in the `docs` directory:
+#### 🏷️ 多标签系统 | Multi-Tag System
+- **标签组织** - 按功能、分支、环境、项目阶段组织任务 | **Tag Organization** - Organize tasks by function, branch, environment, project phase
+- **标签切换** - 快速切换不同的工作上下文 | **Tag Switching** - Quickly switch between different work contexts
+- **跨标签移动** - 支持任务在不同标签间的移动和复制 | **Cross-Tag Movement** - Support for moving and copying tasks between different tags
+- **标签管理** - 创建、重命名、删除、合并标签 | **Tag Management** - Create, rename, delete, merge tags
+- **并行开发** - 支持多条开发线同时进行 | **Parallel Development** - Support for multiple development lines simultaneously
 
-- [Configuration Guide](docs/configuration.md) - Set up environment variables and customize Task Master
-- [Tutorial](docs/tutorial.md) - Step-by-step guide to getting started with Task Master
-- [Command Reference](docs/command-reference.md) - Complete list of all available commands
-- [Task Structure](docs/task-structure.md) - Understanding the task format and features
-- [Example Interactions](docs/examples.md) - Common Cursor AI interaction examples
-- [Migration Guide](docs/migration-guide.md) - Guide to migrating to the new project structure
+#### 🔗 智能依赖管理 | Intelligent Dependency Management
+- **依赖设置** - 为任务设置前置和后续依赖关系 | **Dependency Setup** - Set prerequisite and subsequent dependency relationships for tasks
+- **依赖验证** - 自动检查依赖关系的有效性和完整性 | **Dependency Validation** - Automatically check validity and completeness of dependency relationships
+- **循环检测** - 智能检测和防止循环依赖关系 | **Cycle Detection** - Intelligently detect and prevent circular dependency relationships
+- **依赖修复** - 自动修复无效或损坏的依赖关系 | **Dependency Repair** - Automatically fix invalid or broken dependency relationships
+- **依赖可视化** - 显示任务的依赖状态和层级关系 | **Dependency Visualization** - Display task dependency status and hierarchical relationships
 
-#### Manual Installation for Cursor
+#### 📊 进度追踪与分析 | Progress Tracking & Analysis
+- **完成度统计** - 可视化的进度条和百分比显示 | **Completion Statistics** - Visual progress bars and percentage display
+- **任务计数** - 按状态、标签、优先级统计任务数量 | **Task Counting** - Count tasks by status, tag, priority
+- **时间追踪** - 记录任务的创建、更新、完成时间 | **Time Tracking** - Record task creation, update, completion times
+- **工作量评估** - 基于任务复杂度进行工作量预估 | **Workload Assessment** - Estimate workload based on task complexity
+- **报告生成** - 生成详细的项目进度和状态报告 | **Report Generation** - Generate detailed project progress and status reports
 
-<!-- TODO: Add Cursor one-click installation link when MCP server is published -->
-<!-- TODO: Add installation instructions when ready -->
+#### 🔄 高级任务操作 | Advanced Task Operations
+- **任务移动** - 支持任务在不同位置的重排序和重组 | **Task Movement** - Support for reordering and reorganizing tasks in different positions
+- **任务拆分** - 将复杂任务分解为多个子任务 | **Task Splitting** - Break down complex tasks into multiple subtasks
+- **任务合并** - 将相关任务合并为更大任务 | **Task Merging** - Merge related tasks into larger tasks
+- **任务复制** - 在不同标签间复制任务模板 | **Task Copying** - Copy task templates between different tags
+- **任务搜索** - 支持ID、标题、内容的关键字搜索 | **Task Search** - Support for ID, title, content keyword search
 
-> **Note:** <!-- TODO: Update installation notes when MCP server is published -->
+#### 📝 文档与集成 | Documentation & Integration
+- **文档生成** - 自动生成任务Markdown文档 | **Document Generation** - Automatically generate task Markdown documents
+- **MCP集成** - 与 Cursor、Windsurf 等AI编辑器的深度集成 | **MCP Integration** - Deep integration with AI editors like Cursor and Windsurf
+- **CLI工具** - 完整的命令行界面支持 | **CLI Tools** - Complete command-line interface support
+- **配置管理** - 灵活的项目配置和个性化设置 | **Configuration Management** - Flexible project configuration and personalized settings
+- **跨平台支持** - 支持 Windows、macOS、Linux | **Cross-Platform Support** - Support for Windows, macOS, Linux
 
-## Requirements
+## ⚙️ 配置和使用 | Configuration & Usage
 
-Taskmaster utilizes AI across several commands, and those require a separate API key. You can use a variety of models from different AI providers provided you add your API keys. For example, if you want to use Claude 3.7, you'll need an Anthropic API key.
+### 安装配置 | Installation & Setup
 
-You can define 3 types of models to be used: the main model, the research model, and the fallback model (in case either the main or research fail). Whatever model you use, its provider API key must be present in either mcp.json or .env.
+```bash
+# 全局安装 | Global Installation
+npm install -g speco-tasker
 
-At least one (1) of the following is required:
+# 初始化项目 | Initialize Project
+task-master init  # 自动检测配置，一键完成
+```
 
-- Anthropic API key (Claude API)
-- OpenAI API key
-- Google Gemini API key
-- Perplexity API key (for research model)
-- xAI API Key (for research or main model)
-- OpenRouter API Key (for research or main model)
-- Claude Code (no API key required - requires Claude Code CLI)
+### MCP 配置 | MCP Configuration
 
-Using the research model is optional but highly recommended. You will need at least ONE API key (unless using Claude Code). Adding all API keys enables you to seamlessly switch between model providers at will.
-
-## Quick Start
-
-### Option 1: MCP (Recommended)
-
-MCP (Model Control Protocol) lets you run Task Master directly from your editor.
-
-#### 1. Add your MCP config at the following path depending on your editor
-
-| Editor       | Scope   | Linux/macOS Path                      | Windows Path                                      | Key          |
-| ------------ | ------- | ------------------------------------- | ------------------------------------------------- | ------------ |
-| **Cursor**   | Global  | `~/.cursor/mcp.json`                  | `%USERPROFILE%\.cursor\mcp.json`                  | `mcpServers` |
-|              | Project | `<project_folder>/.cursor/mcp.json`   | `<project_folder>\.cursor\mcp.json`               | `mcpServers` |
-| **Windsurf** | Global  | `~/.codeium/windsurf/mcp_config.json` | `%USERPROFILE%\.codeium\windsurf\mcp_config.json` | `mcpServers` |
-| **VS Code**  | Project | `<project_folder>/.vscode/mcp.json`   | `<project_folder>\.vscode\mcp.json`               | `servers`    |
-
-##### Manual Configuration
-
-###### Cursor & Windsurf (`mcpServers`)
-
+**Cursor 用户：| Cursor Users:**
 ```json
 {
   "mcpServers": {
-    "task-master-ai": {
+    "speco-tasker": {
       "command": "npx",
-      "args": ["-y", "--package=task-master-ai", "task-master-ai"],
-      "env": {
-        "ANTHROPIC_API_KEY": "YOUR_ANTHROPIC_API_KEY_HERE",
-        "PERPLEXITY_API_KEY": "YOUR_PERPLEXITY_API_KEY_HERE",
-        "OPENAI_API_KEY": "YOUR_OPENAI_KEY_HERE",
-        "GOOGLE_API_KEY": "YOUR_GOOGLE_KEY_HERE",
-        "MISTRAL_API_KEY": "YOUR_MISTRAL_KEY_HERE",
-        "GROQ_API_KEY": "YOUR_GROQ_KEY_HERE",
-        "OPENROUTER_API_KEY": "YOUR_OPENROUTER_KEY_HERE",
-        "XAI_API_KEY": "YOUR_XAI_KEY_HERE",
-        "AZURE_OPENAI_API_KEY": "YOUR_AZURE_KEY_HERE",
-        "OLLAMA_API_KEY": "YOUR_OLLAMA_API_KEY_HERE"
-      }
+      "args": ["speco-tasker"]
     }
   }
 }
 ```
 
-> 🔑 Replace `YOUR_…_KEY_HERE` with your real API keys. You can remove keys you don't use.
-
-> **Note**: If you see `0 tools enabled` in the MCP settings, try removing the `--package=task-master-ai` flag from `args`.
-
-###### VS Code (`servers` + `type`)
-
+**VS Code 用户：| VS Code Users:**
 ```json
 {
   "servers": {
-    "task-master-ai": {
+    "speco-tasker": {
       "command": "npx",
-      "args": ["-y", "--package=task-master-ai", "task-master-ai"],
-      "env": {
-        "ANTHROPIC_API_KEY": "YOUR_ANTHROPIC_API_KEY_HERE",
-        "PERPLEXITY_API_KEY": "YOUR_PERPLEXITY_API_KEY_HERE",
-        "OPENAI_API_KEY": "YOUR_OPENAI_KEY_HERE",
-        "GOOGLE_API_KEY": "YOUR_GOOGLE_KEY_HERE",
-        "MISTRAL_API_KEY": "YOUR_MISTRAL_KEY_HERE",
-        "GROQ_API_KEY": "YOUR_GROQ_KEY_HERE",
-        "OPENROUTER_API_KEY": "YOUR_OPENROUTER_KEY_HERE",
-        "XAI_API_KEY": "YOUR_XAI_KEY_HERE",
-        "AZURE_OPENAI_API_KEY": "YOUR_AZURE_KEY_HERE",
-        "OLLAMA_API_KEY": "YOUR_OLLAMA_API_KEY_HERE"
-      },
+      "args": ["speco-tasker"],
       "type": "stdio"
     }
   }
 }
 ```
 
-> 🔑 Replace `YOUR_…_KEY_HERE` with your real API keys. You can remove keys you don't use.
-
-#### 2. (Cursor-only) Enable Taskmaster MCP
-
-Open Cursor Settings (Ctrl+Shift+J) ➡ Click on MCP tab on the left ➡ Enable task-master-ai with the toggle
-
-#### 3. (Optional) Configure the models you want to use
-
-In your editor's AI chat pane, say:
-
-```txt
-Change the main, research and fallback models to <model_name>, <model_name> and <model_name> respectively.
-```
-
-For example, to use Claude Code (no API key required):
-```txt
-Change the main model to claude-code/sonnet
-```
-
-[Table of available models](docs/models.md) | [Claude Code setup](docs/examples/claude-code-usage.md)
-
-#### 4. Initialize Task Master
-
-In your editor's AI chat pane, say:
-
-```txt
-Initialize taskmaster-ai in my project
-```
-
-#### 5. Make sure you have a PRD (Recommended)
-
-For **new projects**: Create your PRD at `.taskmaster/docs/prd.txt`  
-For **existing projects**: You can use `scripts/prd.txt` or migrate with `task-master migrate`
-
-An example PRD template is available after initialization in `.taskmaster/templates/example_prd.txt`.
-
-> [!NOTE]
-> While a PRD is recommended for complex projects, you can always create individual tasks by asking "Can you help me implement [description of what you want to do]?" in chat.
-
-**Always start with a detailed PRD.**
-
-The more detailed your PRD, the better the generated tasks will be.
-
-#### 6. Common Commands
-
-Use your AI assistant to:
-
-- Parse requirements: `Can you parse my PRD at scripts/prd.txt?`
-- Plan next step: `What's the next task I should work on?`
-- Implement a task: `Can you help me implement task 3?`
-- View multiple tasks: `Can you show me tasks 1, 3, and 5?`
-- Expand a task: `Can you help me expand task 4?`
-- **Research fresh information**: `Research the latest best practices for implementing JWT authentication with Node.js`
-- **Research with context**: `Research React Query v5 migration strategies for our current API implementation in src/api.js`
-
-[More examples on how to use Task Master in chat](docs/examples.md)
-
-### Option 2: Using Command Line
-
-#### Installation
+### 基础使用 | Basic Usage
 
 ```bash
-# Install globally
-npm install -g task-master-ai
-
-# OR install locally within your project
-npm install task-master-ai
-```
-
-#### Initialize a new project
-
-```bash
-# If installed globally
-task-master init
-
-# If installed locally
-npx task-master init
-
-# Initialize project with specific rules
-task-master init --rules cursor,windsurf,vscode
-```
-
-This will prompt you for project details and set up a new project with the necessary files and structure.
-
-#### Common Commands
-
-```bash
-# Initialize a new project
-task-master init
-
-# Parse a PRD and generate tasks
-task-master parse-prd your-prd.txt
-
-# List all tasks
+# 查看任务列表 | View task list
 task-master list
 
-# Show the next task to work on
+# 查看下一个任务 | View next task
 task-master next
 
-# Show specific task(s) - supports comma-separated IDs
-task-master show 1,3,5
+# 创建新任务（规范驱动开发） | Create new task (Specification-driven Development)
+task-master add-task --title "用户认证" --description "实现JWT用户认证功能" --details "使用JWT库实现token生成和验证" --test-strategy "单元测试token生成，集成测试认证流程" --spec-files "docs/auth-spec.md"
 
-# Research fresh information with project context
-task-master research "What are the latest best practices for JWT authentication?"
+# 更新任务状态 | Update task status
+task-master set-status --id=1 --status=done
 
-# Move tasks between tags (cross-tag movement)
-task-master move --from=5 --from-tag=backlog --to-tag=in-progress
-task-master move --from=5,6,7 --from-tag=backlog --to-tag=done --with-dependencies
-task-master move --from=5 --from-tag=backlog --to-tag=in-progress --ignore-dependencies
-
-# Generate task files
-task-master generate
-
-# Add rules after initialization
-task-master rules add windsurf,roo,vscode
+# 管理标签 | Manage tags
+task-master add-tag feature-name
+task-master use-tag feature-name
 ```
-
-## Claude Code Support
-
-Task Master now supports Claude models through the Claude Code CLI, which requires no API key:
-
-- **Models**: `claude-code/opus` and `claude-code/sonnet`
-- **Requirements**: Claude Code CLI installed
-- **Benefits**: No API key needed, uses your local Claude instance
-
-[Learn more about Claude Code setup](docs/examples/claude-code-usage.md)
-
-## Troubleshooting
-
-### If `task-master init` doesn't respond
-
-Try running it with Node directly:
-
-```bash
-node node_modules/claude-task-master/scripts/init.js
-```
-
-Or clone the repository and run:
-
-```bash
-git clone https://github.com/mcontheway/taskmaster-no-ai.git
-cd taskmaster-no-ai
-node scripts/init.js
-```
-
-## Contributors
-
-<!-- TODO: Add contributors section when repository has contributors -->
-<!-- TODO: Add contributors image when available -->
-
-## Star History
-
-<!-- TODO: Add Star History chart when repository has sufficient activity -->
-
-## Licensing
-
-Task Master is licensed under the MIT License with Commons Clause. This means you can:
-
-✅ **Allowed**:
-
-- Use Task Master for any purpose (personal, commercial, academic)
-- Modify the code
-- Distribute copies
-- Create and sell products built using Task Master
-
-❌ **Not Allowed**:
-
-- Sell Task Master itself
-- Offer Task Master as a hosted service
-- Create competing products based on Task Master
-
-See the [LICENSE](LICENSE) file for the complete license text and [licensing details](docs/licensing.md) for more information.

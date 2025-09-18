@@ -3,12 +3,12 @@
  * Direct function implementation for deleting a tag
  */
 
-import { deleteTag } from '../../../../scripts/modules/task-manager/tag-management.js';
+import { deleteTag } from "../../../../scripts/modules/task-manager/tag-management.js";
 import {
+	disableSilentMode,
 	enableSilentMode,
-	disableSilentMode
-} from '../../../../scripts/modules/utils.js';
-import { createLogWrapper } from '../../tools/utils.js';
+} from "../../../../scripts/modules/utils.js";
+import { createLogWrapper } from "../../tools/utils.js";
 
 /**
  * Direct function wrapper for deleting a tag with error handling.
@@ -36,27 +36,27 @@ export async function deleteTagDirect(args, log, context = {}) {
 	try {
 		// Check if tasksJsonPath was provided
 		if (!tasksJsonPath) {
-			log.error('deleteTagDirect called without tasksJsonPath');
+			log.error("deleteTagDirect called without tasksJsonPath");
 			disableSilentMode();
 			return {
 				success: false,
 				error: {
-					code: 'MISSING_ARGUMENT',
-					message: 'tasksJsonPath is required'
-				}
+					code: "MISSING_ARGUMENT",
+					message: "tasksJsonPath is required",
+				},
 			};
 		}
 
 		// Check required parameters
-		if (!name || typeof name !== 'string') {
-			log.error('Missing required parameter: name');
+		if (!name || typeof name !== "string") {
+			log.error("Missing required parameter: name");
 			disableSilentMode();
 			return {
 				success: false,
 				error: {
-					code: 'MISSING_PARAMETER',
-					message: 'Tag name is required and must be a string'
-				}
+					code: "MISSING_PARAMETER",
+					message: "Tag name is required and must be a string",
+				},
 			};
 		}
 
@@ -64,7 +64,7 @@ export async function deleteTagDirect(args, log, context = {}) {
 
 		// Prepare options
 		const options = {
-			yes // For MCP, we always skip confirmation prompts
+			yes, // For MCP, we always skip confirmation prompts
 		};
 
 		// Call the deleteTag function
@@ -75,9 +75,9 @@ export async function deleteTagDirect(args, log, context = {}) {
 			{
 				session,
 				mcpLog,
-				projectRoot
+				projectRoot,
 			},
-			'json' // outputFormat - use 'json' to suppress CLI UI
+			"json", // outputFormat - use 'json' to suppress CLI UI
 		);
 
 		// Restore normal logging
@@ -91,8 +91,8 @@ export async function deleteTagDirect(args, log, context = {}) {
 				tasksDeleted: result.tasksDeleted,
 				wasCurrentTag: result.wasCurrentTag,
 				switchedToMaster: result.switchedToMaster,
-				message: `Successfully deleted tag "${result.tagName}"`
-			}
+				message: `Successfully deleted tag "${result.tagName}"`,
+			},
 		};
 	} catch (error) {
 		// Make sure to restore normal logging even if there's an error
@@ -102,9 +102,9 @@ export async function deleteTagDirect(args, log, context = {}) {
 		return {
 			success: false,
 			error: {
-				code: error.code || 'DELETE_TAG_ERROR',
-				message: error.message
-			}
+				code: error.code || "DELETE_TAG_ERROR",
+				message: error.message,
+			},
 		};
 	}
 }

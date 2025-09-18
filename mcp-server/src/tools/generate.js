@@ -3,16 +3,16 @@
  * Tool to generate individual task files from tasks.json
  */
 
-import { z } from 'zod';
+import path from "node:path";
+import { z } from "zod";
+import { resolveTag } from "../../../scripts/modules/utils.js";
+import { generateTaskFilesDirect } from "../core/task-master-core.js";
+import { findTasksPath } from "../core/utils/path-utils.js";
 import {
-	handleApiResult,
 	createErrorResponse,
-	withNormalizedProjectRoot
-} from './utils.js';
-import { generateTaskFilesDirect } from '../core/task-master-core.js';
-import { findTasksPath } from '../core/utils/path-utils.js';
-import { resolveTag } from '../../../scripts/modules/utils.js';
-import path from 'path';
+	handleApiResult,
+	withNormalizedProjectRoot,
+} from "./utils.js";
 
 /**
  * Register the generate tool with the MCP server
@@ -20,19 +20,19 @@ import path from 'path';
  */
 export function registerGenerateTool(server) {
 	server.addTool({
-		name: 'generate',
-		description:
-			'Generates individual task files in tasks/ directory based on tasks.json',
+		name: "generate",
+		description: "基于tasks.json在tasks目录中生成单独的任务文件",
 		parameters: z.object({
-			file: z.string().optional().describe('Absolute path to the tasks file'),
+			file: z.string().optional().describe("任务文件的绝对路径"),
 			output: z
 				.string()
 				.optional()
-				.describe('Output directory (default: same directory as tasks file)'),
+				.describe("输出目录（默认：与任务文件相同目录）"),
 			projectRoot: z
 				.string()
-				.describe('The directory of the project. Must be an absolute path.'),
-			tag: z.string().optional().describe('Tag context to operate on')
+				.optional()
+				.describe("项目根目录（可选，会自动检测）"),
+			tag: z.string().optional().describe("选择要处理的任务分组"),
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
 			try {
@@ -40,19 +40,19 @@ export function registerGenerateTool(server) {
 
 				const resolvedTag = resolveTag({
 					projectRoot: args.projectRoot,
-					tag: args.tag
+					tag: args.tag,
 				});
 				// Use args.projectRoot directly (guaranteed by withNormalizedProjectRoot)
 				let tasksJsonPath;
 				try {
 					tasksJsonPath = findTasksPath(
 						{ projectRoot: args.projectRoot, file: args.file },
-						log
+						log,
 					);
 				} catch (error) {
 					log.error(`Error finding tasks.json: ${error.message}`);
 					return createErrorResponse(
-						`Failed to find tasks.json: ${error.message}`
+						`Failed to find tasks.json: ${error.message}`,
 					);
 				}
 
@@ -65,31 +65,31 @@ export function registerGenerateTool(server) {
 						tasksJsonPath: tasksJsonPath,
 						outputDir: outputDir,
 						projectRoot: args.projectRoot,
-						tag: resolvedTag
+						tag: resolvedTag,
 					},
 					log,
-					{ session }
+					{ session },
 				);
 
 				if (result.success) {
 					log.info(`Successfully generated task files: ${result.data.message}`);
 				} else {
 					log.error(
-						`Failed to generate task files: ${result.error?.message || 'Unknown error'}`
+						`Failed to generate task files: ${result.error?.message || "Unknown error"}`,
 					);
 				}
 
 				return handleApiResult(
 					result,
 					log,
-					'Error generating task files',
+					"Error generating task files",
 					undefined,
-					args.projectRoot
+					args.projectRoot,
 				);
 			} catch (error) {
 				log.error(`Error in generate tool: ${error.message}`);
 				return createErrorResponse(error.message);
 			}
-		})
+		}),
 	});
 }

@@ -3,7 +3,7 @@
 
  - [ ] 🐛 Bug fix
  - [ ] ✨ Feature
- - [ ] 🔌 Integration
+ - [ ] 🔧 Enhancement
  - [ ] 📝 Docs
  - [ ] 🧹 Refactor
  - [ ] Other:
@@ -27,13 +27,13 @@
 - [ ] Created changeset: `npm run changeset`
 - [ ] Tests pass: `npm test`
 - [ ] Format check passes: `npm run format-check` (or `npm run format` to fix)
-- [ ] Addressed CodeRabbit comments (if any)
+- [ ] Linting passes: `npm run lint` (or `npm run lint:fix` to fix)
 - [ ] Linked related issues (if any)
 - [ ] Manually tested the changes
 
 ## Changelog Entry
 <!-- One line describing the change for users -->
-<!-- Example: "Added Kiro IDE integration with automatic task status updates" -->
+<!-- Example: "Added support for task dependencies and improved CLI output formatting" -->
 
 ---
 

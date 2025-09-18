@@ -1,4 +1,4 @@
-import chalk from 'chalk';
+import chalk from "chalk";
 
 /**
  * Factory for creating progress bar elements
@@ -6,7 +6,7 @@ import chalk from 'chalk';
 class ProgressBarFactory {
 	constructor(multibar) {
 		if (!multibar) {
-			throw new Error('Multibar instance is required');
+			throw new Error("Multibar instance is required");
 		}
 		this.multibar = multibar;
 	}
@@ -15,8 +15,8 @@ class ProgressBarFactory {
 	 * Creates a progress bar with the given format
 	 */
 	createBar(format, payload = {}) {
-		if (typeof format !== 'string') {
-			throw new Error('Format must be a string');
+		if (typeof format !== "string") {
+			throw new Error("Format must be a string");
 		}
 
 		const bar = this.multibar.create(
@@ -27,8 +27,8 @@ class ProgressBarFactory {
 				format,
 				barsize: 1,
 				hideCursor: true,
-				clearOnComplete: false
-			}
+				clearOnComplete: false,
+			},
 		);
 
 		bar.update(1, payload);
@@ -48,8 +48,8 @@ class ProgressBarFactory {
 	 * Creates a data row
 	 */
 	createRow(rowFormat, payload) {
-		if (!payload || typeof payload !== 'object') {
-			throw new Error('Payload must be an object');
+		if (!payload || typeof payload !== "object") {
+			throw new Error("Payload must be an object");
 		}
 		return this.createBar(rowFormat, payload);
 	}
@@ -103,8 +103,8 @@ export function createBorder(multibar, borderFormat) {
 export class ProgressTableBuilder {
 	constructor(multibar) {
 		this.factory = new ProgressBarFactory(multibar);
-		this.borderStyle = '─';
-		this.columnSeparator = '|';
+		this.borderStyle = "─";
+		this.columnSeparator = "|";
 	}
 
 	/**
@@ -113,13 +113,13 @@ export class ProgressTableBuilder {
 	showHeader(columns = null) {
 		// Default columns for task display
 		const defaultColumns = [
-			{ text: 'TASK', width: 6 },
-			{ text: 'PRI', width: 5 },
-			{ text: 'TITLE', width: 64 }
+			{ text: "TASK", width: 6 },
+			{ text: "PRI", width: 5 },
+			{ text: "TITLE", width: 64 },
 		];
 
 		const cols = columns || defaultColumns;
-		const headerText = ' ' + cols.map((c) => c.text).join(' | ') + ' ';
+		const headerText = ` ${cols.map((c) => c.text).join(" | ")} `;
 		const borderLine = this.createBorderLine(cols.map((c) => c.width));
 
 		this.factory.createHeader(headerText, borderLine);
@@ -132,7 +132,7 @@ export class ProgressTableBuilder {
 	createBorderLine(columnWidths) {
 		return columnWidths
 			.map((width) => this.borderStyle.repeat(width))
-			.join('─┼─');
+			.join("─┼─");
 	}
 
 	/**
@@ -143,7 +143,7 @@ export class ProgressTableBuilder {
 		this.factory.createRow(format, { title });
 
 		// Add separator after each row
-		const borderLine = '------+-----+' + '─'.repeat(64);
+		const borderLine = `------+-----+${"─".repeat(64)}`;
 		this.factory.createBorder(borderLine);
 		return this;
 	}

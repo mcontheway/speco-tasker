@@ -1,69 +1,81 @@
 /**
  * tools/add-task.js
- * Tool to add a new task using AI
+ * Tool to manually add a new task
  */
 
-import { z } from 'zod';
+import { z } from "zod";
+import { resolveTag } from "../../../scripts/modules/utils.js";
+import { addTaskDirect } from "../core/task-master-core.js";
+import { findTasksPath } from "../core/utils/path-utils.js";
 import {
 	createErrorResponse,
+	generateParameterHelp,
+	getTagInfo,
 	handleApiResult,
-	withNormalizedProjectRoot
-} from './utils.js';
-import { addTaskDirect } from '../core/task-master-core.js';
-import { findTasksPath } from '../core/utils/path-utils.js';
-import { resolveTag } from '../../../scripts/modules/utils.js';
+	withNormalizedProjectRoot,
+} from "./utils.js";
 
 /**
  * Register the addTask tool with the MCP server
  * @param {Object} server - FastMCP server instance
  */
+// Generate parameter help for add_task tool
+const addTaskParameterHelp = generateParameterHelp(
+	"add_task",
+	[
+		{ name: "projectRoot", description: "项目根目录（可选，会自动检测）" },
+		{ name: "title", description: "任务标题（必需）" },
+		{ name: "description", description: "任务描述（必需）" },
+		{ name: "details", description: "实现细节（必需）" },
+		{ name: "testStrategy", description: "测试策略（必需）" },
+		{
+			name: "spec_files",
+			description: "规范文档文件路径列表，用逗号分隔（必需，至少一个文档）",
+		},
+	],
+	[
+		{ name: "dependencies", description: "依赖的任务ID列表，用逗号分隔" },
+		{ name: "priority", description: "任务优先级（high, medium, low）" },
+		{ name: "logs", description: "任务相关的日志信息" },
+		{ name: "file", description: "任务文件路径（默认：tasks/tasks.json）" },
+		{ name: "tag", description: "选择要处理的任务分组" },
+	],
+	[
+		'{"projectRoot": "/path/to/project", "title": "用户认证", "description": "实现JWT用户认证功能", "details": "使用JWT库实现token生成和验证", "testStrategy": "单元测试token生成，集成测试认证流程", "spec_files": "docs/auth-spec.md,docs/api-spec.yaml"}',
+		'{"projectRoot": "/path/to/project", "title": "数据库迁移", "description": "创建用户表结构", "details": "使用SQL创建users表，包含id, email, password字段", "testStrategy": "测试表创建和数据插入", "spec_files": "docs/database-schema.md,docs/migration-plan.md"}',
+	],
+);
+
 export function registerAddTaskTool(server) {
 	server.addTool({
-		name: 'add_task',
-		description: 'Add a new task using AI',
+		name: "add_task",
+		description: "手动添加新任务",
 		parameters: z.object({
-			prompt: z
+			projectRoot: z
 				.string()
 				.optional()
-				.describe(
-					'Description of the task to add (required if not using manual fields)'
-				),
-			title: z
-				.string()
-				.optional()
-				.describe('Task title (for manual task creation)'),
-			description: z
-				.string()
-				.optional()
-				.describe('Task description (for manual task creation)'),
-			details: z
-				.string()
-				.optional()
-				.describe('Implementation details (for manual task creation)'),
-			testStrategy: z
-				.string()
-				.optional()
-				.describe('Test strategy (for manual task creation)'),
+				.describe("项目根目录（可选，会自动检测）"),
+			title: z.string().describe("任务标题（必需）"),
+			description: z.string().describe("任务描述（必需）"),
+			details: z.string().describe("实现细节（必需）"),
+			testStrategy: z.string().describe("测试策略（必需）"),
 			dependencies: z
 				.string()
 				.optional()
-				.describe('Comma-separated list of task IDs this task depends on'),
+				.describe("依赖的任务ID列表，用逗号分隔"),
 			priority: z
 				.string()
 				.optional()
-				.describe('Task priority (high, medium, low)'),
+				.describe("任务优先级，支持high, medium, low"),
+			spec_files: z
+				.string()
+				.describe("规范文档文件路径列表，用逗号分隔（必需，至少一个文档）"),
+			logs: z.string().optional().describe("任务相关的日志信息"),
 			file: z
 				.string()
 				.optional()
-				.describe('Path to the tasks file (default: tasks/tasks.json)'),
-			projectRoot: z
-				.string()
-				.describe('The directory of the project. Must be an absolute path.'),
-			tag: z.string().optional().describe('Tag context to operate on'),
-			research: z
-				.boolean()
-				.optional()
-				.describe('Whether to use research capabilities for task creation')
+				.describe("任务文件路径，默认为tasks/tasks.json"),
+			tag: z.string().optional().describe("选择要处理的任务分组"),
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
 			try {
@@ -71,7 +83,7 @@ export function registerAddTaskTool(server) {
 
 				const resolvedTag = resolveTag({
 					projectRoot: args.projectRoot,
-					tag: args.tag
+					tag: args.tag,
 				});
 
 				// Use args.projectRoot directly (guaranteed by withNormalizedProjectRoot)
@@ -79,45 +91,68 @@ export function registerAddTaskTool(server) {
 				try {
 					tasksJsonPath = findTasksPath(
 						{ projectRoot: args.projectRoot, file: args.file },
-						log
+						log,
 					);
 				} catch (error) {
-					log.error(`Error finding tasks.json: ${error.message}`);
+					const errorMessage = `Failed to find tasks.json: ${error.message || "File not found"}`;
+					log.error(`[add-task tool] ${errorMessage}`);
+
+					// Get tag info for better error context
+					const tagInfo = args.projectRoot
+						? getTagInfo(args.projectRoot, log)
+						: null;
+
 					return createErrorResponse(
-						`Failed to find tasks.json: ${error.message}`
+						errorMessage,
+						undefined,
+						tagInfo,
+						"TASKS_JSON_NOT_FOUND",
 					);
 				}
 
-				// Call the direct functionP
+				// Call the direct function
 				const result = await addTaskDirect(
 					{
 						tasksJsonPath: tasksJsonPath,
-						prompt: args.prompt,
 						title: args.title,
 						description: args.description,
 						details: args.details,
 						testStrategy: args.testStrategy,
 						dependencies: args.dependencies,
 						priority: args.priority,
-						research: args.research,
+						spec_files: args.spec_files,
+						logs: args.logs,
 						projectRoot: args.projectRoot,
-						tag: resolvedTag
+						tag: resolvedTag,
 					},
 					log,
-					{ session }
+					{ session },
 				);
 
 				return handleApiResult(
 					result,
 					log,
-					'Error adding task',
+					"Error adding task",
 					undefined,
-					args.projectRoot
+					args.projectRoot,
 				);
 			} catch (error) {
-				log.error(`Error in add-task tool: ${error.message}`);
-				return createErrorResponse(error.message);
+				const errorMessage = `添加任务失败: ${error.message || "未知错误"}`;
+				log.error(`[add-task tool] ${errorMessage}`);
+
+				// Get tag info for better error context
+				const tagInfo = args.projectRoot
+					? getTagInfo(args.projectRoot, log)
+					: null;
+
+				return createErrorResponse(
+					errorMessage,
+					undefined,
+					tagInfo,
+					"ADD_TASK_FAILED",
+					addTaskParameterHelp,
+				);
 			}
-		})
+		}),
 	});
 }

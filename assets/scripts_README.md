@@ -1,445 +1,331 @@
-# Meta-Development Script
+# 元开发脚本
 
-This folder contains a **meta-development script** (`dev.js`) and related utilities that manage tasks for an AI-driven or traditional software development workflow. The script revolves around a `tasks.json` file, which holds an up-to-date list of development tasks.
+此文件夹包含一个**元开发脚本**（`dev.js`）以及相关工具，用于管理 AI 驱动或传统软件开发工作流程的任务。该脚本围绕一个 `tasks.json` 文件展开，该文件保存最新的开发任务列表。
 
-## Overview
+## 概述
 
-In an AI-driven development process—particularly with tools like [Cursor](https://www.cursor.so/)—it's beneficial to have a **single source of truth** for tasks. This script allows you to:
+在 AI 驱动的开发过程中——特别是使用像 [Cursor](https://www.cursor.so/) 这样的工具时——拥有一个**单一的事实来源**对于任务管理非常有益。此脚本允许您：
 
-1. **Parse** a PRD or requirements document (`.txt`) to initialize a set of tasks (`tasks.json`).
-2. **List** all existing tasks (IDs, statuses, titles).
-3. **Update** tasks to accommodate new prompts or architecture changes (useful if you discover "implementation drift").
-4. **Generate** individual task files (e.g., `task_001.txt`) for easy reference or to feed into an AI coding workflow.
-5. **Set task status**—mark tasks as `done`, `pending`, or `deferred` based on progress.
-6. **Expand** tasks with subtasks—break down complex tasks into smaller, more manageable subtasks.
-7. **Research-backed subtask generation**—use Perplexity AI to generate more informed and contextually relevant subtasks.
-8. **Clear subtasks**—remove subtasks from specified tasks to allow regeneration or restructuring.
-9. **Show task details**—display detailed information about a specific task and its subtasks.
+1. **解析** PRD 或需求文档（`.txt`）以初始化一组任务（`tasks.json`）。
+2. **列出**所有现有任务（ID、状态、标题）。
+3. **更新**任务以适应新的提示或架构变更（当您发现"实现偏差"时很有用）。
+4. **生成**单个任务文件（例如 `task_001.txt`），便于参考或输入到 AI 编码工作流程中。
+5. **设置任务状态**——根据进度将任务标记为 `done`、`pending` 或 `deferred`。
+6. **扩展**任务为子任务——将复杂任务分解为更小、更易管理的子任务。
+7. **基于研究的子任务生成**——使用 Perplexity AI 生成更有信息量和上下文相关的子任务。
+8. **清除子任务**——从指定任务中移除子任务，以允许重新生成或重组。
+9. **显示任务详情**——显示特定任务及其子任务的详细信息。
 
-## Configuration (Updated)
+## 配置（已更新）
 
-Task Master configuration is now managed through two primary methods:
+Task Master 配置现在通过两种主要方法进行管理：
 
-1.  **`.taskmaster/config.json` File (Project Root - Primary)**
+1.  **`.taskmaster/config.json` 文件（项目根目录 - 主要配置）**
 
-    - Stores AI model selections (`main`, `research`, `fallback`), model parameters (`maxTokens`, `temperature`), `logLevel`, `defaultSubtasks`, `defaultPriority`, `projectName`, etc.
-    - Managed using the `task-master models --setup` command or the `models` MCP tool.
-    - This is the main configuration file for most settings.
+    - 存储项目配置信息，包括 `logLevel`、`defaultSubtasks`、`defaultPriority`、`projectName` 等。
+    - 这是大多数设置的主要配置文件。
 
-2.  **Environment Variables (`.env` File - API Keys Only)**
-    - Used **only** for sensitive **API Keys** (e.g., `ANTHROPIC_API_KEY`, `PERPLEXITY_API_KEY`).
-    - Create a `.env` file in your project root for CLI usage.
-    - See `assets/env.example` for required key names.
+2.  **环境变量（`.env` 文件）**
+    - 用于可选的环境变量配置。
+    - 在项目根目录创建 `.env` 文件以供 CLI 使用。
 
-**Important:** Settings like `MODEL`, `MAX_TOKENS`, `TEMPERATURE`, `TASKMASTER_LOG_LEVEL`, etc., are **no longer set via `.env`**. Use `task-master models --setup` instead.
+**重要提示：**像 `TASKMASTER_LOG_LEVEL` 等设置可以通过配置文件进行管理。
 
-## How It Works
+## 工作原理
 
-1. **`tasks.json`**:
+1. **`tasks.json`**：
 
-   - A JSON file at the project root containing an array of tasks (each with `id`, `title`, `description`, `status`, etc.).
-   - The `meta` field can store additional info like the project's name, version, or reference to the PRD.
-   - Tasks can have `subtasks` for more detailed implementation steps.
-   - Dependencies are displayed with status indicators (✅ for completed, ⏱️ for pending) to easily track progress.
+   - 位于项目根目录的 JSON 文件，包含任务数组（每个任务都有 `id`、`title`、`description`、`status` 等）。
+   - `meta` 字段可以存储额外信息，如项目名称、版本或对 PRD 的引用。
+   - 任务可以有 `subtasks`，用于更详细的实现步骤。
+   - 依赖关系以状态指示器显示（✅ 表示已完成，⏱️ 表示待处理），便于跟踪进度。
 
-2. **CLI Commands**
-   You can run the commands via:
+2. **CLI 命令**
+   您可以通过以下方式运行命令：
 
    ```bash
-   # If installed globally
+   # 如果全局安装
    task-master [command] [options]
 
-   # If using locally within the project
+   # 如果在项目中使用本地版本
    node scripts/dev.js [command] [options]
    ```
 
-   Available commands:
+   可用命令：
 
-   - `init`: Initialize a new project
-   - `parse-prd`: Generate tasks from a PRD document
-   - `list`: Display all tasks with their status
-   - `update`: Update tasks based on new information
-   - `generate`: Create individual task files
-   - `set-status`: Change a task's status
-   - `expand`: Add subtasks to a task or all tasks
-   - `clear-subtasks`: Remove subtasks from specified tasks
-   - `next`: Determine the next task to work on based on dependencies
-   - `show`: Display detailed information about a specific task
-   - `analyze-complexity`: Analyze task complexity and generate recommendations
-   - `complexity-report`: Display the complexity analysis in a readable format
-   - `add-dependency`: Add a dependency between tasks
-   - `remove-dependency`: Remove a dependency from a task
-   - `validate-dependencies`: Check for invalid dependencies
-   - `fix-dependencies`: Fix invalid dependencies automatically
-   - `add-task`: Add a new task using AI
+   - `init`: 初始化新项目
+   - `list`: 显示所有任务及其状态
+   - `update`: 根据新信息更新任务
+   - `generate`: 创建单个任务文件
+   - `set-status`: 更改任务状态
+   - `clear-subtasks`: 从指定任务中移除子任务
+   - `next`: 根据依赖关系确定下一个要处理的任务
+   - `show`: 显示特定任务的详细信息
+   - `add-dependency`: 在任务之间添加依赖关系
+   - `remove-dependency`: 从任务中移除依赖关系
+   - `validate-dependencies`: 检查无效的依赖关系
+   - `fix-dependencies`: 自动修复无效的依赖关系
+   - `add-task`: 添加新任务
 
-   Run `task-master --help` or `node scripts/dev.js --help` to see detailed usage information.
+   运行 `task-master --help` 或 `node scripts/dev.js --help` 查看详细使用信息。
 
-## Listing Tasks
+## 列出任务
 
-The `list` command allows you to view all tasks and their status:
+`list` 命令允许您查看所有任务及其状态：
 
 ```bash
-# List all tasks
+# 列出所有任务
 task-master list
 
-# List tasks with a specific status
+# 列出特定状态的任务
 task-master list --status=pending
 
-# List tasks and include their subtasks
+# 列出任务并包含其子任务
 task-master list --with-subtasks
 
-# List tasks with a specific status and include their subtasks
+# 列出特定状态的任务并包含其子任务
 task-master list --status=pending --with-subtasks
 ```
 
-## Updating Tasks
+## 更新任务
 
-The `update` command allows you to update tasks based on new information or implementation changes:
+`update` 命令允许您根据新信息或实现变更来更新任务：
 
 ```bash
-# Update tasks starting from ID 4 with a new prompt
-task-master update --from=4 --prompt="Refactor tasks from ID 4 onward to use Express instead of Fastify"
+# 从 ID 4 开始更新任务，使用新的提示
+task-master update --from=4 --prompt="重构从 ID 4 开始的任务，使用 Express 而不是 Fastify"
 
-# Update all tasks (default from=1)
-task-master update --prompt="Add authentication to all relevant tasks"
+# 更新所有任务（默认从 1 开始）
+task-master update --prompt="为所有相关任务添加认证"
 
-# Specify a different tasks file
-task-master update --file=custom-tasks.json --from=5 --prompt="Change database from MongoDB to PostgreSQL"
+# 指定不同的任务文件
+task-master update --file=custom-tasks.json --from=5 --prompt="将数据库从 MongoDB 更改为 PostgreSQL"
 ```
 
-Notes:
+注意事项：
 
-- The `--prompt` parameter is required and should explain the changes or new context
-- Only tasks that aren't marked as 'done' will be updated
-- Tasks with ID >= the specified --from value will be updated
+- `--prompt` 参数是必需的，应该解释变更或新上下文
+- 只有未标记为 'done' 的任务才会被更新
+- ID >= 指定 --from 值的任务将被更新
 
-## Setting Task Status
+## 设置任务状态
 
-The `set-status` command allows you to change a task's status:
+`set-status` 命令允许您更改任务的状态：
 
 ```bash
-# Mark a task as done
+# 将任务标记为完成
 task-master set-status --id=3 --status=done
 
-# Mark a task as pending
+# 将任务标记为待处理
 task-master set-status --id=4 --status=pending
 
-# Mark a specific subtask as done
+# 将特定子任务标记为完成
 task-master set-status --id=3.1 --status=done
 
-# Mark multiple tasks at once
+# 一次性标记多个任务
 task-master set-status --id=1,2,3 --status=done
 ```
 
-Notes:
+注意事项：
 
-- When marking a parent task as "done", all of its subtasks will automatically be marked as "done" as well
-- Common status values are 'done', 'pending', and 'deferred', but any string is accepted
-- You can specify multiple task IDs by separating them with commas
-- Subtask IDs are specified using the format `parentId.subtaskId` (e.g., `3.1`)
-- Dependencies are updated to show completion status (✅ for completed, ⏱️ for pending) throughout the system
+- 当将父任务标记为"done"时，其所有子任务也将自动标记为"done"
+- 常见状态值是 'done'、'pending' 和 'deferred'，但接受任何字符串
+- 您可以通过用逗号分隔来指定多个任务 ID
+- 子任务 ID 使用 `parentId.subtaskId` 格式指定（例如 `3.1`）
+- 依赖关系会更新以显示完成状态（✅ 表示已完成，⏱️ 表示待处理）贯穿整个系统
 
-## Expanding Tasks
+## 扩展任务
 
-The `expand` command allows you to break down tasks into subtasks for more detailed implementation:
 
-```bash
-# Expand a specific task with 3 subtasks (default)
-task-master expand --id=3
+## 清除子任务
 
-# Expand a specific task with 5 subtasks
-task-master expand --id=3 --num=5
-
-# Expand a task with additional context
-task-master expand --id=3 --prompt="Focus on security aspects"
-
-# Expand all pending tasks that don't have subtasks
-task-master expand --all
-
-# Force regeneration of subtasks for all pending tasks
-task-master expand --all --force
-
-# Use Perplexity AI for research-backed subtask generation
-task-master expand --id=3 --research
-
-# Use Perplexity AI for research-backed generation on all pending tasks
-task-master expand --all --research
-```
-
-## Clearing Subtasks
-
-The `clear-subtasks` command allows you to remove subtasks from specified tasks:
+`clear-subtasks` 命令允许您从指定任务中移除子任务：
 
 ```bash
-# Clear subtasks from a specific task
+# 从特定任务清除子任务
 task-master clear-subtasks --id=3
 
-# Clear subtasks from multiple tasks
+# 从多个任务清除子任务
 task-master clear-subtasks --id=1,2,3
 
-# Clear subtasks from all tasks
+# 从所有任务清除子任务
 task-master clear-subtasks --all
 ```
 
-Notes:
+注意事项：
 
-- After clearing subtasks, task files are automatically regenerated
-- This is useful when you want to regenerate subtasks with a different approach
-- Can be combined with the `expand` command to immediately generate new subtasks
-- Works with both parent tasks and individual subtasks
+- 清除子任务后，任务文件会自动重新生成
+- 当您想要使用不同方法重新生成子任务时，这很有用
+- 可以与 `expand` 命令结合使用，以立即生成新的子任务
+- 适用于父任务和单个子任务
 
-## AI Integration (Updated)
 
-- The script now uses a unified AI service layer (`ai-services-unified.js`).
-- Model selection (e.g., Claude vs. Perplexity for `--research`) is determined by the configuration in `.taskmaster/config.json` based on the requested `role` (`main` or `research`).
-- API keys are automatically resolved from your `.env` file (for CLI) or MCP session environment.
-- To use the research capabilities (e.g., `expand --research`), ensure you have:
-  1.  Configured a model for the `research` role using `task-master models --setup` (Perplexity models are recommended).
-  2.  Added the corresponding API key (e.g., `PERPLEXITY_API_KEY`) to your `.env` file.
+## 日志记录
 
-## Logging
+该脚本支持由 `TASKMASTER_LOG_LEVEL` 环境变量控制的不同日志级别：
 
-The script supports different logging levels controlled by the `TASKMASTER_LOG_LEVEL` environment variable:
+- `debug`: 详细信息，通常用于故障排除
+- `info`: 确认事情按预期工作（默认值）
+- `warn`: 不阻止执行的警告消息
+- `error`: 可能阻止执行的错误消息
 
-- `debug`: Detailed information, typically useful for troubleshooting
-- `info`: Confirmation that things are working as expected (default)
-- `warn`: Warning messages that don't prevent execution
-- `error`: Error messages that might prevent execution
+当设置 `DEBUG=true` 时，调试日志也会写入项目根目录中的 `dev-debug.log` 文件。
 
-When `DEBUG=true` is set, debug logs are also written to a `dev-debug.log` file in the project root.
+## 管理任务依赖关系
 
-## Managing Task Dependencies
-
-The `add-dependency` and `remove-dependency` commands allow you to manage task dependencies:
+`add-dependency` 和 `remove-dependency` 命令允许您管理任务依赖关系：
 
 ```bash
-# Add a dependency to a task
+# 为任务添加依赖关系
 task-master add-dependency --id=<id> --depends-on=<id>
 
-# Remove a dependency from a task
+# 从任务中移除依赖关系
 task-master remove-dependency --id=<id> --depends-on=<id>
 ```
 
-These commands:
+这些命令：
 
-1. **Allow precise dependency management**:
+1. **允许精确的依赖关系管理**：
 
-   - Add dependencies between tasks with automatic validation
-   - Remove dependencies when they're no longer needed
-   - Update task files automatically after changes
+   - 在任务之间添加依赖关系，并进行自动验证
+   - 在不再需要时移除依赖关系
+   - 更改后自动更新任务文件
 
-2. **Include validation checks**:
+2. **包含验证检查**：
 
-   - Prevent circular dependencies (a task depending on itself)
-   - Prevent duplicate dependencies
-   - Verify that both tasks exist before adding/removing dependencies
-   - Check if dependencies exist before attempting to remove them
+   - 防止循环依赖（任务依赖于自身）
+   - 防止重复依赖
+   - 在添加/移除依赖之前验证两个任务都存在
+   - 在尝试移除之前检查依赖是否存在
 
-3. **Provide clear feedback**:
+3. **提供清晰的反馈**：
 
-   - Success messages confirm when dependencies are added/removed
-   - Error messages explain why operations failed (if applicable)
+   - 成功消息确认何时添加/移除了依赖关系
+   - 错误消息解释操作失败的原因（如果适用）
 
-4. **Automatically update task files**:
-   - Regenerates task files to reflect dependency changes
-   - Ensures tasks and their files stay synchronized
+4. **自动更新任务文件**：
+   - 重新生成任务文件以反映依赖关系变更
+   - 确保任务及其文件保持同步
 
-## Dependency Validation and Fixing
+## 依赖验证和修复
 
-The script provides two specialized commands to ensure task dependencies remain valid and properly maintained:
+该脚本提供两个专门的命令来确保任务依赖关系保持有效并得到正确维护：
 
-### Validating Dependencies
+### 验证依赖关系
 
-The `validate-dependencies` command allows you to check for invalid dependencies without making changes:
+`validate-dependencies` 命令允许您检查无效的依赖关系而不进行更改：
 
 ```bash
-# Check for invalid dependencies in tasks.json
+# 检查 tasks.json 中的无效依赖关系
 task-master validate-dependencies
 
-# Specify a different tasks file
+# 指定不同的任务文件
 task-master validate-dependencies --file=custom-tasks.json
 ```
 
-This command:
+此命令：
 
-- Scans all tasks and subtasks for non-existent dependencies
-- Identifies potential self-dependencies (tasks referencing themselves)
-- Reports all found issues without modifying files
-- Provides a comprehensive summary of dependency state
-- Gives detailed statistics on task dependencies
+- 扫描所有任务和子任务以查找不存在的依赖关系
+- 识别潜在的自依赖（任务引用自身）
+- 报告所有发现的问题而不修改文件
+- 提供依赖状态的综合摘要
+- 提供任务依赖关系的详细统计信息
 
-Use this command to audit your task structure before applying fixes.
+使用此命令在应用修复之前审核您的任务结构。
 
-### Fixing Dependencies
+### 修复依赖关系
 
-The `fix-dependencies` command proactively finds and fixes all invalid dependencies:
+`fix-dependencies` 命令主动查找并修复所有无效的依赖关系：
 
 ```bash
-# Find and fix all invalid dependencies
+# 查找并修复所有无效的依赖关系
 task-master fix-dependencies
 
-# Specify a different tasks file
+# 指定不同的任务文件
 task-master fix-dependencies --file=custom-tasks.json
 ```
 
-This command:
+此命令：
 
-1. **Validates all dependencies** across tasks and subtasks
-2. **Automatically removes**:
-   - References to non-existent tasks and subtasks
-   - Self-dependencies (tasks depending on themselves)
-3. **Fixes issues in both**:
-   - The tasks.json data structure
-   - Individual task files during regeneration
-4. **Provides a detailed report**:
-   - Types of issues fixed (non-existent vs. self-dependencies)
-   - Number of tasks affected (tasks vs. subtasks)
-   - Where fixes were applied (tasks.json vs. task files)
-   - List of all individual fixes made
+1. **验证所有依赖关系**贯穿任务和子任务
+2. **自动移除**：
+   - 对不存在的任务和子任务的引用
+   - 自依赖（任务依赖于自身）
+3. **修复两个位置的问题**：
+   - tasks.json 数据结构
+   - 重新生成期间的单个任务文件
+4. **提供详细报告**：
+   - 修复问题的类型（不存在的依赖关系 vs. 自依赖）
+   - 受影响的任务数量（任务 vs. 子任务）
+   - 应用修复的位置（tasks.json vs. 任务文件）
+   - 所有单独修复的列表
 
-This is especially useful when tasks have been deleted or IDs have changed, potentially breaking dependency chains.
+这在任务已被删除或 ID 已更改时特别有用，可能破坏依赖链。
 
-## Analyzing Task Complexity
 
-The `analyze-complexity` command allows you to automatically assess task complexity and generate expansion recommendations:
 
-```bash
-# Analyze all tasks and generate expansion recommendations
-task-master analyze-complexity
 
-# Specify a custom output file
-task-master analyze-complexity --output=custom-report.json
+## 查找下一个任务
 
-# Override the model used for analysis
-task-master analyze-complexity --model=claude-3-opus-20240229
-
-# Set a custom complexity threshold (1-10)
-task-master analyze-complexity --threshold=6
-
-# Use Perplexity AI for research-backed complexity analysis
-task-master analyze-complexity --research
-```
-
-Notes:
-
-- The command uses Claude to analyze each task's complexity (or Perplexity with --research flag)
-- Tasks are scored on a scale of 1-10
-- Each task receives a recommended number of subtasks based on DEFAULT_SUBTASKS configuration
-- The default output path is `scripts/task-complexity-report.json`
-- Each task in the analysis includes a ready-to-use `expansionCommand` that can be copied directly to the terminal or executed programmatically
-- Tasks with complexity scores below the threshold (default: 5) may not need expansion
-- The research flag provides more contextual and informed complexity assessments
-
-### Integration with Expand Command
-
-The `expand` command automatically checks for and uses complexity analysis if available:
+`next` 命令帮助您根据依赖关系和状态确定下一个要处理的任务：
 
 ```bash
-# Expand a task, using complexity report recommendations if available
-task-master expand --id=8
-
-# Expand all tasks, prioritizing by complexity score if a report exists
-task-master expand --all
-
-# Override recommendations with explicit values
-task-master expand --id=8 --num=5 --prompt="Custom prompt"
-```
-
-When a complexity report exists:
-
-- The `expand` command will use the recommended subtask count from the report (unless overridden)
-- It will use the tailored expansion prompt from the report (unless a custom prompt is provided)
-- When using `--all`, tasks are sorted by complexity score (highest first)
-- The `--research` flag is preserved from the complexity analysis to expansion
-
-The output report structure is:
-
-```json
-{
-  "meta": {
-    "generatedAt": "2023-06-15T12:34:56.789Z",
-    "tasksAnalyzed": 20,
-    "thresholdScore": 5,
-    "projectName": "Your Project Name",
-    "usedResearch": true
-  },
-  "complexityAnalysis": [
-    {
-      "taskId": 8,
-      "taskTitle": "Develop Implementation Drift Handling",
-      "complexityScore": 9.5,
-      "recommendedSubtasks": 6,
-      "expansionPrompt": "Create subtasks that handle detecting...",
-      "reasoning": "This task requires sophisticated logic...",
-      "expansionCommand": "task-master expand --id=8 --num=6 --prompt=\"Create subtasks...\" --research"
-    }
-    // More tasks sorted by complexity score (highest first)
-  ]
-}
-```
-
-## Finding the Next Task
-
-The `next` command helps you determine which task to work on next based on dependencies and status:
-
-```bash
-# Show the next task to work on
+# 显示下一个要处理的任务
 task-master next
 
-# Specify a different tasks file
+# 指定不同的任务文件
 task-master next --file=custom-tasks.json
 ```
 
-This command:
+此命令：
 
-1. Identifies all **eligible tasks** - pending or in-progress tasks whose dependencies are all satisfied (marked as done)
-2. **Prioritizes** these eligible tasks by:
-   - Priority level (high > medium > low)
-   - Number of dependencies (fewer dependencies first)
-   - Task ID (lower ID first)
-3. **Displays** comprehensive information about the selected task:
-   - Basic task details (ID, title, priority, dependencies)
-   - Detailed description and implementation details
-   - Subtasks if they exist
-4. Provides **contextual suggested actions**:
-   - Command to mark the task as in-progress
-   - Command to mark the task as done when completed
-   - Commands for working with subtasks (update status or expand)
+1. 识别所有**符合条件的任务** - 待处理或进行中的任务，其所有依赖关系都已满足（标记为完成）
+2. **优先排序**这些符合条件的任务：
+   - 优先级（高 > 中 > 低）
+   - 依赖关系数量（较少依赖优先）
+   - 任务 ID（较低 ID 优先）
+3. **显示**关于选中任务的综合信息：
+   - 基本任务详情（ID、标题、优先级、依赖关系）
+   - 详细描述和实现详情
+   - 子任务（如果存在）
+4. 提供**上下文建议操作**：
+   - 将任务标记为进行中的命令
+   - 完成后将任务标记为完成的命令
+   - 处理子任务的命令（更新状态或扩展）
 
-This feature ensures you're always working on the most appropriate task based on your project's current state and dependency structure.
+此功能确保您始终根据项目的当前状态和依赖结构处理最合适的任务。
 
-## Showing Task Details
+## 显示任务详情
 
-The `show` command allows you to view detailed information about a specific task:
+`show` 命令允许您查看特定任务的详细信息：
 
 ```bash
-# Show details for a specific task
+# 显示特定任务的详情
 task-master show 1
 
-# Alternative syntax with --id option
+# 使用 --id 选项的替代语法
 task-master show --id=1
 
-# Show details for a subtask
+# 显示子任务的详情
 task-master show --id=1.2
 
-# Specify a different tasks file
+# 指定不同的任务文件
 task-master show 3 --file=custom-tasks.json
 ```
 
-This command:
+此命令：
 
-1. **Displays comprehensive information** about the specified task:
-   - Basic task details (ID, title, priority, dependencies, status)
-   - Full description and implementation details
-   - Test strategy information
-   - Subtasks if they exist
-2. **Handles both regular tasks and subtasks**:
-   - For regular tasks, shows all subtasks and their status
-   - For subtasks, shows the parent task relationship
-3. **Provides contextual suggested actions**:
-   - Commands to update the task status
-   - Commands for working with subtasks
-   - For subtasks, provides a link to view the parent task
+1. **显示指定任务的综合信息**：
+   - 基本任务详情（ID、标题、优先级、依赖关系、状态）
+   - 完整描述和实现详情
+   - 测试策略信息
+   - 子任务（如果存在）
+2. **处理常规任务和子任务**：
+   - 对于常规任务，显示所有子任务及其状态
+   - 对于子任务，显示父任务关系
+3. **提供上下文建议操作**：
+   - 更新任务状态的命令
+   - 处理子任务的命令
+   - 对于子任务，提供查看父任务的链接
 
-This command is particularly useful when you need to examine a specific task in detail before implementing it or when you want to check the status and details of a particular task.
+此命令在您需要详细检查特定任务以便实现它时特别有用，或者当您想要检查特定任务的状态和详情时。

@@ -22,7 +22,7 @@ alwaysApply: false
     - **Responsibilities**:
       - Reading/writing `tasks.json` with tagged task lists support.
       - Implementing functions for task CRUD, parsing PRDs, expanding tasks, updating status, etc.
-      - **Tagged Task Lists**: Handles task organization across multiple contexts (tags) like "master", branch names, or project phases.
+      - **Tagged Task Lists**: Handles task organization across multiple contexts (tags) like "main", branch names, or project phases.
       - **Tag Resolution**: Provides backward compatibility by resolving tagged format to legacy format transparently.
       - **Delegating AI interactions** to the `ai-services-unified.js` layer.
       - Accessing non-AI configuration via `config-manager.js` getters.
@@ -89,7 +89,7 @@ alwaysApply: false
 
 ```json
 {
-  "master": {
+  "main": {
     "tasks": [/* standard task objects */]
   },
   "feature-branch": {
@@ -100,7 +100,7 @@ alwaysApply: false
 
 **Key Components:**
 
-- **Silent Migration**: Automatically transforms legacy `{"tasks": [...]}` format to tagged format `{"master": {"tasks": [...]}}` on first read
+- **Silent Migration**: Automatically transforms legacy `{"tasks": [...]}` format to tagged format `{"main": {"tasks": [...]}}` on first read
 - **Tag Resolution Layer**: Provides 100% backward compatibility by intercepting tagged format and returning legacy format to existing code
 - **Configuration Integration**: `global.defaultTag` and `tags` section in config.json manage tag system settings
 - **State Management**: `.taskmaster/state.json` tracks current tag, migration status, and tag-branch mappings

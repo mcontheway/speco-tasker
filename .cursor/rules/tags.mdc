@@ -56,7 +56,7 @@ programInstance
     }
 
     // 2. Resolve tag using standard pattern
-    const tag = options.tag || getCurrentTag(projectRoot) || 'master';
+    const tag = options.tag || getCurrentTag(projectRoot) || 'main';
 
     // 3. Call core function with proper context
     await coreFunction(
@@ -95,11 +95,11 @@ The tag resolution follows this exact priority order:
 
 1. **Explicit `--tag` flag**: `options.tag`
 2. **Current active tag**: `getCurrentTag(projectRoot)`  
-3. **Default fallback**: `'master'`
+3. **Default fallback**: `'main'`
 
 ```javascript
 // ✅ DO: Standard tag resolution pattern
-const tag = options.tag || getCurrentTag(projectRoot) || 'master';
+const tag = options.tag || getCurrentTag(projectRoot) || 'main';
 ```
 
 ## Commands Requiring Updates
@@ -161,13 +161,13 @@ The `generate` command must use tag-aware file naming:
 
 ```javascript
 // ✅ DO: Tag-aware file naming
-const taskFileName = targetTag === 'master' 
+const taskFileName = targetTag === 'main' 
   ? `task_${task.id.toString().padStart(3, '0')}.txt`
   : `task_${task.id.toString().padStart(3, '0')}_${targetTag}.txt`;
 ```
 
 **Examples:**
-- Master tag: `task_001.txt`, `task_002.txt`
+- main tag: `task_001.txt`, `task_002.txt`
 - Other tags: `task_001_feature.txt`, `task_002_feature.txt`
 
 ## Common Anti-Patterns
@@ -177,7 +177,7 @@ const taskFileName = targetTag === 'master'
 import { readJSON, writeJSON } from '../utils.js'; // Missing getCurrentTag
 
 // ❌ DON'T: Hard-coded tag resolution
-const tag = options.tag || 'master'; // Missing getCurrentTag
+const tag = options.tag || 'main'; // Missing getCurrentTag
 
 // ❌ DON'T: Missing --tag option
 .option('-f, --file <file>', 'Path to tasks file') // Missing --tag option
@@ -196,7 +196,7 @@ For each command, verify:
 
 - [ ] Imports `getCurrentTag` from utils.js
 - [ ] Has `--tag <tag>` CLI option
-- [ ] Uses standard tag resolution: `options.tag || getCurrentTag(projectRoot) || 'master'`
+- [ ] Uses standard tag resolution: `options.tag || getCurrentTag(projectRoot) || 'main'`
 - [ ] Finds `projectRoot` with error handling
 - [ ] Passes `{ projectRoot, tag }` context to core functions
 - [ ] Core functions accept and use context parameter
@@ -214,7 +214,7 @@ node bin/task-master command-name --tag test-tag
 node bin/task-master use-tag test-tag
 node bin/task-master command-name
 
-# Test with master tag (default)
+# Test with main tag (default)
 node bin/task-master use-tag master  
 node bin/task-master command-name
 ```

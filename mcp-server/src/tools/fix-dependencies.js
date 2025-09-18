@@ -3,29 +3,30 @@
  * Tool for automatically fixing invalid task dependencies
  */
 
-import { z } from 'zod';
+import { z } from "zod";
+import { resolveTag } from "../../../scripts/modules/utils.js";
+import { fixDependenciesDirect } from "../core/task-master-core.js";
+import { findTasksPath } from "../core/utils/path-utils.js";
 import {
-	handleApiResult,
 	createErrorResponse,
-	withNormalizedProjectRoot
-} from './utils.js';
-import { fixDependenciesDirect } from '../core/task-master-core.js';
-import { findTasksPath } from '../core/utils/path-utils.js';
-import { resolveTag } from '../../../scripts/modules/utils.js';
+	handleApiResult,
+	withNormalizedProjectRoot,
+} from "./utils.js";
 /**
  * Register the fixDependencies tool with the MCP server
  * @param {Object} server - FastMCP server instance
  */
 export function registerFixDependenciesTool(server) {
 	server.addTool({
-		name: 'fix_dependencies',
-		description: 'Fix invalid dependencies in tasks automatically',
+		name: "fix_dependencies",
+		description: "自动修复任务中的无效依赖关系",
 		parameters: z.object({
-			file: z.string().optional().describe('Absolute path to the tasks file'),
+			file: z.string().optional().describe("任务文件的绝对路径"),
 			projectRoot: z
 				.string()
-				.describe('The directory of the project. Must be an absolute path.'),
-			tag: z.string().optional().describe('Tag context to operate on')
+				.optional()
+				.describe("项目根目录（可选，会自动检测）"),
+			tag: z.string().optional().describe("选择要处理的任务分组"),
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
 			try {
@@ -33,7 +34,7 @@ export function registerFixDependenciesTool(server) {
 
 				const resolvedTag = resolveTag({
 					projectRoot: args.projectRoot,
-					tag: args.tag
+					tag: args.tag,
 				});
 
 				// Use args.projectRoot directly (guaranteed by withNormalizedProjectRoot)
@@ -41,12 +42,12 @@ export function registerFixDependenciesTool(server) {
 				try {
 					tasksJsonPath = findTasksPath(
 						{ projectRoot: args.projectRoot, file: args.file },
-						log
+						log,
 					);
 				} catch (error) {
 					log.error(`Error finding tasks.json: ${error.message}`);
 					return createErrorResponse(
-						`Failed to find tasks.json: ${error.message}`
+						`Failed to find tasks.json: ${error.message}`,
 					);
 				}
 
@@ -54,9 +55,9 @@ export function registerFixDependenciesTool(server) {
 					{
 						tasksJsonPath: tasksJsonPath,
 						projectRoot: args.projectRoot,
-						tag: resolvedTag
+						tag: resolvedTag,
 					},
-					log
+					log,
 				);
 
 				if (result.success) {
@@ -68,14 +69,14 @@ export function registerFixDependenciesTool(server) {
 				return handleApiResult(
 					result,
 					log,
-					'Error fixing dependencies',
+					"Error fixing dependencies",
 					undefined,
-					args.projectRoot
+					args.projectRoot,
 				);
 			} catch (error) {
 				log.error(`Error in fixDependencies tool: ${error.message}`);
 				return createErrorResponse(error.message);
 			}
-		})
+		}),
 	});
 }

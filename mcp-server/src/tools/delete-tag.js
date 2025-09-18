@@ -3,14 +3,14 @@
  * Tool to delete an existing tag
  */
 
-import { z } from 'zod';
+import { z } from "zod";
+import { deleteTagDirect } from "../core/task-master-core.js";
+import { findTasksPath } from "../core/utils/path-utils.js";
 import {
 	createErrorResponse,
 	handleApiResult,
-	withNormalizedProjectRoot
-} from './utils.js';
-import { deleteTagDirect } from '../core/task-master-core.js';
-import { findTasksPath } from '../core/utils/path-utils.js';
+	withNormalizedProjectRoot,
+} from "./utils.js";
 
 /**
  * Register the deleteTag tool with the MCP server
@@ -18,21 +18,19 @@ import { findTasksPath } from '../core/utils/path-utils.js';
  */
 export function registerDeleteTagTool(server) {
 	server.addTool({
-		name: 'delete_tag',
-		description: 'Delete an existing tag and all its tasks',
+		name: "delete_tag",
+		description: "删除现有标签及其所有任务",
 		parameters: z.object({
-			name: z.string().describe('Name of the tag to delete'),
-			yes: z
-				.boolean()
-				.optional()
-				.describe('Skip confirmation prompts (default: true for MCP)'),
+			name: z.string().describe("要删除的标签名称"),
+			yes: z.boolean().optional().describe("跳过确认提示（默认：MCP下为true）"),
 			file: z
 				.string()
 				.optional()
-				.describe('Path to the tasks file (default: tasks/tasks.json)'),
+				.describe("任务文件路径（默认：tasks/tasks.json）"),
 			projectRoot: z
 				.string()
-				.describe('The directory of the project. Must be an absolute path.')
+				.optional()
+				.describe("项目根目录（可选，会自动检测）"),
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
 			try {
@@ -43,12 +41,12 @@ export function registerDeleteTagTool(server) {
 				try {
 					tasksJsonPath = findTasksPath(
 						{ projectRoot: args.projectRoot, file: args.file },
-						log
+						log,
 					);
 				} catch (error) {
 					log.error(`Error finding tasks.json: ${error.message}`);
 					return createErrorResponse(
-						`Failed to find tasks.json: ${error.message}`
+						`Failed to find tasks.json: ${error.message}`,
 					);
 				}
 
@@ -58,23 +56,23 @@ export function registerDeleteTagTool(server) {
 						tasksJsonPath: tasksJsonPath,
 						name: args.name,
 						yes: args.yes !== undefined ? args.yes : true, // Default to true for MCP
-						projectRoot: args.projectRoot
+						projectRoot: args.projectRoot,
 					},
 					log,
-					{ session }
+					{ session },
 				);
 
 				return handleApiResult(
 					result,
 					log,
-					'Error deleting tag',
+					"Error deleting tag",
 					undefined,
-					args.projectRoot
+					args.projectRoot,
 				);
 			} catch (error) {
 				log.error(`Error in delete-tag tool: ${error.message}`);
 				return createErrorResponse(error.message);
 			}
-		})
+		}),
 	});
 }

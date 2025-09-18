@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+
+# 验证提交信息格式
+npx --no -- commitlint --edit ${1}

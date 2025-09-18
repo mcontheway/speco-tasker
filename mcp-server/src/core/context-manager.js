@@ -1,10 +1,10 @@
 /**
  * context-manager.js
- * Context and cache management for Task Master MCP Server
+ * Context and cache management for Speco Tasker MCP Server
  */
 
-import { FastMCP } from 'fastmcp';
-import { LRUCache } from 'lru-cache';
+import { FastMCP } from "fastmcp";
+import { LRUCache } from "lru-cache";
 
 /**
  * Configuration options for the ContextManager
@@ -23,21 +23,21 @@ export class ContextManager {
 		this.config = {
 			maxCacheSize: config.maxCacheSize || 1000,
 			ttl: config.ttl || 1000 * 60 * 5, // 5 minutes default
-			maxContextSize: config.maxContextSize || 4000
+			maxContextSize: config.maxContextSize || 4000,
 		};
 
 		// Initialize LRU cache for context data
 		this.cache = new LRUCache({
 			max: this.config.maxCacheSize,
 			ttl: this.config.ttl,
-			updateAgeOnGet: true
+			updateAgeOnGet: true,
 		});
 
 		// Cache statistics
 		this.stats = {
 			hits: 0,
 			misses: 0,
-			invalidations: 0
+			invalidations: 0,
 		};
 	}
 
@@ -64,8 +64,8 @@ export class ContextManager {
 			id: contextId,
 			metadata: {
 				...metadata,
-				created: new Date().toISOString()
-			}
+				created: new Date().toISOString(),
+			},
 		};
 
 		// Cache the new context
@@ -80,8 +80,8 @@ export class ContextManager {
 	 * @param {Object} updates - Updates to apply to the context
 	 * @returns {Object} Updated context
 	 */
-	async updateContext(contextId, updates) {
-		const context = await this.getContext(contextId);
+	async updateContext(contextId, updates, metadata = {}) {
+		const context = await this.getContext(contextId, metadata);
 
 		// Apply updates to context
 		Object.assign(context.metadata, updates);
@@ -151,7 +151,7 @@ export class ContextManager {
 			invalidations: this.stats.invalidations,
 			size: this.cache.size,
 			maxSize: this.config.maxCacheSize,
-			ttl: this.config.ttl
+			ttl: this.config.ttl,
 		};
 	}
 

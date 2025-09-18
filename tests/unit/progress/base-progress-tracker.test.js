@@ -1,26 +1,26 @@
-import { jest } from '@jest/globals';
+import { jest } from "@jest/globals";
 
 // Mock cli-progress factory before importing BaseProgressTracker
 jest.unstable_mockModule(
-	'../../../src/progress/cli-progress-factory.js',
+	"../../../src/progress/cli-progress-factory.js",
 	() => ({
 		newMultiBar: jest.fn(() => ({
 			create: jest.fn(() => ({
-				update: jest.fn()
+				update: jest.fn(),
 			})),
-			stop: jest.fn()
-		}))
-	})
+			stop: jest.fn(),
+		})),
+	}),
 );
 
 const { newMultiBar } = await import(
-	'../../../src/progress/cli-progress-factory.js'
+	"../../../src/progress/cli-progress-factory.js"
 );
 const { BaseProgressTracker } = await import(
-	'../../../src/progress/base-progress-tracker.js'
+	"../../../src/progress/base-progress-tracker.js"
 );
 
-describe('BaseProgressTracker', () => {
+describe("BaseProgressTracker", () => {
 	let tracker;
 	let mockMultiBar;
 	let mockProgressBar;
@@ -38,19 +38,19 @@ describe('BaseProgressTracker', () => {
 				.fn()
 				.mockReturnValueOnce(mockTimeTokensBar)
 				.mockReturnValueOnce(mockProgressBar),
-			stop: jest.fn()
+			stop: jest.fn(),
 		};
 		newMultiBar.mockReturnValue(mockMultiBar);
 
-		tracker = new BaseProgressTracker({ numUnits: 10, unitName: 'task' });
+		tracker = new BaseProgressTracker({ numUnits: 10, unitName: "task" });
 	});
 
 	afterEach(() => {
 		jest.useRealTimers();
 	});
 
-	describe('cleanup', () => {
-		it('should stop and clear timer interval', () => {
+	describe("cleanup", () => {
+		it("should stop and clear timer interval", () => {
 			tracker.start();
 			expect(tracker._timerInterval).toBeTruthy();
 
@@ -58,7 +58,7 @@ describe('BaseProgressTracker', () => {
 			expect(tracker._timerInterval).toBeNull();
 		});
 
-		it('should stop and null multibar reference', () => {
+		it("should stop and null multibar reference", () => {
 			tracker.start();
 			expect(tracker.multibar).toBeTruthy();
 
@@ -67,7 +67,7 @@ describe('BaseProgressTracker', () => {
 			expect(tracker.multibar).toBeNull();
 		});
 
-		it('should null progress bar references', () => {
+		it("should null progress bar references", () => {
 			tracker.start();
 			expect(tracker.timeTokensBar).toBeTruthy();
 			expect(tracker.progressBar).toBeTruthy();
@@ -77,7 +77,7 @@ describe('BaseProgressTracker', () => {
 			expect(tracker.progressBar).toBeNull();
 		});
 
-		it('should set finished state', () => {
+		it("should set finished state", () => {
 			tracker.start();
 			expect(tracker.isStarted).toBe(true);
 			expect(tracker.isFinished).toBe(false);
@@ -87,17 +87,17 @@ describe('BaseProgressTracker', () => {
 			expect(tracker.isFinished).toBe(true);
 		});
 
-		it('should handle cleanup when multibar.stop throws error', () => {
+		it("should handle cleanup when multibar.stop throws error", () => {
 			tracker.start();
 			mockMultiBar.stop.mockImplementation(() => {
-				throw new Error('Stop failed');
+				throw new Error("Stop failed");
 			});
 
 			expect(() => tracker.cleanup()).not.toThrow();
 			expect(tracker.multibar).toBeNull();
 		});
 
-		it('should be safe to call multiple times', () => {
+		it("should be safe to call multiple times", () => {
 			tracker.start();
 
 			tracker.cleanup();
@@ -107,14 +107,14 @@ describe('BaseProgressTracker', () => {
 			expect(mockMultiBar.stop).toHaveBeenCalledTimes(1);
 		});
 
-		it('should be safe to call without starting', () => {
+		it("should be safe to call without starting", () => {
 			expect(() => tracker.cleanup()).not.toThrow();
 			expect(tracker.multibar).toBeNull();
 		});
 	});
 
-	describe('stop vs cleanup', () => {
-		it('stop should call cleanup and null multibar reference', () => {
+	describe("stop vs cleanup", () => {
+		it("stop should call cleanup and null multibar reference", () => {
 			tracker.start();
 			tracker.stop();
 
@@ -123,7 +123,7 @@ describe('BaseProgressTracker', () => {
 			expect(tracker.isFinished).toBe(true);
 		});
 
-		it('cleanup should null multibar preventing getSummary', () => {
+		it("cleanup should null multibar preventing getSummary", () => {
 			tracker.start();
 			tracker.cleanup();
 

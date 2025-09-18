@@ -1,6 +1,6 @@
-import path from 'path';
-import { log, readJSON, writeJSON } from '../utils.js';
-import generateTaskFiles from './generate-task-files.js';
+import path from "node:path";
+import { log, readJSON, writeJSON } from "../utils.js";
+import generateTaskFiles from "./generate-task-files.js";
 
 /**
  * Remove a subtask from its parent task
@@ -18,11 +18,11 @@ async function removeSubtask(
 	subtaskId,
 	convertToTask = false,
 	generateFiles = false,
-	context = {}
+	context = {},
 ) {
 	const { projectRoot, tag } = context;
 	try {
-		log('info', `Removing subtask ${subtaskId}...`);
+		log("info", `Removing subtask ${subtaskId}...`);
 
 		// Read the existing tasks with proper context
 		const data = readJSON(tasksPath, projectRoot, tag);
@@ -31,15 +31,15 @@ async function removeSubtask(
 		}
 
 		// Parse the subtask ID (format: "parentId.subtaskId")
-		if (!subtaskId.includes('.')) {
+		if (!subtaskId.includes(".")) {
 			throw new Error(
-				`Invalid subtask ID format: ${subtaskId}. Expected format: "parentId.subtaskId"`
+				`Invalid subtask ID format: ${subtaskId}. Expected format: "parentId.subtaskId"`,
 			);
 		}
 
-		const [parentIdStr, subtaskIdStr] = subtaskId.split('.');
-		const parentId = parseInt(parentIdStr, 10);
-		const subtaskIdNum = parseInt(subtaskIdStr, 10);
+		const [parentIdStr, subtaskIdStr] = subtaskId.split(".");
+		const parentId = Number.parseInt(parentIdStr, 10);
+		const subtaskIdNum = Number.parseInt(subtaskIdStr, 10);
 
 		// Find the parent task
 		const parentTask = data.tasks.find((t) => t.id === parentId);
@@ -54,7 +54,7 @@ async function removeSubtask(
 
 		// Find the subtask to remove
 		const subtaskIndex = parentTask.subtasks.findIndex(
-			(st) => st.id === subtaskIdNum
+			(st) => st.id === subtaskIdNum,
 		);
 		if (subtaskIndex === -1) {
 			throw new Error(`Subtask ${subtaskId} not found`);
@@ -75,7 +75,7 @@ async function removeSubtask(
 
 		// Convert the subtask to a standalone task if requested
 		if (convertToTask) {
-			log('info', `Converting subtask ${subtaskId} to a standalone task...`);
+			log("info", `Converting subtask ${subtaskId} to a standalone task...`);
 
 			// Find the highest task ID to determine the next ID
 			const highestId = Math.max(...data.tasks.map((t) => t.id));
@@ -85,11 +85,11 @@ async function removeSubtask(
 			convertedTask = {
 				id: newTaskId,
 				title: removedSubtask.title,
-				description: removedSubtask.description || '',
-				details: removedSubtask.details || '',
-				status: removedSubtask.status || 'pending',
+				description: removedSubtask.description || "",
+				details: removedSubtask.details || "",
+				status: removedSubtask.status || "pending",
 				dependencies: removedSubtask.dependencies || [],
-				priority: parentTask.priority || 'medium' // Inherit priority from parent
+				priority: parentTask.priority || "medium", // Inherit priority from parent
 			};
 
 			// Add the parent task as a dependency if not already present
@@ -100,9 +100,9 @@ async function removeSubtask(
 			// Add the converted task to the tasks array
 			data.tasks.push(convertedTask);
 
-			log('info', `Created new task ${newTaskId} from subtask ${subtaskId}`);
+			log("info", `Created new task ${newTaskId} from subtask ${subtaskId}`);
 		} else {
-			log('info', `Subtask ${subtaskId} deleted`);
+			log("info", `Subtask ${subtaskId} deleted`);
 		}
 
 		// Write the updated tasks back to the file with proper context
@@ -110,13 +110,13 @@ async function removeSubtask(
 
 		// Generate task files if requested
 		if (generateFiles) {
-			log('info', 'Regenerating task files...');
+			log("info", "Regenerating task files...");
 			await generateTaskFiles(tasksPath, path.dirname(tasksPath), context);
 		}
 
 		return convertedTask;
 	} catch (error) {
-		log('error', `Error removing subtask: ${error.message}`);
+		log("error", `Error removing subtask: ${error.message}`);
 		throw error;
 	}
 }

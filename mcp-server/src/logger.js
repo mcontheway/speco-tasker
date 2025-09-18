@@ -1,6 +1,6 @@
-import chalk from 'chalk';
-import { isSilentMode } from '../../scripts/modules/utils.js';
-import { getLogLevel } from '../../scripts/modules/config-manager.js';
+import chalk from "chalk";
+import { getLogLevel } from "../../scripts/modules/config-manager.js";
+import { isSilentMode } from "../../scripts/modules/utils.js";
 
 // Define log levels
 const LOG_LEVELS = {
@@ -8,7 +8,7 @@ const LOG_LEVELS = {
 	info: 1,
 	warn: 2,
 	error: 3,
-	success: 4
+	success: 4,
 };
 
 // Get log level from config manager or default to info
@@ -27,42 +27,42 @@ function log(level, ...args) {
 
 	// Use text prefixes instead of emojis
 	const prefixes = {
-		debug: chalk.gray('[DEBUG]'),
-		info: chalk.blue('[INFO]'),
-		warn: chalk.yellow('[WARN]'),
-		error: chalk.red('[ERROR]'),
-		success: chalk.green('[SUCCESS]')
+		debug: chalk.gray("[DEBUG]"),
+		info: chalk.blue("[INFO]"),
+		warn: chalk.yellow("[WARN]"),
+		error: chalk.red("[ERROR]"),
+		success: chalk.green("[SUCCESS]"),
 	};
 
 	if (LOG_LEVELS[level] !== undefined && LOG_LEVELS[level] >= LOG_LEVEL) {
-		const prefix = prefixes[level] || '';
+		const prefix = prefixes[level] || "";
 		let coloredArgs = args;
 
 		try {
 			switch (level) {
-				case 'error':
+				case "error":
 					coloredArgs = args.map((arg) =>
-						typeof arg === 'string' ? chalk.red(arg) : arg
+						typeof arg === "string" ? chalk.red(arg) : arg,
 					);
 					break;
-				case 'warn':
+				case "warn":
 					coloredArgs = args.map((arg) =>
-						typeof arg === 'string' ? chalk.yellow(arg) : arg
+						typeof arg === "string" ? chalk.yellow(arg) : arg,
 					);
 					break;
-				case 'success':
+				case "success":
 					coloredArgs = args.map((arg) =>
-						typeof arg === 'string' ? chalk.green(arg) : arg
+						typeof arg === "string" ? chalk.green(arg) : arg,
 					);
 					break;
-				case 'info':
+				case "info":
 					coloredArgs = args.map((arg) =>
-						typeof arg === 'string' ? chalk.blue(arg) : arg
+						typeof arg === "string" ? chalk.blue(arg) : arg,
 					);
 					break;
-				case 'debug':
+				case "debug":
 					coloredArgs = args.map((arg) =>
-						typeof arg === 'string' ? chalk.gray(arg) : arg
+						typeof arg === "string" ? chalk.gray(arg) : arg,
 					);
 					break;
 				// default: use original args (no color)
@@ -70,7 +70,7 @@ function log(level, ...args) {
 		} catch (colorError) {
 			// Fallback if chalk fails on an argument
 			// Use console.error here for internal logger errors, separate from normal logging
-			console.error('Internal Logger Error applying chalk color:', colorError);
+			console.error("Internal Logger Error applying chalk color:", colorError);
 			coloredArgs = args;
 		}
 
@@ -93,12 +93,12 @@ export function createLogger() {
 			log(level, ...args);
 
 	return {
-		debug: createLogMethod('debug'),
-		info: createLogMethod('info'),
-		warn: createLogMethod('warn'),
-		error: createLogMethod('error'),
-		success: createLogMethod('success'),
-		log: log // Also expose the raw log function
+		debug: createLogMethod("debug"),
+		info: createLogMethod("info"),
+		warn: createLogMethod("warn"),
+		error: createLogMethod("error"),
+		success: createLogMethod("success"),
+		log: log, // Also expose the raw log function
 	};
 }
 

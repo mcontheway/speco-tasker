@@ -1,5 +1,5 @@
-import chalk from 'chalk';
-import boxen from 'boxen';
+import boxen from "boxen";
+import chalk from "chalk";
 
 /**
  * Confirm removing profile rules (destructive operation)
@@ -9,7 +9,7 @@ import boxen from 'boxen';
 async function confirmProfilesRemove(profiles) {
 	const profileList = profiles
 		.map((b) => b.charAt(0).toUpperCase() + b.slice(1))
-		.join(', ');
+		.join(", ");
 	console.log(
 		boxen(
 			chalk.yellow(
@@ -29,19 +29,19 @@ The .[profile] directory will only be removed if ALL of the following are true:
 • No other files or folders exist in the profile directory
 • The MCP configuration was completely removed (no other servers)
 
-Are you sure you want to proceed?`
+Are you sure you want to proceed?`,
 			),
-			{ padding: 1, borderColor: 'yellow', borderStyle: 'round' }
-		)
+			{ padding: 1, borderColor: "yellow", borderStyle: "round" },
+		),
 	);
-	const inquirer = await import('inquirer');
+	const inquirer = await import("inquirer");
 	const { confirm } = await inquirer.default.prompt([
 		{
-			type: 'confirm',
-			name: 'confirm',
-			message: 'Type y to confirm selective removal, or n to abort:',
-			default: false
-		}
+			type: "confirm",
+			name: "confirm",
+			message: "Type y to confirm selective removal, or n to abort:",
+			default: false,
+		},
 	]);
 	return confirm;
 }
@@ -55,44 +55,32 @@ Are you sure you want to proceed?`
 async function confirmRemoveAllRemainingProfiles(profiles, remainingProfiles) {
 	const profileList = profiles
 		.map((p) => p.charAt(0).toUpperCase() + p.slice(1))
-		.join(', ');
+		.join(", ");
 
 	console.log(
 		boxen(
 			chalk.red.bold(
-				`⚠️  CRITICAL WARNING: REMOVING ALL TASK MASTER RULE PROFILES ⚠️\n\n` +
-					`You are about to remove Task Master components for: ${profileList}\n` +
-					`This will leave your project with NO Task Master rule profiles remaining!\n\n` +
-					`What will be removed:\n` +
-					`• All Task Master specific rule files\n` +
-					`• Task Master MCP server configurations\n` +
-					`• Profile directories (only if completely empty after removal)\n\n` +
-					`What will be preserved:\n` +
-					`• Your existing custom rule files\n` +
-					`• Other MCP server configurations\n` +
-					`• Profile directories with custom content\n\n` +
-					`This could impact Task Master functionality but will preserve your custom configurations.\n\n` +
-					`Are you absolutely sure you want to proceed?`
+				`⚠️  CRITICAL WARNING: REMOVING ALL TASK MASTER RULE PROFILES ⚠️\n\nYou are about to remove Task Master components for: ${profileList}\nThis will leave your project with NO Task Master rule profiles remaining!\n\nWhat will be removed:\n• All Task Master specific rule files\n• Task Master MCP server configurations\n• Profile directories (only if completely empty after removal)\n\nWhat will be preserved:\n• Your existing custom rule files\n• Other MCP server configurations\n• Profile directories with custom content\n\nThis could impact Task Master functionality but will preserve your custom configurations.\n\nAre you absolutely sure you want to proceed?`,
 			),
 			{
 				padding: 1,
-				borderColor: 'red',
-				borderStyle: 'double',
-				title: '🚨 CRITICAL OPERATION',
-				titleAlignment: 'center'
-			}
-		)
+				borderColor: "red",
+				borderStyle: "double",
+				title: "🚨 CRITICAL OPERATION",
+				titleAlignment: "center",
+			},
+		),
 	);
 
-	const inquirer = await import('inquirer');
+	const inquirer = await import("inquirer");
 	const { confirm } = await inquirer.default.prompt([
 		{
-			type: 'confirm',
-			name: 'confirm',
+			type: "confirm",
+			name: "confirm",
 			message:
-				'Type y to confirm removing ALL Task Master rule profiles, or n to abort:',
-			default: false
-		}
+				"Type y to confirm removing ALL Task Master rule profiles, or n to abort:",
+			default: false,
+		},
 	]);
 	return confirm;
 }

@@ -1,4 +1,4 @@
-import { JSONParser } from '@streamparser/json';
+import { JSONParser } from "@streamparser/json";
 
 /**
  * Custom error class for streaming-related failures
@@ -7,7 +7,7 @@ import { JSONParser } from '@streamparser/json';
 export class StreamingError extends Error {
 	constructor(message, code) {
 		super(message);
-		this.name = 'StreamingError';
+		this.name = "StreamingError";
 		this.code = code;
 
 		// Maintain proper stack trace (V8 engines)
@@ -21,10 +21,10 @@ export class StreamingError extends Error {
  * Standard streaming error codes
  */
 export const STREAMING_ERROR_CODES = {
-	NOT_ASYNC_ITERABLE: 'STREAMING_NOT_SUPPORTED',
-	STREAM_PROCESSING_FAILED: 'STREAM_PROCESSING_FAILED',
-	STREAM_NOT_ITERABLE: 'STREAM_NOT_ITERABLE',
-	BUFFER_SIZE_EXCEEDED: 'BUFFER_SIZE_EXCEEDED'
+	NOT_ASYNC_ITERABLE: "STREAMING_NOT_SUPPORTED",
+	STREAM_PROCESSING_FAILED: "STREAM_PROCESSING_FAILED",
+	STREAM_NOT_ITERABLE: "STREAM_NOT_ITERABLE",
+	BUFFER_SIZE_EXCEEDED: "BUFFER_SIZE_EXCEEDED",
 };
 
 /**
@@ -53,41 +53,39 @@ class StreamParserConfig {
 
 	validate() {
 		if (!this.jsonPaths || !Array.isArray(this.jsonPaths)) {
-			throw new Error('jsonPaths is required and must be an array');
+			throw new Error("jsonPaths is required and must be an array");
 		}
 		if (this.jsonPaths.length === 0) {
-			throw new Error('jsonPaths array cannot be empty');
+			throw new Error("jsonPaths array cannot be empty");
 		}
 		if (this.maxBufferSize <= 0) {
-			throw new Error('maxBufferSize must be positive');
+			throw new Error("maxBufferSize must be positive");
 		}
 		if (this.expectedTotal < 0) {
-			throw new Error('expectedTotal cannot be negative');
+			throw new Error("expectedTotal cannot be negative");
 		}
-		if (this.estimateTokens && typeof this.estimateTokens !== 'function') {
-			throw new Error('estimateTokens must be a function');
+		if (this.estimateTokens && typeof this.estimateTokens !== "function") {
+			throw new Error("estimateTokens must be a function");
 		}
-		if (this.onProgress && typeof this.onProgress !== 'function') {
-			throw new Error('onProgress must be a function');
+		if (this.onProgress && typeof this.onProgress !== "function") {
+			throw new Error("onProgress must be a function");
 		}
-		if (this.onError && typeof this.onError !== 'function') {
-			throw new Error('onError must be a function');
+		if (this.onError && typeof this.onError !== "function") {
+			throw new Error("onError must be a function");
 		}
 		if (
 			this.fallbackItemExtractor &&
-			typeof this.fallbackItemExtractor !== 'function'
+			typeof this.fallbackItemExtractor !== "function"
 		) {
-			throw new Error('fallbackItemExtractor must be a function');
+			throw new Error("fallbackItemExtractor must be a function");
 		}
-		if (this.itemValidator && typeof this.itemValidator !== 'function') {
-			throw new Error('itemValidator must be a function');
+		if (this.itemValidator && typeof this.itemValidator !== "function") {
+			throw new Error("itemValidator must be a function");
 		}
 	}
 
 	static defaultItemValidator(item) {
-		return (
-			item && item.title && typeof item.title === 'string' && item.title.trim()
-		);
+		return item?.title && typeof item.title === "string" && item.title.trim();
 	}
 }
 
@@ -101,7 +99,7 @@ class ProgressTracker {
 		this.estimateTokens = config.estimateTokens;
 		this.expectedTotal = config.expectedTotal;
 		this.parsedItems = [];
-		this.accumulatedText = '';
+		this.accumulatedText = "";
 	}
 
 	addItem(item) {
@@ -118,7 +116,7 @@ class ProgressTracker {
 			currentCount: this.parsedItems.length,
 			expectedTotal: this.expectedTotal,
 			accumulatedText: this.accumulatedText,
-			estimatedTokens: this.estimateTokens(this.accumulatedText)
+			estimatedTokens: this.estimateTokens(this.accumulatedText),
 		};
 	}
 
@@ -169,13 +167,13 @@ class StreamProcessor {
 		}
 
 		throw new StreamingError(
-			'Stream object is not iterable - no textStream, fullStream, or direct async iterator found',
-			STREAMING_ERROR_CODES.STREAM_NOT_ITERABLE
+			"Stream object is not iterable - no textStream, fullStream, or direct async iterator found",
+			STREAMING_ERROR_CODES.STREAM_NOT_ITERABLE,
 		);
 	}
 
 	hasAsyncIterator(obj) {
-		return obj && typeof obj[Symbol.asyncIterator] === 'function';
+		return obj && typeof obj[Symbol.asyncIterator] === "function";
 	}
 
 	async processTextStream(stream) {
@@ -186,7 +184,7 @@ class StreamProcessor {
 
 	async processFullStream(stream) {
 		for await (const chunk of stream) {
-			if (chunk.type === 'text-delta' && chunk.textDelta) {
+			if (chunk.type === "text-delta" && chunk.textDelta) {
 				this.onChunk(chunk.textDelta);
 			}
 		}
@@ -291,15 +289,15 @@ class FallbackParser {
 	_cleanJsonText(text) {
 		// Remove markdown code block wrappers and trim whitespace
 		return text
-			.replace(/^```(?:json)?\s*\n?/i, '')
-			.replace(/\n?```\s*$/i, '')
+			.replace(/^```(?:json)?\s*\n?/i, "")
+			.replace(/\n?```\s*$/i, "")
 			.trim();
 	}
 
 	_processNewItems(fallbackItems) {
 		// Only add items we haven't already parsed
 		const itemsToAdd = fallbackItems.slice(
-			this.progressTracker.parsedItems.length
+			this.progressTracker.parsedItems.length,
 		);
 		const newItems = [];
 
@@ -331,12 +329,12 @@ class BufferSizeValidator {
 	}
 
 	validateChunk(existingText, newChunk) {
-		const newSize = Buffer.byteLength(existingText + newChunk, 'utf8');
+		const newSize = Buffer.byteLength(existingText + newChunk, "utf8");
 
 		if (newSize > this.maxSize) {
 			throw new StreamingError(
 				`Buffer size exceeded: ${newSize} bytes > ${this.maxSize} bytes maximum`,
-				STREAMING_ERROR_CODES.BUFFER_SIZE_EXCEEDED
+				STREAMING_ERROR_CODES.BUFFER_SIZE_EXCEEDED,
 			);
 		}
 
@@ -358,7 +356,7 @@ class StreamParserOrchestrator {
 
 	async parse(textStream) {
 		if (!textStream) {
-			throw new Error('No text stream provided');
+			throw new Error("No text stream provided");
 		}
 
 		await this.processStream(textStream);
@@ -373,7 +371,7 @@ class StreamParserOrchestrator {
 		const processor = new StreamProcessor((chunk) => {
 			this.bufferValidator.validateChunk(
 				this.progressTracker.accumulatedText,
-				chunk
+				chunk,
 			);
 			this.progressTracker.addText(chunk);
 			this.jsonParser.write(chunk);
@@ -395,7 +393,7 @@ class StreamParserOrchestrator {
 		}
 		throw new StreamingError(
 			`Failed to process AI text stream: ${error.message}`,
-			STREAMING_ERROR_CODES.STREAM_PROCESSING_FAILED
+			STREAMING_ERROR_CODES.STREAM_PROCESSING_FAILED,
 		);
 	}
 
@@ -416,7 +414,7 @@ class StreamParserOrchestrator {
 			items: this.progressTracker.parsedItems,
 			accumulatedText: metadata.accumulatedText,
 			estimatedTokens: metadata.estimatedTokens,
-			usedFallback
+			usedFallback,
 		};
 	}
 }
@@ -463,14 +461,14 @@ export async function attemptFallbackParsing(
 	accumulatedText,
 	existingItems,
 	expectedTotal,
-	config
+	config,
 ) {
 	// Create a temporary progress tracker for backward compatibility
 	const progressTracker = new ProgressTracker({
 		onProgress: config.onProgress,
 		onError: config.onError,
 		estimateTokens: config.estimateTokens,
-		expectedTotal
+		expectedTotal,
 	});
 
 	progressTracker.parsedItems = existingItems;
@@ -481,9 +479,9 @@ export async function attemptFallbackParsing(
 			...config,
 			expectedTotal,
 			itemValidator:
-				config.itemValidator || StreamParserConfig.defaultItemValidator
+				config.itemValidator || StreamParserConfig.defaultItemValidator,
 		},
-		progressTracker
+		progressTracker,
 	);
 
 	return fallbackParser.attemptParsing();

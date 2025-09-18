@@ -8,7 +8,7 @@
 export async function withSessionEnv(sessionEnv, actionFn) {
 	if (
 		!sessionEnv ||
-		typeof sessionEnv !== 'object' ||
+		typeof sessionEnv !== "object" ||
 		Object.keys(sessionEnv).length === 0
 	) {
 		// If no sessionEnv is provided, just run the action directly

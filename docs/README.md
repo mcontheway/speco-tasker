@@ -1,23 +1,27 @@
-# Task Master Documentation
+# Speco Tasker 文档 | Documentation
 
-Welcome to the Task Master documentation. Use the links below to navigate to the information you need:
+欢迎使用 Speco Tasker 文档。请使用下面的链接来导航到您需要的信息：
 
-## Getting Started
+Welcome to Speco Tasker documentation. Please use the links below to navigate to the information you need:
 
-- [Configuration Guide](configuration.md) - Set up environment variables and customize Task Master
-- [Tutorial](tutorial.md) - Step-by-step guide to getting started with Task Master
+## 开始使用 | Getting Started
 
-## Reference
+- [配置指南](configuration.md) - 设置环境变量并自定义 Speco Tasker | Configuration Guide - Set environment variables and customize Speco Tasker
+- [教程](tutorial.md) - 逐步指南开始使用 Speco Tasker | Tutorial - Step-by-step guide to start using Speco Tasker
 
-- [Command Reference](command-reference.md) - Complete list of all available commands (including research and multi-task viewing)
-- [Task Structure](task-structure.md) - Understanding the task format and features
-- [Available Models](models.md) - Complete list of supported AI models and providers
+## 参考资料 | Reference
 
-## Examples & Licensing
+- [命令参考](command-reference.md) - 所有可用命令的完整列表（包括研究和多任务查看） | Command Reference - Complete list of all available commands (including research and multi-task viewing)
+- [任务结构](task-structure.md) - 理解任务格式和功能 | Task Structure - Understand task format and functionality
+- [配置指南](configuration-zh.md) - AI 模型配置和提供商设置 | Configuration Guide - AI model configuration and provider settings
 
-- [Example Interactions](examples.md) - Common Cursor AI interaction examples  
-- [Licensing Information](licensing.md) - Detailed information about the license
+## 示例和许可 | Examples and Licensing
 
-## Need More Help?
+- [交互示例](examples.md) - 常见的 Cursor AI 交互示例 | Interaction Examples - Common Cursor AI interaction examples
+- [许可信息](licensing.md) - 许可证的详细信息 | Licensing Information - License details
 
-If you can't find what you're looking for in these docs, please check the [main README](../README.md) or visit our [GitHub repository](https://github.com/mcontheway/taskmaster-no-ai).
+## 需要更多帮助？| Need More Help?
+
+如果您在这些文档中找不到所需的内容，请查看[主 README](../README.md) 或访问我们的 [GitHub 仓库](https://github.com/mcontheway/speco-tasker)。
+
+If you can't find what you need in these documents, please check the [main README](../README.md) or visit our [GitHub repository](https://github.com/mcontheway/speco-tasker).

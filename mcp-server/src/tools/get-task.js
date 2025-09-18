@@ -3,32 +3,50 @@
  * Tool to get task details by ID
  */
 
-import { z } from 'zod';
+import { z } from "zod";
+import { resolveTag } from "../../../scripts/modules/utils.js";
+import { showTaskDirect } from "../core/task-master-core.js";
+import { findTasksPath } from "../core/utils/path-utils.js";
 import {
-	handleApiResult,
 	createErrorResponse,
-	withNormalizedProjectRoot
-} from './utils.js';
-import { showTaskDirect } from '../core/task-master-core.js';
-import {
-	findTasksPath,
-	findComplexityReportPath
-} from '../core/utils/path-utils.js';
-import { resolveTag } from '../../../scripts/modules/utils.js';
+	generateParameterHelp,
+	getTagInfo,
+	handleApiResult,
+	withNormalizedProjectRoot,
+} from "./utils.js";
 
 /**
  * Custom processor function that removes allTasks from the response
  * @param {Object} data - The data returned from showTaskDirect
  * @returns {Object} - The processed data with allTasks removed
  */
+
+// Generate parameter help for get_task tool
+const getTaskParameterHelp = generateParameterHelp(
+	"get_task",
+	[
+		{ name: "projectRoot", description: "项目根目录（可选，会自动检测）" },
+		{ name: "id", description: "要查看的任务ID或子任务ID（例如：15, 15.2）" },
+	],
+	[
+		{ name: "file", description: "任务文件路径（默认：tasks/tasks.json）" },
+		{ name: "tag", description: "选择要处理的任务分组" },
+	],
+	[
+		'{"projectRoot": "/path/to/project", "id": "1"}',
+		'{"projectRoot": "/path/to/project", "id": "5.2"}',
+		'{"projectRoot": "/path/to/project", "id": "10", "tag": "feature-branch"}',
+	],
+);
 function processTaskResponse(data) {
 	if (!data) return data;
 
 	// If we have the expected structure with task and allTasks
-	if (typeof data === 'object' && data !== null && data.id && data.title) {
+	if (typeof data === "object" && data !== null && data.id && data.title) {
 		// If the data itself looks like the task object, return it
 		return data;
-	} else if (data.task) {
+	}
+	if (data.task) {
 		return data.task;
 	}
 
@@ -42,45 +60,31 @@ function processTaskResponse(data) {
  */
 export function registerShowTaskTool(server) {
 	server.addTool({
-		name: 'get_task',
-		description: 'Get detailed information about a specific task',
+		name: "get_task",
+		description: "获取特定任务的详细信息",
 		parameters: z.object({
-			id: z
-				.string()
-				.describe(
-					'Task ID(s) to get (can be comma-separated for multiple tasks)'
-				),
+			id: z.string().describe("要获取的任务ID，支持逗号分隔多个任务"),
 			status: z
 				.string()
 				.optional()
-				.describe("Filter subtasks by status (e.g., 'pending', 'done')"),
-			file: z
-				.string()
-				.optional()
-				.describe('Path to the tasks file relative to project root'),
-			complexityReport: z
-				.string()
-				.optional()
-				.describe(
-					'Path to the complexity report file (relative to project root or absolute)'
-				),
+				.describe("按状态过滤子任务，支持'pending', 'done'等"),
+			file: z.string().optional().describe("相对于项目根目录的任务文件路径"),
 			projectRoot: z
 				.string()
-				.describe(
-					'Absolute path to the project root directory (Optional, usually from session)'
-				),
-			tag: z.string().optional().describe('Tag context to operate on')
+				.optional()
+				.describe("项目根目录（可选，会自动检测）"),
+			tag: z.string().optional().describe("选择要处理的任务分组"),
 		}),
 		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
 			const { id, file, status, projectRoot } = args;
 
 			try {
 				log.info(
-					`Getting task details for ID: ${id}${status ? ` (filtering subtasks by status: ${status})` : ''} in root: ${projectRoot}`
+					`Getting task details for ID: ${id}${status ? ` (filtering subtasks by status: ${status})` : ""} in root: ${projectRoot}`,
 				);
 				const resolvedTag = resolveTag({
 					projectRoot: args.projectRoot,
-					tag: args.tag
+					tag: args.tag,
 				});
 
 				// Resolve the path to tasks.json using the NORMALIZED projectRoot from args
@@ -88,43 +92,38 @@ export function registerShowTaskTool(server) {
 				try {
 					tasksJsonPath = findTasksPath(
 						{ projectRoot: projectRoot, file: file },
-						log
+						log,
 					);
 					log.info(`Resolved tasks path: ${tasksJsonPath}`);
 				} catch (error) {
-					log.error(`Error finding tasks.json: ${error.message}`);
+					const errorMessage = `Failed to find tasks.json: ${error.message || "File not found"}`;
+					log.error(`[get-task tool] ${errorMessage}`);
+
+					// Get tag info for better error context
+					const tagInfo = args.projectRoot
+						? getTagInfo(args.projectRoot, log)
+						: null;
+
 					return createErrorResponse(
-						`Failed to find tasks.json: ${error.message}`
+						errorMessage,
+						undefined,
+						tagInfo,
+						"TASKS_JSON_NOT_FOUND",
 					);
 				}
 
 				// Call the direct function, passing the normalized projectRoot
-				// Resolve the path to complexity report
-				let complexityReportPath;
-				try {
-					complexityReportPath = findComplexityReportPath(
-						{
-							projectRoot: projectRoot,
-							complexityReport: args.complexityReport,
-							tag: resolvedTag
-						},
-						log
-					);
-				} catch (error) {
-					log.error(`Error finding complexity report: ${error.message}`);
-				}
 				const result = await showTaskDirect(
 					{
 						tasksJsonPath: tasksJsonPath,
-						reportPath: complexityReportPath,
 						// Pass other relevant args
 						id: id,
 						status: status,
 						projectRoot: projectRoot,
-						tag: resolvedTag
+						tag: resolvedTag,
 					},
 					log,
-					{ session }
+					{ session },
 				);
 
 				if (result.success) {
@@ -137,14 +136,27 @@ export function registerShowTaskTool(server) {
 				return handleApiResult(
 					result,
 					log,
-					'Error retrieving task details',
+					"Error retrieving task details",
 					processTaskResponse,
-					projectRoot
+					projectRoot,
 				);
 			} catch (error) {
-				log.error(`Error in get-task tool: ${error.message}\n${error.stack}`);
-				return createErrorResponse(`Failed to get task: ${error.message}`);
+				const errorMessage = `获取任务失败: ${error.message || "未知错误"}`;
+				log.error(`[get-task tool] ${errorMessage}`);
+
+				// Get tag info for better error context
+				const tagInfo = args.projectRoot
+					? getTagInfo(args.projectRoot, log)
+					: null;
+
+				return createErrorResponse(
+					errorMessage,
+					undefined,
+					tagInfo,
+					"GET_TASK_FAILED",
+					getTaskParameterHelp,
+				);
 			}
-		})
+		}),
 	});
 }

@@ -648,7 +648,7 @@ When implementing project initialization commands:
   // ✅ DO: Design tagged-aware core functions
   async function newFeatureCore(tasksPath, featureParams, options = {}) {
     const tasksData = readJSON(tasksPath);
-    const currentTag = getCurrentTag() || 'master';
+    const currentTag = getCurrentTag() || 'main';
     const tasks = getTasksForTag(tasksData, currentTag);
     
     // Perform feature logic on tasks array
@@ -693,7 +693,7 @@ When implementing project initialization commands:
         }
         
         // Use specified tag or current tag
-        const targetTag = options.tag || getCurrentTag() || 'master';
+        const targetTag = options.tag || getCurrentTag() || 'main';
         
         const result = await newFeatureCore(
           path.join(projectRoot, '.taskmaster', 'tasks', 'tasks.json'),
@@ -742,7 +742,7 @@ When implementing project initialization commands:
           { param: args.param },
           { 
             force: args.force,
-            targetTag: args.tag || 'master', // Support tag specification
+            targetTag: args.tag || 'main', // Support tag specification
             mcpLog: log,
             session: context.session,
             outputFormat: 'json'
@@ -852,7 +852,7 @@ When implementing project initialization commands:
       // Verify migration occurred
       expect(fs.writeFileSync).toHaveBeenCalledWith(
         '/test/tasks.json',
-        expect.stringContaining('"master"')
+        expect.stringContaining('"main"')
       );
     });
   });

@@ -2,12 +2,12 @@
  * Direct function wrapper for moveTask
  */
 
-import { moveTask } from '../../../../scripts/modules/task-manager.js';
-import { findTasksPath } from '../utils/path-utils.js';
+import { moveTask } from "../../../../scripts/modules/task-manager.js";
 import {
+	disableSilentMode,
 	enableSilentMode,
-	disableSilentMode
-} from '../../../../scripts/modules/utils.js';
+} from "../../../../scripts/modules/utils.js";
+import { findTasksPath } from "../utils/path-utils.js";
 
 /**
  * Move a task or subtask to a new position
@@ -31,9 +31,9 @@ export async function moveTaskDirect(args, log, context = {}) {
 		return {
 			success: false,
 			error: {
-				message: 'Source ID is required',
-				code: 'MISSING_SOURCE_ID'
-			}
+				message: "Source ID is required",
+				code: "MISSING_SOURCE_ID",
+			},
 		};
 	}
 
@@ -41,9 +41,9 @@ export async function moveTaskDirect(args, log, context = {}) {
 		return {
 			success: false,
 			error: {
-				message: 'Destination ID is required',
-				code: 'MISSING_DESTINATION_ID'
-			}
+				message: "Destination ID is required",
+				code: "MISSING_DESTINATION_ID",
+			},
 		};
 	}
 
@@ -56,9 +56,9 @@ export async function moveTaskDirect(args, log, context = {}) {
 					success: false,
 					error: {
 						message:
-							'Project root is required if tasksJsonPath is not provided',
-						code: 'MISSING_PROJECT_ROOT'
-					}
+							"Project root is required if tasksJsonPath is not provided",
+						code: "MISSING_PROJECT_ROOT",
+					},
 				};
 			}
 			tasksPath = findTasksPath(args, log);
@@ -76,8 +76,8 @@ export async function moveTaskDirect(args, log, context = {}) {
 			generateFiles,
 			{
 				projectRoot,
-				tag
-			}
+				tag,
+			},
 		);
 
 		// Restore console output
@@ -87,8 +87,8 @@ export async function moveTaskDirect(args, log, context = {}) {
 			success: true,
 			data: {
 				...result,
-				message: `Successfully moved task/subtask ${args.sourceId} to ${args.destinationId}`
-			}
+				message: `Successfully moved task/subtask ${args.sourceId} to ${args.destinationId}`,
+			},
 		};
 	} catch (error) {
 		// Restore console output in case of error
@@ -100,8 +100,8 @@ export async function moveTaskDirect(args, log, context = {}) {
 			success: false,
 			error: {
 				message: error.message,
-				code: 'MOVE_TASK_ERROR'
-			}
+				code: "MOVE_TASK_ERROR",
+			},
 		};
 	}
 }

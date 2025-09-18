@@ -1,23 +1,23 @@
-import path from 'path';
-import chalk from 'chalk';
-import boxen from 'boxen';
+import path from "node:path";
+import boxen from "boxen";
+import chalk from "chalk";
 
 import {
+	TASK_STATUS_OPTIONS,
+	isValidTaskStatus,
+} from "../../../src/constants/task-status.js";
+import { getDebugFlag } from "../config-manager.js";
+import { validateTaskDependencies } from "../dependency-manager.js";
+import { displayBanner } from "../ui.js";
+import {
+	ensureTagMetadata,
+	findTaskById,
 	log,
 	readJSON,
 	writeJSON,
-	findTaskById,
-	ensureTagMetadata
-} from '../utils.js';
-import { displayBanner } from '../ui.js';
-import { validateTaskDependencies } from '../dependency-manager.js';
-import { getDebugFlag } from '../config-manager.js';
-import updateSingleTaskStatus from './update-single-task-status.js';
-import generateTaskFiles from './generate-task-files.js';
-import {
-	isValidTaskStatus,
-	TASK_STATUS_OPTIONS
-} from '../../../src/constants/task-status.js';
+} from "../utils.js";
+import generateTaskFiles from "./generate-task-files.js";
+import updateSingleTaskStatus from "./update-single-task-status.js";
 
 /**
  * Set the status of a task
@@ -35,7 +35,7 @@ async function setTaskStatus(tasksPath, taskIdInput, newStatus, options = {}) {
 	try {
 		if (!isValidTaskStatus(newStatus)) {
 			throw new Error(
-				`Error: Invalid status value: ${newStatus}. Use one of: ${TASK_STATUS_OPTIONS.join(', ')}`
+				`Error: Invalid status value: ${newStatus}. Use one of: ${TASK_STATUS_OPTIONS.join(", ")}`,
 			);
 		}
 		// Determine if we're in MCP mode by checking for mcpLog
@@ -46,35 +46,38 @@ async function setTaskStatus(tasksPath, taskIdInput, newStatus, options = {}) {
 			console.log(
 				boxen(chalk.white.bold(`Updating Task Status to: ${newStatus}`), {
 					padding: 1,
-					borderColor: 'blue',
-					borderStyle: 'round'
-				})
+					borderColor: "blue",
+					borderStyle: "round",
+				}),
 			);
 		}
 
-		log('info', `Reading tasks from ${tasksPath}...`);
+		log("info", `Reading tasks from ${tasksPath}...`);
 
-		// Read the raw data without tag resolution to preserve tagged structure
-		let rawData = readJSON(tasksPath, projectRoot, tag); // No tag parameter
+		// Read the raw tagged data structure (don't pass tag to get raw structure)
+		let rawData = readJSON(tasksPath, projectRoot); // No tag parameter to get raw data
 
 		// Handle the case where readJSON returns resolved data with _rawTaggedData
-		if (rawData && rawData._rawTaggedData) {
+		if (rawData?._rawTaggedData) {
 			// Use the raw tagged data and discard the resolved view
 			rawData = rawData._rawTaggedData;
 		}
 
+		// Ensure we have a valid tagged structure
+		if (!rawData || typeof rawData !== "object") {
+			throw new Error(`Invalid tasks file structure at ${tasksPath}`);
+		}
+
 		// Ensure the tag exists in the raw data
-		if (!rawData || !rawData[tag] || !Array.isArray(rawData[tag].tasks)) {
-			throw new Error(
-				`Invalid tasks file or tag "${tag}" not found at ${tasksPath}`
-			);
+		if (!rawData[tag] || !Array.isArray(rawData[tag].tasks)) {
+			throw new Error(`Tag "${tag}" not found or invalid at ${tasksPath}`);
 		}
 
 		// Get the tasks for the current tag
 		const data = {
 			tasks: rawData[tag].tasks,
 			tag,
-			_rawTaggedData: rawData
+			_rawTaggedData: rawData,
 		};
 
 		if (!data || !data.tasks) {
@@ -82,29 +85,29 @@ async function setTaskStatus(tasksPath, taskIdInput, newStatus, options = {}) {
 		}
 
 		// Handle multiple task IDs (comma-separated)
-		const taskIds = taskIdInput.split(',').map((id) => id.trim());
+		const taskIds = taskIdInput.split(",").map((id) => id.trim());
 		const updatedTasks = [];
 
 		// Update each task and capture old status for display
 		for (const id of taskIds) {
 			// Capture old status before updating
-			let oldStatus = 'unknown';
+			let oldStatus = "unknown";
 
-			if (id.includes('.')) {
+			if (id.includes(".")) {
 				// Handle subtask
 				const [parentId, subtaskId] = id
-					.split('.')
-					.map((id) => parseInt(id, 10));
+					.split(".")
+					.map((id) => Number.parseInt(id, 10));
 				const parentTask = data.tasks.find((t) => t.id === parentId);
 				if (parentTask?.subtasks) {
 					const subtask = parentTask.subtasks.find((st) => st.id === subtaskId);
-					oldStatus = subtask?.status || 'pending';
+					oldStatus = subtask?.status || "pending";
 				}
 			} else {
 				// Handle regular task
-				const taskId = parseInt(id, 10);
+				const taskId = Number.parseInt(id, 10);
 				const task = data.tasks.find((t) => t.id === taskId);
-				oldStatus = task?.status || 'pending';
+				oldStatus = task?.status || "pending";
 			}
 
 			await updateSingleTaskStatus(tasksPath, id, newStatus, data, !isMcpMode);
@@ -116,7 +119,7 @@ async function setTaskStatus(tasksPath, taskIdInput, newStatus, options = {}) {
 
 		// Ensure the tag has proper metadata
 		ensureTagMetadata(rawData[tag], {
-			description: `Tasks for ${tag} context`
+			description: `Tasks for ${tag} context`,
 		});
 
 		// Write the updated raw data back to the file
@@ -124,7 +127,7 @@ async function setTaskStatus(tasksPath, taskIdInput, newStatus, options = {}) {
 		writeJSON(tasksPath, rawData, projectRoot, tag);
 
 		// Validate dependencies after status update
-		log('info', 'Validating dependencies after status update...');
+		log("info", "Validating dependencies after status update...");
 		validateTaskDependencies(data.tasks);
 
 		// Generate individual task files
@@ -140,12 +143,9 @@ async function setTaskStatus(tasksPath, taskIdInput, newStatus, options = {}) {
 
 				console.log(
 					boxen(
-						chalk.white.bold(`Successfully updated task ${id} status:`) +
-							'\n' +
-							`From: ${chalk.yellow(oldStatus)}\n` +
-							`To:   ${chalk.green(updatedStatus)}`,
-						{ padding: 1, borderColor: 'green', borderStyle: 'round' }
-					)
+						`${chalk.white.bold(`Successfully updated task ${id} status:`)}\nFrom: ${chalk.yellow(oldStatus)}\nTo:   ${chalk.green(updatedStatus)}`,
+						{ padding: 1, borderColor: "green", borderStyle: "round" },
+					),
 				);
 			}
 		}
@@ -156,11 +156,11 @@ async function setTaskStatus(tasksPath, taskIdInput, newStatus, options = {}) {
 			updatedTasks: updatedTasks.map(({ id, oldStatus, newStatus }) => ({
 				id,
 				oldStatus,
-				newStatus
-			}))
+				newStatus,
+			})),
 		};
 	} catch (error) {
-		log('error', `Error setting task status: ${error.message}`);
+		log("error", `Error setting task status: ${error.message}`);
 
 		// Only show error UI in CLI mode
 		if (!options?.mcpLog) {

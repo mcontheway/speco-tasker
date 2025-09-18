@@ -99,7 +99,7 @@ analyze_log_with_llm() {
 Analyze the following E2E test log for the task-master tool. The log contains output from various 'task-master' commands executed sequentially.
 
 Your goal is to:
-1. Verify if the key E2E steps completed successfully based on the log messages (e.g., init, parse PRD, list tasks, analyze complexity, expand task, set status, manage models, add/remove dependencies, add/update/remove tasks/subtasks, generate files).
+1. Verify if the key E2E steps completed successfully based on the log messages (e.g., init, create tasks manually, list tasks, add subtasks manually, set status, manage models, add/remove dependencies, add/update/remove tasks/subtasks, generate files).
 2. **Specifically analyze the Multi-Provider Add-Task Test Sequence:**
    a. Identify which providers were tested for `add-task`. Look for log steps like "Testing Add-Task with Provider: ..." and the summary log 'provider_add_task_summary.log'.
    b. For each tested provider, determine if `add-task` succeeded or failed. Note the created task ID if successful.

@@ -1,4 +1,4 @@
-import { newMultiBar } from './cli-progress-factory.js';
+import { newMultiBar } from "./cli-progress-factory.js";
 
 /**
  * Base class for progress trackers, handling common logic for time, tokens, estimation, and multibar management.
@@ -6,7 +6,7 @@ import { newMultiBar } from './cli-progress-factory.js';
 export class BaseProgressTracker {
 	constructor(options = {}) {
 		this.numUnits = options.numUnits || 1;
-		this.unitName = options.unitName || 'unit'; // e.g., 'task', 'subtask'
+		this.unitName = options.unitName || "unit"; // e.g., 'task', 'subtask'
 		this.startTime = null;
 		this.completedUnits = 0;
 		this.tokensIn = 0;
@@ -65,8 +65,8 @@ export class BaseProgressTracker {
 				format: this._getTimeTokensBarFormat(),
 				barsize: 1,
 				hideCursor: true,
-				clearOnComplete: false
-			}
+				clearOnComplete: false,
+			},
 		);
 
 		// Create main progress bar using subclass-provided format
@@ -76,9 +76,9 @@ export class BaseProgressTracker {
 			{},
 			{
 				format: this._getProgressBarFormat(),
-				barCompleteChar: '\u2588',
-				barIncompleteChar: '\u2591'
-			}
+				barCompleteChar: "\u2588",
+				barIncompleteChar: "\u2591",
+			},
 		);
 
 		this._updateTimeTokensBar();
@@ -105,7 +105,7 @@ export class BaseProgressTracker {
 	 * @returns {string} Format string for the time/tokens bar.
 	 */
 	_getTimeTokensBarFormat() {
-		return `{clock} {elapsed} | Tokens (I/O): {in}/{out} | Est: {remaining}`;
+		return "{clock} {elapsed} | Tokens (I/O): {in}/{out} | Est: {remaining}";
 	}
 
 	/**
@@ -129,17 +129,17 @@ export class BaseProgressTracker {
 
 		const elapsed = this._formatElapsedTime();
 		const remaining = this._estimateRemainingTime();
-		const tokensLabel = this.isEstimate ? '~ Tokens (I/O)' : 'Tokens (I/O)';
+		const tokensLabel = this.isEstimate ? "~ Tokens (I/O)" : "Tokens (I/O)";
 
 		this.timeTokensBar.update(1, {
-			clock: '⏱️',
+			clock: "⏱️",
 			elapsed,
 			in: this.tokensIn,
 			out: this.tokensOut,
 			remaining,
 			tokensLabel,
 			// Subclasses can add more payload here via override
-			...this._getCustomTimeTokensPayload()
+			...this._getCustomTimeTokensPayload(),
 		});
 	}
 
@@ -153,21 +153,21 @@ export class BaseProgressTracker {
 	}
 
 	_formatElapsedTime() {
-		if (!this.startTime) return '0m 00s';
+		if (!this.startTime) return "0m 00s";
 		const seconds = Math.floor((Date.now() - this.startTime) / 1000);
 		const minutes = Math.floor(seconds / 60);
 		const remainingSeconds = seconds % 60;
-		return `${minutes}m ${remainingSeconds.toString().padStart(2, '0')}s`;
+		return `${minutes}m ${remainingSeconds.toString().padStart(2, "0")}s`;
 	}
 
 	_estimateRemainingTime() {
 		const progress = this._getProgressFraction();
-		if (progress >= 1) return '~0s';
+		if (progress >= 1) return "~0s";
 
 		const now = Date.now();
 		const elapsed = (now - this.startTime) / 1000;
 
-		if (progress === 0) return '~calculating...';
+		if (progress === 0) return "~calculating...";
 
 		const avgTimePerUnit = elapsed / progress;
 
@@ -184,13 +184,13 @@ export class BaseProgressTracker {
 		// Stabilization logic
 		if (this.lastEstimateTime) {
 			const elapsedSinceEstimate = Math.floor(
-				(now - this.lastEstimateTime) / 1000
+				(now - this.lastEstimateTime) / 1000,
 			);
 			const countdownSeconds = Math.max(
 				0,
-				this.lastEstimateSeconds - elapsedSinceEstimate
+				this.lastEstimateSeconds - elapsedSinceEstimate,
 			);
-			if (countdownSeconds === 0) return '~0s';
+			if (countdownSeconds === 0) return "~0s";
 			estimatedSeconds = Math.min(estimatedSeconds, countdownSeconds);
 		}
 
@@ -250,7 +250,7 @@ export class BaseProgressTracker {
 	getSummary() {
 		return {
 			completedUnits: this.completedUnits,
-			elapsedTime: this.getElapsedTime()
+			elapsedTime: this.getElapsedTime(),
 			// Subclasses should extend this
 		};
 	}

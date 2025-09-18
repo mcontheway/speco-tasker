@@ -1,11 +1,11 @@
-import path from 'path';
-import fs from 'fs';
-import chalk from 'chalk';
+import fs from "node:fs";
+import path from "node:path";
+import chalk from "chalk";
 
-import { log, readJSON } from '../utils.js';
-import { formatDependenciesWithStatus } from '../ui.js';
-import { validateAndFixDependencies } from '../dependency-manager.js';
-import { getDebugFlag } from '../config-manager.js';
+import { getDebugFlag } from "../config-manager.js";
+import { validateAndFixDependencies } from "../dependency-manager.js";
+import { formatDependenciesWithStatus } from "../ui.js";
+import { log, readJSON } from "../utils.js";
 
 /**
  * Generate individual task files from tasks.json
@@ -46,23 +46,23 @@ function generateTaskFiles(tasksPath, outputDir, options = {}) {
 		}
 
 		log(
-			'info',
-			`Preparing to regenerate ${tasksForGeneration.length} task files for tag '${tag}'`
+			"info",
+			`Preparing to regenerate ${tasksForGeneration.length} task files for tag '${tag}'`,
 		);
 
-		// 3. Validate dependencies using the FULL, raw data structure to prevent data loss.
+		// 3. Validate dependencies using the tag-specific data structure
 		validateAndFixDependencies(
-			rawData, // Pass the entire object with all tags
+			tagData, // Pass only the tag-specific data with tasks array
 			tasksPath,
 			projectRoot,
-			tag // Provide the current tag context for the operation
+			tag, // Provide the current tag context for the operation
 		);
 
 		const allTasksInTag = tagData.tasks;
 		const validTaskIds = allTasksInTag.map((task) => task.id);
 
 		// Cleanup orphaned task files
-		log('info', 'Checking for orphaned task files to clean up...');
+		log("info", "Checking for orphaned task files to clean up...");
 		try {
 			const files = fs.readdirSync(outputDir);
 			// Tag-aware file patterns: master -> task_001.txt, other tags -> task_001_tagname.txt
@@ -74,17 +74,17 @@ function generateTaskFiles(tasksPath, outputDir, options = {}) {
 				let fileTaskId = null;
 
 				// Check if file belongs to current tag
-				if (tag === 'master') {
+				if (tag === "main") {
 					match = file.match(masterFilePattern);
 					if (match) {
-						fileTaskId = parseInt(match[1], 10);
-						// Only clean up master files when processing master tag
+						fileTaskId = Number.parseInt(match[1], 10);
+						// Only clean up master files when processing main tag
 						return !validTaskIds.includes(fileTaskId);
 					}
 				} else {
 					match = file.match(taggedFilePattern);
 					if (match) {
-						fileTaskId = parseInt(match[1], 10);
+						fileTaskId = Number.parseInt(match[1], 10);
 						// Only clean up files for the current tag
 						return !validTaskIds.includes(fileTaskId);
 					}
@@ -94,79 +94,79 @@ function generateTaskFiles(tasksPath, outputDir, options = {}) {
 
 			if (orphanedFiles.length > 0) {
 				log(
-					'info',
-					`Found ${orphanedFiles.length} orphaned task files to remove for tag '${tag}'`
+					"info",
+					`Found ${orphanedFiles.length} orphaned task files to remove for tag '${tag}'`,
 				);
 				orphanedFiles.forEach((file) => {
 					const filePath = path.join(outputDir, file);
 					fs.unlinkSync(filePath);
 				});
 			} else {
-				log('info', 'No orphaned task files found.');
+				log("info", "No orphaned task files found.");
 			}
 		} catch (err) {
-			log('warn', `Error cleaning up orphaned task files: ${err.message}`);
+			log("warn", `Error cleaning up orphaned task files: ${err.message}`);
 		}
 
 		// Generate task files for the target tag
-		log('info', `Generating individual task files for tag '${tag}'...`);
+		log("info", `Generating individual task files for tag '${tag}'...`);
 		tasksForGeneration.forEach((task) => {
 			// Tag-aware file naming: master -> task_001.txt, other tags -> task_001_tagname.txt
 			const taskFileName =
-				tag === 'master'
-					? `task_${task.id.toString().padStart(3, '0')}.txt`
-					: `task_${task.id.toString().padStart(3, '0')}_${tag}.txt`;
+				tag === "main"
+					? `task_${task.id.toString().padStart(3, "0")}.txt`
+					: `task_${task.id.toString().padStart(3, "0")}_${tag}.txt`;
 
 			const taskPath = path.join(outputDir, taskFileName);
 
 			let content = `# Task ID: ${task.id}\n`;
 			content += `# Title: ${task.title}\n`;
-			content += `# Status: ${task.status || 'pending'}\n`;
+			content += `# Status: ${task.status || "pending"}\n`;
 
 			if (task.dependencies && task.dependencies.length > 0) {
 				content += `# Dependencies: ${formatDependenciesWithStatus(task.dependencies, allTasksInTag, false)}\n`;
 			} else {
-				content += '# Dependencies: None\n';
+				content += "# Dependencies: None\n";
 			}
 
-			content += `# Priority: ${task.priority || 'medium'}\n`;
-			content += `# Description: ${task.description || ''}\n`;
-			content += '# Details:\n';
-			content += (task.details || '')
-				.split('\n')
+			content += `# Priority: ${task.priority || "medium"}\n`;
+			content += `# Description: ${task.description || ""}\n`;
+			content += "# Details:\n";
+			content += (task.details || "")
+				.split("\n")
 				.map((line) => line)
-				.join('\n');
-			content += '\n\n';
-			content += '# Test Strategy:\n';
-			content += (task.testStrategy || '')
-				.split('\n')
+				.join("\n");
+			content += "\n\n";
+			content += "# Test Strategy:\n";
+			content += (task.testStrategy || "")
+				.split("\n")
 				.map((line) => line)
-				.join('\n');
-			content += '\n';
+				.join("\n");
+			content += "\n";
 
 			if (task.subtasks && task.subtasks.length > 0) {
-				content += '\n# Subtasks:\n';
+				content += "\n# Subtasks:\n";
 				task.subtasks.forEach((subtask) => {
-					content += `## ${subtask.id}. ${subtask.title} [${subtask.status || 'pending'}]\n`;
+					content += `## ${subtask.id}. ${subtask.title} [${subtask.status || "pending"}]\n`;
 					if (subtask.dependencies && subtask.dependencies.length > 0) {
 						const subtaskDeps = subtask.dependencies
 							.map((depId) =>
-								typeof depId === 'number'
+								typeof depId === "number"
 									? `${task.id}.${depId}`
-									: depId.toString()
+									: depId.toString(),
 							)
-							.join(', ');
+							.join(", ");
 						content += `### Dependencies: ${subtaskDeps}\n`;
 					} else {
-						content += '### Dependencies: None\n';
+						content += "### Dependencies: None\n";
 					}
-					content += `### Description: ${subtask.description || ''}\n`;
-					content += '### Details:\n';
-					content += (subtask.details || '')
-						.split('\n')
+					content += `### Description: ${subtask.description || ""}\n`;
+					content += "### Details:\n";
+					content += (subtask.details || "")
+						.split("\n")
 						.map((line) => line)
-						.join('\n');
-					content += '\n\n';
+						.join("\n");
+					content += "\n\n";
 				});
 			}
 
@@ -174,19 +174,19 @@ function generateTaskFiles(tasksPath, outputDir, options = {}) {
 		});
 
 		log(
-			'success',
-			`All ${tasksForGeneration.length} tasks for tag '${tag}' have been generated into '${outputDir}'.`
+			"success",
+			`All ${tasksForGeneration.length} tasks for tag '${tag}' have been generated into '${outputDir}'.`,
 		);
 
 		if (isMcpMode) {
 			return {
 				success: true,
 				count: tasksForGeneration.length,
-				directory: outputDir
+				directory: outputDir,
 			};
 		}
 	} catch (error) {
-		log('error', `Error generating task files: ${error.message}`);
+		log("error", `Error generating task files: ${error.message}`);
 		if (!options?.mcpLog) {
 			console.error(chalk.red(`Error generating task files: ${error.message}`));
 			if (getDebugFlag()) {

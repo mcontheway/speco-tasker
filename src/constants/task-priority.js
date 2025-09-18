@@ -10,13 +10,13 @@
  * - medium: Standard priority tasks (default)
  * - low: Tasks that can be deferred or are nice-to-have
  */
-export const TASK_PRIORITY_OPTIONS = ['high', 'medium', 'low'];
+export const TASK_PRIORITY_OPTIONS = ["high", "medium", "low"];
 
 /**
  * Default task priority
  * @type {TaskPriority}
  */
-export const DEFAULT_TASK_PRIORITY = 'medium';
+export const DEFAULT_TASK_PRIORITY = "medium";
 
 /**
  * Check if a given priority is valid
@@ -35,5 +35,5 @@ export function isValidTaskPriority(priority) {
 export function normalizeTaskPriority(priority) {
 	if (!priority) return null;
 	const normalized = priority.toLowerCase();
-	return isValidTaskPriority(normalized) ? normalized : null;
+	return TASK_PRIORITY_OPTIONS.includes(normalized) ? normalized : null;
 }

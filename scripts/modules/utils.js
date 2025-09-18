@@ -1,20 +1,19 @@
 /**
  * utils.js
- * Utility functions for the Task Master CLI
+ * Utility functions for the Speco Tasker CLI
  */
 
-import fs from 'fs';
-import path from 'path';
-import chalk from 'chalk';
-import dotenv from 'dotenv';
-// Import specific config getters needed here
-import { getLogLevel, getDebugFlag } from './config-manager.js';
-import * as gitUtils from './utils/git-utils.js';
+import fs from "node:fs";
+import path from "node:path";
+import chalk from "chalk";
 import {
 	COMPLEXITY_REPORT_FILE,
 	LEGACY_COMPLEXITY_REPORT_FILE,
-	LEGACY_CONFIG_FILE
-} from '../../src/constants/paths.js';
+	LEGACY_CONFIG_FILE,
+} from "../../src/constants/paths.js";
+// Import specific config getters needed here
+import { getDebugFlag, getLogLevel } from "./config-manager.js";
+import * as gitUtils from "./utils/git-utils.js";
 
 // Global silent mode flag
 let silentMode = false;
@@ -25,37 +24,18 @@ let silentMode = false;
  * Precedence:
  * 1. session.env (if session provided)
  * 2. process.env
- * 3. .env file at projectRoot (if projectRoot provided)
  * @param {string} key - The environment variable key.
  * @param {object|null} [session=null] - The MCP session object.
- * @param {string|null} [projectRoot=null] - The project root directory (for .env fallback).
+ * @param {string|null} [projectRoot=null] - The project root directory (parameter kept for compatibility).
  * @returns {string|undefined} The value of the environment variable or undefined if not found.
  */
 function resolveEnvVariable(key, session = null, projectRoot = null) {
-	// 1. Check session.env
+	// 1. Check session.env (for MCP integrations)
 	if (session?.env?.[key]) {
 		return session.env[key];
 	}
 
-	// 2. Read .env file at projectRoot
-	if (projectRoot) {
-		const envPath = path.join(projectRoot, '.env');
-		if (fs.existsSync(envPath)) {
-			try {
-				const envFileContent = fs.readFileSync(envPath, 'utf-8');
-				const parsedEnv = dotenv.parse(envFileContent); // Use dotenv to parse
-				if (parsedEnv && parsedEnv[key]) {
-					// console.log(`DEBUG: Found key ${key} in ${envPath}`); // Optional debug log
-					return parsedEnv[key];
-				}
-			} catch (error) {
-				// Log error but don't crash, just proceed as if key wasn't found in file
-				log('warn', `Could not read or parse ${envPath}: ${error.message}`);
-			}
-		}
-	}
-
-	// 3. Fallback: Check process.env
+	// 2. Check process.env
 	if (process.env[key]) {
 		return process.env[key];
 	}
@@ -72,15 +52,15 @@ function resolveEnvVariable(key, session = null, projectRoot = null) {
  * @returns {string} Slugified tag name safe for filesystem use
  */
 function slugifyTagForFilePath(tagName) {
-	if (!tagName || typeof tagName !== 'string') {
-		return 'unknown-tag';
+	if (!tagName || typeof tagName !== "string") {
+		return "unknown-tag";
 	}
 
 	// Replace invalid filesystem characters with hyphens and clean up
 	return tagName
-		.replace(/[^a-zA-Z0-9_-]/g, '-') // Replace invalid chars with hyphens
-		.replace(/^-+|-+$/g, '') // Remove leading/trailing hyphens
-		.replace(/-+/g, '-') // Collapse multiple hyphens
+		.replace(/[^a-zA-Z0-9_-]/g, "-") // Replace invalid chars with hyphens
+		.replace(/^-+|-+$/g, "") // Remove leading/trailing hyphens
+		.replace(/-+/g, "-") // Collapse multiple hyphens
 		.toLowerCase() // Convert to lowercase
 		.substring(0, 50); // Limit length to prevent overly long filenames
 }
@@ -89,14 +69,14 @@ function slugifyTagForFilePath(tagName) {
  * Resolves a file path to be tag-aware, following the pattern used by other commands.
  * For non-master tags, appends _slugified-tagname before the file extension.
  * @param {string} basePath - The base file path (e.g., '.taskmaster/reports/task-complexity-report.json')
- * @param {string|null} tag - The tag name (null, undefined, or 'master' uses base path)
+ * @param {string|null} tag - The tag name (null, undefined, or 'main' uses base path)
  * @param {string} [projectRoot='.'] - The project root directory
  * @returns {string} The resolved file path
  */
-function getTagAwareFilePath(basePath, tag, projectRoot = '.') {
+function getTagAwareFilePath(basePath, tag, projectRoot = ".") {
 	// Use path.parse and format for clean tag insertion
 	const parsedPath = path.parse(basePath);
-	if (!tag || tag === 'master') {
+	if (!tag || tag === "main") {
 		return path.join(projectRoot, basePath);
 	}
 
@@ -109,6 +89,351 @@ function getTagAwareFilePath(basePath, tag, projectRoot = '.') {
 	return path.join(projectRoot, relativePath);
 }
 
+// --- Parameter Processing Utilities ---
+
+/**
+ * 解析和验证 spec_files 参数
+ * 支持多种输入格式：
+ * 1. JSON 字符串: '[{"type":"spec","title":"API Spec","file":"docs/api.yaml"}]'
+ * 2. 简化语法: "docs/api.yaml,docs/db-schema.md" 或 "docs/api.yaml"
+ * 3. 对象数组（内部使用）
+ * @param {string|Array} input - 输入的 spec_files 参数
+ * @param {string} [projectRoot='.'] - 项目根目录
+ * @returns {Array} 标准化的 spec_files 数组
+ */
+function parseSpecFiles(input, projectRoot = ".") {
+	try {
+		if (!input) {
+			return [];
+		}
+
+		// 如果已经是数组，直接返回（内部使用）
+		if (Array.isArray(input)) {
+			return input;
+		}
+
+		// 如果是字符串，尝试解析
+		if (typeof input === "string") {
+			// 尝试解析为 JSON
+			try {
+				const parsed = JSON.parse(input);
+				if (Array.isArray(parsed)) {
+					// 验证每个元素的结构
+					return parsed.map((item) => {
+						if (typeof item === "object" && item.file) {
+							return {
+								type: item.type || "spec",
+								title: item.title || path.basename(item.file),
+								file: item.file,
+							};
+						}
+						if (typeof item === "string") {
+							// 处理字符串数组格式
+							return {
+								type: "spec",
+								title: path.basename(item),
+								file: item,
+							};
+						}
+						throw new Error("Invalid spec file format");
+					});
+				}
+			} catch (jsonError) {
+				// JSON 解析失败，尝试简化语法
+			}
+
+			// 处理简化语法：逗号分隔的文件路径
+			const files = input
+				.split(",")
+				.map((f) => f.trim())
+				.filter((f) => f.length > 0);
+			return files.map((file) => ({
+				type: "spec",
+				title: path.basename(file),
+				file: file,
+			}));
+		}
+
+		return [];
+	} catch (error) {
+		log("warn", `Error parsing spec_files: ${error.message}`);
+		return [];
+	}
+}
+
+/**
+ * 验证 spec_files 的文件存在性
+ * @param {Array} specFiles - 标准化的 spec_files 数组
+ * @param {string} [projectRoot='.'] - 项目根目录
+ * @returns {Object} 验证结果 {isValid: boolean, errors: Array, warnings: Array}
+ */
+function validateSpecFiles(specFiles, projectRoot = ".") {
+	const errors = [];
+	const warnings = [];
+
+	if (!Array.isArray(specFiles)) {
+		errors.push("spec_files must be an array");
+		return { isValid: false, errors, warnings };
+	}
+
+	specFiles.forEach((spec, index) => {
+		if (!spec || typeof spec !== "object") {
+			errors.push(`spec_files[${index}]: must be an object`);
+			return;
+		}
+
+		if (!spec.file || typeof spec.file !== "string") {
+			errors.push(`spec_files[${index}]: file path is required`);
+			return;
+		}
+
+		// 检查文件是否存在
+		const fullPath = path.isAbsolute(spec.file)
+			? spec.file
+			: path.join(projectRoot, spec.file);
+		if (!fs.existsSync(fullPath)) {
+			warnings.push(`spec_files[${index}]: file '${spec.file}' does not exist`);
+		}
+
+		// 验证其他字段
+		if (!spec.type || typeof spec.type !== "string") {
+			spec.type = "spec"; // 设置默认值
+		}
+
+		if (!spec.title || typeof spec.title !== "string") {
+			spec.title = path.basename(spec.file); // 设置默认值
+		}
+	});
+
+	return {
+		isValid: errors.length === 0,
+		errors,
+		warnings,
+	};
+}
+
+/**
+ * 解析和验证 dependencies 参数
+ * 支持多种输入格式：
+ * 1. 逗号分隔的数字字符串: "1,2,3"
+ * 2. 数组格式: [1,2,3] 或 ["1","2","3"]
+ * 3. 混合格式: ["1", 2, "3.1"]
+ * @param {string|Array} input - 输入的 dependencies 参数
+ * @param {Array} [allTasks=[]] - 所有可用任务列表，用于验证
+ * @returns {Object} 解析结果 {dependencies: Array, errors: Array, warnings: Array}
+ */
+function parseDependencies(input, allTasks = []) {
+	const errors = [];
+	const warnings = [];
+
+	try {
+		let dependencies = [];
+
+		if (!input) {
+			return { dependencies: [], errors: [], warnings: [] };
+		}
+
+		// 如果已经是数组，直接使用
+		if (Array.isArray(input)) {
+			dependencies = input;
+		} else if (typeof input === "string") {
+			// 处理逗号分隔的字符串
+			dependencies = input
+				.split(",")
+				.map((id) => id.trim())
+				.filter((id) => id.length > 0);
+		} else {
+			errors.push("dependencies must be a string or array");
+			return { dependencies: [], errors, warnings };
+		}
+
+		// 转换为数字或保持字符串格式（支持子任务ID）
+		const parsedDeps = dependencies
+			.map((dep) => {
+				const strDep = String(dep).trim();
+				// 检查是否包含点号（子任务格式）
+				if (strDep.includes(".")) {
+					return strDep; // 保持字符串格式
+				}
+				// 转换为数字
+				const numDep = Number.parseInt(strDep, 10);
+				if (Number.isNaN(numDep)) {
+					errors.push(`Invalid dependency ID: ${dep}`);
+					return null;
+				}
+				return numDep;
+			})
+			.filter((dep) => dep !== null);
+
+		// 验证依赖任务存在性并过滤无效依赖
+		const validDeps = [];
+		if (allTasks.length > 0) {
+			parsedDeps.forEach((dep) => {
+				const depExists = allTasks.some((task) => {
+					if (typeof dep === "string" && dep.includes(".")) {
+						// 子任务格式：检查 parentId.subtaskId
+						const [parentId, subtaskId] = dep
+							.split(".")
+							.map((id) => Number.parseInt(id, 10));
+						const parentTask = allTasks.find((t) => t.id === parentId);
+						return parentTask?.subtasks?.some((st) => st.id === subtaskId);
+					}
+					// 普通任务ID
+					return task.id === dep;
+				});
+
+				if (depExists) {
+					validDeps.push(dep);
+				} else {
+					warnings.push(`Dependency task/subtask '${dep}' does not exist`);
+				}
+			});
+		} else {
+			// 如果没有提供 allTasks，保留所有依赖（用于向后兼容）
+			validDeps.push(...parsedDeps);
+		}
+
+		return {
+			dependencies: validDeps,
+			errors,
+			warnings,
+		};
+	} catch (error) {
+		errors.push(`Error parsing dependencies: ${error.message}`);
+		return { dependencies: [], errors, warnings };
+	}
+}
+
+/**
+ * 解析和验证 logs 参数
+ * 支持追加模式和时间戳
+ * @param {string} input - 输入的日志内容
+ * @param {boolean} [appendMode=false] - 是否为追加模式
+ * @param {string} [existingLogs=''] - 已存在的日志内容
+ * @returns {string} 处理后的日志内容
+ */
+function parseLogs(input, appendMode = false, existingLogs = "") {
+	try {
+		if (!input || typeof input !== "string") {
+			return existingLogs || "";
+		}
+
+		const timestamp = new Date().toISOString();
+		const logEntry = `[${timestamp}] ${input.trim()}`;
+
+		if (appendMode && existingLogs) {
+			return `${existingLogs}\n\n${logEntry}`;
+		}
+
+		return logEntry;
+	} catch (error) {
+		log("warn", `Error parsing logs: ${error.message}`);
+		return existingLogs || "";
+	}
+}
+
+/**
+ * 验证任务字段更新的权限
+ * 防止修改不允许的字段
+ * @param {string} fieldName - 要更新的字段名
+ * @param {any} newValue - 新的字段值
+ * @param {Object} currentTask - 当前任务对象
+ * @returns {Object} 验证结果 {isAllowed: boolean, reason?: string}
+ */
+function validateFieldUpdatePermission(fieldName, newValue, currentTask) {
+	const allowedFields = [
+		"title",
+		"description",
+		"details",
+		"status",
+		"priority",
+		"testStrategy",
+		"dependencies",
+		"spec_files",
+		"logs",
+	];
+
+	const restrictedFields = ["id", "subtasks", "created", "updated"];
+
+	// 检查字段是否被允许修改
+	if (!allowedFields.includes(fieldName)) {
+		if (restrictedFields.includes(fieldName)) {
+			return {
+				isAllowed: false,
+				reason: `Field '${fieldName}' is read-only and cannot be modified`,
+			};
+		}
+		return {
+			isAllowed: false,
+			reason: `Field '${fieldName}' is not supported for updates`,
+		};
+	}
+
+	// 特殊验证逻辑
+	switch (fieldName) {
+		case "status": {
+			const validStatuses = [
+				"pending",
+				"in-progress",
+				"done",
+				"cancelled",
+				"deferred",
+			];
+			if (!validStatuses.includes(newValue)) {
+				return {
+					isAllowed: false,
+					reason: `Invalid status '${newValue}'. Valid statuses: ${validStatuses.join(", ")}`,
+				};
+			}
+			break;
+		}
+
+		case "priority": {
+			const validPriorities = ["high", "medium", "low"];
+			if (!validPriorities.includes(newValue)) {
+				return {
+					isAllowed: false,
+					reason: `Invalid priority '${newValue}'. Valid priorities: ${validPriorities.join(", ")}`,
+				};
+			}
+			break;
+		}
+
+		case "dependencies":
+			if (!Array.isArray(newValue)) {
+				return {
+					isAllowed: false,
+					reason: "Dependencies must be an array of task IDs",
+				};
+			}
+			break;
+
+		case "spec_files":
+			if (!Array.isArray(newValue)) {
+				return {
+					isAllowed: false,
+					reason: "spec_files must be an array of specification objects",
+				};
+			}
+			break;
+
+		case "title":
+		case "description":
+		case "details":
+		case "testStrategy":
+		case "logs":
+			if (typeof newValue !== "string") {
+				return {
+					isAllowed: false,
+					reason: `Field '${fieldName}' must be a string`,
+				};
+			}
+			break;
+	}
+
+	return { isAllowed: true };
+}
+
 // --- Project Root Finding Utility ---
 /**
  * Recursively searches upwards for project root starting from a given directory.
@@ -118,7 +443,7 @@ function getTagAwareFilePath(basePath, tag, projectRoot = '.') {
  */
 function findProjectRoot(
 	startDir = process.cwd(),
-	markers = ['package.json', 'pyproject.toml', '.git', LEGACY_CONFIG_FILE]
+	markers = ["package.json", "pyproject.toml", ".git", LEGACY_CONFIG_FILE],
 ) {
 	let currentPath = path.resolve(startDir);
 	const rootPath = path.parse(currentPath).root;
@@ -157,7 +482,7 @@ const LOG_LEVELS = {
 	info: 1,
 	warn: 2,
 	error: 3,
-	success: 1 // Treat success like info level
+	success: 1, // Treat success like info level
 };
 
 /**
@@ -165,7 +490,7 @@ const LOG_LEVELS = {
  * @returns {Promise<Object>} The task manager module object
  */
 async function getTaskManager() {
-	return import('./task-manager.js');
+	return import("./task-manager.js");
 }
 
 /**
@@ -203,38 +528,38 @@ function log(level, ...args) {
 
 	// GUARD: Prevent circular dependency during config loading
 	// Use a simple fallback log level instead of calling getLogLevel()
-	let configLevel = 'info'; // Default fallback
+	let configLevel = "info"; // Default fallback
 	try {
 		// Only try to get config level if we're not in the middle of config loading
-		configLevel = getLogLevel() || 'info';
+		configLevel = getLogLevel() || "info";
 	} catch (error) {
 		// If getLogLevel() fails (likely due to circular dependency),
 		// use default 'info' level and continue
-		configLevel = 'info';
+		configLevel = "info";
 	}
 
 	// Use text prefixes instead of emojis
 	const prefixes = {
-		debug: chalk.gray('[DEBUG]'),
-		info: chalk.blue('[INFO]'),
-		warn: chalk.yellow('[WARN]'),
-		error: chalk.red('[ERROR]'),
-		success: chalk.green('[SUCCESS]')
+		debug: chalk.gray("[DEBUG]"),
+		info: chalk.blue("[INFO]"),
+		warn: chalk.yellow("[WARN]"),
+		error: chalk.red("[ERROR]"),
+		success: chalk.green("[SUCCESS]"),
 	};
 
 	// Ensure level exists, default to info if not
-	const currentLevel = LOG_LEVELS.hasOwnProperty(level) ? level : 'info';
+	const currentLevel = LOG_LEVELS.hasOwnProperty(level) ? level : "info";
 
 	// Check log level configuration
 	if (
 		LOG_LEVELS[currentLevel] >= (LOG_LEVELS[configLevel] ?? LOG_LEVELS.info)
 	) {
-		const prefix = prefixes[currentLevel] || '';
+		const prefix = prefixes[currentLevel] || "";
 		// Use console.log for all levels, let chalk handle coloring
 		// Construct the message properly
 		const message = args
-			.map((arg) => (typeof arg === 'object' ? JSON.stringify(arg) : arg))
-			.join(' ');
+			.map((arg) => (typeof arg === "object" ? JSON.stringify(arg) : arg))
+			.join(" ");
 		console.log(`${prefix} ${message}`);
 	}
 }
@@ -245,7 +570,7 @@ function log(level, ...args) {
  * @returns {boolean} True if the data has a tagged structure
  */
 function hasTaggedStructure(data) {
-	if (!data || typeof data !== 'object') {
+	if (!data || typeof data !== "object") {
 		return false;
 	}
 
@@ -253,7 +578,7 @@ function hasTaggedStructure(data) {
 	for (const key in data) {
 		if (
 			data.hasOwnProperty(key) &&
-			typeof data[key] === 'object' &&
+			typeof data[key] === "object" &&
 			Array.isArray(data[key].tasks)
 		) {
 			return true;
@@ -272,8 +597,8 @@ function normalizeTaskIds(tasks) {
 	tasks.forEach((task) => {
 		// Convert task ID to number with validation
 		if (task.id !== undefined) {
-			const parsedId = parseInt(task.id, 10);
-			if (!isNaN(parsedId) && parsedId > 0) {
+			const parsedId = Number.parseInt(task.id, 10);
+			if (!Number.isNaN(parsedId) && parsedId > 0) {
 				task.id = parsedId;
 			}
 		}
@@ -283,13 +608,13 @@ function normalizeTaskIds(tasks) {
 			task.subtasks.forEach((subtask) => {
 				if (subtask.id !== undefined) {
 					// Check for dot notation (which shouldn't exist in storage)
-					if (typeof subtask.id === 'string' && subtask.id.includes('.')) {
+					if (typeof subtask.id === "string" && subtask.id.includes(".")) {
 						// Extract the subtask part after the dot
-						const parts = subtask.id.split('.');
-						subtask.id = parseInt(parts[parts.length - 1], 10);
+						const parts = subtask.id.split(".");
+						subtask.id = Number.parseInt(parts[parts.length - 1], 10);
 					} else {
-						const parsedSubtaskId = parseInt(subtask.id, 10);
-						if (!isNaN(parsedSubtaskId) && parsedSubtaskId > 0) {
+						const parsedSubtaskId = Number.parseInt(subtask.id, 10);
+						if (!Number.isNaN(parsedSubtaskId) && parsedSubtaskId > 0) {
 							subtask.id = parsedSubtaskId;
 						}
 					}
@@ -319,7 +644,7 @@ function readJSON(filepath, projectRoot = null, tag = null) {
 
 	if (isDebug) {
 		console.log(
-			`readJSON called with: ${filepath}, projectRoot: ${projectRoot}, tag: ${tag}`
+			`readJSON called with: ${filepath}, projectRoot: ${projectRoot}, tag: ${tag}`,
 		);
 	}
 
@@ -329,7 +654,7 @@ function readJSON(filepath, projectRoot = null, tag = null) {
 
 	let data;
 	try {
-		data = JSON.parse(fs.readFileSync(filepath, 'utf8'));
+		data = JSON.parse(fs.readFileSync(filepath, "utf8"));
 		if (isDebug) {
 			console.log(`Successfully read JSON from ${filepath}`);
 		}
@@ -341,9 +666,9 @@ function readJSON(filepath, projectRoot = null, tag = null) {
 	}
 
 	// If it's not a tasks.json file, return as-is
-	if (!filepath.includes('tasks.json') || !data) {
+	if (!filepath.includes("tasks.json") || !data) {
 		if (isDebug) {
-			console.log(`File is not tasks.json or data is null, returning as-is`);
+			console.log("File is not tasks.json or data is null, returning as-is");
 		}
 		return data;
 	}
@@ -356,7 +681,7 @@ function readJSON(filepath, projectRoot = null, tag = null) {
 		!hasTaggedStructure(data)
 	) {
 		if (isDebug) {
-			console.log(`File is in legacy format, performing migration...`);
+			console.log("File is in legacy format, performing migration...");
 		}
 
 		normalizeTaskIds(data.tasks);
@@ -368,16 +693,16 @@ function readJSON(filepath, projectRoot = null, tag = null) {
 				metadata: data.metadata || {
 					created: new Date().toISOString(),
 					updated: new Date().toISOString(),
-					description: 'Tasks for master context'
-				}
-			}
+					description: "Tasks for master context",
+				},
+			},
 		};
 
 		// Write the migrated data back to the file
 		try {
 			writeJSON(filepath, migratedData);
 			if (isDebug) {
-				console.log(`Successfully migrated legacy format to tagged format`);
+				console.log("Successfully migrated legacy format to tagged format");
 			}
 
 			// Perform complete migration (config.json, state.json)
@@ -408,29 +733,29 @@ function readJSON(filepath, projectRoot = null, tag = null) {
 	}
 
 	// If we have tagged data, we need to resolve which tag to use
-	if (typeof data === 'object' && !data.tasks) {
+	if (typeof data === "object" && !data.tasks) {
 		// This is tagged format
 		if (isDebug) {
-			console.log(`File is in tagged format, resolving tag...`);
+			console.log("File is in tagged format, resolving tag...");
 		}
 
 		// Ensure all tags have proper metadata before proceeding
 		for (const tagName in data) {
 			if (
 				data.hasOwnProperty(tagName) &&
-				typeof data[tagName] === 'object' &&
+				typeof data[tagName] === "object" &&
 				data[tagName].tasks
 			) {
 				try {
 					ensureTagMetadata(data[tagName], {
 						description: `Tasks for ${tagName} context`,
-						skipUpdate: true // Don't update timestamp during read operations
+						skipUpdate: true, // Don't update timestamp during read operations
 					});
 				} catch (error) {
 					// If ensureTagMetadata fails, continue without metadata
 					if (isDebug) {
 						console.log(
-							`Failed to ensure metadata for tag ${tagName}: ${error.message}`
+							`Failed to ensure metadata for tag ${tagName}: ${error.message}`,
 						);
 					}
 				}
@@ -462,8 +787,8 @@ function readJSON(filepath, projectRoot = null, tag = null) {
 		}
 
 		try {
-			// Default to master tag if anything goes wrong
-			let resolvedTag = 'master';
+			// Default to main tag if anything goes wrong
+			let resolvedTag = "main";
 
 			// Try to resolve the correct tag, but don't fail if it doesn't work
 			try {
@@ -479,15 +804,15 @@ function readJSON(filepath, projectRoot = null, tag = null) {
 					if (derivedProjectRoot) {
 						resolvedTag = resolveTag({ projectRoot: derivedProjectRoot });
 					}
-					// If derivedProjectRoot is null, stick with 'master'
+					// If derivedProjectRoot is null, stick with 'main'
 				}
 			} catch (tagResolveError) {
 				if (isDebug) {
 					console.log(
-						`Tag resolution failed, using master: ${tagResolveError.message}`
+						`Tag resolution failed, using master: ${tagResolveError.message}`,
 					);
 				}
-				// resolvedTag stays as 'master'
+				// resolvedTag stays as 'main'
 			}
 
 			if (isDebug) {
@@ -496,72 +821,70 @@ function readJSON(filepath, projectRoot = null, tag = null) {
 
 			// Get the data for the resolved tag
 			const tagData = data[resolvedTag];
-			if (tagData && tagData.tasks) {
+			if (tagData?.tasks) {
 				normalizeTaskIds(tagData.tasks);
 
 				// Add the _rawTaggedData property and the resolved tag to the returned data
 				const result = {
 					...tagData,
 					tag: resolvedTag,
-					_rawTaggedData: originalTaggedData
+					_rawTaggedData: originalTaggedData,
 				};
 				if (isDebug) {
 					console.log(
-						`Returning data for tag '${resolvedTag}' with ${tagData.tasks.length} tasks`
+						`Returning data for tag '${resolvedTag}' with ${tagData.tasks.length} tasks`,
 					);
 				}
 				return result;
-			} else {
-				// If the resolved tag doesn't exist, fall back to master
-				const masterData = data.master;
-				if (masterData && masterData.tasks) {
-					normalizeTaskIds(masterData.tasks);
-
-					if (isDebug) {
-						console.log(
-							`Tag '${resolvedTag}' not found, falling back to master with ${masterData.tasks.length} tasks`
-						);
-					}
-					return {
-						...masterData,
-						tag: 'master',
-						_rawTaggedData: originalTaggedData
-					};
-				} else {
-					if (isDebug) {
-						console.log(`No valid tag data found, returning empty structure`);
-					}
-					// Return empty structure if no valid data
-					return {
-						tasks: [],
-						tag: 'master',
-						_rawTaggedData: originalTaggedData
-					};
-				}
 			}
+			// If the resolved tag doesn't exist, fall back to master
+			const masterData = data.master;
+			if (masterData?.tasks) {
+				normalizeTaskIds(masterData.tasks);
+
+				if (isDebug) {
+					console.log(
+						`Tag '${resolvedTag}' not found, falling back to master with ${masterData.tasks.length} tasks`,
+					);
+				}
+				return {
+					...masterData,
+					tag: "main",
+					_rawTaggedData: originalTaggedData,
+				};
+			}
+			if (isDebug) {
+				console.log("No valid tag data found, returning empty structure");
+			}
+			// Return empty structure if no valid data
+			return {
+				tasks: [],
+				tag: "main",
+				_rawTaggedData: originalTaggedData,
+			};
 		} catch (error) {
 			if (isDebug) {
 				console.log(`Error during tag resolution: ${error.message}`);
 			}
 			// If anything goes wrong, try to return master or empty
 			const masterData = data.master;
-			if (masterData && masterData.tasks) {
+			if (masterData?.tasks) {
 				normalizeTaskIds(masterData.tasks);
 				return {
 					...masterData,
-					_rawTaggedData: originalTaggedData
+					_rawTaggedData: originalTaggedData,
 				};
 			}
 			return {
 				tasks: [],
-				_rawTaggedData: originalTaggedData
+				_rawTaggedData: originalTaggedData,
 			};
 		}
 	}
 
 	// If we reach here, it's some other format
 	if (isDebug) {
-		console.log(`File format not recognized, returning as-is`);
+		console.log("File format not recognized, returning as-is");
 	}
 	return data;
 }
@@ -578,26 +901,26 @@ function performCompleteTagMigration(tasksJsonPath) {
 			path.dirname(tasksJsonPath);
 
 		// 1. Migrate config.json - add defaultTag and tags section
-		const configPath = path.join(projectRoot, '.taskmaster', 'config.json');
+		const configPath = path.join(projectRoot, ".taskmaster", "config.json");
 		if (fs.existsSync(configPath)) {
 			migrateConfigJson(configPath);
 		}
 
 		// 2. Create state.json if it doesn't exist
-		const statePath = path.join(projectRoot, '.taskmaster', 'state.json');
+		const statePath = path.join(projectRoot, ".taskmaster", "state.json");
 		if (!fs.existsSync(statePath)) {
 			createStateJson(statePath);
 		}
 
 		if (getDebugFlag()) {
 			log(
-				'debug',
-				`Complete tag migration performed for project: ${projectRoot}`
+				"debug",
+				`Complete tag migration performed for project: ${projectRoot}`,
 			);
 		}
 	} catch (error) {
 		if (getDebugFlag()) {
-			log('warn', `Error during complete tag migration: ${error.message}`);
+			log("warn", `Error during complete tag migration: ${error.message}`);
 		}
 	}
 }
@@ -608,7 +931,7 @@ function performCompleteTagMigration(tasksJsonPath) {
  */
 function migrateConfigJson(configPath) {
 	try {
-		const rawConfig = fs.readFileSync(configPath, 'utf8');
+		const rawConfig = fs.readFileSync(configPath, "utf8");
 		const config = JSON.parse(rawConfig);
 		if (!config) return;
 
@@ -619,20 +942,20 @@ function migrateConfigJson(configPath) {
 			config.global = {};
 		}
 		if (!config.global.defaultTag) {
-			config.global.defaultTag = 'master';
+			config.global.defaultTag = "main";
 			modified = true;
 		}
 
 		if (modified) {
-			fs.writeFileSync(configPath, JSON.stringify(config, null, 2), 'utf8');
-			if (process.env.TASKMASTER_DEBUG === 'true') {
+			fs.writeFileSync(configPath, JSON.stringify(config, null, 2), "utf8");
+			if (process.env.TASKMASTER_DEBUG === "true") {
 				console.log(
-					'[DEBUG] Updated config.json with tagged task system settings'
+					"[DEBUG] Updated config.json with tagged task system settings",
 				);
 			}
 		}
 	} catch (error) {
-		if (process.env.TASKMASTER_DEBUG === 'true') {
+		if (process.env.TASKMASTER_DEBUG === "true") {
 			console.warn(`[WARN] Error migrating config.json: ${error.message}`);
 		}
 	}
@@ -645,18 +968,18 @@ function migrateConfigJson(configPath) {
 function createStateJson(statePath) {
 	try {
 		const initialState = {
-			currentTag: 'master',
+			currentTag: "main",
 			lastSwitched: new Date().toISOString(),
 			branchTagMapping: {},
-			migrationNoticeShown: false
+			migrationNoticeShown: false,
 		};
 
-		fs.writeFileSync(statePath, JSON.stringify(initialState, null, 2), 'utf8');
-		if (process.env.TASKMASTER_DEBUG === 'true') {
-			console.log('[DEBUG] Created initial state.json for tagged task system');
+		fs.writeFileSync(statePath, JSON.stringify(initialState, null, 2), "utf8");
+		if (process.env.TASKMASTER_DEBUG === "true") {
+			console.log("[DEBUG] Created initial state.json for tagged task system");
 		}
 	} catch (error) {
-		if (process.env.TASKMASTER_DEBUG === 'true') {
+		if (process.env.TASKMASTER_DEBUG === "true") {
 			console.warn(`[WARN] Error creating state.json: ${error.message}`);
 		}
 	}
@@ -669,7 +992,7 @@ function createStateJson(statePath) {
 function markMigrationForNotice(tasksJsonPath) {
 	try {
 		const projectRoot = path.dirname(path.dirname(tasksJsonPath));
-		const statePath = path.join(projectRoot, '.taskmaster', 'state.json');
+		const statePath = path.join(projectRoot, ".taskmaster", "state.json");
 
 		// Ensure state.json exists
 		if (!fs.existsSync(statePath)) {
@@ -678,24 +1001,24 @@ function markMigrationForNotice(tasksJsonPath) {
 
 		// Read and update state to mark migration occurred using fs directly
 		try {
-			const rawState = fs.readFileSync(statePath, 'utf8');
+			const rawState = fs.readFileSync(statePath, "utf8");
 			const stateData = JSON.parse(rawState) || {};
 			// Only set to false if it's not already set (i.e., first time migration)
 			if (stateData.migrationNoticeShown === undefined) {
 				stateData.migrationNoticeShown = false;
-				fs.writeFileSync(statePath, JSON.stringify(stateData, null, 2), 'utf8');
+				fs.writeFileSync(statePath, JSON.stringify(stateData, null, 2), "utf8");
 			}
 		} catch (stateError) {
-			if (process.env.TASKMASTER_DEBUG === 'true') {
+			if (process.env.TASKMASTER_DEBUG === "true") {
 				console.warn(
-					`[WARN] Error updating state for migration notice: ${stateError.message}`
+					`[WARN] Error updating state for migration notice: ${stateError.message}`,
 				);
 			}
 		}
 	} catch (error) {
-		if (process.env.TASKMASTER_DEBUG === 'true') {
+		if (process.env.TASKMASTER_DEBUG === "true") {
 			console.warn(
-				`[WARN] Error marking migration for notice: ${error.message}`
+				`[WARN] Error marking migration for notice: ${error.message}`,
 			);
 		}
 	}
@@ -709,7 +1032,7 @@ function markMigrationForNotice(tasksJsonPath) {
  * @param {string} tag - Optional tag for tag context
  */
 function writeJSON(filepath, data, projectRoot = null, tag = null) {
-	const isDebug = process.env.TASKMASTER_DEBUG === 'true';
+	const isDebug = process.env.TASKMASTER_DEBUG === "true";
 
 	try {
 		let finalData = data;
@@ -725,12 +1048,12 @@ function writeJSON(filepath, data, projectRoot = null, tag = null) {
 
 			if (isDebug) {
 				console.log(
-					`writeJSON: Detected resolved tag data missing _rawTaggedData. Re-reading raw data to prevent data loss for tag '${resolvedTag}'.`
+					`writeJSON: Detected resolved tag data missing _rawTaggedData. Re-reading raw data to prevent data loss for tag '${resolvedTag}'.`,
 				);
 			}
 
 			// Re-read the full file to get the complete tagged structure
-			const rawFullData = JSON.parse(fs.readFileSync(filepath, 'utf8'));
+			const rawFullData = JSON.parse(fs.readFileSync(filepath, "utf8"));
 
 			// Merge the updated data into the full structure
 			finalData = {
@@ -739,13 +1062,13 @@ function writeJSON(filepath, data, projectRoot = null, tag = null) {
 					// Preserve existing tag metadata if it exists, otherwise use what's passed
 					...(rawFullData[resolvedTag]?.metadata || {}),
 					...(data.metadata ? { metadata: data.metadata } : {}),
-					tasks: data.tasks // The updated tasks array is the source of truth here
-				}
+					tasks: data.tasks, // The updated tasks array is the source of truth here
+				},
 			};
 		}
 		// If we have _rawTaggedData, this means we're working with resolved tag data
 		// and need to merge it back into the full tagged structure
-		else if (data && data._rawTaggedData && projectRoot) {
+		else if (data?._rawTaggedData && projectRoot) {
 			const resolvedTag = tag || getCurrentTag(projectRoot);
 
 			// Get the original tagged data
@@ -757,30 +1080,30 @@ function writeJSON(filepath, data, projectRoot = null, tag = null) {
 			// Update the specific tag with the resolved data
 			finalData = {
 				...originalTaggedData,
-				[resolvedTag]: cleanResolvedData
+				[resolvedTag]: cleanResolvedData,
 			};
 
 			if (isDebug) {
 				console.log(
-					`writeJSON: Merging resolved data back into tag '${resolvedTag}'`
+					`writeJSON: Merging resolved data back into tag '${resolvedTag}'`,
 				);
 			}
 		}
 
 		// Clean up any internal properties that shouldn't be persisted
 		let cleanData = finalData;
-		if (cleanData && typeof cleanData === 'object') {
+		if (cleanData && typeof cleanData === "object") {
 			// Remove any _rawTaggedData or tag properties from root level
 			const { _rawTaggedData, tag: tagProp, ...rootCleanData } = cleanData;
 			cleanData = rootCleanData;
 
 			// Additional cleanup for tag objects
-			if (typeof cleanData === 'object' && !Array.isArray(cleanData)) {
+			if (typeof cleanData === "object" && !Array.isArray(cleanData)) {
 				const finalCleanData = {};
 				for (const [key, value] of Object.entries(cleanData)) {
 					if (
 						value &&
-						typeof value === 'object' &&
+						typeof value === "object" &&
 						Array.isArray(value.tasks)
 					) {
 						// This is a tag object - clean up any rogue root-level properties
@@ -803,15 +1126,15 @@ function writeJSON(filepath, data, projectRoot = null, tag = null) {
 			}
 		}
 
-		fs.writeFileSync(filepath, JSON.stringify(cleanData, null, 2), 'utf8');
+		fs.writeFileSync(filepath, JSON.stringify(cleanData, null, 2), "utf8");
 
 		if (isDebug) {
 			console.log(`writeJSON: Successfully wrote to ${filepath}`);
 		}
 	} catch (error) {
-		log('error', `Error writing JSON file ${filepath}:`, error.message);
+		log("error", `Error writing JSON file ${filepath}:`, error.message);
 		if (isDebug) {
-			log('error', 'Full error details:', error);
+			log("error", "Full error details:", error);
 		}
 	}
 }
@@ -852,7 +1175,7 @@ function readComplexityReport(customPath = null) {
 			const newPath = path.join(process.cwd(), COMPLEXITY_REPORT_FILE);
 			const legacyPath = path.join(
 				process.cwd(),
-				LEGACY_COMPLEXITY_REPORT_FILE
+				LEGACY_COMPLEXITY_REPORT_FILE,
 			);
 
 			reportPath = fs.existsSync(newPath) ? newPath : legacyPath;
@@ -860,19 +1183,19 @@ function readComplexityReport(customPath = null) {
 
 		if (!fs.existsSync(reportPath)) {
 			if (isDebug) {
-				log('debug', `Complexity report not found at ${reportPath}`);
+				log("debug", `Complexity report not found at ${reportPath}`);
 			}
 			return null;
 		}
 
 		const reportData = readJSON(reportPath);
 		if (isDebug) {
-			log('debug', `Successfully read complexity report from ${reportPath}`);
+			log("debug", `Successfully read complexity report from ${reportPath}`);
 		}
 		return reportData;
 	} catch (error) {
 		if (isDebug) {
-			log('error', `Error reading complexity report: ${error.message}`);
+			log("error", `Error reading complexity report: ${error.message}`);
 		}
 		return null;
 	}
@@ -924,10 +1247,10 @@ function taskExists(tasks, taskId) {
 	}
 
 	// Handle both regular task IDs and subtask IDs (e.g., "1.2")
-	if (typeof taskId === 'string' && taskId.includes('.')) {
+	if (typeof taskId === "string" && taskId.includes(".")) {
 		const [parentId, subtaskId] = taskId
-			.split('.')
-			.map((id) => parseInt(id, 10));
+			.split(".")
+			.map((id) => Number.parseInt(id, 10));
 		const parentTask = tasks.find((t) => t.id === parentId);
 
 		if (!parentTask || !parentTask.subtasks) {
@@ -937,7 +1260,7 @@ function taskExists(tasks, taskId) {
 		return parentTask.subtasks.some((st) => st.id === subtaskId);
 	}
 
-	const id = parseInt(taskId, 10);
+	const id = Number.parseInt(taskId, 10);
 	return tasks.some((t) => t.id === id);
 }
 
@@ -947,11 +1270,11 @@ function taskExists(tasks, taskId) {
  * @returns {string} The formatted task ID
  */
 function formatTaskId(id) {
-	if (typeof id === 'string' && id.includes('.')) {
+	if (typeof id === "string" && id.includes(".")) {
 		return id; // Already formatted as a string with a dot (e.g., "1.2")
 	}
 
-	if (typeof id === 'number') {
+	if (typeof id === "number") {
 		return id.toString();
 	}
 
@@ -970,18 +1293,18 @@ function findTaskById(
 	tasks,
 	taskId,
 	complexityReport = null,
-	statusFilter = null
+	statusFilter = null,
 ) {
 	if (!taskId || !tasks || !Array.isArray(tasks)) {
 		return { task: null, originalSubtaskCount: null };
 	}
 
 	// Check if it's a subtask ID (e.g., "1.2")
-	if (typeof taskId === 'string' && taskId.includes('.')) {
+	if (typeof taskId === "string" && taskId.includes(".")) {
 		// If looking for a subtask, statusFilter doesn't apply directly here.
 		const [parentId, subtaskId] = taskId
-			.split('.')
-			.map((id) => parseInt(id, 10));
+			.split(".")
+			.map((id) => Number.parseInt(id, 10));
 		const parentTask = tasks.find((t) => t.id === parentId);
 
 		if (!parentTask || !parentTask.subtasks) {
@@ -994,7 +1317,7 @@ function findTaskById(
 			subtask.parentTask = {
 				id: parentTask.id,
 				title: parentTask.title,
-				status: parentTask.status
+				status: parentTask.status,
 			};
 			subtask.isSubtask = true;
 		}
@@ -1007,7 +1330,7 @@ function findTaskById(
 		return {
 			task: subtask || null,
 			originalSubtaskCount: null,
-			originalSubtasks: null
+			originalSubtasks: null,
 		};
 	}
 
@@ -1016,7 +1339,7 @@ function findTaskById(
 	let originalSubtasks = null;
 
 	// Find the main task
-	const id = parseInt(taskId, 10);
+	const id = Number.parseInt(taskId, 10);
 	const task = tasks.find((t) => t.id === id) || null;
 
 	// If task not found, return nulls
@@ -1037,7 +1360,7 @@ function findTaskById(
 		filteredTask.subtasks = task.subtasks.filter(
 			(subtask) =>
 				subtask.status &&
-				subtask.status.toLowerCase() === statusFilter.toLowerCase()
+				subtask.status.toLowerCase() === statusFilter.toLowerCase(),
 		);
 
 		taskResult = filteredTask;
@@ -1074,7 +1397,8 @@ function truncate(text, maxLength) {
 function isEmpty(value) {
 	if (Array.isArray(value)) {
 		return value.length === 0;
-	} else if (typeof value === 'object' && value !== null) {
+	}
+	if (typeof value === "object" && value !== null) {
 		return Object.keys(value).length === 0;
 	}
 
@@ -1094,7 +1418,7 @@ function findCycles(
 	dependencyMap,
 	visited = new Set(),
 	recursionStack = new Set(),
-	path = []
+	path = [],
 ) {
 	// Mark the current node as visited and part of recursion stack
 	visited.add(subtaskId);
@@ -1111,7 +1435,7 @@ function findCycles(
 		// If not visited, recursively check for cycles
 		if (!visited.has(depId)) {
 			const cycles = findCycles(depId, dependencyMap, visited, recursionStack, [
-				...path
+				...path,
 			]);
 			cyclesToBreak.push(...cycles);
 		}
@@ -1147,8 +1471,8 @@ function traverseDependencies(sourceTasks, allTasks, options = {}) {
 	const {
 		maxDepth = 50,
 		includeSelf = false,
-		direction = 'forward',
-		logger = null
+		direction = "forward",
+		logger = null,
 	} = options;
 
 	const dependentTaskIds = new Set();
@@ -1156,14 +1480,14 @@ function traverseDependencies(sourceTasks, allTasks, options = {}) {
 
 	// Helper function to normalize dependency IDs while preserving subtask format
 	function normalizeDependencyId(depId) {
-		if (typeof depId === 'string') {
+		if (typeof depId === "string") {
 			// Preserve string format for subtask IDs like "1.2"
-			if (depId.includes('.')) {
+			if (depId.includes(".")) {
 				return depId;
 			}
 			// Convert simple string numbers to numbers for consistency
-			const parsed = parseInt(depId, 10);
-			return isNaN(parsed) ? depId : parsed;
+			const parsed = Number.parseInt(depId, 10);
+			return Number.isNaN(parsed) ? depId : parsed;
 		}
 		return depId;
 	}
@@ -1173,9 +1497,9 @@ function traverseDependencies(sourceTasks, allTasks, options = {}) {
 		// Check depth limit
 		if (currentDepth >= maxDepth) {
 			const warnMsg = `Maximum recursion depth (${maxDepth}) reached for task ${taskId}`;
-			if (logger && typeof logger.warn === 'function') {
+			if (logger && typeof logger.warn === "function") {
 				logger.warn(warnMsg);
-			} else if (typeof log !== 'undefined' && log.warn) {
+			} else if (typeof log !== "undefined" && log.warn) {
 				log.warn(warnMsg);
 			} else {
 				console.warn(warnMsg);
@@ -1215,9 +1539,9 @@ function traverseDependencies(sourceTasks, allTasks, options = {}) {
 		// Check depth limit
 		if (currentDepth >= maxDepth) {
 			const warnMsg = `Maximum recursion depth (${maxDepth}) reached for task ${taskId}`;
-			if (logger && typeof logger.warn === 'function') {
+			if (logger && typeof logger.warn === "function") {
 				logger.warn(warnMsg);
-			} else if (typeof log !== 'undefined' && log.warn) {
+			} else if (typeof log !== "undefined" && log.warn) {
 				log.warn(warnMsg);
 			} else {
 				console.warn(warnMsg);
@@ -1253,11 +1577,11 @@ function traverseDependencies(sourceTasks, allTasks, options = {}) {
 
 	// Choose traversal function based on direction
 	const traversalFunc =
-		direction === 'reverse' ? findReverseDependencies : findForwardDependencies;
+		direction === "reverse" ? findReverseDependencies : findForwardDependencies;
 
 	// Start traversal from each source task
 	sourceTasks.forEach((sourceTask) => {
-		if (sourceTask && sourceTask.id) {
+		if (sourceTask?.id) {
 			traversalFunc(sourceTask.id);
 		}
 	});
@@ -1273,21 +1597,21 @@ function traverseDependencies(sourceTasks, allTasks, options = {}) {
 const toKebabCase = (str) => {
 	// Special handling for common acronyms
 	const withReplacedAcronyms = str
-		.replace(/ID/g, 'Id')
-		.replace(/API/g, 'Api')
-		.replace(/UI/g, 'Ui')
-		.replace(/URL/g, 'Url')
-		.replace(/URI/g, 'Uri')
-		.replace(/JSON/g, 'Json')
-		.replace(/XML/g, 'Xml')
-		.replace(/HTML/g, 'Html')
-		.replace(/CSS/g, 'Css');
+		.replace(/ID/g, "Id")
+		.replace(/API/g, "Api")
+		.replace(/UI/g, "Ui")
+		.replace(/URL/g, "Url")
+		.replace(/URI/g, "Uri")
+		.replace(/JSON/g, "Json")
+		.replace(/XML/g, "Xml")
+		.replace(/HTML/g, "Html")
+		.replace(/CSS/g, "Css");
 
 	// Insert hyphens before capital letters and convert to lowercase
 	return withReplacedAcronyms
-		.replace(/([A-Z])/g, '-$1')
+		.replace(/([A-Z])/g, "-$1")
 		.toLowerCase()
-		.replace(/^-/, ''); // Remove leading hyphen if present
+		.replace(/^-/, ""); // Remove leading hyphen if present
 };
 
 /**
@@ -1298,11 +1622,11 @@ const toKebabCase = (str) => {
 function detectCamelCaseFlags(args) {
 	const camelCaseFlags = [];
 	for (const arg of args) {
-		if (arg.startsWith('--')) {
-			const flagName = arg.split('=')[0].slice(2); // Remove -- and anything after =
+		if (arg.startsWith("--")) {
+			const flagName = arg.split("=")[0].slice(2); // Remove -- and anything after =
 
 			// Skip single-word flags - they can't be camelCase
-			if (!flagName.includes('-') && !/[A-Z]/.test(flagName)) {
+			if (!flagName.includes("-") && !/[A-Z]/.test(flagName)) {
 				continue;
 			}
 
@@ -1312,68 +1636,13 @@ function detectCamelCaseFlags(args) {
 				if (kebabVersion !== flagName) {
 					camelCaseFlags.push({
 						original: flagName,
-						kebabCase: kebabVersion
+						kebabCase: kebabVersion,
 					});
 				}
 			}
 		}
 	}
 	return camelCaseFlags;
-}
-
-/**
- * Aggregates an array of telemetry objects into a single summary object.
- * @param {Array<Object>} telemetryArray - Array of telemetryData objects.
- * @param {string} overallCommandName - The name for the aggregated command.
- * @returns {Object|null} Aggregated telemetry object or null if input is empty.
- */
-function aggregateTelemetry(telemetryArray, overallCommandName) {
-	if (!telemetryArray || telemetryArray.length === 0) {
-		return null;
-	}
-
-	const aggregated = {
-		timestamp: new Date().toISOString(), // Use current time for aggregation time
-		userId: telemetryArray[0].userId, // Assume userId is consistent
-		commandName: overallCommandName,
-		modelUsed: 'Multiple', // Default if models vary
-		providerName: 'Multiple', // Default if providers vary
-		inputTokens: 0,
-		outputTokens: 0,
-		totalTokens: 0,
-		totalCost: 0,
-		currency: telemetryArray[0].currency || 'USD' // Assume consistent currency or default
-	};
-
-	const uniqueModels = new Set();
-	const uniqueProviders = new Set();
-	const uniqueCurrencies = new Set();
-
-	telemetryArray.forEach((item) => {
-		aggregated.inputTokens += item.inputTokens || 0;
-		aggregated.outputTokens += item.outputTokens || 0;
-		aggregated.totalCost += item.totalCost || 0;
-		uniqueModels.add(item.modelUsed);
-		uniqueProviders.add(item.providerName);
-		uniqueCurrencies.add(item.currency || 'USD');
-	});
-
-	aggregated.totalTokens = aggregated.inputTokens + aggregated.outputTokens;
-	aggregated.totalCost = parseFloat(aggregated.totalCost.toFixed(6)); // Fix precision
-
-	if (uniqueModels.size === 1) {
-		aggregated.modelUsed = [...uniqueModels][0];
-	}
-	if (uniqueProviders.size === 1) {
-		aggregated.providerName = [...uniqueProviders][0];
-	}
-	if (uniqueCurrencies.size > 1) {
-		aggregated.currency = 'Multiple'; // Mark if currencies actually differ
-	} else if (uniqueCurrencies.size === 1) {
-		aggregated.currency = [...uniqueCurrencies][0];
-	}
-
-	return aggregated;
 }
 
 /**
@@ -1384,16 +1653,16 @@ function aggregateTelemetry(telemetryArray, overallCommandName) {
  */
 function getCurrentTag(projectRoot) {
 	if (!projectRoot) {
-		throw new Error('projectRoot is required for getCurrentTag');
+		throw new Error("projectRoot is required for getCurrentTag");
 	}
 
 	try {
 		// Try to read current tag from state.json using fs directly
-		const statePath = path.join(projectRoot, '.taskmaster', 'state.json');
+		const statePath = path.join(projectRoot, ".taskmaster", "state.json");
 		if (fs.existsSync(statePath)) {
-			const rawState = fs.readFileSync(statePath, 'utf8');
+			const rawState = fs.readFileSync(statePath, "utf8");
 			const stateData = JSON.parse(rawState);
-			if (stateData && stateData.currentTag) {
+			if (stateData?.currentTag) {
 				return stateData.currentTag;
 			}
 		}
@@ -1403,11 +1672,11 @@ function getCurrentTag(projectRoot) {
 
 	// Fall back to defaultTag from config using fs directly
 	try {
-		const configPath = path.join(projectRoot, '.taskmaster', 'config.json');
+		const configPath = path.join(projectRoot, ".taskmaster", "config.json");
 		if (fs.existsSync(configPath)) {
-			const rawConfig = fs.readFileSync(configPath, 'utf8');
+			const rawConfig = fs.readFileSync(configPath, "utf8");
 			const configData = JSON.parse(rawConfig);
-			if (configData && configData.global && configData.global.defaultTag) {
+			if (configData?.global?.defaultTag) {
 				return configData.global.defaultTag;
 			}
 		}
@@ -1416,7 +1685,7 @@ function getCurrentTag(projectRoot) {
 	}
 
 	// Final fallback
-	return 'master';
+	return "main";
 }
 
 /**
@@ -1430,7 +1699,7 @@ function resolveTag(options = {}) {
 	const { projectRoot, tag } = options;
 
 	if (!projectRoot) {
-		throw new Error('projectRoot is required for resolveTag');
+		throw new Error("projectRoot is required for resolveTag");
 	}
 
 	// If explicit tag provided, use it
@@ -1453,12 +1722,8 @@ function getTasksForTag(data, tagName) {
 		return [];
 	}
 
-	// Handle migrated format: { "master": { "tasks": [...] }, "otherTag": { "tasks": [...] } }
-	if (
-		data[tagName] &&
-		data[tagName].tasks &&
-		Array.isArray(data[tagName].tasks)
-	) {
+	// Handle migrated format: { "main": { "tasks": [...] }, "otherTag": { "tasks": [...] } }
+	if (data[tagName]?.tasks && Array.isArray(data[tagName].tasks)) {
 		return data[tagName].tasks;
 	}
 
@@ -1498,7 +1763,7 @@ function flattenTasksWithSubtasks(tasks) {
 		flattened.push({
 			...task,
 			searchableId: task.id.toString(), // For consistent ID handling
-			isSubtask: false
+			isSubtask: false,
 		});
 
 		// Add subtasks if they exist
@@ -1512,7 +1777,7 @@ function flattenTasksWithSubtasks(tasks) {
 					parentTitle: task.title,
 					// Enhance subtask context with parent information
 					title: `${subtask.title} (subtask of: ${task.title})`,
-					description: `${subtask.description} [Parent: ${task.description}]`
+					description: `${subtask.description} [Parent: ${task.description}]`,
 				});
 			}
 		}
@@ -1523,15 +1788,15 @@ function flattenTasksWithSubtasks(tasks) {
 
 /**
  * Ensures the tag object has a metadata object with created/updated timestamps.
- * @param {Object} tagObj - The tag object (e.g., data['master'])
+ * @param {Object} tagObj - The tag object (e.g., data['main'])
  * @param {Object} [opts] - Optional fields (e.g., description, skipUpdate)
  * @param {string} [opts.description] - Description for the tag
  * @param {boolean} [opts.skipUpdate] - If true, don't update the 'updated' timestamp
  * @returns {Object} The updated tag object (for chaining)
  */
 function ensureTagMetadata(tagObj, opts = {}) {
-	if (!tagObj || typeof tagObj !== 'object') {
-		throw new Error('tagObj must be a valid object');
+	if (!tagObj || typeof tagObj !== "object") {
+		throw new Error("tagObj must be a valid object");
 	}
 
 	const now = new Date().toISOString();
@@ -1541,7 +1806,7 @@ function ensureTagMetadata(tagObj, opts = {}) {
 		tagObj.metadata = {
 			created: now,
 			updated: now,
-			...(opts.description ? { description: opts.description } : {})
+			...(opts.description ? { description: opts.description } : {}),
 		};
 	} else {
 		// Ensure existing metadata has required fields
@@ -1570,11 +1835,11 @@ function ensureTagMetadata(tagObj, opts = {}) {
  * @returns {string} - The text with ANSI color codes removed
  */
 function stripAnsiCodes(text) {
-	if (typeof text !== 'string') {
+	if (typeof text !== "string") {
 		return text;
 	}
 	// Remove ANSI escape sequences (color codes, cursor movements, etc.)
-	return text.replace(/\x1b\[[0-9;]*m/g, '');
+	return text.replace(/\x1B\[[0-9;]*m/g, "");
 }
 
 // Export all utility functions and configuration
@@ -1604,7 +1869,6 @@ export {
 	findProjectRoot,
 	getTagAwareFilePath,
 	slugifyTagForFilePath,
-	aggregateTelemetry,
 	getCurrentTag,
 	resolveTag,
 	getTasksForTag,
@@ -1616,5 +1880,11 @@ export {
 	flattenTasksWithSubtasks,
 	ensureTagMetadata,
 	stripAnsiCodes,
-	normalizeTaskIds
+	normalizeTaskIds,
+	// Parameter processing utilities
+	parseSpecFiles,
+	validateSpecFiles,
+	parseDependencies,
+	parseLogs,
+	validateFieldUpdatePermission,
 };

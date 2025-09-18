@@ -1,20 +1,20 @@
 /**
- * Path utility functions for Task Master
+ * Path utility functions for Speco Tasker
  * Provides centralized path resolution logic for both CLI and MCP use cases
  */
 
-import path from 'path';
-import fs from 'fs';
+import fs from "node:fs";
+import path from "node:path";
 import {
-	TASKMASTER_TASKS_FILE,
+	COMPLEXITY_REPORT_FILE,
+	LEGACY_CONFIG_FILE,
 	LEGACY_TASKS_FILE,
+	TASKMASTER_CONFIG_FILE,
 	TASKMASTER_DOCS_DIR,
 	TASKMASTER_REPORTS_DIR,
-	COMPLEXITY_REPORT_FILE,
-	TASKMASTER_CONFIG_FILE,
-	LEGACY_CONFIG_FILE
-} from '../constants/paths.js';
-import { getLoggerOrDefault } from './logger-utils.js';
+	TASKMASTER_TASKS_FILE,
+} from "../constants/paths.js";
+import { getLoggerOrDefault } from "./logger-utils.js";
 
 /**
  * Normalize project root to ensure it doesn't end with .taskmaster
@@ -33,7 +33,7 @@ export function normalizeProjectRoot(projectRoot) {
 
 	// Find the index of .taskmaster segment
 	const taskmasterIndex = segments.findIndex(
-		(segment) => segment === '.taskmaster'
+		(segment) => segment === ".taskmaster",
 	);
 
 	if (taskmasterIndex !== -1) {
@@ -52,16 +52,16 @@ export function normalizeProjectRoot(projectRoot) {
  */
 export function findProjectRoot(startDir = process.cwd()) {
 	const projectMarkers = [
-		'.taskmaster',
+		".taskmaster",
 		TASKMASTER_TASKS_FILE,
-		'tasks.json',
+		"tasks.json",
 		LEGACY_TASKS_FILE,
-		'.git',
-		'.svn',
-		'package.json',
-		'yarn.lock',
-		'package-lock.json',
-		'pnpm-lock.yaml'
+		".git",
+		".svn",
+		"package.json",
+		"yarn.lock",
+		"package-lock.json",
+		"pnpm-lock.yaml",
 	];
 
 	let currentDir = path.resolve(startDir);
@@ -100,7 +100,7 @@ export function findTasksPath(explicitPath = null, args = null, log = null) {
 	const rawProjectRoot = args?.projectRoot || findProjectRoot();
 
 	if (!rawProjectRoot) {
-		logger.warn?.('Could not determine project root directory');
+		logger.warn?.("Could not determine project root directory");
 		return null;
 	}
 
@@ -116,17 +116,16 @@ export function findTasksPath(explicitPath = null, args = null, log = null) {
 		if (fs.existsSync(resolvedPath)) {
 			logger.info?.(`Using explicit tasks path: ${resolvedPath}`);
 			return resolvedPath;
-		} else {
-			logger.warn?.(
-				`Explicit tasks path not found: ${resolvedPath}, trying fallbacks`
-			);
 		}
+		logger.warn?.(
+			`Explicit tasks path not found: ${resolvedPath}, trying fallbacks`,
+		);
 	}
 
 	// 4. Check possible locations in order of preference
 	const possiblePaths = [
 		path.join(projectRoot, TASKMASTER_TASKS_FILE), // .taskmaster/tasks/tasks.json (NEW)
-		path.join(projectRoot, LEGACY_TASKS_FILE) // tasks/tasks.json (LEGACY)
+		path.join(projectRoot, LEGACY_TASKS_FILE), // tasks/tasks.json (LEGACY)
 	];
 
 	for (const tasksPath of possiblePaths) {
@@ -135,19 +134,19 @@ export function findTasksPath(explicitPath = null, args = null, log = null) {
 
 			// Issue deprecation warning for legacy paths
 			if (
-				tasksPath.includes('tasks/tasks.json') &&
-				!tasksPath.includes('.taskmaster')
+				tasksPath.includes("tasks/tasks.json") &&
+				!tasksPath.includes(".taskmaster")
 			) {
 				logger.warn?.(
-					`⚠️  DEPRECATION WARNING: Found tasks.json in legacy location '${tasksPath}'. Please migrate to the new .taskmaster directory structure. Run 'task-master migrate' to automatically migrate your project.`
+					`⚠️  DEPRECATION WARNING: Found tasks.json in legacy location '${tasksPath}'. Please migrate to the new .taskmaster directory structure. Run 'task-master migrate' to automatically migrate your project.`,
 				);
 			} else if (
-				tasksPath.endsWith('tasks.json') &&
-				!tasksPath.includes('.taskmaster') &&
-				!tasksPath.includes('tasks/')
+				tasksPath.endsWith("tasks.json") &&
+				!tasksPath.includes(".taskmaster") &&
+				!tasksPath.includes("tasks/")
 			) {
 				logger.warn?.(
-					`⚠️  DEPRECATION WARNING: Found tasks.json in legacy root location '${tasksPath}'. Please migrate to the new .taskmaster directory structure. Run 'task-master migrate' to automatically migrate your project.`
+					`⚠️  DEPRECATION WARNING: Found tasks.json in legacy root location '${tasksPath}'. Please migrate to the new .taskmaster directory structure. Run 'task-master migrate' to automatically migrate your project.`,
 				);
 			}
 
@@ -178,18 +177,17 @@ export function findPRDPath(explicitPath = null, args = null, log = null) {
 		if (fs.existsSync(resolvedPath)) {
 			logger.info?.(`Using explicit PRD path: ${resolvedPath}`);
 			return resolvedPath;
-		} else {
-			logger.warn?.(
-				`Explicit PRD path not found: ${resolvedPath}, trying fallbacks`
-			);
 		}
+		logger.warn?.(
+			`Explicit PRD path not found: ${resolvedPath}, trying fallbacks`,
+		);
 	}
 
 	// 2. Try to get project root from args (MCP) or find it
 	const rawProjectRoot = args?.projectRoot || findProjectRoot();
 
 	if (!rawProjectRoot) {
-		logger.warn?.('Could not determine project root directory');
+		logger.warn?.("Could not determine project root directory");
 		return null;
 	}
 
@@ -199,11 +197,11 @@ export function findPRDPath(explicitPath = null, args = null, log = null) {
 	// 4. Check possible locations in order of preference
 	const locations = [
 		TASKMASTER_DOCS_DIR, // .taskmaster/docs/ (NEW)
-		'scripts/', // Legacy location
-		'' // Project root
+		"scripts/", // Legacy location
+		"", // Project root
 	];
 
-	const fileNames = ['PRD.md', 'prd.md', 'PRD.txt', 'prd.txt'];
+	const fileNames = ["PRD.md", "prd.md", "PRD.txt", "prd.txt"];
 
 	for (const location of locations) {
 		for (const fileName of fileNames) {
@@ -212,9 +210,9 @@ export function findPRDPath(explicitPath = null, args = null, log = null) {
 				logger.info?.(`Found PRD document at: ${prdPath}`);
 
 				// Issue deprecation warning for legacy paths
-				if (location === 'scripts/' || location === '') {
+				if (location === "scripts/" || location === "") {
 					logger.warn?.(
-						`⚠️  DEPRECATION WARNING: Found PRD file in legacy location '${prdPath}'. Please migrate to .taskmaster/docs/ directory. Run 'task-master migrate' to automatically migrate your project.`
+						`⚠️  DEPRECATION WARNING: Found PRD file in legacy location '${prdPath}'. Please migrate to .taskmaster/docs/ directory. Run 'task-master migrate' to automatically migrate your project.`,
 					);
 				}
 
@@ -237,7 +235,7 @@ export function findPRDPath(explicitPath = null, args = null, log = null) {
 export function findComplexityReportPath(
 	explicitPath = null,
 	args = null,
-	log = null
+	log = null,
 ) {
 	const logger = getLoggerOrDefault(log);
 
@@ -250,18 +248,17 @@ export function findComplexityReportPath(
 		if (fs.existsSync(resolvedPath)) {
 			logger.info?.(`Using explicit complexity report path: ${resolvedPath}`);
 			return resolvedPath;
-		} else {
-			logger.warn?.(
-				`Explicit complexity report path not found: ${resolvedPath}, trying fallbacks`
-			);
 		}
+		logger.warn?.(
+			`Explicit complexity report path not found: ${resolvedPath}, trying fallbacks`,
+		);
 	}
 
 	// 2. Try to get project root from args (MCP) or find it
 	const rawProjectRoot = args?.projectRoot || findProjectRoot();
 
 	if (!rawProjectRoot) {
-		logger.warn?.('Could not determine project root directory');
+		logger.warn?.("Could not determine project root directory");
 		return null;
 	}
 
@@ -271,16 +268,16 @@ export function findComplexityReportPath(
 	// 4. Check possible locations in order of preference
 	const locations = [
 		TASKMASTER_REPORTS_DIR, // .taskmaster/reports/ (NEW)
-		'scripts/', // Legacy location
-		'' // Project root
+		"scripts/", // Legacy location
+		"", // Project root
 	];
 
 	const fileNames = [
-		'task-complexity-report',
-		'task-complexity',
-		'complexity-report'
+		"task-complexity-report",
+		"task-complexity",
+		"complexity-report",
 	].map((fileName) => {
-		if (args?.tag && args?.tag !== 'master') {
+		if (args?.tag && args?.tag !== "main") {
 			return `${fileName}_${args.tag}.json`;
 		}
 		return `${fileName}.json`;
@@ -293,9 +290,9 @@ export function findComplexityReportPath(
 				logger.info?.(`Found complexity report at: ${reportPath}`);
 
 				// Issue deprecation warning for legacy paths
-				if (location === 'scripts/' || location === '') {
+				if (location === "scripts/" || location === "") {
 					logger.warn?.(
-						`⚠️  DEPRECATION WARNING: Found complexity report in legacy location '${reportPath}'. Please migrate to .taskmaster/reports/ directory. Run 'task-master migrate' to automatically migrate your project.`
+						`⚠️  DEPRECATION WARNING: Found complexity report in legacy location '${reportPath}'. Please migrate to .taskmaster/reports/ directory. Run 'task-master migrate' to automatically migrate your project.`,
 					);
 				}
 
@@ -318,7 +315,7 @@ export function findComplexityReportPath(
 export function resolveTasksOutputPath(
 	explicitPath = null,
 	args = null,
-	log = null
+	log = null,
 ) {
 	const logger = getLoggerOrDefault(log);
 
@@ -363,7 +360,7 @@ export function resolveTasksOutputPath(
 export function resolveComplexityReportOutputPath(
 	explicitPath = null,
 	args = null,
-	log = null
+	log = null,
 ) {
 	const logger = getLoggerOrDefault(log);
 	const tag = args?.tag;
@@ -375,7 +372,7 @@ export function resolveComplexityReportOutputPath(
 			: path.resolve(process.cwd(), explicitPath);
 
 		logger.info?.(
-			`Using explicit complexity report output path: ${resolvedPath}`
+			`Using explicit complexity report output path: ${resolvedPath}`,
 		);
 		return resolvedPath;
 	}
@@ -386,15 +383,15 @@ export function resolveComplexityReportOutputPath(
 	const projectRoot = normalizeProjectRoot(rawProjectRoot);
 
 	// 3. Use tag-aware filename
-	let filename = 'task-complexity-report.json';
-	if (tag && tag !== 'master') {
+	let filename = "task-complexity-report.json";
+	if (tag && tag !== "main") {
 		filename = `task-complexity-report_${tag}.json`;
 	}
 
 	// 4. Use new .taskmaster structure by default
-	const defaultPath = path.join(projectRoot, '.taskmaster/reports', filename);
+	const defaultPath = path.join(projectRoot, ".taskmaster/reports", filename);
 	logger.info?.(
-		`Using tag-aware complexity report output path: ${defaultPath}`
+		`Using tag-aware complexity report output path: ${defaultPath}`,
 	);
 
 	// Ensure the directory exists
@@ -426,18 +423,17 @@ export function findConfigPath(explicitPath = null, args = null, log = null) {
 		if (fs.existsSync(resolvedPath)) {
 			logger.info?.(`Using explicit config path: ${resolvedPath}`);
 			return resolvedPath;
-		} else {
-			logger.warn?.(
-				`Explicit config path not found: ${resolvedPath}, trying fallbacks`
-			);
 		}
+		logger.warn?.(
+			`Explicit config path not found: ${resolvedPath}, trying fallbacks`,
+		);
 	}
 
 	// 2. Try to get project root from args (MCP) or find it
 	const rawProjectRoot = args?.projectRoot || findProjectRoot();
 
 	if (!rawProjectRoot) {
-		logger.warn?.('Could not determine project root directory');
+		logger.warn?.("Could not determine project root directory");
 		return null;
 	}
 
@@ -447,7 +443,7 @@ export function findConfigPath(explicitPath = null, args = null, log = null) {
 	// 4. Check possible locations in order of preference
 	const possiblePaths = [
 		path.join(projectRoot, TASKMASTER_CONFIG_FILE), // NEW location
-		path.join(projectRoot, LEGACY_CONFIG_FILE) // LEGACY location
+		path.join(projectRoot, LEGACY_CONFIG_FILE), // LEGACY location
 	];
 
 	for (const configPath of possiblePaths) {
@@ -455,7 +451,7 @@ export function findConfigPath(explicitPath = null, args = null, log = null) {
 			// Issue deprecation warning for legacy paths
 			if (configPath?.endsWith(LEGACY_CONFIG_FILE)) {
 				logger.warn?.(
-					`⚠️  DEPRECATION WARNING: Found configuration in legacy location '${configPath}'. Please migrate to .taskmaster/config.json. Run 'task-master migrate' to automatically migrate your project.`
+					`⚠️  DEPRECATION WARNING: Found configuration in legacy location '${configPath}'. Please migrate to .taskmaster/config.json. Run 'task-master migrate' to automatically migrate your project.`,
 				);
 			}
 

@@ -1,42 +1,15 @@
 /**
- * Check if a task is dependent on another task (directly or indirectly)
- * Used to prevent circular dependencies
- * @param {Array} allTasks - Array of all tasks
- * @param {Object} task - The task to check
- * @param {number} targetTaskId - The task ID to check dependency against
- * @returns {boolean} Whether the task depends on the target task
+ * Check if task is dependent on another (placeholder implementation)
+ * @param {Array} tasks - Tasks array
+ * @param {number} taskId - Task ID to check
+ * @param {number} dependencyId - Dependency ID to check for
+ * @returns {boolean} Whether task is dependent
  */
-function isTaskDependentOn(allTasks, task, targetTaskId) {
-	// If the task is a subtask, check if its parent is the target
-	if (task.parentTaskId === targetTaskId) {
-		return true;
+export function isTaskDependentOn(tasks, taskId, dependencyId) {
+	// Placeholder implementation - simple check for direct dependencies
+	const task = tasks.find((t) => t.id === taskId);
+	if (!task || !task.dependencies) {
+		return false;
 	}
-
-	// Check direct dependencies
-	if (task.dependencies && task.dependencies.includes(targetTaskId)) {
-		return true;
-	}
-
-	// Check dependencies of dependencies (recursive)
-	if (task.dependencies) {
-		for (const depId of task.dependencies) {
-			const depTask = allTasks.find((t) => t.id === depId);
-			if (depTask && isTaskDependentOn(allTasks, depTask, targetTaskId)) {
-				return true;
-			}
-		}
-	}
-
-	// Check subtasks for dependencies
-	if (task.subtasks) {
-		for (const subtask of task.subtasks) {
-			if (isTaskDependentOn(allTasks, subtask, targetTaskId)) {
-				return true;
-			}
-		}
-	}
-
-	return false;
+	return task.dependencies.includes(dependencyId);
 }
-
-export default isTaskDependentOn;

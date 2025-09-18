@@ -14,12 +14,12 @@
  * - cancelled: Task cancelled and will not be completed
  */
 export const TASK_STATUS_OPTIONS = [
-	'pending',
-	'done',
-	'in-progress',
-	'review',
-	'deferred',
-	'cancelled'
+	"pending",
+	"done",
+	"in-progress",
+	"review",
+	"deferred",
+	"cancelled",
 ];
 
 /**
