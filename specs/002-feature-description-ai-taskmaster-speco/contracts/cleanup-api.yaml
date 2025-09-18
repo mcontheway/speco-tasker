@@ -1,0 +1,393 @@
+openapi: 3.0.3
+info:
+  title: Speco Tasker 清理 API
+  description: 执行AI内容清理和品牌信息清理的内部API合约
+  version: 1.0.0
+  contact:
+    name: Speco Team
+
+servers:
+  - url: 'internal://speco-tasker/cleanup'
+    description: 内部清理服务
+
+paths:
+  /ai-content:
+    get:
+      summary: 获取AI内容清单
+      description: 获取项目中所有AI相关内容的完整清单
+      responses:
+        '200':
+          description: 成功获取AI内容清单
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AIContentList'
+        '500':
+          description: 服务器内部错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      summary: 清理AI内容
+      description: 执行AI内容的清理操作
+      parameters:
+        - name: dryRun
+          in: query
+          schema:
+            type: boolean
+            default: true
+          description: 是否仅预览清理结果而不实际执行
+      responses:
+        '200':
+          description: AI内容清理成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CleanupResult'
+        '400':
+          description: 清理请求参数错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: 清理过程中发生错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /brand-info:
+    get:
+      summary: 获取品牌信息清单
+      description: 获取项目中所有品牌相关信息的清单
+      responses:
+        '200':
+          description: 成功获取品牌信息清单
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BrandInfoList'
+        '500':
+          description: 服务器内部错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    patch:
+      summary: 更新品牌信息
+      description: 批量更新项目中的品牌信息
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BrandUpdateRequest'
+      responses:
+        '200':
+          description: 品牌信息更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateResult'
+        '400':
+          description: 请求参数错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: 更新过程中发生错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /validate:
+    post:
+      summary: 验证清理结果
+      description: 验证清理操作的完整性和正确性
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValidationRequest'
+      responses:
+        '200':
+          description: 验证完成
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationResult'
+        '400':
+          description: 验证请求参数错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    AIContentList:
+      type: object
+      required:
+        - totalFiles
+        - files
+      properties:
+        totalFiles:
+          type: integer
+          description: AI相关文件的总数
+          example: 187
+        files:
+          type: array
+          items:
+            $ref: '#/components/schemas/FileInfo'
+          description: AI相关文件列表
+        categories:
+          type: object
+          description: 按类别分组的文件统计
+          properties:
+            ai_services:
+              type: integer
+              description: AI服务调用文件数
+            ai_config:
+              type: integer
+              description: AI配置文件数
+            documentation:
+              type: integer
+              description: AI相关文档数
+
+    FileInfo:
+      type: object
+      required:
+        - path
+        - type
+        - size
+      properties:
+        path:
+          type: string
+          description: 文件路径
+          example: "src/utils/ai-client.js"
+        type:
+          type: string
+          enum: [ai_service, ai_config, documentation, other]
+          description: 文件类型
+        size:
+          type: integer
+          description: 文件大小（字节）
+        lastModified:
+          type: string
+          format: date-time
+          description: 最后修改时间
+        aiPatterns:
+          type: array
+          items:
+            type: string
+          description: 检测到的AI相关模式
+
+    CleanupResult:
+      type: object
+      required:
+        - success
+        - totalFiles
+        - processedFiles
+      properties:
+        success:
+          type: boolean
+          description: 清理是否成功
+        totalFiles:
+          type: integer
+          description: 总共需要清理的文件数
+        processedFiles:
+          type: integer
+          description: 已处理的文件数
+        skippedFiles:
+          type: integer
+          description: 跳过的文件数
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/FileError'
+          description: 处理过程中的错误
+        summary:
+          type: object
+          description: 清理结果摘要
+
+    BrandInfoList:
+      type: object
+      required:
+        - totalOccurrences
+        - occurrences
+      properties:
+        totalOccurrences:
+          type: integer
+          description: 品牌信息出现次数
+        occurrences:
+          type: array
+          items:
+            $ref: '#/components/schemas/BrandOccurrence'
+          description: 品牌信息出现位置列表
+
+    BrandOccurrence:
+      type: object
+      required:
+        - file
+        - line
+        - content
+        - type
+      properties:
+        file:
+          type: string
+          description: 文件路径
+        line:
+          type: integer
+          description: 行号
+        content:
+          type: string
+          description: 原始内容
+        type:
+          type: string
+          enum: [comment, string, variable, config]
+          description: 内容类型
+        context:
+          type: string
+          description: 上下文信息
+
+    BrandUpdateRequest:
+      type: object
+      required:
+        - updates
+      properties:
+        updates:
+          type: array
+          items:
+            type: object
+            required:
+              - file
+              - line
+              - oldContent
+              - newContent
+            properties:
+              file:
+                type: string
+                description: 文件路径
+              line:
+                type: integer
+                description: 行号
+              oldContent:
+                type: string
+                description: 原始内容
+              newContent:
+                type: string
+                description: 新内容
+          description: 待更新的品牌信息列表
+        dryRun:
+          type: boolean
+          default: true
+          description: 是否仅预览更新结果
+
+    UpdateResult:
+      type: object
+      required:
+        - success
+        - totalUpdates
+        - appliedUpdates
+      properties:
+        success:
+          type: boolean
+          description: 更新是否成功
+        totalUpdates:
+          type: integer
+          description: 总共需要更新的位置数
+        appliedUpdates:
+          type: integer
+          description: 已应用的更新数
+        skippedUpdates:
+          type: integer
+          description: 跳过的更新数
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/FileError'
+          description: 更新过程中的错误
+
+    ValidationRequest:
+      type: object
+      required:
+        - checks
+      properties:
+        checks:
+          type: array
+          items:
+            type: string
+            enum: [ai_content, brand_info, functionality]
+          description: 需要验证的项目
+        detailed:
+          type: boolean
+          default: false
+          description: 是否需要详细验证报告
+
+    ValidationResult:
+      type: object
+      required:
+        - overall
+        - results
+      properties:
+        overall:
+          type: string
+          enum: [passed, failed, warning]
+          description: 总体验证结果
+        results:
+          type: object
+          description: 各验证项目的详细结果
+        issues:
+          type: array
+          items:
+            type: string
+          description: 发现的问题列表
+        recommendations:
+          type: array
+          items:
+            type: string
+          description: 修复建议
+
+    FileError:
+      type: object
+      required:
+        - file
+        - error
+      properties:
+        file:
+          type: string
+          description: 文件路径
+        error:
+          type: string
+          description: 错误信息
+        line:
+          type: integer
+          description: 错误发生的行号
+        context:
+          type: string
+          description: 错误上下文
+
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          description: 错误代码
+          example: "CLEANUP_ERROR"
+        message:
+          type: string
+          description: 错误信息
+          example: "AI内容清理失败"
+        details:
+          type: object
+          description: 错误详情
