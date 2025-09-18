@@ -4,6 +4,9 @@
  * This file is run before each test suite to set up the test environment.
  */
 
+// Disable graceful-fs polyfills to avoid uv_cwd issues
+process.env.GRACEFUL_FS_PATCH = '0';
+
 const path = require("node:path");
 
 // Capture the actual original working directory before any changes
@@ -12,7 +15,7 @@ try {
 	originalWorkingDirectory = process.cwd();
 } catch (error) {
 	// Fallback for environments where process.cwd() might fail
-	originalWorkingDirectory = "/tmp";
+	originalWorkingDirectory = require("node:os").homedir() || "/tmp";
 	console.warn(
 		"Warning: Could not get current working directory, using fallback:",
 		originalWorkingDirectory,

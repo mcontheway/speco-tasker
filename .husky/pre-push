@@ -5,13 +5,13 @@ echo "🧪 正在运行推送前验证..."
 
 # 运行核心单元测试的子集（快速检查）
 echo "  📦 运行核心单元测试验证..."
-npm run test:unit -- --passWithNoTests --silent --verbose=false || {
+npm run test:unit -- --passWithNoTests --silent --verbose=false --forceExit || {
   echo "⚠️  单元测试失败，但允许推送（建议修复）"
 }
 
 # 运行关键集成测试（快速验证核心功能）
 echo "  🔗 运行关键集成测试..."
-npm run test:integration -- --passWithNoTests --silent --verbose=false --testNamePattern="should add dependency|should create and manage basic tags" || {
+npm run test:integration -- --passWithNoTests --silent --verbose=false --forceExit --testNamePattern="should add dependency|should create and manage basic tags" || {
   echo "⚠️  关键集成测试失败，但允许推送（建议修复）"
 }
 

@@ -1,3 +1,6 @@
+// Disable graceful-fs patching globally
+process.env.GRACEFUL_FS_PATCH = '0';
+
 const config = {
 	// Use Node.js environment for testing
 	testEnvironment: "node",
@@ -83,12 +86,6 @@ const config = {
 	// Bail on first failure for faster feedback
 	bail: 1,
 
-	// ES module globals
-	globals: {
-		"ts-jest": {
-			useESM: true,
-		},
-	},
 };
 
 module.exports = config;
