@@ -103,6 +103,7 @@ apps/extension/vsix-build/
 *.bak
 */*.bak
 */*.backup
+backup/
 
 # 临时文件
 tmp/
