@@ -100,7 +100,7 @@ describe("PathConfig", () => {
 				".speco*",
 			];
 
-			invalidPaths.forEach((invalidPath) => {
+			for (const invalidPath of invalidPaths) {
 				const config = new PathConfig({ root: { speco: invalidPath } });
 				const result = config.validate();
 
@@ -108,7 +108,7 @@ describe("PathConfig", () => {
 				expect(result.errors).toContain(
 					'root.speco 不能包含特殊字符 < > : " | ? *',
 				);
-			});
+			}
 		});
 
 		test("应该验证目录配置的有效性", () => {
@@ -163,54 +163,62 @@ describe("PathConfig", () => {
 			config = new PathConfig();
 		});
 
-		test("应该获取根路径", () => {
-			expect(config.getPath("root", "speco")).toBe(".speco");
-			expect(config.getPath("root", "legacy")).toBe(".taskmaster");
+		test("应该获取根路径", async () => {
+			expect(await config.getPath("root", "speco")).toBe(".speco");
+			expect(await config.getPath("root", "legacy")).toBe(".taskmaster");
 		});
 
-		test("应该获取目录路径", () => {
-			expect(config.getPath("dir", "tasks")).toBe(".speco/tasks");
-			expect(config.getPath("dir", "docs")).toBe(".speco/docs");
+		test("应该获取目录路径", async () => {
+			expect(await config.getPath("dir", "tasks")).toBe(".speco/tasks");
+			expect(await config.getPath("dir", "docs")).toBe(".speco/docs");
 		});
 
-		test("应该获取文件路径", () => {
-			expect(config.getPath("file", "tasks")).toBe(".speco/tasks/tasks.json");
-			expect(config.getPath("file", "config")).toBe(
+		test("应该获取文件路径", async () => {
+			expect(await config.getPath("file", "tasks")).toBe(
+				".speco/tasks/tasks.json",
+			);
+			expect(await config.getPath("file", "config")).toBe(
 				".speco/config/config.json",
 			);
 		});
 
-		test("应该处理未知的路径类型", () => {
-			expect(() => config.getPath("unknown", "test")).toThrow(
+		test("应该处理未知的路径类型", async () => {
+			await expect(config.getPath("unknown", "test")).rejects.toThrow(
 				"未知的路径类型: unknown",
 			);
 		});
 
-		test("应该处理不存在的路径键", () => {
-			expect(config.getPath("root", "nonexistent")).toBe(".speco");
-			expect(config.getPath("dir", "nonexistent")).toBe(".speco/nonexistent");
+		test("应该处理不存在的路径键", async () => {
+			expect(await config.getPath("root", "nonexistent")).toBe(".speco");
+			expect(await config.getPath("dir", "nonexistent")).toBe(
+				".speco/nonexistent",
+			);
 		});
 
-		test("应该支持标签功能", () => {
-			expect(config.getPath("root", "speco", "feature")).toBe(".speco_feature");
-			expect(config.getPath("dir", "tasks", "feature")).toBe(
+		test("应该支持标签功能", async () => {
+			expect(await config.getPath("root", "speco", "feature")).toBe(
+				".speco_feature",
+			);
+			expect(await config.getPath("dir", "tasks", "feature")).toBe(
 				".speco_feature/tasks",
 			);
-			expect(config.getPath("file", "tasks", "feature")).toBe(
+			expect(await config.getPath("file", "tasks", "feature")).toBe(
 				".speco_feature/tasks/tasks.json",
 			);
 		});
 
-		test("应该正确处理自定义配置的路径", () => {
+		test("应该正确处理自定义配置的路径", async () => {
 			const customConfig = new PathConfig({
 				root: { speco: ".custom" },
 				dirs: { tasks: "my-tasks" },
 				files: { tasks: "my-tasks.json" },
 			});
 
-			expect(customConfig.getPath("root", "speco")).toBe(".custom");
-			expect(customConfig.getPath("dir", "tasks")).toBe(".custom/my-tasks");
-			expect(customConfig.getPath("file", "tasks")).toBe(
+			expect(await customConfig.getPath("root", "speco")).toBe(".custom");
+			expect(await customConfig.getPath("dir", "tasks")).toBe(
+				".custom/my-tasks",
+			);
+			expect(await customConfig.getPath("file", "tasks")).toBe(
 				".custom/my-tasks/my-tasks.json",
 			);
 		});
@@ -356,8 +364,8 @@ describe("PathConfig", () => {
 			config = new PathConfig();
 		});
 
-		test("应该返回完整的路径快照", () => {
-			const snapshot = config.getPathSnapshot();
+		test("应该返回完整的路径快照", async () => {
+			const snapshot = await config.getPathSnapshot();
 
 			expect(snapshot).toHaveProperty("root");
 			expect(snapshot).toHaveProperty("dirs");
@@ -368,8 +376,8 @@ describe("PathConfig", () => {
 			expect(snapshot.files.tasks).toBe(".speco/tasks/tasks.json");
 		});
 
-		test("应该为所有目录生成路径", () => {
-			const snapshot = config.getPathSnapshot();
+		test("应该为所有目录生成路径", async () => {
+			const snapshot = await config.getPathSnapshot();
 
 			expect(snapshot.dirs.tasks).toBe(".speco/tasks");
 			expect(snapshot.dirs.docs).toBe(".speco/docs");
@@ -377,16 +385,16 @@ describe("PathConfig", () => {
 			expect(snapshot.dirs.templates).toBe(".speco/templates");
 		});
 
-		test("应该为所有文件生成路径", () => {
-			const snapshot = config.getPathSnapshot();
+		test("应该为所有文件生成路径", async () => {
+			const snapshot = await config.getPathSnapshot();
 
 			expect(snapshot.files.tasks).toBe(".speco/tasks/tasks.json");
 			expect(snapshot.files.config).toBe(".speco/config/config.json");
 			expect(snapshot.files.state).toBe(".speco/config/state.json");
 		});
 
-		test("应该返回快照的副本而不是引用", () => {
-			const snapshot = config.getPathSnapshot();
+		test("应该返回快照的副本而不是引用", async () => {
+			const snapshot = await config.getPathSnapshot();
 
 			snapshot.root.speco = ".modified";
 			expect(config.root.speco).toBe(".speco"); // 原对象不受影响

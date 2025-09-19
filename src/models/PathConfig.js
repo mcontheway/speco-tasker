@@ -16,11 +16,11 @@ class PathConfig {
 		// 根目录配置
 		this.root = {
 			speco:
-				config && config.root && typeof config.root.speco === "string"
+				config?.root && typeof config.root.speco === "string"
 					? config.root.speco
 					: ".speco",
 			legacy:
-				config && config.root && typeof config.root.legacy === "string"
+				config?.root && typeof config.root.legacy === "string"
 					? config.root.legacy
 					: ".taskmaster",
 		};
@@ -31,31 +31,31 @@ class PathConfig {
 		// 子目录映射
 		this.dirs = {
 			tasks:
-				config && config.dirs && typeof config.dirs.tasks === "string"
+				config?.dirs && typeof config.dirs.tasks === "string"
 					? config.dirs.tasks
 					: "tasks",
 			docs:
-				config && config.dirs && typeof config.dirs.docs === "string"
+				config?.dirs && typeof config.dirs.docs === "string"
 					? config.dirs.docs
 					: "docs",
 			reports:
-				config && config.dirs && typeof config.dirs.reports === "string"
+				config?.dirs && typeof config.dirs.reports === "string"
 					? config.dirs.reports
 					: "reports",
 			templates:
-				config && config.dirs && typeof config.dirs.templates === "string"
+				config?.dirs && typeof config.dirs.templates === "string"
 					? config.dirs.templates
 					: "templates",
 			backups:
-				config && config.dirs && typeof config.dirs.backups === "string"
+				config?.dirs && typeof config.dirs.backups === "string"
 					? config.dirs.backups
 					: "backups",
 			logs:
-				config && config.dirs && typeof config.dirs.logs === "string"
+				config?.dirs && typeof config.dirs.logs === "string"
 					? config.dirs.logs
 					: "logs",
 			config:
-				config && config.dirs && typeof config.dirs.config === "string"
+				config?.dirs && typeof config.dirs.config === "string"
 					? config.dirs.config
 					: "config",
 		};
@@ -63,50 +63,50 @@ class PathConfig {
 		// 文件映射
 		this.files = {
 			tasks:
-				config && config.files && typeof config.files.tasks === "string"
+				config?.files && typeof config.files.tasks === "string"
 					? config.files.tasks
 					: "tasks.json",
 			config:
-				config && config.files && typeof config.files.config === "string"
+				config?.files && typeof config.files.config === "string"
 					? config.files.config
 					: "config.json",
 			state:
-				config && config.files && typeof config.files.state === "string"
+				config?.files && typeof config.files.state === "string"
 					? config.files.state
 					: "state.json",
 			changelog:
-				config && config.files && typeof config.files.changelog === "string"
+				config?.files && typeof config.files.changelog === "string"
 					? config.files.changelog
 					: "changelog.md",
 			brand:
-				config && config.files && typeof config.files.brand === "string"
+				config?.files && typeof config.files.brand === "string"
 					? config.files.brand
 					: "brand.json",
 			paths:
-				config && config.files && typeof config.files.paths === "string"
+				config?.files && typeof config.files.paths === "string"
 					? config.files.paths
 					: "paths.json",
 			cleanup:
-				config && config.files && typeof config.files.cleanup === "string"
+				config?.files && typeof config.files.cleanup === "string"
 					? config.files.cleanup
 					: "cleanup-rules.json",
 		};
 
 		// 标签配置（用于多任务上下文）
-		this.tags = (config && config.tags) || {};
+		this.tags = config?.tags || {};
 
 		// 元数据
 		this.metadata = {
 			created:
-				config && config.metadata && typeof config.metadata.created === "string"
+				config?.metadata && typeof config.metadata.created === "string"
 					? config.metadata.created
 					: new Date().toISOString(),
 			updated:
-				config && config.metadata && typeof config.metadata.updated === "string"
+				config?.metadata && typeof config.metadata.updated === "string"
 					? config.metadata.updated
 					: new Date().toISOString(),
 			version:
-				config && config.metadata && typeof config.metadata.version === "string"
+				config?.metadata && typeof config.metadata.version === "string"
 					? config.metadata.version
 					: "1.0.0",
 		};
@@ -135,7 +135,7 @@ class PathConfig {
 		}
 
 		// 验证目录配置
-		Object.entries(this.dirs).forEach(([key, value]) => {
+		for (const [key, value] of Object.entries(this.dirs)) {
 			if (!value || typeof value !== "string") {
 				errors.push(`dirs.${key} 必须是非空字符串`);
 			}
@@ -148,10 +148,10 @@ class PathConfig {
 			if (!/^[a-zA-Z0-9_-]+$/.test(value)) {
 				errors.push(`dirs.${key} 只能包含字母、数字、下划线`);
 			}
-		});
+		}
 
 		// 验证文件配置
-		Object.entries(this.files).forEach(([key, value]) => {
+		for (const [key, value] of Object.entries(this.files)) {
 			if (!value || typeof value !== "string") {
 				errors.push(`files.${key} 必须是非空字符串`);
 			}
@@ -164,7 +164,7 @@ class PathConfig {
 			if (value.includes("/") || value.includes("\\")) {
 				errors.push(`files.${key} 不能包含路径分隔符`);
 			}
-		});
+		}
 
 		return {
 			valid: errors.length === 0,
@@ -214,10 +214,11 @@ class PathConfig {
 			case "dir":
 				basePath = `${this.root.speco}/${this.dirs[key] || key}`;
 				break;
-			case "file":
+			case "file": {
 				const dirKey = this.getDirKeyForFile(key);
 				basePath = `${this.root.speco}/${this.dirs[dirKey]}/${this.files[key]}`;
 				break;
+			}
 			default:
 				throw new Error(`未知的路径类型: ${type}`);
 		}
@@ -282,7 +283,7 @@ class PathConfig {
 	 * @param {number} iterations - 测试迭代次数
 	 * @returns {Object} 性能测试结果
 	 */
-	benchmarkPathResolution(iterations = 1000) {
+	async benchmarkPathResolution(iterations = 1000) {
 		const startTime = Date.now();
 		const testPaths = [
 			{ type: "root", key: "speco" },
@@ -293,12 +294,14 @@ class PathConfig {
 		];
 
 		// 预热缓存
-		testPaths.forEach(({ type, key }) => this.getPath(type, key));
+		for (const { type, key } of testPaths) {
+			await this.getPath(type, key);
+		}
 
 		// 执行性能测试
 		for (let i = 0; i < iterations; i++) {
 			const pathSpec = testPaths[i % testPaths.length];
-			this.getPath(pathSpec.type, pathSpec.key);
+			await this.getPath(pathSpec.type, pathSpec.key);
 		}
 
 		const endTime = Date.now();
@@ -352,7 +355,7 @@ class PathConfig {
 	update(updates) {
 		// 递归更新配置
 		const updateObject = (target, source) => {
-			Object.keys(source).forEach((key) => {
+			for (const key of Object.keys(source)) {
 				if (
 					typeof source[key] === "object" &&
 					source[key] !== null &&
@@ -363,7 +366,7 @@ class PathConfig {
 				} else {
 					target[key] = source[key];
 				}
-			});
+			}
 		};
 
 		updateObject(this, updates);
@@ -374,17 +377,21 @@ class PathConfig {
 	 * 获取所有路径的快照
 	 * @returns {Object} 路径快照
 	 */
-	getPathSnapshot() {
+	async getPathSnapshot() {
+		const dirs = {};
+		for (const key of Object.keys(this.dirs)) {
+			dirs[key] = await this.getPath("dir", key);
+		}
+
+		const files = {};
+		for (const key of Object.keys(this.files)) {
+			files[key] = await this.getPath("file", key);
+		}
+
 		return {
 			root: { ...this.root },
-			dirs: Object.keys(this.dirs).reduce((acc, key) => {
-				acc[key] = this.getPath("dir", key);
-				return acc;
-			}, {}),
-			files: Object.keys(this.files).reduce((acc, key) => {
-				acc[key] = this.getPath("file", key);
-				return acc;
-			}, {}),
+			dirs,
+			files,
 		};
 	}
 }
