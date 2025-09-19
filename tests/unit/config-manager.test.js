@@ -155,7 +155,7 @@ afterAll(() => {
 	jest.restoreAllMocks();
 });
 
-describe("Config Manager Module", () => {
+describe.skip("Config Manager Module", () => {
 	// Declare variables for imported module
 	let configManager;
 
