@@ -121,7 +121,10 @@ describe("Path Utilities", () => {
 
 		test("should find project root with .speco marker", () => {
 			mockExistsSync.mockImplementation(
-				(p) => typeof p === "string" && (p.includes(".speco") || p.includes(".taskmaster")),
+				(p) => typeof p === "string" && (
+					p === "/home/user/project/src/.speco/tasks/tasks.json" ||
+					p.includes(".taskmaster")
+				),
 			);
 			mockResolve.mockImplementation((p) => p);
 			process.cwd = jest.fn().mockReturnValue("/current/dir");
