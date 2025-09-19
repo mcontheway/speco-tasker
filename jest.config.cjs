@@ -64,7 +64,7 @@ const config = {
 		"!node_modules/**",
 		// Exclude E2E tests and related files
 		"!tests/e2e/**",
-		"!tests/setup/e2e.cjs",
+		"!tests/setup/e2e.js",
 	],
 
 	// Transform configuration for both CommonJS and ES modules
@@ -118,7 +118,7 @@ const config = {
 	testTimeout: 10000,
 
 	// Setup files
-	setupFilesAfterEnv: ["<rootDir>/tests/setup.cjs"],
+	setupFilesAfterEnv: ["<rootDir>/tests/setup.js"],
 
 	// Module file extensions
 	moduleFileExtensions: ["js", "cjs", "mjs", "json"],
@@ -145,7 +145,7 @@ const config = {
 			displayName: "contract",
 			testMatch: ["**/tests/contract/**/*.test.js"],
 			testEnvironment: "node",
-			setupFilesAfterEnv: ["<rootDir>/tests/setup/contract.cjs"],
+			setupFilesAfterEnv: ["<rootDir>/tests/setup/contract.js"],
 			collectCoverageFrom: [
 				"src/controllers/**/*.js",
 				"src/services/**/*.js",
@@ -168,7 +168,7 @@ const config = {
 			displayName: "integration",
 			testMatch: ["<rootDir>/tests/integration/**/*.test.js"],
 			testEnvironment: "node",
-			setupFilesAfterEnv: ["<rootDir>/tests/setup/integration.cjs"],
+			setupFilesAfterEnv: ["<rootDir>/tests/setup/integration.js"],
 			maxWorkers: 2, // Parallel execution for integration tests
 			collectCoverageFrom: ["src/**/*.js", "!src/**/*.test.js", "!tests/**"],
 		},
@@ -178,7 +178,7 @@ const config = {
 			displayName: "unit",
 			testMatch: ["<rootDir>/tests/unit/**/*.test.js"],
 			testEnvironment: "node",
-			setupFilesAfterEnv: ["<rootDir>/tests/setup/unit.cjs"],
+			setupFilesAfterEnv: ["<rootDir>/tests/setup/unit.js"],
 			maxWorkers: 4, // High parallelism for fast unit tests
 			collectCoverageFrom: [
 				"src/models/**/*.js",
@@ -193,7 +193,7 @@ const config = {
 			displayName: "e2e",
 			testMatch: ["<rootDir>/tests/e2e/**/*.test.js"],
 			testEnvironment: "node",
-			setupFilesAfterEnv: ["<rootDir>/tests/setup/e2e.cjs"],
+			setupFilesAfterEnv: ["<rootDir>/tests/setup/e2e.js"],
 			maxWorkers: 1, // Sequential execution for E2E stability
 			// Note: collectCoverage cannot be set at project level
 			// E2E tests are excluded from coverage via collectCoverageFrom patterns

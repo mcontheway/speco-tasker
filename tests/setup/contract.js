@@ -1,27 +1,29 @@
 // Contract test setup for Speco-Tasker
 // SCOPE: API合约测试环境配置，验证接口行为契约
 
-const supertest = require("supertest");
-const path = require("node:path");
+import supertest from "supertest";
+import path from "node:path";
 
 // Setup contract test environment
 beforeAll(() => {
 	// Load contract test utilities
 	global.contractUtils = {
 		// Create API test client
-		createApiClient: () => {
-			const app = require(path.join(__dirname, "../../src/app.js"));
+		createApiClient: async () => {
+			const appModule = await import(path.join(__dirname, "../../src/app.js"));
+			const app = appModule.default;
 			return supertest(app);
 		},
 
 		// Load API contract specifications
-		loadContract: (contractName) => {
+		loadContract: async (contractName) => {
 			const contractPath = path.join(
 				__dirname,
 				"../../specs/002-feature-description-ai-taskmaster-speco/contracts",
 				contractName,
 			);
-			return require(contractPath);
+			const contractModule = await import(contractPath);
+			return contractModule.default || contractModule;
 		},
 
 		// Validate response against contract

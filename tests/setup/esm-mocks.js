@@ -33,34 +33,40 @@ jest.mock('chalk', () => ({
 }));
 
 // Mock other potentially problematic ESM modules
+import path from 'node:path';
+import fs from 'node:fs';
+import url from 'node:url';
+import child_process from 'node:child_process';
+import os from 'node:os';
+
 jest.mock('node:path', () => ({
   __esModule: true,
-  default: require('path'),
-  ...require('path')
+  default: path,
+  ...path
 }));
 
 jest.mock('node:fs', () => ({
   __esModule: true,
-  default: require('fs'),
-  ...require('fs')
+  default: fs,
+  ...fs
 }));
 
 jest.mock('node:url', () => ({
   __esModule: true,
-  default: require('url'),
-  ...require('url')
+  default: url,
+  ...url
 }));
 
 jest.mock('node:child_process', () => ({
   __esModule: true,
-  default: require('child_process'),
-  ...require('child_process')
+  default: child_process,
+  ...child_process
 }));
 
 jest.mock('node:os', () => ({
   __esModule: true,
-  default: require('os'),
-  ...require('os')
+  default: os,
+  ...os
 }));
 
 jest.mock('node:process', () => ({
