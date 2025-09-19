@@ -7,16 +7,22 @@ const path = require("node:path");
 const { fileURLToPath } = require("node:url");
 
 // Mock fs and path modules with proper mock implementations
+const mockExistsSync = jest.fn();
+const mockReadFileSync = jest.fn();
+const mockDirname = jest.fn();
+const mockJoin = jest.fn();
+const mockFileURLToPath = jest.fn();
+
 jest.mock("node:fs", () => ({
-	existsSync: jest.fn(),
-	readFileSync: jest.fn(),
+	existsSync: mockExistsSync,
+	readFileSync: mockReadFileSync,
 }));
 jest.mock("node:path", () => ({
-	dirname: jest.fn(),
-	join: jest.fn(),
+	dirname: mockDirname,
+	join: mockJoin,
 }));
 jest.mock("node:url", () => ({
-	fileURLToPath: jest.fn(),
+	fileURLToPath: mockFileURLToPath,
 }));
 
 // Mock the utils module
@@ -34,20 +40,16 @@ describe("Version Utilities", () => {
 
 	describe("getTaskMasterVersion", () => {
 		beforeEach(() => {
-			// Mock fileURLToPath and path functions
-			const mockFileURLToPath = require("node:url").fileURLToPath;
-			const mockPath = require("node:path");
-
 			mockFileURLToPath.mockReturnValue("/path/to/src/utils/getVersion.js");
-			mockPath.dirname.mockReturnValue("/path/to/src/utils");
-			mockPath.join.mockImplementation((...args) => args.join("/"));
+			mockDirname.mockReturnValue("/path/to/src/utils");
+			mockJoin.mockImplementation((...args) => args.join("/"));
 		});
 
 		test("should return version from package.json", () => {
 			const mockPackageJson = { version: "1.2.3" };
 
-			fs.existsSync.mockImplementation(() => true);
-			fs.readFileSync.mockImplementation(() => JSON.stringify(mockPackageJson));
+			mockExistsSync.mockReturnValue(true);
+			mockReadFileSync.mockReturnValue(JSON.stringify(mockPackageJson));
 
 			const result = getTaskMasterVersion();
 			expect(result).toBe("1.2.3");
@@ -58,7 +60,7 @@ describe("Version Utilities", () => {
 		});
 
 		test("should return 'unknown' when package.json does not exist", () => {
-			fs.existsSync.mockImplementation(() => false);
+			mockExistsSync.mockReturnValue(false);
 
 			const result = getTaskMasterVersion();
 			expect(result).toBe("unknown");
@@ -66,16 +68,16 @@ describe("Version Utilities", () => {
 		});
 
 		test("should return 'unknown' when JSON parsing fails", () => {
-			fs.existsSync.mockImplementation(() => true);
-			fs.readFileSync.mockImplementation(() => "invalid json");
+			mockExistsSync.mockReturnValue(true);
+			mockReadFileSync.mockReturnValue("invalid json");
 
 			const result = getTaskMasterVersion();
 			expect(result).toBe("unknown");
 		});
 
 		test("should return 'unknown' when file reading fails", () => {
-			fs.existsSync.mockImplementation(() => true);
-			fs.readFileSync.mockImplementation(() => {
+			mockExistsSync.mockReturnValue(true);
+			mockReadFileSync.mockImplementation(() => {
 				throw new Error("File read error");
 			});
 
@@ -86,8 +88,8 @@ describe("Version Utilities", () => {
 		test("should handle version field missing from package.json", () => {
 			const mockPackageJson = { name: "test" };
 
-			fs.existsSync.mockImplementation(() => true);
-			fs.readFileSync.mockImplementation(() => JSON.stringify(mockPackageJson));
+			mockExistsSync.mockReturnValue(true);
+			mockReadFileSync.mockReturnValue(JSON.stringify(mockPackageJson));
 
 			const result = getTaskMasterVersion();
 			expect(result).toBe(undefined);

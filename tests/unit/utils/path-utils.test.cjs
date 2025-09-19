@@ -6,16 +6,24 @@ const path = require("node:path");
 const fs = require("node:fs");
 
 // Mock fs and path modules for testing with proper implementations
+const mockExistsSync = jest.fn();
+const mockResolve = jest.fn();
+const mockDirname = jest.fn();
+const mockIsAbsolute = jest.fn();
+const mockBasename = jest.fn();
+const mockParse = jest.fn();
+const mockJoin = jest.fn();
+
 jest.mock("node:fs", () => ({
-	existsSync: jest.fn(),
+	existsSync: mockExistsSync,
 }));
 jest.mock("node:path", () => ({
-	resolve: jest.fn(),
-	dirname: jest.fn(),
-	isAbsolute: jest.fn(),
-	basename: jest.fn(),
-	parse: jest.fn(),
-	join: jest.fn(),
+	resolve: mockResolve,
+	dirname: mockDirname,
+	isAbsolute: mockIsAbsolute,
+	basename: mockBasename,
+	parse: mockParse,
+	join: mockJoin,
 }));
 
 // Mock the utils module to avoid import.meta.url issues
@@ -78,17 +86,17 @@ describe("Path Utilities", () => {
 	describe("findProjectRoot", () => {
 		beforeEach(() => {
 			// Mock path functions
-			path.resolve.mockImplementation((...args) => args.join("/"));
-			path.dirname.mockImplementation(
+			mockResolve.mockImplementation((...args) => args.join("/"));
+			mockDirname.mockImplementation(
 				(p) => p.split("/").slice(0, -1).join("/") || "/",
 			);
-			path.isAbsolute.mockImplementation(() => false);
-			path.basename.mockImplementation((p) => p.split("/").pop() || "");
-			path.parse.mockImplementation(() => ({ root: "/" }));
+			mockIsAbsolute.mockReturnValue(false);
+			mockBasename.mockImplementation((p) => p.split("/").pop() || "");
+			mockParse.mockReturnValue({ root: "/" });
 		});
 
 		test("should return cwd when no project markers found", () => {
-			fs.existsSync.mockImplementation(() => false);
+			mockExistsSync.mockReturnValue(false);
 			process.cwd = jest.fn().mockReturnValue("/current/dir");
 
 			const result = findProjectRoot("/start/dir");
@@ -109,18 +117,18 @@ describe("Path Utilities", () => {
 
 	describe("resolveTasksOutputPath", () => {
 		beforeEach(() => {
-			path.isAbsolute.mockImplementation(() => false);
-			path.resolve.mockImplementation((...args) => args.join("/"));
-			path.dirname.mockImplementation(
+			mockIsAbsolute.mockReturnValue(false);
+			mockResolve.mockImplementation((...args) => args.join("/"));
+			mockDirname.mockImplementation(
 				(p) => p.split("/").slice(0, -1).join("/") || "/",
 			);
-			path.join.mockImplementation((...args) => args.join("/"));
+			mockJoin.mockImplementation((...args) => args.join("/"));
 		});
 
 		test("should return explicit absolute path", () => {
-			path.isAbsolute.mockImplementation(() => true);
-			path.resolve.mockImplementation((...args) => args.join("/"));
-			path.dirname.mockImplementation(
+			mockIsAbsolute.mockReturnValue(true);
+			mockResolve.mockImplementation((...args) => args.join("/"));
+			mockDirname.mockImplementation(
 				(p) => p.split("/").slice(0, -1).join("/") || "/",
 			);
 			const result = resolveTasksOutputPath("/explicit/path/tasks.json");
@@ -136,8 +144,8 @@ describe("Path Utilities", () => {
 		});
 
 		test("should create default .taskmaster path when no explicit path", () => {
-			fs.existsSync.mockReturnValue(false);
-			fs.mkdirSync.mockImplementation(() => {});
+			mockExistsSync.mockReturnValue(false);
+			// Note: fs.mkdirSync is not mocked in this test file, so we can't mock it here
 
 			resolveTasksOutputPath(null, { projectRoot: "/project" });
 

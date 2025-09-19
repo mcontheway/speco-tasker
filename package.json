@@ -144,7 +144,7 @@
 	"lint-staged": {
 		"*.{js,ts,json}": [
 			"biome format --write",
-			"biome check --apply-unsafe",
+			"biome check --write --unsafe",
 			"biome check"
 		],
 		"*.{js,ts}": [
