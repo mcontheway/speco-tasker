@@ -2,7 +2,7 @@
  * Unit tests for command constants
  */
 
-import { AI_COMMAND_NAMES } from "../../../src/constants/commands.js";
+const { AI_COMMAND_NAMES } = require("../../../src/constants/commands.js");
 
 describe("Command Constants", () => {
 	describe("AI_COMMAND_NAMES", () => {
@@ -21,7 +21,9 @@ describe("Command Constants", () => {
 		test("should contain only strings if not empty", () => {
 			// This test will pass even if array grows in future
 			if (AI_COMMAND_NAMES.length > 0) {
-				expect(AI_COMMAND_NAMES.every(name => typeof name === "string")).toBe(true);
+				expect(AI_COMMAND_NAMES.every((name) => typeof name === "string")).toBe(
+					true,
+				);
 			}
 		});
 	});

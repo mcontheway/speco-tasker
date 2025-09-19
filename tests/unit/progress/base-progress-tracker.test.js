@@ -18,15 +18,10 @@ jest.mock("../../../src/progress/cli-progress-factory.js", () => ({
 	newMultiBar: mockNewMultiBar,
 }));
 
-let BaseProgressTracker;
-
-beforeAll(async () => {
-	const baseProgressTracker = await import(
-		"../../../src/progress/base-progress-tracker.js"
-	);
-
-	BaseProgressTracker = baseProgressTracker.BaseProgressTracker;
-});
+// Use Jest's require to handle ES module
+const {
+	BaseProgressTracker,
+} = require("../../../src/progress/base-progress-tracker.js");
 
 describe("BaseProgressTracker", () => {
 	let tracker;

@@ -1,14 +1,18 @@
 #!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
 
-# Skip quality checks for files with ESM compatibility issues
-echo "🔍 Running selective quality checks..."
-echo "⚠️  Note: Skipping format checks for .cjs files due to ESM compatibility issues"
+echo "🔍 Running complete quality checks..."
 
-# Run only essential tests to verify core functionality
+# Run code quality checks
+echo "📏 Running code formatting and linting checks..."
+npm run quality-check
+
+# Run unit tests
 echo "🧪 Running unit tests..."
+npm run test:ci
 
-# Use bash directly instead of npm to avoid eval issues
-echo "Running Jest tests directly..."
-GRACEFUL_FS_PATCH=0 NODE_OPTIONS="--experimental-specifier-resolution=node --experimental-modules --no-deprecation --no-warnings --loader=./tests/loader/process-cwd-loader.js" ./node_modules/.bin/jest --config jest.config.cjs --testPathPatterns="unit/simple" --passWithNoTests --forceExit --runInBand --bail
+# Run integration tests
+echo "🔗 Running integration tests..."
+npm run test:integration
 
-echo "✅ Pre-commit checks completed"
+echo "✅ All pre-commit checks completed successfully"

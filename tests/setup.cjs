@@ -7,8 +7,8 @@
 // Disable graceful-fs polyfills to avoid uv_cwd issues
 process.env.GRACEFUL_FS_PATCH = "0";
 
-import path from "node:path";
-import os from "node:os";
+const path = require("node:path");
+const os = require("node:os");
 
 // Capture the actual original working directory before any changes
 let originalWorkingDirectory;

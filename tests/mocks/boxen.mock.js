@@ -7,7 +7,7 @@ const boxenMock = (text, options) => {
 	const title = options?.title ? ` ${options.title} ` : "";
 
 	let result = text;
-	if (title) result = title + "\n" + result;
+	if (title) result = `${title}\n${result}`;
 
 	// Add padding
 	const lines = result.split("\n");

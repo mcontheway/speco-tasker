@@ -6,31 +6,14 @@ process.env.GRACEFUL_FS_PATCH = "0";
 process.env.BABEL_DISABLE_CACHE = "true";
 process.env.NODE_OPTIONS = "--no-deprecation";
 
-// Critical fix: Override process.cwd globally to prevent ENOENT errors
-const originalCwd = process.cwd;
-Object.defineProperty(process, "cwd", {
-	value: () => {
-		try {
-			return originalCwd.call(process);
-		} catch (error) {
-			// Fallback to current directory if cwd fails
-			return ".";
-		}
-	},
-	writable: false,
-	enumerable: true,
-	configurable: false,
-});
+// Note: process.cwd protection moved to custom loader for Jest compatibility
 
 const config = {
 	// Use Node.js environment for testing
 	testEnvironment: "node",
 
-	// Automatically clear mock calls between every test
-	clearMocks: true,
-
-	// Disable open handle detection to avoid internal errors
-	detectOpenHandles: false,
+	// Explicitly handle ES modules
+	preset: null,
 
 	// Enable coverage collection (disable for now to avoid internal errors)
 	collectCoverage: false,
@@ -84,9 +67,9 @@ const config = {
 		"!tests/setup/e2e.js",
 	],
 
-	// Smart transform configuration - conditional Babel support
+	// Smart transform configuration - convert ES modules to CommonJS
 	transform: {
-		// Use Babel for files that need it (like integration tests)
+		// Use Babel for all JS files to convert ES modules to CommonJS
 		"^.+\\.(js|jsx|mjs|cjs)$": [
 			"babel-jest",
 			{
@@ -95,7 +78,7 @@ const config = {
 						"@babel/preset-env",
 						{
 							targets: { node: "current" },
-							modules: false, // Keep ES modules
+							modules: "commonjs", // Convert ES modules to CommonJS for Jest
 							useBuiltIns: false,
 						},
 					],
@@ -129,9 +112,10 @@ const config = {
 		"^import\\.meta\\.url$": "<rootDir>/tests/mocks/import-meta-url.mock.js",
 	},
 
-	// ESM support - transform most packages
+	// Transform configuration for ESM compatibility
 	transformIgnorePatterns: [
-		"node_modules/(?!((.*)/))", // Transform most packages
+		// Transform most node_modules packages (except specific ones)
+		"node_modules/(?!graceful-fs|which|cross-spawn)",
 	],
 
 	// Enhanced ESM support configuration
@@ -146,6 +130,8 @@ const config = {
 		node: {
 			// Enable ESM support in test environment
 			loader: "node",
+			// Enable experimental VM modules for dynamic imports
+			experimentalVmModules: true,
 		},
 	},
 
@@ -244,15 +230,26 @@ const config = {
 	// Global test configuration
 	resetMocks: true,
 	restoreMocks: true,
+	clearMocks: true,
 
 	// Test execution settings
-	verbose: true,
+	verbose: false,
 
 	// Force exit to prevent hanging
 	forceExit: true,
 
+	// Disable problematic detection features for Node.js compatibility
+	detectOpenHandles: false,
+	detectLeaks: false,
+
 	// Bail on first failure for faster feedback during development
 	bail: 0, // Set to 1 during strict TDD development
+
+	// Disable silent mode to avoid console issues
+	silent: false,
+
+	// Simplified worker configuration
+	maxWorkers: 1,
 };
 
 module.exports = config;

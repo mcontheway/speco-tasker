@@ -3,8 +3,8 @@
  */
 
 import {
-	TASK_PRIORITY_OPTIONS,
 	DEFAULT_TASK_PRIORITY,
+	TASK_PRIORITY_OPTIONS,
 	isValidTaskPriority,
 	normalizeTaskPriority,
 } from "../../../src/constants/task-priority.js";
@@ -20,7 +20,9 @@ describe("Task Priority Constants", () => {
 		});
 
 		test("should contain only strings", () => {
-			expect(TASK_PRIORITY_OPTIONS.every(option => typeof option === "string")).toBe(true);
+			expect(
+				TASK_PRIORITY_OPTIONS.every((option) => typeof option === "string"),
+			).toBe(true);
 		});
 
 		test("should have reasonable length", () => {

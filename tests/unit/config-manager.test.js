@@ -155,7 +155,7 @@ afterAll(() => {
 	jest.restoreAllMocks();
 });
 
-describe.skip("Config Manager Module", () => {
+describe("Config Manager Module", () => {
 	// Declare variables for imported module
 	let configManager;
 
@@ -330,7 +330,7 @@ describe.skip("Config Manager Module", () => {
 			);
 		});
 
-		test.skip("should use findProjectRoot and return defaults if file not found", () => {
+		test("should use findProjectRoot and return defaults if file not found", () => {
 			// TODO: Fix mock interaction, findProjectRoot isn't being registered as called
 			// Arrange
 			mockExistsSync.mockReturnValue(false);
@@ -592,7 +592,7 @@ describe.skip("Config Manager Module", () => {
 			);
 		});
 
-		test.skip("should return false if project root cannot be determined", () => {
+		test("should return false if project root cannot be determined", () => {
 			// TODO: Fix mock interaction or function logic, returns true unexpectedly in test
 			// Arrange: Override mock for this specific test
 			mockFindProjectRoot.mockReturnValue(null);
@@ -663,7 +663,7 @@ describe.skip("Config Manager Module", () => {
 			expect(mockExistsSync).toHaveBeenCalledWith(MOCK_CONFIG_PATH);
 		});
 
-		test.skip("should use findProjectRoot if explicitRoot is not provided", () => {
+		test("should use findProjectRoot if explicitRoot is not provided", () => {
 			// TODO: Fix mock interaction, findProjectRoot isn't being registered as called
 			mockExistsSync.mockReturnValue(true);
 			// findProjectRoot mock set in beforeEach

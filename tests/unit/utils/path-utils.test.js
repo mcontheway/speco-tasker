@@ -38,9 +38,9 @@ import {
 	resolveTasksOutputPath,
 } from "../../../src/utils/path-utils.js";
 
-// Get references to mocked functions
-const mockFs = jest.mocked(require("node:fs"));
-const mockPath = jest.mocked(require("node:path"));
+// Get references to mocked functions (avoid jest.mocked with require to prevent process.cwd conflicts)
+const mockFs = require("node:fs");
+const mockPath = require("node:path");
 
 describe("Path Utilities", () => {
 	beforeEach(() => {
@@ -104,8 +104,8 @@ describe("Path Utilities", () => {
 		});
 
 		test("should return cwd when no project markers found", () => {
-		mockFs.existsSync.mockReturnValue(false);
-		const spyCwd = jest.spyOn(process, "cwd");
+			mockFs.existsSync.mockReturnValue(false);
+			const spyCwd = jest.spyOn(process, "cwd");
 			spyCwd.mockReturnValue("/current/dir");
 
 			const result = findProjectRoot("/start/dir");
@@ -122,7 +122,7 @@ describe("Path Utilities", () => {
 						p.includes(".taskmaster")),
 			);
 			mockPath.resolve.mockImplementation((p) => p);
-		const spyCwd = jest.spyOn(process, "cwd");
+			const spyCwd = jest.spyOn(process, "cwd");
 			spyCwd.mockReturnValue("/current/dir");
 
 			const result = findProjectRoot("/home/user/project/src");
