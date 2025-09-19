@@ -26,19 +26,11 @@ afterAll(() => {
 	global.console = originalConsole;
 });
 
-// Get __dirname equivalent for ES modules
-let __filename, __dirname;
-try {
-	__filename = fileURLToPath(import.meta.url);
-	__dirname = path.dirname(__filename);
-} catch (error) {
-	// Fallback for CommonJS environments
-	__filename = __filename || 'unknown';
-	__dirname = path.dirname(__filename);
-}
+// Use __dirname directly (available in CommonJS)
+const testDirname = __dirname;
 
 describe("Cross-Tag Task Movement Simple Integration Tests", () => {
-	const testDataDir = path.join(__dirname, "fixtures");
+	const testDataDir = path.join(testDirname, "fixtures");
 	const testTasksPath = path.join(testDataDir, "tasks.json");
 
 	// Test data structure with proper tagged format

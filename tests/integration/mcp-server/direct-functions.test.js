@@ -7,8 +7,16 @@ import { fileURLToPath } from "node:url";
 import { jest } from "@jest/globals";
 
 // Get the current module's directory
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+let __filename;
+let __dirname;
+try {
+	__filename = fileURLToPath(import.meta.url);
+	__dirname = dirname(__filename);
+} catch (error) {
+	// Fallback for CommonJS environments
+	__filename = __filename || "unknown";
+	__dirname = path.dirname(__filename);
+}
 
 // Test file paths
 const testProjectRoot = path.join(__dirname, "../../fixtures");

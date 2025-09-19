@@ -3,15 +3,8 @@ const path = require("node:path");
 const { fileURLToPath } = require("node:url");
 // const { jest } = require("@jest/globals"); // Jest is already global
 
-let __filename, __dirname;
-try {
-	__filename = fileURLToPath(import.meta.url);
-	__dirname = path.dirname(__filename);
-} catch (error) {
-	// Fallback for CommonJS environments
-	__filename = __filename || 'unknown';
-	__dirname = path.dirname(__filename);
-}
+// Use __dirname directly (available in CommonJS)
+const testDirname = __dirname;
 
 // Mock dependencies before importing
 const mockUtils = {
@@ -132,7 +125,7 @@ describe("Cross-Tag Task Movement Integration Tests", () => {
 
 	beforeEach(() => {
 		// Setup test data path
-		testDataPath = path.join(__dirname, "temp-test-tasks.json");
+		testDataPath = path.join(testDirname, "temp-test-tasks.json");
 
 		// Initialize mock data with multiple tags
 		mockTasksData = {
