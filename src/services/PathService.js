@@ -3,8 +3,8 @@
  * 提供路径配置的管理、解析和文件操作功能
  */
 
-import fs from "fs/promises";
-import path from "path";
+import fs from "node:fs/promises";
+import path from "node:path";
 import { PathConfig } from "../models/PathConfig.js";
 import {
 	validateFileSecurity,

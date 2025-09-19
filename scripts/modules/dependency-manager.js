@@ -18,9 +18,9 @@ import {
 	writeJSON,
 } from "./utils.js";
 
-import { displayBanner } from "./ui.js";
+// displayBanner import removed to break circular dependency (not used in this file)
 
-import generateTaskFiles from "./task-manager/generate-task-files.js";
+// generateTaskFiles import removed to break circular dependency (all calls are commented out)
 
 /**
  * Structured error class for dependency operations

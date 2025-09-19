@@ -21,13 +21,12 @@ import {
 } from "../../../src/constants/task-priority.js";
 import { getDefaultPriority } from "../config-manager.js";
 import {
-	displayBanner,
 	failLoadingIndicator,
 	getStatusWithColor,
 	startLoadingIndicator,
 	stopLoadingIndicator,
 	succeedLoadingIndicator,
-} from "../ui.js";
+} from "../loading-utils.js";
 import {
 	log as consoleLog,
 	ensureTagMetadata,

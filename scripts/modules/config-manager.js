@@ -9,7 +9,7 @@ import {
 	TASKMASTER_DIR,
 } from "../../src/constants/paths.js";
 import { findConfigPath } from "../../src/utils/path-utils.js";
-import { findProjectRoot, isEmpty, log, resolveEnvVariable } from "./utils.js";
+import { findProjectRoot, isEmpty, resolveEnvVariable, log } from "./core-utils.js";
 
 // Calculate __dirname in ESM
 const __filename = fileURLToPath(import.meta.url);

@@ -11,6 +11,8 @@ import {
 	LEGACY_COMPLEXITY_REPORT_FILE,
 	LEGACY_CONFIG_FILE,
 } from "../../src/constants/paths.js";
+// Import core utilities that don't depend on config
+import { resolveEnvVariable, findProjectRoot, isEmpty, log } from "./core-utils.js";
 // Import specific config getters needed here
 import { getDebugFlag, getLogLevel } from "./config-manager.js";
 import * as gitUtils from "./utils/git-utils.js";
@@ -19,30 +21,7 @@ import * as gitUtils from "./utils/git-utils.js";
 let silentMode = false;
 
 // --- Environment Variable Resolution Utility ---
-/**
- * Resolves an environment variable's value.
- * Precedence:
- * 1. session.env (if session provided)
- * 2. process.env
- * @param {string} key - The environment variable key.
- * @param {object|null} [session=null] - The MCP session object.
- * @param {string|null} [projectRoot=null] - The project root directory (parameter kept for compatibility).
- * @returns {string|undefined} The value of the environment variable or undefined if not found.
- */
-function resolveEnvVariable(key, session = null, projectRoot = null) {
-	// 1. Check session.env (for MCP integrations)
-	if (session?.env?.[key]) {
-		return session.env[key];
-	}
-
-	// 2. Check process.env
-	if (process.env[key]) {
-		return process.env[key];
-	}
-
-	// Not found anywhere
-	return undefined;
-}
+// Now imported from core-utils.js
 
 // --- Tag-Aware Path Resolution Utility ---
 
@@ -441,36 +420,7 @@ function validateFieldUpdatePermission(fieldName, newValue, currentTask) {
  * @param {string[]} [markers=['package.json', '.git', LEGACY_CONFIG_FILE]] - Marker files/dirs to look for.
  * @returns {string|null} The path to the project root, or null if not found.
  */
-function findProjectRoot(
-	startDir = process.cwd(),
-	markers = ["package.json", "pyproject.toml", ".git", LEGACY_CONFIG_FILE],
-) {
-	let currentPath = path.resolve(startDir);
-	const rootPath = path.parse(currentPath).root;
-
-	while (currentPath !== rootPath) {
-		// Check if any marker exists in the current directory
-		const hasMarker = markers.some((marker) => {
-			const markerPath = path.join(currentPath, marker);
-			return fs.existsSync(markerPath);
-		});
-
-		if (hasMarker) {
-			return currentPath;
-		}
-
-		// Move up one directory
-		currentPath = path.dirname(currentPath);
-	}
-
-	// Check the root directory as well
-	const hasMarkerInRoot = markers.some((marker) => {
-		const markerPath = path.join(rootPath, marker);
-		return fs.existsSync(markerPath);
-	});
-
-	return hasMarkerInRoot ? rootPath : null;
-}
+// findProjectRoot now imported from core-utils.js
 
 // --- Dynamic Configuration Function --- (REMOVED)
 
@@ -520,49 +470,7 @@ function isSilentMode() {
  * @param {string} level - The log level (debug, info, warn, error)
  * @param  {...any} args - Arguments to log
  */
-function log(level, ...args) {
-	// Immediately return if silentMode is enabled
-	if (isSilentMode()) {
-		return;
-	}
-
-	// GUARD: Prevent circular dependency during config loading
-	// Use a simple fallback log level instead of calling getLogLevel()
-	let configLevel = "info"; // Default fallback
-	try {
-		// Only try to get config level if we're not in the middle of config loading
-		configLevel = getLogLevel() || "info";
-	} catch (error) {
-		// If getLogLevel() fails (likely due to circular dependency),
-		// use default 'info' level and continue
-		configLevel = "info";
-	}
-
-	// Use text prefixes instead of emojis
-	const prefixes = {
-		debug: chalk.gray("[DEBUG]"),
-		info: chalk.blue("[INFO]"),
-		warn: chalk.yellow("[WARN]"),
-		error: chalk.red("[ERROR]"),
-		success: chalk.green("[SUCCESS]"),
-	};
-
-	// Ensure level exists, default to info if not
-	const currentLevel = LOG_LEVELS.hasOwnProperty(level) ? level : "info";
-
-	// Check log level configuration
-	if (
-		LOG_LEVELS[currentLevel] >= (LOG_LEVELS[configLevel] ?? LOG_LEVELS.info)
-	) {
-		const prefix = prefixes[currentLevel] || "";
-		// Use console.log for all levels, let chalk handle coloring
-		// Construct the message properly
-		const message = args
-			.map((arg) => (typeof arg === "object" ? JSON.stringify(arg) : arg))
-			.join(" ");
-		console.log(`${prefix} ${message}`);
-	}
-}
+// log function now imported from core-utils.js
 
 /**
  * Checks if the data object has a tagged structure (contains tag objects with tasks arrays)
@@ -1394,16 +1302,7 @@ function truncate(text, maxLength) {
  * @param {*} value - The value to check
  * @returns {boolean} True if empty, false otherwise
  */
-function isEmpty(value) {
-	if (Array.isArray(value)) {
-		return value.length === 0;
-	}
-	if (typeof value === "object" && value !== null) {
-		return Object.keys(value).length === 0;
-	}
-
-	return false; // Not an array or object, or is null
-}
+// isEmpty now imported from core-utils.js
 
 /**
  * Find cycles in a dependency graph using DFS

@@ -62,7 +62,6 @@ describe("Path Utilities", () => {
 			expect(result).toBe(input);
 		});
 
-
 		test("should remove .taskmaster segment and everything after it", () => {
 			const input = "/home/user/project/.taskmaster/tasks";
 			const result = normalizeProjectRoot(input);
@@ -122,10 +121,10 @@ describe("Path Utilities", () => {
 
 		test("should find project root with .speco marker", () => {
 			mockExistsSync.mockImplementation(
-				(p) => typeof p === "string" && (
-					p === "/home/user/project/src/.speco/tasks/tasks.json" ||
-					p.includes(".taskmaster")
-				),
+				(p) =>
+					typeof p === "string" &&
+					(p === "/home/user/project/src/.speco/tasks/tasks.json" ||
+						p.includes(".taskmaster")),
 			);
 			mockResolve.mockImplementation((p) => p);
 			process.cwd = jest.fn().mockReturnValue("/current/dir");

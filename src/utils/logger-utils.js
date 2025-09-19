@@ -3,7 +3,7 @@
  * Provides standardized logging patterns for both CLI and utility contexts
  */
 
-import { log as utilLog } from "../../scripts/modules/utils.js";
+import { log as utilLog } from "../../scripts/modules/core-utils.js";
 
 /**
  * Creates a standard logger object that wraps the utility log function

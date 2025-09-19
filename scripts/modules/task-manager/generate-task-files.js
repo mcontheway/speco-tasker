@@ -3,7 +3,7 @@ import path from "node:path";
 import chalk from "chalk";
 
 import { getDebugFlag } from "../config-manager.js";
-import { validateAndFixDependencies } from "../dependency-manager.js";
+// validateAndFixDependencies will be imported dynamically to avoid circular dependency
 import { formatDependenciesWithStatus } from "../ui.js";
 import { log, readJSON } from "../utils.js";
 
@@ -51,12 +51,18 @@ function generateTaskFiles(tasksPath, outputDir, options = {}) {
 		);
 
 		// 3. Validate dependencies using the tag-specific data structure
-		validateAndFixDependencies(
-			tagData, // Pass only the tag-specific data with tasks array
-			tasksPath,
-			projectRoot,
-			tag, // Provide the current tag context for the operation
-		);
+		// Use dynamic import to avoid circular dependency
+		try {
+			const { validateAndFixDependencies } = await import("../dependency-manager.js");
+			validateAndFixDependencies(
+				tagData, // Pass only the tag-specific data with tasks array
+				tasksPath,
+				projectRoot,
+				tag, // Provide the current tag context for the operation
+			);
+		} catch (error) {
+			log("warn", `Could not validate dependencies: ${error.message}`);
+		}
 
 		const allTasksInTag = tagData.tasks;
 		const validTaskIds = allTasksInTag.map((task) => task.id);

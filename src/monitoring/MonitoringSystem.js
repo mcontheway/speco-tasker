@@ -3,9 +3,9 @@
  * 提供系统监控、审计报告和性能跟踪功能
  */
 
-import fs from "fs/promises";
-import path from "path";
-import { EventEmitter } from "events";
+import fs from "node:fs/promises";
+import path from "node:path";
+import { EventEmitter } from "node:events";
 import { Logger, LOG_LEVELS, LOG_TYPES, getLogger } from "./Logger.js";
 
 export const MONITORING_EVENTS = {

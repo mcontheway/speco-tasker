@@ -21,9 +21,9 @@
  */
 
 // ES模块导入
-import fs from "fs/promises";
-import path from "path";
-import { spawn } from "child_process";
+import fs from "node:fs/promises";
+import path from "node:path";
+import { spawn } from "node:child_process";
 import chalk from "chalk";
 import { Command } from "commander";
 
@@ -39,7 +39,7 @@ const devScriptPath = path.resolve(projectRoot, "scripts/dev.js");
 const packageJsonPath = path.resolve(projectRoot, "package.json");
 
 // 获取包信息
-import { readFileSync } from "fs";
+import { readFileSync } from "node:fs";
 const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf8"));
 const version = packageJson.version;
 

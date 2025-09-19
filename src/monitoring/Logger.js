@@ -3,9 +3,9 @@
  * 提供统一日志记录、审计日志和监控报告功能
  */
 
-import fs from "fs/promises";
-import path from "path";
-import { EventEmitter } from "events";
+import fs from "node:fs/promises";
+import path from "node:path";
+import { EventEmitter } from "node:events";
 
 export const LOG_LEVELS = {
 	ERROR: 0,

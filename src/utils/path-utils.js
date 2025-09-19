@@ -17,8 +17,8 @@ import {
 import { getLoggerOrDefault } from "./logger-utils.js";
 
 /**
- * Normalize project root to ensure it doesn't end with .taskmaster
- * This prevents double .taskmaster paths when using constants that include .taskmaster
+ * Normalize project root to ensure it doesn't end with .taskmaster or .speco
+ * This prevents double paths when using constants that include these directories
  * @param {string} projectRoot - The project root path to normalize
  * @returns {string} - Normalized project root path
  */
@@ -31,13 +31,13 @@ export function normalizeProjectRoot(projectRoot) {
 	// Split the path into segments
 	const segments = projectRoot.split(path.sep);
 
-	// Find the index of .taskmaster segment
+	// Find the index of .taskmaster or .speco segment
 	const taskmasterIndex = segments.findIndex(
-		(segment) => segment === ".taskmaster",
+		(segment) => segment === ".taskmaster" || segment === ".speco",
 	);
 
 	if (taskmasterIndex !== -1) {
-		// If .taskmaster is found, return everything up to but not including .taskmaster
+		// If .taskmaster or .speco is found, return everything up to but not including it
 		const normalizedSegments = segments.slice(0, taskmasterIndex);
 		return normalizedSegments.join(path.sep) || path.sep;
 	}
