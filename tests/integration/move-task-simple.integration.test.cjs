@@ -4,11 +4,39 @@ const { fileURLToPath } = require("node:url");
 // const { jest } = require("@jest/globals"); // Jest is already global
 const mockFs = require("mock-fs");
 
-// Import the actual move task functionality
+// Mock problematic ESM modules before importing anything else
+jest.mock("boxen", () => ({
+  __esModule: true,
+  default: jest.fn((text, options) => `[BOX] ${text}`)
+}));
+
+jest.mock("chalk", () => ({
+  __esModule: true,
+  default: {
+    blue: jest.fn((text) => text),
+    green: jest.fn((text) => text),
+    red: jest.fn((text) => text),
+    yellow: jest.fn((text) => text),
+    cyan: jest.fn((text) => text),
+    magenta: jest.fn((text) => text),
+    white: jest.fn((text) => text),
+    gray: jest.fn((text) => text),
+    bold: jest.fn((text) => text),
+  }
+}));
+
+// Mock config-manager to avoid ESM issues
+jest.mock("../../scripts/modules/config-manager.js", () => ({
+  getProjectName: jest.fn(() => "test-project"),
+  getMainProvider: jest.fn(() => ({ name: "test-provider", model: "test-model" })),
+  // Add other functions as needed
+}));
+
+// Import the actual move task functionality using absolute paths
 const {
 	moveTasksBetweenTags,
-} = require("../scripts/modules/task-manager/move-task.js");
-const { readJSON, writeJSON } = require("../scripts/modules/utils.js");
+} = require(path.join(__dirname, "../../scripts/modules/task-manager/move-task.js"));
+const { readJSON, writeJSON } = require(path.join(__dirname, "../../scripts/modules/utils.js"));
 
 // Mock console to avoid conflicts with mock-fs
 const originalConsole = { ...console };

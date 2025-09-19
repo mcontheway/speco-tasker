@@ -72,15 +72,24 @@ const config = {
 		"^.+\\.(js|jsx|mjs|cjs)$": "babel-jest",
 	},
 
-	// Module name mapping for ES modules
+	// Module name mapping for ES modules and problematic packages
 	moduleNameMapper: {
 		"^(\\.{1,2}/.*)\\.js$": "$1",
+		// Mock problematic ESM packages directly
+		"^boxen$": "<rootDir>/tests/mocks/boxen.mock.js",
+		"^chalk$": "<rootDir>/tests/mocks/chalk.mock.js",
+		"^node:path$": "path",
+		"^node:fs$": "fs",
+		"^node:url$": "url",
+		"^node:child_process$": "child_process",
+		"^node:os$": "os",
+		"^node:process$": "process",
 		// Remove the mock for import.meta.url as it's handled by Babel now
 	},
 
-	// Don't transform node_modules except specific ones
+	// Don't transform node_modules except specific ones that use ESM
 	transformIgnorePatterns: [
-		"node_modules/(?!(supertest|chalk|boxen|@inquirer|fastmcp)/)",
+		"node_modules/(?!(supertest|@inquirer|fastmcp|@anthropic-ai|@vercel)/)",
 	],
 
 	// Support for ES modules

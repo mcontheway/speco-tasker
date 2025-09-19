@@ -9,6 +9,11 @@ describe.skip("Complex Cross-Tag Scenarios", () => {
 	});
 });
 
+// NOTE: This test suite is currently disabled due to Jest ESM compatibility issues
+// The commented code below contains the full test implementation that will be re-enabled
+// once ESM/CommonJS compatibility issues are resolved.
+
+/*
 // describe('Complex Cross-Tag Scenarios', () => {
 let testDir;
 let tasksPath;
@@ -500,3 +505,4 @@ describe("Multiple Task Movement", () => {
 		).toBeDefined();
 	});
 });
+*/

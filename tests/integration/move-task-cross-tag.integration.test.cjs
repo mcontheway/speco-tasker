@@ -6,7 +6,35 @@ const { fileURLToPath } = require("node:url");
 // Use __dirname directly (available in CommonJS)
 const testDirname = __dirname;
 
-// Mock dependencies before importing
+// IMPORTANT: Mock ESM modules BEFORE any imports that use them
+jest.mock("boxen", () => ({
+  __esModule: true,
+  default: jest.fn((text, options) => `[BOX] ${text}`)
+}));
+
+jest.mock("chalk", () => ({
+  __esModule: true,
+  default: {
+    blue: jest.fn((text) => text),
+    green: jest.fn((text) => text),
+    red: jest.fn((text) => text),
+    yellow: jest.fn((text) => text),
+    cyan: jest.fn((text) => text),
+    magenta: jest.fn((text) => text),
+    white: jest.fn((text) => text),
+    gray: jest.fn((text) => text),
+    bold: jest.fn((text) => text),
+  }
+}));
+
+// Mock config-manager to avoid ESM issues
+jest.mock("../../scripts/modules/config-manager.js", () => ({
+  getProjectName: jest.fn(() => "test-project"),
+  getMainProvider: jest.fn(() => ({ name: "test-provider", model: "test-model" })),
+  // Add other functions as needed
+}));
+
+// IMPORTANT: Mock dependencies BEFORE any imports that use them
 const mockUtils = {
 	readJSON: jest.fn(),
 	writeJSON: jest.fn(),
@@ -48,18 +76,13 @@ const mockUtils = {
 	}),
 };
 
-// Mock the utils module
-jest.unstable_mockModule("../scripts/modules/utils.js", () => mockUtils);
+// Mock the utils module BEFORE importing it using absolute paths
+jest.unstable_mockModule(path.join(__dirname, "../../scripts/modules/utils.js"), () => mockUtils);
 
-// Mock other dependencies
-jest.unstable_mockModule(
-	"../scripts/modules/task-manager/is-task-dependent.js",
-	() => ({
-		default: jest.fn(() => false),
-	}),
-);
+// Mock other dependencies BEFORE importing them using absolute paths
+// Note: is-task-dependent.js doesn't exist, removing this mock
 
-jest.unstable_mockModule("../scripts/modules/dependency-manager.js", () => ({
+jest.unstable_mockModule(path.join(__dirname, "../../scripts/modules/dependency-manager.js"), () => ({
 	findCrossTagDependencies: jest.fn(() => {
 		// Since dependencies can only exist within the same tag,
 		// this function should never find any cross-tag conflicts
@@ -108,16 +131,19 @@ jest.unstable_mockModule("../scripts/modules/dependency-manager.js", () => ({
 }));
 
 jest.unstable_mockModule(
-	"../scripts/modules/task-manager/generate-task-files.js",
+	path.join(__dirname, "../../scripts/modules/task-manager/generate-task-files.js"),
 	() => ({
 		default: jest.fn().mockResolvedValue(),
 	}),
 );
 
-// Import the modules we'll be testing after mocking
+// Import the modules we'll be testing after mocking using absolute paths
 const {
 	moveTasksBetweenTags,
-} = require("../scripts/modules/task-manager/move-task.js");
+} = require(path.join(__dirname, "../../scripts/modules/task-manager/move-task.js"));
+
+// Also import utils module after mocking using absolute paths
+const { readJSON, writeJSON } = require(path.join(__dirname, "../../scripts/modules/utils.js"));
 
 describe("Cross-Tag Task Movement Integration Tests", () => {
 	let testDataPath;
