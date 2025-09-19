@@ -126,20 +126,26 @@ function parseContractTest(filePath) {
 		// 提取describe块
 		const describeRegex = /describe\(['"]([^'"]+)['"]/g;
 		let match;
-		while ((match = describeRegex.exec(content)) !== null) {
+		while (true) {
+			match = describeRegex.exec(content);
+			if (match === null) break;
 			describeBlocks.push(match[1]);
 		}
 
 		// 提取测试用例
 		const testRegex = /it\(['"]([^'"]+)['"]/g;
-		while ((match = testRegex.exec(content)) !== null) {
+		while (true) {
+			match = testRegex.exec(content);
+			if (match === null) break;
 			testCases.push(match[1]);
 		}
 
 		// 提取端点调用模式
 		const endpointPatterns = [];
 		const endpointRegex = /(GET|POST|PUT|PATCH|DELETE)\s+['"]([^'"]+)['"]/g;
-		while ((match = endpointRegex.exec(content)) !== null) {
+		while (true) {
+			match = endpointRegex.exec(content);
+			if (match === null) break;
 			endpointPatterns.push({
 				method: match[1],
 				path: match[2],
@@ -149,7 +155,9 @@ function parseContractTest(filePath) {
 		// 提取mock实现
 		const mocks = [];
 		const mockRegex = /mockImplementation\(([^)]+)\)/g;
-		while ((match = mockRegex.exec(content)) !== null) {
+		while (true) {
+			match = mockRegex.exec(content);
+			if (match === null) break;
 			mocks.push(match[1].trim());
 		}
 
@@ -213,7 +221,9 @@ function validateContractConsistency(contract, test) {
 			"g",
 		);
 		let match;
-		while ((match = statusRegex.exec(test.testCases.join(" "))) !== null) {
+		while (true) {
+			match = statusRegex.exec(test.testCases.join(" "));
+			if (match === null) break;
 			testStatuses.push(match[1]);
 		}
 

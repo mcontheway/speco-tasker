@@ -300,7 +300,8 @@ export class FileSystemSecurityValidator {
 		}
 
 		// 检查非法字符
-		const illegalChars = /[<>:"|?*\u0000-\u001f]/;
+		// biome-ignore lint/suspicious/noControlCharactersInRegex: Required for validating file system characters
+		const illegalChars = /[<>:"|?*\x00-\x1f]/;
 		if (illegalChars.test(filePath)) {
 			result.addViolation("文件路径包含非法字符", "INVALID_PATH_CHARACTERS", {
 				path: filePath,
