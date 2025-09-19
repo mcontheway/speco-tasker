@@ -2,7 +2,7 @@
  * Unit tests for format utilities
  */
 
-const { formatElapsedTime } = require("../../../src/utils/format.js");
+import {  formatElapsedTime  } from '../../../src/utils/format.js';
 
 describe("Format Utilities", () => {
 	describe("formatElapsedTime", () => {

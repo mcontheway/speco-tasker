@@ -72,30 +72,45 @@ const config = {
 		"^.+\\.(js|jsx|mjs|cjs)$": "babel-jest",
 	},
 
-	// Module name mapping for ES modules and problematic packages
+	// Enhanced module name mapping for ESM compatibility
 	moduleNameMapper: {
+		// Handle .js extensions in import paths for ESM
 		"^(\\.{1,2}/.*)\\.js$": "$1",
-		// Mock problematic ESM packages directly
+		// ESM package mocks with full compatibility
 		"^boxen$": "<rootDir>/tests/mocks/boxen.mock.js",
 		"^chalk$": "<rootDir>/tests/mocks/chalk.mock.js",
+		"^gradient-string$": "<rootDir>/tests/mocks/gradient-string.mock.js",
+		"^ora$": "<rootDir>/tests/mocks/ora.mock.js",
+		"^cli-table3$": "<rootDir>/tests/mocks/cli-table3.mock.js",
+		"^figlet$": "<rootDir>/tests/mocks/figlet.mock.js",
+		// Node.js built-in modules mapping
 		"^node:path$": "path",
 		"^node:fs$": "fs",
 		"^node:url$": "url",
 		"^node:child_process$": "child_process",
 		"^node:os$": "os",
 		"^node:process$": "process",
-		// Remove the mock for import.meta.url as it's handled by Babel now
+		// Handle import.meta.url for ESM compatibility
+		"^import\\.meta\\.url$": "<rootDir>/tests/mocks/import-meta-url.mock.js",
 	},
 
-	// Don't transform node_modules except specific ones that use ESM
+	// ESM support - transform specific problematic packages
 	transformIgnorePatterns: [
-		"node_modules/(?!(supertest|@inquirer|fastmcp|@anthropic-ai|@vercel)/)",
+		"node_modules/(?!(gradient-string|chalk|boxen|ora|cli-table3|figlet|supports-color|strip-ansi|ansi-regex|wrap-ansi|widest-line|string-width)/)",
 	],
 
-	// Support for ES modules
+	// Enhanced ESM support configuration
 	globals: {
 		"ts-jest": {
 			useESM: true,
+		},
+	},
+
+	// ESM-specific Jest configuration
+	testEnvironmentOptions: {
+		node: {
+			// Enable ESM support in test environment
+			loader: 'node',
 		},
 	},
 
@@ -108,23 +123,19 @@ const config = {
 	// Module file extensions
 	moduleFileExtensions: ["js", "cjs", "mjs", "json"],
 
-	// Test file patterns - organized by test type
+	// Test file patterns - organized by test type (ESM compatible)
 	testMatch: [
 		// Contract tests (API behavior verification)
 		"**/tests/contract/**/*.test.js",
-		"**/tests/contract/**/*.test.cjs",
 
 		// Integration tests (end-to-end scenarios)
 		"**/tests/integration/**/*.test.js",
-		"**/tests/integration/**/*.test.cjs",
 
 		// Unit tests (isolated component testing)
 		"**/tests/unit/**/*.test.js",
-		"**/tests/unit/**/*.test.cjs",
 
 		// E2E tests (full system testing)
 		"**/tests/e2e/**/*.test.js",
-		"**/tests/e2e/**/*.test.cjs",
 	],
 
 	// Projects for different test types with specific configurations
@@ -132,7 +143,7 @@ const config = {
 		// Contract Tests - API contract verification
 		{
 			displayName: "contract",
-			testMatch: ["**/tests/contract/**/*.test.{js,cjs}"],
+			testMatch: ["**/tests/contract/**/*.test.js"],
 			testEnvironment: "node",
 			setupFilesAfterEnv: ["<rootDir>/tests/setup/contract.cjs"],
 			collectCoverageFrom: [
@@ -155,7 +166,7 @@ const config = {
 		// Integration Tests - Component and service integration
 		{
 			displayName: "integration",
-			testMatch: ["<rootDir>/tests/integration/**/*.test.{js,cjs}"],
+			testMatch: ["<rootDir>/tests/integration/**/*.test.js"],
 			testEnvironment: "node",
 			setupFilesAfterEnv: ["<rootDir>/tests/setup/integration.cjs"],
 			maxWorkers: 2, // Parallel execution for integration tests
@@ -165,7 +176,7 @@ const config = {
 		// Unit Tests - Isolated function and module testing
 		{
 			displayName: "unit",
-			testMatch: ["<rootDir>/tests/unit/**/*.test.{js,cjs,mjs}"],
+			testMatch: ["<rootDir>/tests/unit/**/*.test.js"],
 			testEnvironment: "node",
 			setupFilesAfterEnv: ["<rootDir>/tests/setup/unit.cjs"],
 			maxWorkers: 4, // High parallelism for fast unit tests
@@ -180,7 +191,7 @@ const config = {
 		// E2E Tests - Full system verification
 		{
 			displayName: "e2e",
-			testMatch: ["<rootDir>/tests/e2e/**/*.test.{js,cjs}"],
+			testMatch: ["<rootDir>/tests/e2e/**/*.test.js"],
 			testEnvironment: "node",
 			setupFilesAfterEnv: ["<rootDir>/tests/setup/e2e.cjs"],
 			maxWorkers: 1, // Sequential execution for E2E stability

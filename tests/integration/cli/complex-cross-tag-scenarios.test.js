@@ -1,6 +1,6 @@
-const fs = require("node:fs");
-const { spawn, execSync } = require("node:child_process");
-const path = require("node:path");
+import fs from 'node:fs';
+import {  spawn, execSync  } from 'node:child_process';
+import path from 'node:path';
 
 // Temporarily skip this test due to Jest ESM/CommonJS compatibility issues
 describe.skip("Complex Cross-Tag Scenarios", () => {

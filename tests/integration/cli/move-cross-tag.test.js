@@ -1,5 +1,5 @@
-const fs = require("node:fs");
-const path = require("node:path");
+import fs from 'node:fs';
+import path from 'node:path';
 // jest is globally available in Jest test environment
 
 // --- Define mock functions ---

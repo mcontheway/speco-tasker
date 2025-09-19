@@ -2,10 +2,10 @@
  * Unit tests for task status constants and utilities
  */
 
-const {
+import { 
 	TASK_STATUS_OPTIONS,
 	isValidTaskStatus,
-} = require("../../../src/constants/task-status.js");
+ } from '../../../src/constants/task-status.js';
 
 describe("Task Status Constants", () => {
 	describe("TASK_STATUS_OPTIONS", () => {

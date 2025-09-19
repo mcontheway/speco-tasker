@@ -3,10 +3,10 @@
  * Tests actual file system operations in a temporary directory
  */
 
-const fs = require('node:fs');
-const os = require('node:os');
-const path = require('node:path');
-const { manageGitignoreFile } = require('../../src/utils/manage-gitignore.js');
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import {  manageGitignoreFile  } from '../../src/utils/manage-gitignore.js';
 
 describe('manage-gitignore.js Integration Tests', () => {
 	let tempDir;

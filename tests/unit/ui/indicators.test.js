@@ -2,7 +2,7 @@
  * Unit tests for UI indicators
  */
 
-const {
+import { 
 	getPriorityIndicators,
 	getPriorityIndicator,
 	getPriorityColors,
@@ -13,7 +13,7 @@ const {
 	getComplexityColors,
 	getCliComplexityIndicators,
 	getStatusBarComplexityIndicators,
-} = require("../../../src/ui/indicators.js");
+ } from '../../../src/ui/indicators.js';
 
 describe("UI Indicators", () => {
 	describe("Priority Indicators", () => {

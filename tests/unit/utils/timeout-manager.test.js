@@ -2,19 +2,19 @@
  * Unit tests for timeout manager utilities
  */
 
-const {
+import { 
 	withTimeout,
 	withSoftTimeout,
 	createTimeoutController,
 	isTimeoutError,
 	Duration,
-} = require("../../../src/utils/timeout-manager.js");
+ } from '../../../src/utils/timeout-manager.js';
 
 // Import the actual classes for testing
-const {
+import { 
 	StreamingError,
 	STREAMING_ERROR_CODES,
-} = require("../../../src/utils/stream-parser.js");
+ } from '../../../src/utils/stream-parser.js';
 
 describe("Timeout Manager", () => {
 	afterEach(() => {
@@ -116,10 +116,6 @@ describe("Timeout Manager", () => {
 
 	describe("isTimeoutError", () => {
 		test("should return true for timeout errors", () => {
-			const {
-				StreamingError,
-				STREAMING_ERROR_CODES,
-			} = require("../../../src/utils/stream-parser.js");
 			const timeoutError = new StreamingError(
 				"Operation timed out after 5 seconds",
 				STREAMING_ERROR_CODES.STREAM_PROCESSING_FAILED,
