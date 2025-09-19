@@ -1,13 +1,13 @@
 // @ts-check
 /**
  * Module to test the config-manager.js functionality
- * This file uses ES module syntax to properly handle imports
+ * This file uses ESM syntax for project compatibility
  */
 
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { jest } from "@jest/globals";
+// jest is available globally in Jest environment
 import { sampleTasks } from "../fixtures/sample-tasks.js";
 
 /**

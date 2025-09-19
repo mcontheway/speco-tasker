@@ -112,32 +112,6 @@ const config = {
 		"^import\\.meta\\.url$": "<rootDir>/tests/mocks/import-meta-url.mock.js",
 	},
 
-	transformIgnorePatterns: [
-		// Transform most node_modules packages (except specific ones)
-		"node_modules/(?!graceful-fs|which|cross-spawn)",
-	],
-
-	// Test path ignore patterns
-	testPathIgnorePatterns: [
-		"<rootDir>/tests/unit/config-manager.test.js", // Skip until ESM issues are resolved
-		"<rootDir>/tests/integration/move-task-simple.integration.test.js", // Skip until ESM issues are resolved
-	],
-
-	// Enhanced ESM support configuration
-	globals: {
-		"ts-jest": {
-			useESM: true,
-		},
-	},
-
-	// ESM-specific Jest configuration
-	testEnvironmentOptions: {
-		node: {
-			// Enable experimental VM modules for dynamic imports
-			experimentalVmModules: true,
-		},
-	},
-
 	// Test timeout (global) - aggressive timeout to prevent hanging
 	testTimeout: 5000,
 
