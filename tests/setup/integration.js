@@ -1,8 +1,8 @@
 // Integration test setup for Speco-Tasker
 // SCOPE: 集成测试环境配置，测试组件和服务间的交互
 
-import path from "node:path";
 import fs from "node:fs";
+import path from "node:path";
 
 // Setup integration test environment
 beforeAll(async () => {

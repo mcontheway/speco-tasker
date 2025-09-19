@@ -2,11 +2,11 @@
  * Unit tests for stream parser utilities
  */
 
-import { 
-	StreamingError,
-	STREAMING_ERROR_CODES,
+import {
 	DEFAULT_MAX_BUFFER_SIZE,
- } from '../../../src/utils/stream-parser.js';
+	STREAMING_ERROR_CODES,
+	StreamingError,
+} from "../../../src/utils/stream-parser.js";
 
 describe("Stream Parser", () => {
 	describe("StreamingError", () => {

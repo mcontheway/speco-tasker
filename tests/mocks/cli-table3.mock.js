@@ -2,7 +2,7 @@
 const TableMock = jest.fn((options) => {
 	const table = {
 		push: jest.fn((row) => table),
-		toString: jest.fn(() => '[Table Mock]'),
+		toString: jest.fn(() => "[Table Mock]"),
 		options: options || {},
 		rows: [],
 	};

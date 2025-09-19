@@ -13,11 +13,11 @@ const figletMock = {
 	}),
 	fonts: jest.fn((callback) => {
 		if (callback) {
-			callback(null, ['Standard', 'Small', 'Big']);
+			callback(null, ["Standard", "Small", "Big"]);
 		}
-		return ['Standard', 'Small', 'Big'];
+		return ["Standard", "Small", "Big"];
 	}),
-	fontsSync: jest.fn(() => ['Standard', 'Small', 'Big']),
+	fontsSync: jest.fn(() => ["Standard", "Small", "Big"]),
 };
 
 // Export as both default and named exports for ESM compatibility

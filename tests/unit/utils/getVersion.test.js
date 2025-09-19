@@ -43,10 +43,7 @@ describe("Version Utilities", () => {
 
 			const result = getTaskMasterVersion();
 			expect(result).toBe("1.2.3");
-			expect(mockFs.readFileSync).toHaveBeenCalledWith(
-				"package.json",
-				"utf8",
-			);
+			expect(mockFs.readFileSync).toHaveBeenCalledWith("package.json", "utf8");
 		});
 
 		test("should return 'unknown' when package.json does not exist", () => {

@@ -2,19 +2,19 @@
  * Unit tests for timeout manager utilities
  */
 
-import { 
-	withTimeout,
-	withSoftTimeout,
+import {
+	Duration,
 	createTimeoutController,
 	isTimeoutError,
-	Duration,
- } from '../../../src/utils/timeout-manager.js';
+	withSoftTimeout,
+	withTimeout,
+} from "../../../src/utils/timeout-manager.js";
 
 // Import the actual classes for testing
-import { 
-	StreamingError,
+import {
 	STREAMING_ERROR_CODES,
- } from '../../../src/utils/stream-parser.js';
+	StreamingError,
+} from "../../../src/utils/stream-parser.js";
 
 describe("Timeout Manager", () => {
 	afterEach(() => {

@@ -1,11 +1,11 @@
-import fs from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import mockFs from 'mock-fs';
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import mockFs from "mock-fs";
 
 // Import the actual move task functionality
-import { moveTasksBetweenTags } from '../../scripts/modules/task-manager/move-task.js';
-import { readJSON, writeJSON } from '../../scripts/modules/utils.js';
+import { moveTasksBetweenTags } from "../../scripts/modules/task-manager/move-task.js";
+import { readJSON, writeJSON } from "../../scripts/modules/utils.js";
 
 // Mock console to avoid conflicts with mock-fs
 const originalConsole = { ...console };
@@ -30,7 +30,7 @@ try {
 	__dirname = path.dirname(__filename);
 } catch (error) {
 	// Fallback for CommonJS environments
-	__filename = __filename || 'unknown';
+	__filename = __filename || "unknown";
 	__dirname = path.dirname(__filename);
 }
 

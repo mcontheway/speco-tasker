@@ -2,18 +2,18 @@
  * Unit tests for UI indicators
  */
 
-import { 
-	getPriorityIndicators,
-	getPriorityIndicator,
-	getPriorityColors,
-	getMcpPriorityIndicators,
-	getCliPriorityIndicators,
-	getStatusBarPriorityIndicators,
-	getComplexityIndicator,
-	getComplexityColors,
+import {
 	getCliComplexityIndicators,
+	getCliPriorityIndicators,
+	getComplexityColors,
+	getComplexityIndicator,
+	getMcpPriorityIndicators,
+	getPriorityColors,
+	getPriorityIndicator,
+	getPriorityIndicators,
 	getStatusBarComplexityIndicators,
- } from '../../../src/ui/indicators.js';
+	getStatusBarPriorityIndicators,
+} from "../../../src/ui/indicators.js";
 
 describe("UI Indicators", () => {
 	describe("Priority Indicators", () => {

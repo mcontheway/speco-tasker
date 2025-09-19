@@ -33,8 +33,8 @@ jest.mock("../../../scripts/modules/config-manager.js", () => ({
 
 // Import after mocking
 import {
-	normalizeProjectRoot,
 	findProjectRoot,
+	normalizeProjectRoot,
 	resolveTasksOutputPath,
 } from "../../../src/utils/path-utils.js";
 

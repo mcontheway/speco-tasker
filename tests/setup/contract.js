@@ -1,8 +1,8 @@
 // Contract test setup for Speco-Tasker
 // SCOPE: API合约测试环境配置，验证接口行为契约
 
-import supertest from "supertest";
 import path from "node:path";
+import supertest from "supertest";
 
 // Setup contract test environment
 beforeAll(() => {

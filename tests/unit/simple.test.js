@@ -2,7 +2,7 @@
  * Simple unit test to verify Jest configuration
  */
 
-import path from 'node:path';
+import path from "node:path";
 
 describe("Jest Configuration Test", () => {
 	test("should resolve paths correctly", () => {

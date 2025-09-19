@@ -2,8 +2,8 @@
 
 // Note: We will use dynamic import() inside the async callback due to project being type: module
 
-import readline from "node:readline";
 import path from "node:path"; // Import path module
+import readline from "node:readline";
 
 let inputData = "";
 

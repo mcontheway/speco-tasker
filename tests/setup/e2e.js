@@ -1,9 +1,9 @@
 // E2E test setup for Speco-Tasker
 // SCOPE: 端到端测试环境配置，测试完整用户工作流
 
-import path from "node:path";
-import fs from "node:fs";
 import { execSync } from "node:child_process";
+import fs from "node:fs";
+import path from "node:path";
 
 // Setup E2E test environment
 beforeAll(async () => {

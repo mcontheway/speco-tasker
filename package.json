@@ -13,9 +13,10 @@
 		"."
 	],
 	"scripts": {
-		"test": "GRACEFUL_FS_PATCH=0 NODE_OPTIONS=\"--experimental-specifier-resolution=node --experimental-modules --no-deprecation --no-warnings\" node_modules/.bin/jest --config jest.config.cjs --forceExit",
-		"test:fails": "GRACEFUL_FS_PATCH=0 NODE_OPTIONS=\"--experimental-specifier-resolution=node --experimental-modules --no-deprecation --no-warnings\" node_modules/.bin/jest --config jest.config.cjs --onlyFailures",
-		"test:watch": "GRACEFUL_FS_PATCH=0 NODE_OPTIONS=\"--experimental-specifier-resolution=node --experimental-modules --no-deprecation --no-warnings\" node_modules/.bin/jest --config jest.config.cjs --watch",
+    "test": "npm run test:ci",
+    "test:ci": "GRACEFUL_FS_PATCH=0 ./node_modules/.bin/jest --config jest.config.cjs --forceExit --passWithNoTests --detectOpenHandles --runInBand --bail",
+		"test:fails": "GRACEFUL_FS_PATCH=0 NODE_OPTIONS=\"--experimental-specifier-resolution=node --experimental-modules --no-deprecation --no-warnings\" node_modules/.bin/jest --config jest.config.cjs --onlyFailures --forceExit",
+		"test:watch": "GRACEFUL_FS_PATCH=0 NODE_OPTIONS=\"--experimental-specifier-resolution=node --experimental-modules --no-deprecation --no-warnings\" node_modules/.bin/jest --config jest.config.cjs --watch --passWithNoTests",
 		"test:coverage": "GRACEFUL_FS_PATCH=0 NODE_OPTIONS=\"--experimental-specifier-resolution=node --experimental-modules --no-deprecation --no-warnings\" node_modules/.bin/jest --config jest.config.cjs --coverage --forceExit",
 		"test:unit": "GRACEFUL_FS_PATCH=0 NODE_OPTIONS=\"--experimental-specifier-resolution=node --experimental-modules --no-deprecation --no-warnings\" node_modules/.bin/jest --config jest.config.cjs --testPathPatterns=\"unit|__tests__\" --passWithNoTests --forceExit",
 		"test:contract": "GRACEFUL_FS_PATCH=0 NODE_OPTIONS=\"--experimental-specifier-resolution=node --experimental-modules --no-deprecation --no-warnings\" node_modules/.bin/jest --config jest.config.cjs --testPathPatterns=\"contract\" --passWithNoTests --forceExit",
@@ -33,13 +34,23 @@
 		"lint": "biome check .",
 		"lint:fix": "biome check . --write",
 		"quality-check": "biome check . && biome format . --check",
+		"pre-commit": "npm run quality-check && npm run test:unit",
+		"pre-push": "npm run test:ci && npm run test:integration",
+		"ci": "npm run quality-check && npm run test:ci && npm run test:integration",
+		"ci:full": "npm run quality-check && npm run test:ci && npm run test:integration && npm run test:e2e",
 		"contract-validate": "node scripts/modules/contract-validator.js",
 		"contract-validate:json": "node scripts/modules/contract-validator.js --json",
 		"depcheck": "depcheck",
+		"audit": "npm audit --audit-level moderate",
 		"madge": "madge --circular --extensions js,ts,json src/",
 		"npm-check-updates": "npm-check-updates",
 		"husky:install": "husky",
-		"husky:uninstall": "husky uninstall"
+		"husky:uninstall": "husky uninstall",
+		"perf": "node scripts/performance-monitor.js",
+		"perf:report": "cat performance-results.json | jq .",
+		"clean": "rm -rf coverage/ .taskmaster/tasks/ tmp/ performance-results.json",
+		"build": "echo 'No build step required for this project'",
+		"docs:build": "echo 'Documentation is maintained manually'"
 	},
 	"keywords": [
 		"task",

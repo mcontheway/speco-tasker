@@ -2,13 +2,13 @@
  * Unit tests for path constants
  */
 
-import { 
+import {
+	PROJECT_MARKERS,
+	TASKMASTER_CONFIG_FILE,
 	TASKMASTER_DIR,
 	TASKMASTER_TASKS_DIR,
-	TASKMASTER_CONFIG_FILE,
 	TASKMASTER_TASKS_FILE,
-	PROJECT_MARKERS,
- } from '../../../src/constants/paths.js';
+} from "../../../src/constants/paths.js";
 
 describe("Path Constants", () => {
 	describe("Directory paths", () => {

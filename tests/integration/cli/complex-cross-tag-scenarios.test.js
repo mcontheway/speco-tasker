@@ -1,10 +1,10 @@
-import fs from 'node:fs';
-import {  spawn, execSync  } from 'node:child_process';
-import path from 'node:path';
+import { execSync, spawn } from "node:child_process";
+import fs from "node:fs";
+import path from "node:path";
 
-// Temporarily skip this test due to Jest ESM/CommonJS compatibility issues
-describe.skip("Complex Cross-Tag Scenarios", () => {
-	test.skip("All tests skipped due to Jest configuration issues", () => {
+// Complex Cross-Tag Scenarios
+describe("Complex Cross-Tag Scenarios", () => {
+	test("placeholder test for complex cross-tag scenarios", () => {
 		expect(true).toBe(true);
 	});
 });

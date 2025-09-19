@@ -11,9 +11,9 @@ const oraMock = jest.fn((options) => {
 		clear: jest.fn(() => spinner),
 		render: jest.fn(() => spinner),
 		frame: jest.fn(() => spinner),
-		text: options?.text || '',
-		color: options?.color || 'cyan',
-		spinner: options?.spinner || 'dots',
+		text: options?.text || "",
+		color: options?.color || "cyan",
+		spinner: options?.spinner || "dots",
 		indent: options?.indent || 0,
 	};
 

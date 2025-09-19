@@ -4,13 +4,11 @@
  * This file is run before each test suite to set up the test environment.
  */
 
-// Disable graceful-fs polyfills to avoid uv_cwd issues
-process.env.GRACEFUL_FS_PATCH = "0";
-
-import path from "node:path";
+// Import required modules
 import os from "node:os";
+import path from "node:path";
 
-// Capture the actual original working directory before any changes
+// Capture the actual original working directory
 let originalWorkingDirectory;
 try {
 	originalWorkingDirectory = process.cwd();

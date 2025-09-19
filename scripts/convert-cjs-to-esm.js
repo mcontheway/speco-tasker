@@ -5,13 +5,13 @@
  * Usage: node scripts/convert-cjs-to-esm.js
  */
 
-const fs = require('fs');
-const path = require('path');
-const { glob } = require('glob');
+const fs = require("fs");
+const path = require("path");
+const { glob } = require("glob");
 
 // Find all .test.cjs files
 async function findCjsTestFiles() {
-	const pattern = 'tests/**/*.test.cjs';
+	const pattern = "tests/**/*.test.cjs";
 	const files = await glob(pattern, { cwd: process.cwd() });
 	return files;
 }
@@ -26,11 +26,11 @@ function convertToESM(content, filePath) {
 		(match, varName, modulePath) => {
 			// Handle relative paths - add .js extension for ESM
 			let esmPath = modulePath;
-			if (esmPath.startsWith('./') || esmPath.startsWith('../')) {
-				esmPath = esmPath.replace(/\.js$/, '') + '.js';
+			if (esmPath.startsWith("./") || esmPath.startsWith("../")) {
+				esmPath = esmPath.replace(/\.js$/, "") + ".js";
 			}
 			return `import ${varName} from '${esmPath}'`;
-		}
+		},
 	);
 
 	// Convert destructured require() statements
@@ -39,18 +39,15 @@ function convertToESM(content, filePath) {
 		(match, destructured, modulePath) => {
 			// Handle relative paths - add .js extension for ESM
 			let esmPath = modulePath;
-			if (esmPath.startsWith('./') || esmPath.startsWith('../')) {
-				esmPath = esmPath.replace(/\.js$/, '') + '.js';
+			if (esmPath.startsWith("./") || esmPath.startsWith("../")) {
+				esmPath = esmPath.replace(/\.js$/, "") + ".js";
 			}
 			return `import { ${destructured} } from '${esmPath}'`;
-		}
+		},
 	);
 
 	// Convert module.exports to export default
-	esmContent = esmContent.replace(
-		/module\.exports\s*=\s*/g,
-		'export default '
-	);
+	esmContent = esmContent.replace(/module\.exports\s*=\s*/g, "export default ");
 
 	return esmContent;
 }
@@ -58,19 +55,21 @@ function convertToESM(content, filePath) {
 // Convert a single file
 async function convertFile(filePath) {
 	const fullPath = path.resolve(process.cwd(), filePath);
-	const newPath = fullPath.replace(/\.cjs$/, '.js');
+	const newPath = fullPath.replace(/\.cjs$/, ".js");
 
 	try {
-		const content = fs.readFileSync(fullPath, 'utf8');
+		const content = fs.readFileSync(fullPath, "utf8");
 		const esmContent = convertToESM(content, filePath);
 
 		// Write the converted file
-		fs.writeFileSync(newPath, esmContent, 'utf8');
+		fs.writeFileSync(newPath, esmContent, "utf8");
 
 		// Remove the original .cjs file
 		fs.unlinkSync(fullPath);
 
-		console.log(`✅ Converted: ${filePath} -> ${filePath.replace(/\.cjs$/, '.js')}`);
+		console.log(
+			`✅ Converted: ${filePath} -> ${filePath.replace(/\.cjs$/, ".js")}`,
+		);
 		return true;
 	} catch (error) {
 		console.error(`❌ Failed to convert ${filePath}:`, error.message);
@@ -80,7 +79,7 @@ async function convertFile(filePath) {
 
 // Main conversion process
 async function main() {
-	console.log('🔄 Starting CJS to ESM conversion for test files...\n');
+	console.log("🔄 Starting CJS to ESM conversion for test files...\n");
 
 	const cjsFiles = await findCjsTestFiles();
 	console.log(`Found ${cjsFiles.length} .cjs test files to convert:\n`);
@@ -88,7 +87,7 @@ async function main() {
 	for (const file of cjsFiles) {
 		console.log(`  - ${file}`);
 	}
-	console.log('\n');
+	console.log("\n");
 
 	let successCount = 0;
 	let failCount = 0;
@@ -107,8 +106,8 @@ async function main() {
 	console.log(`❌ Failed to convert: ${failCount} files`);
 
 	if (failCount === 0) {
-		console.log('\n🚀 All test files have been converted to ESM format!');
-		console.log('   Make sure to update your Jest configuration if needed.');
+		console.log("\n🚀 All test files have been converted to ESM format!");
+		console.log("   Make sure to update your Jest configuration if needed.");
 	}
 }
 
