@@ -53,7 +53,7 @@ describe("Version Utilities", () => {
 
 			const result = getTaskMasterVersion();
 			expect(result).toBe("1.2.3");
-			expect(fs.readFileSync).toHaveBeenCalledWith(
+			expect(mockReadFileSync).toHaveBeenCalledWith(
 				"/path/to/src/utils/../../package.json",
 				"utf8",
 			);
@@ -64,7 +64,7 @@ describe("Version Utilities", () => {
 
 			const result = getTaskMasterVersion();
 			expect(result).toBe("unknown");
-			expect(fs.readFileSync).not.toHaveBeenCalled();
+			expect(mockReadFileSync).not.toHaveBeenCalled();
 		});
 
 		test("should return 'unknown' when JSON parsing fails", () => {

@@ -144,7 +144,7 @@ const INVALID_PROVIDER_CONFIG = {
 let consoleErrorSpy;
 let consoleWarnSpy;
 
-beforeAll(() => {
+beforeAll(async () => {
 	// Set up console spies
 	consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
 	consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
@@ -805,48 +805,52 @@ describe("Config Manager Module", () => {
 			["unknownprovider", "UNKNOWN_KEY", "any-key", false, "unknown provider"],
 		];
 
-		testCases.forEach(
-			([providerName, envVarName, keyValue, expectedResult, testName]) => {
-				test(`should return ${expectedResult} for ${testName} (CLI context)`, () => {
-					// CLI context (resolveEnvVariable uses process.env or .env via projectRoot)
-					mockResolveEnvVariable.mockImplementation((key) => {
-						return key === envVarName ? keyValue : undefined;
-					});
-					expect(
-						configManager.isApiKeySet(providerName, null, MOCK_PROJECT_ROOT),
-					).toBe(expectedResult);
-					if (providerName !== "ollama" && providerName !== "unknownprovider") {
-						// Ollama and unknown don't try to resolve
-						expect(mockResolveEnvVariable).toHaveBeenCalledWith(
-							envVarName,
-							null,
-							MOCK_PROJECT_ROOT,
-						);
-					}
+		for (const [
+			providerName,
+			envVarName,
+			keyValue,
+			expectedResult,
+			testName,
+		] of testCases) {
+			test(`should return ${expectedResult} for ${testName} (CLI context)`, () => {
+				// CLI context (resolveEnvVariable uses process.env or .env via projectRoot)
+				mockResolveEnvVariable.mockImplementation((key) => {
+					return key === envVarName ? keyValue : undefined;
 				});
+				expect(
+					configManager.isApiKeySet(providerName, null, MOCK_PROJECT_ROOT),
+				).toBe(expectedResult);
+				if (providerName !== "ollama" && providerName !== "unknownprovider") {
+					// Ollama and unknown don't try to resolve
+					expect(mockResolveEnvVariable).toHaveBeenCalledWith(
+						envVarName,
+						null,
+						MOCK_PROJECT_ROOT,
+					);
+				}
+			});
 
-				test(`should return ${expectedResult} for ${testName} (MCP context)`, () => {
-					// MCP context (resolveEnvVariable uses session.env)
-					const mcpSession = { env: { [String(envVarName)]: keyValue } };
-					mockResolveEnvVariable.mockImplementation((key, sessionArg) => {
-						return hasEnvProperty(sessionArg)
-							? // @ts-ignore - TypeScript cannot infer that env exists after type guard
-								sessionArg.env[String(key)]
-							: undefined;
-					});
-					expect(
-						configManager.isApiKeySet(providerName, mcpSession, null),
-					).toBe(expectedResult);
-					if (providerName !== "ollama" && providerName !== "unknownprovider") {
-						expect(mockResolveEnvVariable).toHaveBeenCalledWith(
-							envVarName,
-							mcpSession,
-							null,
-						);
-					}
+			test(`should return ${expectedResult} for ${testName} (MCP context)`, () => {
+				// MCP context (resolveEnvVariable uses session.env)
+				const mcpSession = { env: { [String(envVarName)]: keyValue } };
+				mockResolveEnvVariable.mockImplementation((key, sessionArg) => {
+					return hasEnvProperty(sessionArg)
+						? // @ts-ignore - TypeScript cannot infer that env exists after type guard
+							sessionArg.env[String(key)]
+						: undefined;
 				});
-			},
-		);
+				expect(configManager.isApiKeySet(providerName, mcpSession, null)).toBe(
+					expectedResult,
+				);
+				if (providerName !== "ollama" && providerName !== "unknownprovider") {
+					expect(mockResolveEnvVariable).toHaveBeenCalledWith(
+						envVarName,
+						mcpSession,
+						null,
+					);
+				}
+			});
+		}
 
 		test("isApiKeySet should log a warning for an unknown provider", () => {
 			mockLog.mockClear(); // Clear previous log calls

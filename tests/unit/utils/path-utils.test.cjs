@@ -7,6 +7,7 @@ const fs = require("node:fs");
 
 // Mock fs and path modules for testing with proper implementations
 const mockExistsSync = jest.fn();
+const mockMkdirSync = jest.fn();
 const mockResolve = jest.fn();
 const mockDirname = jest.fn();
 const mockIsAbsolute = jest.fn();
@@ -16,6 +17,7 @@ const mockJoin = jest.fn();
 
 jest.mock("node:fs", () => ({
 	existsSync: mockExistsSync,
+	mkdirSync: mockMkdirSync,
 }));
 jest.mock("node:path", () => ({
 	resolve: mockResolve,
@@ -24,6 +26,7 @@ jest.mock("node:path", () => ({
 	basename: mockBasename,
 	parse: mockParse,
 	join: mockJoin,
+	sep: "/",
 }));
 
 // Mock the utils module to avoid import.meta.url issues
@@ -53,11 +56,12 @@ describe("Path Utilities", () => {
 	});
 
 	describe("normalizeProjectRoot", () => {
-		test("should return input when no .taskmaster segment exists", () => {
+		test("should return input when no .taskmaster or .speco segment exists", () => {
 			const input = "/home/user/project";
 			const result = normalizeProjectRoot(input);
 			expect(result).toBe(input);
 		});
+
 
 		test("should remove .taskmaster segment and everything after it", () => {
 			const input = "/home/user/project/.taskmaster/tasks";
@@ -67,6 +71,18 @@ describe("Path Utilities", () => {
 
 		test("should handle .taskmaster at the end", () => {
 			const input = "/home/user/project/.taskmaster";
+			const result = normalizeProjectRoot(input);
+			expect(result).toBe("/home/user/project");
+		});
+
+		test("should remove .speco segment and everything after it", () => {
+			const input = "/home/user/project/.speco/tasks";
+			const result = normalizeProjectRoot(input);
+			expect(result).toBe("/home/user/project");
+		});
+
+		test("should handle .speco at the end", () => {
+			const input = "/home/user/project/.speco";
 			const result = normalizeProjectRoot(input);
 			expect(result).toBe("/home/user/project");
 		});
@@ -103,11 +119,11 @@ describe("Path Utilities", () => {
 			expect(result).toBe("/current/dir");
 		});
 
-		test("should find project root with .taskmaster marker", () => {
-			fs.existsSync.mockImplementation(
-				(p) => typeof p === "string" && p.includes(".taskmaster"),
+		test("should find project root with .speco marker", () => {
+			mockExistsSync.mockImplementation(
+				(p) => typeof p === "string" && (p.includes(".speco") || p.includes(".taskmaster")),
 			);
-			path.resolve.mockImplementation((p) => p);
+			mockResolve.mockImplementation((p) => p);
 			process.cwd = jest.fn().mockReturnValue("/current/dir");
 
 			const result = findProjectRoot("/home/user/project/src");
@@ -137,20 +153,19 @@ describe("Path Utilities", () => {
 
 		test("should resolve explicit relative path", () => {
 			const result = resolveTasksOutputPath("custom/tasks.json");
-			expect(path.resolve).toHaveBeenCalledWith(
+			expect(mockResolve).toHaveBeenCalledWith(
 				process.cwd(),
 				"custom/tasks.json",
 			);
 		});
 
-		test("should create default .taskmaster path when no explicit path", () => {
+		test("should create default .speco path when no explicit path", () => {
 			mockExistsSync.mockReturnValue(false);
-			// Note: fs.mkdirSync is not mocked in this test file, so we can't mock it here
 
 			resolveTasksOutputPath(null, { projectRoot: "/project" });
 
-			expect(fs.mkdirSync).toHaveBeenCalledWith(
-				expect.stringContaining(".taskmaster"),
+			expect(mockMkdirSync).toHaveBeenCalledWith(
+				expect.stringContaining(".speco"),
 				{ recursive: true },
 			);
 		});
