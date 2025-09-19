@@ -105,10 +105,13 @@ describe("Path Utilities", () => {
 
 		test("should return cwd when no project markers found", () => {
 			mockFs.existsSync.mockReturnValue(false);
-			process.cwd = jest.fn().mockReturnValue("/current/dir");
+			const spyCwd = jest.spyOn(process, 'cwd');
+			spyCwd.mockReturnValue("/current/dir");
 
 			const result = findProjectRoot("/start/dir");
 			expect(result).toBe("/current/dir");
+
+			spyCwd.mockRestore();
 		});
 
 		test("should find project root with .speco marker", () => {
@@ -119,10 +122,13 @@ describe("Path Utilities", () => {
 						p.includes(".taskmaster")),
 			);
 			mockPath.resolve.mockImplementation((p) => p);
-			process.cwd = jest.fn().mockReturnValue("/current/dir");
+			const spyCwd = jest.spyOn(process, 'cwd');
+			spyCwd.mockReturnValue("/current/dir");
 
 			const result = findProjectRoot("/home/user/project/src");
 			expect(result).toBe("/home/user/project/src");
+
+			spyCwd.mockRestore();
 		});
 	});
 
