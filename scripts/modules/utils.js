@@ -11,10 +11,15 @@ import {
 	LEGACY_COMPLEXITY_REPORT_FILE,
 	LEGACY_CONFIG_FILE,
 } from "../../src/constants/paths.js";
-// Import core utilities that don't depend on config
-import { resolveEnvVariable, findProjectRoot, isEmpty, log } from "./core-utils.js";
 // Import specific config getters needed here
 import { getDebugFlag, getLogLevel } from "./config-manager.js";
+// Import core utilities that don't depend on config
+import {
+	findProjectRoot,
+	isEmpty,
+	log,
+	resolveEnvVariable,
+} from "./core-utils.js";
 import * as gitUtils from "./utils/git-utils.js";
 
 // Global silent mode flag
@@ -155,15 +160,15 @@ function validateSpecFiles(specFiles, projectRoot = ".") {
 		return { isValid: false, errors, warnings };
 	}
 
-	specFiles.forEach((spec, index) => {
+	for (const [index, spec] of specFiles.entries()) {
 		if (!spec || typeof spec !== "object") {
 			errors.push(`spec_files[${index}]: must be an object`);
-			return;
+			continue;
 		}
 
 		if (!spec.file || typeof spec.file !== "string") {
 			errors.push(`spec_files[${index}]: file path is required`);
-			return;
+			continue;
 		}
 
 		// 检查文件是否存在
@@ -182,7 +187,7 @@ function validateSpecFiles(specFiles, projectRoot = ".") {
 		if (!spec.title || typeof spec.title !== "string") {
 			spec.title = path.basename(spec.file); // 设置默认值
 		}
-	});
+	}
 
 	return {
 		isValid: errors.length === 0,
@@ -247,7 +252,7 @@ function parseDependencies(input, allTasks = []) {
 		// 验证依赖任务存在性并过滤无效依赖
 		const validDeps = [];
 		if (allTasks.length > 0) {
-			parsedDeps.forEach((dep) => {
+			for (const dep of parsedDeps) {
 				const depExists = allTasks.some((task) => {
 					if (typeof dep === "string" && dep.includes(".")) {
 						// 子任务格式：检查 parentId.subtaskId
@@ -266,7 +271,7 @@ function parseDependencies(input, allTasks = []) {
 				} else {
 					warnings.push(`Dependency task/subtask '${dep}' does not exist`);
 				}
-			});
+			}
 		} else {
 			// 如果没有提供 allTasks，保留所有依赖（用于向后兼容）
 			validDeps.push(...parsedDeps);
@@ -485,7 +490,7 @@ function hasTaggedStructure(data) {
 	// Check if any top-level properties are objects with tasks arrays
 	for (const key in data) {
 		if (
-			data.hasOwnProperty(key) &&
+			Object.hasOwn(data, key) &&
 			typeof data[key] === "object" &&
 			Array.isArray(data[key].tasks)
 		) {
@@ -502,7 +507,7 @@ function hasTaggedStructure(data) {
 function normalizeTaskIds(tasks) {
 	if (!Array.isArray(tasks)) return;
 
-	tasks.forEach((task) => {
+	for (const task of tasks) {
 		// Convert task ID to number with validation
 		if (task.id !== undefined) {
 			const parsedId = Number.parseInt(task.id, 10);
@@ -513,7 +518,7 @@ function normalizeTaskIds(tasks) {
 
 		// Convert subtask IDs to numbers with validation
 		if (Array.isArray(task.subtasks)) {
-			task.subtasks.forEach((subtask) => {
+			for (const subtask of task.subtasks) {
 				if (subtask.id !== undefined) {
 					// Check for dot notation (which shouldn't exist in storage)
 					if (typeof subtask.id === "string" && subtask.id.includes(".")) {
@@ -527,9 +532,9 @@ function normalizeTaskIds(tasks) {
 						}
 					}
 				}
-			});
+			}
 		}
-	});
+	}
 }
 
 /**
@@ -650,7 +655,7 @@ function readJSON(filepath, projectRoot = null, tag = null) {
 		// Ensure all tags have proper metadata before proceeding
 		for (const tagName in data) {
 			if (
-				data.hasOwnProperty(tagName) &&
+				Object.hasOwn(data, tagName) &&
 				typeof data[tagName] === "object" &&
 				data[tagName].tasks
 			) {
@@ -1416,7 +1421,7 @@ function traverseDependencies(sourceTasks, allTasks, options = {}) {
 			return;
 		}
 
-		task.dependencies.forEach((depId) => {
+		for (const depId of task.dependencies) {
 			const normalizedDepId = normalizeDependencyId(depId);
 
 			// Skip invalid dependencies and optionally skip self-references
@@ -1424,13 +1429,13 @@ function traverseDependencies(sourceTasks, allTasks, options = {}) {
 				normalizedDepId == null ||
 				(!includeSelf && normalizedDepId === taskId)
 			) {
-				return;
+				continue;
 			}
 
 			dependentTaskIds.add(normalizedDepId);
 			// Recursively find dependencies of this dependency
 			findForwardDependencies(normalizedDepId, currentDepth + 1);
-		});
+		}
 	}
 
 	// Helper function for reverse dependency traversal
@@ -1453,7 +1458,7 @@ function traverseDependencies(sourceTasks, allTasks, options = {}) {
 		}
 		processedIds.add(taskId);
 
-		allTasks.forEach((task) => {
+		for (const task of allTasks) {
 			if (task.dependencies && Array.isArray(task.dependencies)) {
 				const dependsOnTaskId = task.dependencies.some((depId) => {
 					const normalizedDepId = normalizeDependencyId(depId);
@@ -1463,7 +1468,7 @@ function traverseDependencies(sourceTasks, allTasks, options = {}) {
 				if (dependsOnTaskId) {
 					// Skip invalid dependencies and optionally skip self-references
 					if (task.id == null || (!includeSelf && task.id === taskId)) {
-						return;
+						continue;
 					}
 
 					dependentTaskIds.add(task.id);
@@ -1471,7 +1476,7 @@ function traverseDependencies(sourceTasks, allTasks, options = {}) {
 					findReverseDependencies(task.id, currentDepth + 1);
 				}
 			}
-		});
+		}
 	}
 
 	// Choose traversal function based on direction
@@ -1479,11 +1484,11 @@ function traverseDependencies(sourceTasks, allTasks, options = {}) {
 		direction === "reverse" ? findReverseDependencies : findForwardDependencies;
 
 	// Start traversal from each source task
-	sourceTasks.forEach((sourceTask) => {
+	for (const sourceTask of sourceTasks) {
 		if (sourceTask?.id) {
 			traversalFunc(sourceTask.id);
 		}
-	});
+	}
 
 	return Array.from(dependentTaskIds);
 }
@@ -1637,16 +1642,14 @@ function getTasksForTag(data, tagName) {
  * @returns {Object} The updated data object
  */
 function setTasksForTag(data, tagName, tasks) {
-	if (!data) {
-		data = {};
+	const resultData = data || {};
+
+	if (!resultData[tagName]) {
+		resultData[tagName] = {};
 	}
 
-	if (!data[tagName]) {
-		data[tagName] = {};
-	}
-
-	data[tagName].tasks = tasks || [];
-	return data;
+	resultData[tagName].tasks = tasks || [];
+	return resultData;
 }
 
 /**
@@ -1738,7 +1741,9 @@ function stripAnsiCodes(text) {
 		return text;
 	}
 	// Remove ANSI escape sequences (color codes, cursor movements, etc.)
-	return text.replace(/\x1B\[[0-9;]*m/g, "");
+	// Using a simple pattern that covers most common ANSI escape sequences
+	// biome-ignore lint/suspicious/noControlCharactersInRegex: Required for ANSI escape sequence removal
+	return text.replace(/\x1B\[[0-9;]*[A-Za-z]/g, "");
 }
 
 // Export all utility functions and configuration

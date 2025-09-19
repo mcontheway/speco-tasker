@@ -3,13 +3,13 @@
  * 用于验证ConfigCache和其他缓存机制是否正常工作
  */
 
-import { ConfigCache } from "../src/utils/ConfigCache.js";
-import { PathConfig } from "../src/models/PathConfig.js";
 import {
+	CleanupAction,
 	CleanupRule,
 	CleanupType,
-	CleanupAction,
 } from "../src/models/CleanupRule.js";
+import { PathConfig } from "../src/models/PathConfig.js";
+import { ConfigCache } from "../src/utils/ConfigCache.js";
 
 console.log("🗄️ 开始缓存机制测试...\n");
 

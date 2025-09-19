@@ -88,10 +88,10 @@ function createDevScriptAction(commandName) {
 		// If camelCase flags were found, show error and exit
 		if (camelCaseFlags.length > 0) {
 			console.error("\nError: Please use kebab-case for CLI flags:");
-			camelCaseFlags.forEach((flag) => {
+			for (const flag of camelCaseFlags) {
 				console.error(`  Instead of: --${flag.original}`);
 				console.error(`  Use:        --${flag.kebabCase}`);
-			});
+			}
 			console.error(
 				"\nExample: task-master parse-prd --num-tasks=5 instead of --numTasks=5\n",
 			);
@@ -157,7 +157,7 @@ function createDevScriptAction(commandName) {
 		}
 
 		// Add Commander-provided defaults for options not specified by user
-		Object.entries(options).forEach(([key, value]) => {
+		for (const [key, value] of Object.entries(options)) {
 			// Debug output to see what keys we're getting
 			if (process.env.DEBUG === "1") {
 				console.error(`DEBUG - Processing option: ${key} = ${value}`);
@@ -201,7 +201,7 @@ function createDevScriptAction(commandName) {
 					args.push(`--${kebabKey}=${value}`);
 				}
 			}
-		});
+		}
 
 		// Special handling for parent parameter (uses -p)
 		if (options.parent && !args.includes("-p") && !userOptions.has("parent")) {
@@ -322,23 +322,23 @@ const tempProgram = new Command();
 registerCommands(tempProgram);
 
 // For each command in the temp instance, add a modified version to our actual program
-tempProgram.commands.forEach((cmd) => {
+for (const cmd of tempProgram.commands) {
 	if (["dev"].includes(cmd.name())) {
 		// Skip commands we've already defined specially
-		return;
+		continue;
 	}
 
 	// Create a new command with the same name and description
 	const newCmd = program.command(cmd.name()).description(cmd.description());
 
 	// Copy all options
-	cmd.options.forEach((opt) => {
+	for (const opt of cmd.options) {
 		newCmd.option(opt.flags, opt.description, opt.defaultValue);
-	});
+	}
 
 	// Set the action to proxy to dev.js
 	newCmd.action(createDevScriptAction(cmd.name()));
-});
+}
 
 // Parse the command line arguments
 program.parse(process.argv);

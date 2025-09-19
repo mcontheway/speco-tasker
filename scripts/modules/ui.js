@@ -733,7 +733,7 @@ function displayHelp() {
 	];
 
 	// Display each category
-	commandCategories.forEach((category) => {
+	for (const category of commandCategories) {
 		console.log(
 			boxen(chalk[category.color].bold(category.title), {
 				padding: { left: 2, right: 2, top: 0, bottom: 0 },
@@ -771,17 +771,17 @@ function displayHelp() {
 			wordWrap: true,
 		});
 
-		category.commands.forEach((cmd, index) => {
+		for (const cmd of category.commands) {
 			commandTable.push([
 				`${chalk.yellow.bold(cmd.name)}${chalk.reset("")}`,
 				`${chalk.white(cmd.args)}${chalk.reset("")}`,
 				`${chalk.dim(cmd.desc)}${chalk.reset("")}`,
 			]);
-		});
+		}
 
 		console.log(commandTable.toString());
 		console.log("");
-	});
+	}
 
 	// Display configuration section
 	console.log(

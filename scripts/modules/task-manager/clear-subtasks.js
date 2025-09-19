@@ -49,17 +49,17 @@ function clearSubtasks(tasksPath, taskIds, context = {}) {
 		style: { head: [], border: [] },
 	});
 
-	taskIdArray.forEach((taskId) => {
+	for (const taskId of taskIdArray) {
 		const id = Number.parseInt(taskId, 10);
 		if (Number.isNaN(id)) {
 			log("error", `Invalid task ID: ${taskId}`);
-			return;
+			continue;
 		}
 
 		const task = data.tasks.find((t) => t.id === id);
 		if (!task) {
 			log("error", `Task ${id} not found`);
-			return;
+			continue;
 		}
 
 		if (!task.subtasks || task.subtasks.length === 0) {
@@ -69,7 +69,7 @@ function clearSubtasks(tasksPath, taskIds, context = {}) {
 				truncate(task.title, 47),
 				chalk.yellow("No subtasks"),
 			]);
-			return;
+			continue;
 		}
 
 		const subtaskCount = task.subtasks.length;
@@ -82,7 +82,7 @@ function clearSubtasks(tasksPath, taskIds, context = {}) {
 			truncate(task.title, 47),
 			chalk.green(`${subtaskCount} subtasks cleared`),
 		]);
-	});
+	}
 
 	if (clearedCount > 0) {
 		writeJSON(tasksPath, data, projectRoot, tag);

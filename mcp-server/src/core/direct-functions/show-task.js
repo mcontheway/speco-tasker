@@ -113,7 +113,7 @@ export async function showTaskDirect(args, log) {
 		const foundTasks = [];
 		const notFoundIds = [];
 
-		taskIds.forEach((taskId) => {
+		for (const taskId of taskIds) {
 			const { task, originalSubtaskCount } = findTaskById(
 				tasksData.tasks,
 				taskId,
@@ -131,7 +131,7 @@ export async function showTaskDirect(args, log) {
 			} else {
 				notFoundIds.push(taskId);
 			}
-		});
+		}
 
 		log.info(
 			`Successfully retrieved ${foundTasks.length} of ${taskIds.length} requested tasks.`,

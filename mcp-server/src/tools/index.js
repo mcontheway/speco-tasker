@@ -9,6 +9,7 @@ import { registerAddSubtaskTool } from "./add-subtask.js";
 import { registerAddTagTool } from "./add-tag.js";
 import { registerAddTaskTool } from "./add-task.js";
 import { registerClearSubtasksTool } from "./clear-subtasks.js";
+import { registerConfigTools } from "./config.js";
 import { registerCopyTagTool } from "./copy-tag.js";
 import { registerDeleteTagTool } from "./delete-tag.js";
 import { registerFixDependenciesTool } from "./fix-dependencies.js";
@@ -28,7 +29,6 @@ import { registerUpdateSubtaskTool } from "./update-subtask.js";
 import { registerUpdateTaskTool } from "./update-task.js";
 import { registerUseTagTool } from "./use-tag.js";
 import { registerValidateDependenciesTool } from "./validate-dependencies.js";
-import { registerConfigTools } from "./config.js";
 
 /**
  * Register all Speco Tasker tools with the MCP server

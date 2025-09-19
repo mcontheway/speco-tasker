@@ -30,7 +30,7 @@ class PathConfigController {
 
 			const paths = this.pathService.getPathSnapshot();
 
-			let response = {
+			const response = {
 				success: true,
 				data: {
 					paths,
@@ -533,7 +533,7 @@ class PathConfigController {
 
 		// 验证目录配置
 		if (config.dirs) {
-			Object.entries(config.dirs).forEach(([key, value]) => {
+			for (const [key, value] of Object.entries(config.dirs)) {
 				if (typeof value !== "string") {
 					errors.push(`dirs.${key} 必须是字符串`);
 				}
@@ -545,12 +545,12 @@ class PathConfigController {
 				if (value && !/^[a-zA-Z0-9_-]+$/.test(value)) {
 					errors.push(`dirs.${key} 只能包含字母、数字、下划线`);
 				}
-			});
+			}
 		}
 
 		// 验证文件配置
 		if (config.files) {
-			Object.entries(config.files).forEach(([key, value]) => {
+			for (const [key, value] of Object.entries(config.files)) {
 				if (typeof value !== "string") {
 					errors.push(`files.${key} 必须是字符串`);
 				}
@@ -562,7 +562,7 @@ class PathConfigController {
 				if (value && (value.includes("/") || value.includes("\\"))) {
 					errors.push(`files.${key} 不能包含路径分隔符`);
 				}
-			});
+			}
 		}
 
 		return {
@@ -594,27 +594,27 @@ class PathConfigController {
 		};
 
 		if (updates.root) {
-			Object.values(updates.root).forEach((path) => {
+			for (const path of Object.values(updates.root)) {
 				if (checkPathTraversal(path)) {
 					errors.push("路径不能包含路径遍历序列 (..)");
 				}
-			});
+			}
 		}
 
 		if (updates.dirs) {
-			Object.values(updates.dirs).forEach((path) => {
+			for (const path of Object.values(updates.dirs)) {
 				if (checkPathTraversal(path)) {
 					errors.push("目录路径不能包含路径遍历序列 (..)");
 				}
-			});
+			}
 		}
 
 		if (updates.files) {
-			Object.values(updates.files).forEach((path) => {
+			for (const path of Object.values(updates.files)) {
 				if (checkPathTraversal(path)) {
 					errors.push("文件路径不能包含路径遍历序列 (..)");
 				}
-			});
+			}
 		}
 
 		return {
@@ -691,14 +691,14 @@ class PathConfigController {
 		const compareSection = (sectionName, newValues, oldValues = {}) => {
 			const sectionChanges = {};
 
-			Object.keys(newValues).forEach((key) => {
+			for (const key of Object.keys(newValues)) {
 				if (oldValues[key] !== newValues[key]) {
 					sectionChanges[key] = {
 						from: oldValues[key],
 						to: newValues[key],
 					};
 				}
-			});
+			}
 
 			if (Object.keys(sectionChanges).length > 0) {
 				changes[sectionName] = sectionChanges;

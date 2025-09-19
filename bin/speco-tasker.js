@@ -20,16 +20,16 @@
  * 纯净的任务管理系统
  */
 
+import { spawn } from "node:child_process";
 // ES模块导入
 import fs from "node:fs/promises";
 import path from "node:path";
-import { spawn } from "node:child_process";
 import chalk from "chalk";
 import { Command } from "commander";
 
+import { initializeProject } from "../scripts/init.js";
 // 导入核心服务
 import { PathService } from "../src/services/PathService.js";
-import { initializeProject } from "../scripts/init.js";
 
 // 获取脚本路径
 const __filename = new URL(import.meta.url).pathname;
@@ -319,7 +319,6 @@ class SpecoTaskerCLI {
 				});
 			} catch (error) {
 				// 文件不存在，跳过
-				continue;
 			}
 		}
 
@@ -330,7 +329,7 @@ class SpecoTaskerCLI {
 	 * 确认操作
 	 */
 	async confirmOperation(message) {
-		const readline = require("readline");
+		const readline = require("node:readline");
 		const rl = readline.createInterface({
 			input: process.stdin,
 			output: process.stdout,

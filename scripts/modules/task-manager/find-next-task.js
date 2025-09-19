@@ -36,18 +36,18 @@ function findNextTask(tasks, complexityReport = null) {
 
 	// ---------- build completed-ID set (tasks *and* subtasks) --------------
 	const completedIds = new Set();
-	tasks.forEach((t) => {
+	for (const t of tasks) {
 		if (t.status === "done" || t.status === "completed") {
 			completedIds.add(String(t.id));
 		}
 		if (Array.isArray(t.subtasks)) {
-			t.subtasks.forEach((st) => {
+			for (const st of t.subtasks) {
 				if (st.status === "done" || st.status === "completed") {
 					completedIds.add(`${t.id}.${st.id}`);
 				}
-			});
+			}
 		}
-	});
+	}
 
 	// ---------- 1) look for eligible subtasks ------------------------------
 	const candidateSubtasks = [];

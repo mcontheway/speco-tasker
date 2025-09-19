@@ -153,14 +153,14 @@ class CleanupController {
 				if (matchingRules.length > 0) {
 					// 提取匹配的品牌引用
 					const matches = [];
-					matchingRules.forEach((rule) => {
-						rule.contentPatterns.forEach((pattern) => {
+					for (const rule of matchingRules) {
+						for (const pattern of rule.contentPatterns) {
 							const found = file.content.match(pattern);
 							if (found) {
 								matches.push(...found);
 							}
-						});
-					});
+						}
+					}
 
 					brandContent.push({
 						path: file.path,

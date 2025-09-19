@@ -81,11 +81,11 @@ export async function listTagsDirect(args, log, context = {}) {
 				(acc, task) => {
 					if (task.subtasks && task.subtasks.length > 0) {
 						acc.totalSubtasks += task.subtasks.length;
-						task.subtasks.forEach((subtask) => {
+						for (const subtask of task.subtasks) {
 							const subStatus = subtask.status || "pending";
 							acc.subtasksByStatus[subStatus] =
 								(acc.subtasksByStatus[subStatus] || 0) + 1;
-						});
+						}
 					}
 					return acc;
 				},

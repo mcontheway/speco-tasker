@@ -4,8 +4,8 @@
  */
 
 import fs from "node:fs/promises";
-import path from "node:path";
 import { platform } from "node:os";
+import path from "node:path";
 import { getLoggerOrDefault } from "./logger-utils.js";
 
 /**
@@ -300,7 +300,7 @@ export class FileSystemSecurityValidator {
 		}
 
 		// 检查非法字符
-		const illegalChars = /[<>:"|?*\x00-\x1f]/;
+		const illegalChars = /[<>:"|?*\u0000-\u001f]/;
 		if (illegalChars.test(filePath)) {
 			result.addViolation("文件路径包含非法字符", "INVALID_PATH_CHARACTERS", {
 				path: filePath,
@@ -650,7 +650,7 @@ export class FileSystemSecurityValidator {
 		// 检查文件是否为脚本文件
 		if (platform() === "win32" && !ext) {
 			result.addWarning(
-				`Windows系统上的可执行文件应有扩展名`,
+				"Windows系统上的可执行文件应有扩展名",
 				"EXECUTABLE_WITHOUT_EXTENSION",
 				{ path: filePath, platform },
 			);

@@ -7,8 +7,8 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { PathConfig } from "../models/PathConfig.js";
 import {
-	validateFileSecurity,
 	validateDirectorySecurity,
+	validateFileSecurity,
 } from "../utils/file-system-security.js";
 import { getLoggerOrDefault } from "../utils/logger-utils.js";
 
@@ -156,9 +156,9 @@ class PathService {
 		}
 
 		// 替换自定义变量
-		Object.entries(variables).forEach(([key, value]) => {
+		for (const [key, value] of Object.entries(variables)) {
 			resolved = resolved.replace(`{${key}}`, value);
-		});
+		}
 
 		return resolved;
 	}
@@ -262,7 +262,7 @@ class PathService {
 						violations: securityResult.violations.length,
 						warnings: securityResult.warnings.length,
 					});
-					throw new Error(`目录安全验证失败，无法读取目录内容`);
+					throw new Error("目录安全验证失败，无法读取目录内容");
 				}
 
 				// 记录安全警告
@@ -394,7 +394,7 @@ class PathService {
 					this.logger.error?.(`源文件安全验证失败: ${srcPath}`, {
 						violations: srcSecurityResult.violations.length,
 					});
-					throw new Error(`源文件安全验证失败，无法复制`);
+					throw new Error("源文件安全验证失败，无法复制");
 				}
 
 				// 验证目标路径
@@ -411,7 +411,7 @@ class PathService {
 					this.logger.error?.(`目标文件安全验证失败: ${destPath}`, {
 						violations: destSecurityResult.violations.length,
 					});
-					throw new Error(`目标文件安全验证失败，无法复制`);
+					throw new Error("目标文件安全验证失败，无法复制");
 				}
 
 				// 记录安全警告
@@ -419,7 +419,7 @@ class PathService {
 					srcSecurityResult.warnings.length +
 					destSecurityResult.warnings.length;
 				if (totalWarnings > 0) {
-					this.logger.warn?.(`复制操作存在安全警告`, {
+					this.logger.warn?.("复制操作存在安全警告", {
 						sourceWarnings: srcSecurityResult.warnings.length,
 						destWarnings: destSecurityResult.warnings.length,
 					});
@@ -663,7 +663,7 @@ class PathService {
 			}
 		}
 
-		this.logger.info?.(`批量安全验证完成`, {
+		this.logger.info?.("批量安全验证完成", {
 			total: results.totalOperations,
 			secure: results.secure,
 			violations: results.violations.length,

@@ -5,19 +5,19 @@
 
 import { z } from "zod";
 import {
+	getConfigHistory,
+	getConfigValue,
+	getConfigValues,
+	resetConfigToDefaults,
+	rollbackConfig,
+	setConfigValue,
+	validateConfiguration,
+} from "../../../scripts/modules/config-manager.js";
+import {
 	createErrorResponse,
 	handleApiResult,
 	withNormalizedProjectRoot,
 } from "./utils.js";
-import {
-	getConfigValue,
-	setConfigValue,
-	getConfigValues,
-	validateConfiguration,
-	getConfigHistory,
-	rollbackConfig,
-	resetConfigToDefaults,
-} from "../../../scripts/modules/config-manager.js";
 
 /**
  * Register the config management tools with the MCP server

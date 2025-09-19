@@ -72,13 +72,13 @@ function parseYAMLContract(filePath) {
 
 		for (const line of lines) {
 			// 匹配路径定义
-			const pathMatch = line.match(/^  (\/\w+):$/);
+			const pathMatch = line.match(/^\s{2}(\/\w+):$/);
 			if (pathMatch) {
 				currentPath = pathMatch[1];
 			}
 
 			// 匹配HTTP方法
-			const methodMatch = line.match(/^    (get|post|put|patch|delete):$/);
+			const methodMatch = line.match(/^\s{4}(get|post|put|patch|delete):$/);
 			if (methodMatch && currentPath) {
 				currentMethod = methodMatch[1].toUpperCase();
 				const endpointKey = `${currentMethod} ${currentPath}`;
@@ -93,7 +93,7 @@ function parseYAMLContract(filePath) {
 			}
 
 			// 匹配响应
-			const responseMatch = line.match(/^      '(\d+)':$/);
+			const responseMatch = line.match(/^\s{6}'(\d+)':$/);
 			if (responseMatch && currentMethod && currentPath) {
 				const statusCode = responseMatch[1];
 				const endpointKey = `${currentMethod} ${currentPath}`;
@@ -312,7 +312,7 @@ function generateReport(results) {
 		report += `## ${result.contractFile} vs ${result.testFile}\n\n`;
 
 		// 摘要
-		report += `### 📊 覆盖率摘要\n\n`;
+		report += "### 📊 覆盖率摘要\n\n";
 		report += `- **总端点数**: ${result.summary.totalEndpoints}\n`;
 		report += `- **已测试端点**: ${result.summary.testedEndpoints}\n`;
 		report += `- **覆盖率**: ${result.summary.coverage}%\n\n`;
@@ -364,12 +364,14 @@ function generateReport(results) {
 	const avgCoverage =
 		results.length > 0
 			? (
-					results.reduce((sum, r) => sum + parseFloat(r.summary.coverage), 0) /
-					results.length
+					results.reduce(
+						(sum, r) => sum + Number.parseFloat(r.summary.coverage),
+						0,
+					) / results.length
 				).toFixed(1)
 			: 0;
 
-	report += `## 📈 总体统计\n\n`;
+	report += "## 📈 总体统计\n\n";
 	report += `- **验证文件对数**: ${results.length}\n`;
 	report += `- **平均覆盖率**: ${avgCoverage}%\n`;
 	report += `- **总问题数**: ${totalIssues}\n`;
@@ -380,13 +382,13 @@ function generateReport(results) {
 	let status = "✅ 通过";
 	if (totalIssues > 0) status = "❌ 需要修复";
 	else if (totalWarnings > 0) status = "⚠️ 需要注意";
-	else if (parseFloat(avgCoverage) < 80) status = "📉 覆盖不足";
+	else if (Number.parseFloat(avgCoverage) < 80) status = "📉 覆盖不足";
 
 	report += `## 🎯 验证状态: ${status}\n\n`;
 
 	if (totalIssues > 0) {
 		report += "**优先修复问题以确保合约与测试的一致性**\n\n";
-	} else if (parseFloat(avgCoverage) >= 80) {
+	} else if (Number.parseFloat(avgCoverage) >= 80) {
 		report += "**合约与测试保持良好一致性**\n\n";
 	}
 
@@ -573,7 +575,7 @@ async function main() {
 			console.log(`❌ 发现 ${totalIssues} 个问题需要修复`);
 			process.exit(1);
 		} else {
-			console.log(`✅ 合约与测试验证通过`);
+			console.log("✅ 合约与测试验证通过");
 		}
 	} catch (error) {
 		console.error("❌ 验证过程出错:", error.message);

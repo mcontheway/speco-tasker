@@ -3,12 +3,12 @@
  * 用于验证PathConfig和CleanupRule的性能优化效果
  */
 
-import { PathConfig } from "../src/models/PathConfig.js";
 import {
+	CleanupAction,
 	CleanupRule,
 	CleanupType,
-	CleanupAction,
 } from "../src/models/CleanupRule.js";
+import { PathConfig } from "../src/models/PathConfig.js";
 
 console.log("🚀 开始性能测试...\n");
 

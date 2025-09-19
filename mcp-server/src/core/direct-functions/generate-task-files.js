@@ -56,7 +56,7 @@ export async function generateTaskFilesDirect(args, log) {
 			enableSilentMode();
 
 			// Pass projectRoot and tag so the core respects context
-			generateTaskFiles(tasksPath, resolvedOutputDir, {
+			await generateTaskFiles(tasksPath, resolvedOutputDir, {
 				projectRoot,
 				tag,
 				mcpLog: log,

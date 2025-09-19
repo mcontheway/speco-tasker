@@ -4,8 +4,8 @@
  * This module is designed to avoid circular dependencies
  */
 
-import ora from "ora";
 import chalk from "chalk";
+import ora from "ora";
 
 /**
  * Start a loading indicator

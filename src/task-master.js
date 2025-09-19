@@ -255,7 +255,7 @@ export function initTaskMaster(overrides = {}) {
 			const configPath = path.join(findProjectRoot(), TASKMASTER_CONFIG_FILE);
 			if (fs.existsSync(configPath)) {
 				const config = JSON.parse(fs.readFileSync(configPath, "utf-8"));
-				if (config.global && config.global.projectRoot) {
+				if (config.global?.projectRoot) {
 					const savedRoot = config.global.projectRoot;
 					// Verify the saved root still exists and is valid
 					if (fs.existsSync(savedRoot)) {

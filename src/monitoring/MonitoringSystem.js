@@ -3,10 +3,10 @@
  * 提供系统监控、审计报告和性能跟踪功能
  */
 
+import { EventEmitter } from "node:events";
 import fs from "node:fs/promises";
 import path from "node:path";
-import { EventEmitter } from "node:events";
-import { Logger, LOG_LEVELS, LOG_TYPES, getLogger } from "./Logger.js";
+import { LOG_LEVELS, LOG_TYPES, Logger, getLogger } from "./Logger.js";
 
 export const MONITORING_EVENTS = {
 	SYSTEM_HEALTH_CHANGED: "system_health_changed",
@@ -353,7 +353,7 @@ export class AuditTracker {
 				this._deepSanitize(value);
 			} else if (typeof value === "string" && value.length > 500) {
 				// 截断长字符串
-				obj[key] = value.substring(0, 500) + "...";
+				obj[key] = `${value.substring(0, 500)}...`;
 			}
 		}
 	}
@@ -608,8 +608,8 @@ export class MonitoringSystem extends EventEmitter {
 
 		// 检查内存使用率
 		const heapUsageRatio =
-			snapshot.gauges["memory_heap_used"]?.value /
-			snapshot.gauges["memory_heap_total"]?.value;
+			snapshot.gauges.memory_heap_used?.value /
+			snapshot.gauges.memory_heap_total?.value;
 
 		if (heapUsageRatio > this.config.alertThresholds.memoryUsage) {
 			newStatus = "warning";
@@ -627,7 +627,7 @@ export class MonitoringSystem extends EventEmitter {
 		}
 
 		// 检查事件循环延迟
-		const eventLoopStats = snapshot.histograms["event_loop_delay"];
+		const eventLoopStats = snapshot.histograms.event_loop_delay;
 		if (
 			eventLoopStats &&
 			eventLoopStats.p95 > this.config.alertThresholds.responseTime
@@ -803,8 +803,8 @@ export class MonitoringSystem extends EventEmitter {
 		const snapshot = this.metrics.getSnapshot();
 
 		// 内存使用建议
-		const heapUsage = snapshot.gauges["memory_heap_used"]?.value || 0;
-		const heapTotal = snapshot.gauges["memory_heap_total"]?.value || 1;
+		const heapUsage = snapshot.gauges.memory_heap_used?.value || 0;
+		const heapTotal = snapshot.gauges.memory_heap_total?.value || 1;
 		const memoryRatio = heapUsage / heapTotal;
 
 		if (memoryRatio > 0.7) {

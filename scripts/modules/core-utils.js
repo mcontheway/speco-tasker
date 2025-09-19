@@ -132,7 +132,7 @@ export function log(level, ...args) {
 	};
 
 	// Ensure level exists, default to info if not
-	const currentLevel = LOG_LEVELS.hasOwnProperty(level) ? level : "info";
+	const currentLevel = Object.hasOwn(LOG_LEVELS, level) ? level : "info";
 
 	// For this simplified logger, only show warn and error by default
 	// This avoids needing config to determine log level

@@ -3,9 +3,9 @@
  * 提供统一日志记录、审计日志和监控报告功能
  */
 
+import { EventEmitter } from "node:events";
 import fs from "node:fs/promises";
 import path from "node:path";
-import { EventEmitter } from "node:events";
 
 export const LOG_LEVELS = {
 	ERROR: 0,
@@ -465,8 +465,8 @@ export class Logger extends EventEmitter {
 			const logEntry = this.writeQueue.shift();
 			try {
 				const logLine = this.config.structuredOutput
-					? logEntry.toJSON() + "\n"
-					: logEntry.toReadable() + "\n";
+					? `${logEntry.toJSON()}\n`
+					: `${logEntry.toReadable()}\n`;
 
 				await fs.appendFile(this.currentLogFile, logLine, "utf8");
 
@@ -558,8 +558,8 @@ export class Logger extends EventEmitter {
 			status,
 			score: Math.max(0, score),
 			indicators: {
-				errorRate: (errorRate * 100).toFixed(2) + "%",
-				warningRate: (warningRate * 100).toFixed(2) + "%",
+				errorRate: `${(errorRate * 100).toFixed(2)}%`,
+				warningRate: `${(warningRate * 100).toFixed(2)}%`,
 				totalLogs: metrics.totalLogs,
 			},
 		};
@@ -667,10 +667,7 @@ export class Logger extends EventEmitter {
 							if (this._matchesFilters(logEntry, filters)) {
 								results.push(logEntry);
 							}
-						} catch (error) {
-							// 跳过无法解析的行
-							continue;
-						}
+						} catch (error) {}
 					}
 				} catch (error) {
 					// 跳过无法读取的文件

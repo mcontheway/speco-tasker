@@ -19,8 +19,8 @@ function detectCommandName() {
 
 	// Method 2: Check parent process arguments (more reliable)
 	try {
-		const fs = require("fs");
-		const path = require("path");
+		const fs = require("node:fs");
+		const path = require("node:path");
 
 		// Check if parent process used speco-tasker
 		if (typeof process.env.PARENT_COMMAND === "string") {
@@ -31,7 +31,7 @@ function detectCommandName() {
 
 		// Method 3: Check if we're called from bin/speco-tasker.js
 		const callerStack = new Error().stack;
-		if (callerStack && callerStack.includes("speco-tasker.js")) {
+		if (callerStack?.includes("speco-tasker.js")) {
 			return "speco-tasker";
 		}
 	} catch (error) {
@@ -71,6 +71,15 @@ import inquirer from "inquirer";
 import ora from "ora"; // Import ora
 
 import {
+	getConfigHistory,
+	getConfigValue,
+	getConfigValues,
+	resetConfigToDefaults,
+	rollbackConfig,
+	setConfigValue,
+	validateConfiguration,
+} from "./config-manager.js";
+import {
 	addSubtask,
 	addTask,
 	clearSubtasks,
@@ -93,15 +102,6 @@ import {
 	toKebabCase,
 	writeJSON,
 } from "./utils.js";
-import {
-	getConfigValue,
-	setConfigValue,
-	getConfigValues,
-	validateConfiguration,
-	getConfigHistory,
-	rollbackConfig,
-	resetConfigToDefaults,
-} from "./config-manager.js";
 
 import {
 	MOVE_ERROR_CODES,
@@ -311,7 +311,8 @@ function registerCommands(programInstance) {
 				let parsedValue = value;
 				if (value === "true") parsedValue = true;
 				else if (value === "false") parsedValue = false;
-				else if (!isNaN(value) && value !== "") parsedValue = Number(value);
+				else if (!Number.isNaN(Number(value)) && value !== "")
+					parsedValue = Number(value);
 
 				const success = setConfigValue(
 					key,
@@ -336,9 +337,9 @@ function registerCommands(programInstance) {
 							console.log(chalk.green("✓ 配置验证通过"));
 						} else {
 							console.log(chalk.yellow("⚠ 配置验证发现问题:"));
-							validation.errors.forEach((error) =>
-								console.log(chalk.yellow(`  - ${error}`)),
-							);
+							for (const error of validation.errors) {
+								console.log(chalk.yellow(`  - ${error}`));
+							}
 						}
 					}
 				} else {
@@ -385,15 +386,15 @@ function registerCommands(programInstance) {
 				} else {
 					console.log(chalk.red("✗ 配置验证失败"));
 					console.log(chalk.red("发现的错误:"));
-					validation.errors.forEach((error) =>
-						console.log(chalk.red(`  - ${error}`)),
-					);
+					for (const error of validation.errors) {
+						console.log(chalk.red(`  - ${error}`));
+					}
 
 					if (validation.warnings && validation.warnings.length > 0) {
 						console.log(chalk.yellow("警告信息:"));
-						validation.warnings.forEach((warning) =>
-							console.log(chalk.yellow(`  - ${warning}`)),
-						);
+						for (const warning of validation.warnings) {
+							console.log(chalk.yellow(`  - ${warning}`));
+						}
 					}
 
 					if (options.fix) {
@@ -435,7 +436,7 @@ function registerCommands(programInstance) {
 						userId: options.user,
 						startTime: options.startTime,
 						endTime: options.endTime,
-						limit: parseInt(options.limit, 10),
+						limit: Number.parseInt(options.limit, 10),
 					},
 					projectRoot,
 				);
@@ -448,7 +449,7 @@ function registerCommands(programInstance) {
 				console.log(chalk.blue(`找到 ${history.length} 条配置历史记录:`));
 				console.log();
 
-				history.forEach((entry, index) => {
+				for (const [index, entry] of history.entries()) {
 					const timestamp = new Date(entry.timestamp).toLocaleString();
 					console.log(`${index + 1}. ${chalk.cyan(entry.key)}`);
 					console.log(`   时间: ${timestamp}`);
@@ -457,7 +458,7 @@ function registerCommands(programInstance) {
 					console.log(`   新值: ${JSON.stringify(entry.newValue)}`);
 					console.log(`   版本: ${entry.versionId}`);
 					console.log();
-				});
+				}
 			} catch (error) {
 				console.error(chalk.red(`✗ 获取配置历史失败: ${error.message}`));
 				process.exit(1);
@@ -2024,8 +2025,8 @@ function registerCommands(programInstance) {
 					);
 					console.log();
 
-					existingTasksToRemove.forEach(({ id, task }) => {
-						if (!task) return; // Should not happen due to taskExists check, but safeguard
+					for (const { id, task } of existingTasksToRemove) {
+						if (!task) continue; // Should not happen due to taskExists check, but safeguard
 						if (task.isSubtask) {
 							// Subtask - title is directly on the task object
 							console.log(
@@ -2045,7 +2046,7 @@ function registerCommands(programInstance) {
 								chalk.white.bold(`  Task ${id}: ${task.title || "(no title)"}`),
 							);
 						}
-					});
+					}
 
 					if (totalSubtasksToDelete > 0) {
 						console.log(
@@ -2061,9 +2062,9 @@ function registerCommands(programInstance) {
 								"⚠️ Warning: Dependencies on the following tasks will be removed:",
 							),
 						);
-						dependentTaskMessages.forEach((msg) =>
-							console.log(chalk.yellow(msg)),
-						);
+						for (const msg of dependentTaskMessages) {
+							console.log(chalk.yellow(msg));
+						}
 					}
 
 					console.log();
@@ -2262,7 +2263,9 @@ function registerCommands(programInstance) {
 				// Print any tips returned from the move operation (e.g., after ignoring dependencies)
 				if (Array.isArray(result.tips) && result.tips.length > 0) {
 					console.log(`\n${chalk.yellow.bold("提示:")}`);
-					result.tips.forEach((t) => console.log(chalk.white(`  • ${t}`)));
+					for (const t of result.tips) {
+						console.log(chalk.white(`  • ${t}`));
+					}
 				}
 
 				// Check if source tag still contains tasks before regenerating files
@@ -2439,15 +2442,15 @@ function registerCommands(programInstance) {
 
 						if (successfulMoves.length > 0) {
 							console.log(chalk.cyan("\nSuccessful moves:"));
-							successfulMoves.forEach(({ fromId, toId }) => {
+							for (const { fromId, toId } of successfulMoves) {
 								console.log(chalk.cyan(`  ${fromId} → ${toId}`));
-							});
+							}
 						}
 
 						console.log(chalk.red("\nFailed moves:"));
-						moveErrors.forEach(({ fromId, toId, error }) => {
+						for (const { fromId, toId, error } of moveErrors) {
 							console.log(chalk.red(`  ${fromId} → ${toId}: ${error}`));
-						});
+						}
 
 						console.log(
 							chalk.yellow(
@@ -3288,7 +3291,7 @@ async function runCLI(argv = process.argv) {
  * @returns {Promise<boolean>} 用户确认结果
  */
 async function confirmOperation(message) {
-	const readline = require("readline");
+	const readline = require("node:readline");
 	const rl = readline.createInterface({
 		input: process.stdin,
 		output: process.stdout,
@@ -3309,7 +3312,7 @@ async function confirmOperation(message) {
  * @returns {Promise<void>}
  */
 async function createBackup(backupDir, projectRoot) {
-	const fs = require("fs").promises;
+	const fs = require("node:fs").promises;
 	const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
 	const fullBackupDir = path.join(projectRoot, backupDir, timestamp);
 
@@ -3328,10 +3331,7 @@ async function createBackup(backupDir, projectRoot) {
 			const content = await fs.readFile(path.join(projectRoot, file), "utf8");
 			const backupFile = path.join(fullBackupDir, path.basename(file));
 			await fs.writeFile(backupFile, content);
-		} catch (error) {
-			// 文件不存在，跳过
-			continue;
-		}
+		} catch (error) {}
 	}
 
 	console.log(`备份创建在: ${fullBackupDir}`);

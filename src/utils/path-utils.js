@@ -26,10 +26,10 @@ export function normalizeProjectRoot(projectRoot) {
 	if (!projectRoot) return projectRoot;
 
 	// Ensure it's a string
-	projectRoot = String(projectRoot);
+	const normalizedRoot = String(projectRoot);
 
 	// Split the path into segments
-	const segments = projectRoot.split(path.sep);
+	const segments = normalizedRoot.split(path.sep);
 
 	// Find the index of .taskmaster or .speco segment
 	const taskmasterIndex = segments.findIndex(
@@ -42,7 +42,7 @@ export function normalizeProjectRoot(projectRoot) {
 		return normalizedSegments.join(path.sep) || path.sep;
 	}
 
-	return projectRoot;
+	return normalizedRoot;
 }
 
 /**

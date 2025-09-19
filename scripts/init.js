@@ -433,10 +433,10 @@ function copyTemplateFile(templateName, targetPath, replacements = {}) {
 	}
 
 	// Replace placeholders with actual values
-	Object.entries(replacements).forEach(([key, value]) => {
+	for (const [key, value] of Object.entries(replacements)) {
 		const regex = new RegExp(`\\{\\{${key}\\}\\}`, "g");
 		content = content.replace(regex, value);
-	});
+	}
 
 	// Handle special files that should be merged instead of overwritten
 	if (fs.existsSync(targetPath)) {

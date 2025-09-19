@@ -9,7 +9,12 @@ import {
 	TASKMASTER_DIR,
 } from "../../src/constants/paths.js";
 import { findConfigPath } from "../../src/utils/path-utils.js";
-import { findProjectRoot, isEmpty, resolveEnvVariable, log } from "./core-utils.js";
+import {
+	findProjectRoot,
+	isEmpty,
+	log,
+	resolveEnvVariable,
+} from "./core-utils.js";
 
 // Calculate __dirname in ESM
 const __filename = fileURLToPath(import.meta.url);
@@ -477,7 +482,7 @@ function validateConfiguration(config = null, explicitRoot = null) {
 			// 验证默认任务数量
 			if (globalConfig.defaultNumTasks !== undefined) {
 				const numTasks = Number(globalConfig.defaultNumTasks);
-				if (isNaN(numTasks) || numTasks < 1 || numTasks > 100) {
+				if (Number.isNaN(numTasks) || numTasks < 1 || numTasks > 100) {
 					result.errors.push("默认任务数量必须是1-100之间的数字");
 				}
 			}
@@ -504,7 +509,7 @@ function validateConfiguration(config = null, explicitRoot = null) {
 			}
 
 			// 验证路径格式
-			if (pathsConfig.root && pathsConfig.root.speco) {
+			if (pathsConfig.root?.speco) {
 				const specoPath = pathsConfig.root.speco;
 				if (typeof specoPath !== "string" || specoPath.length === 0) {
 					result.errors.push("speco根路径必须是非空字符串");
