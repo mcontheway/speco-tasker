@@ -213,8 +213,8 @@ describe("Config Manager Module", () => {
 			REAL_SUPPORTED_MODELS_DATA = JSON.parse(REAL_SUPPORTED_MODELS_CONTENT);
 		}
 
-		// Dynamically import the module under test AFTER mocking dependencies
-		configManager = await import("../../scripts/modules/config-manager.js");
+		// Import the module under test AFTER mocking dependencies
+		configManager = require("../../scripts/modules/config-manager.js");
 
 		// --- Default Mock Implementations ---
 		mockFindProjectRoot.mockReturnValue(MOCK_PROJECT_ROOT); // Default for utils.findProjectRoot
