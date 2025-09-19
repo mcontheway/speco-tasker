@@ -1,6 +1,6 @@
-const fs = require("fs");
-const { spawn } = require("child_process");
-const path = require("path");
+const fs = require("node:fs");
+const { spawn, execSync } = require("node:child_process");
+const path = require("node:path");
 
 // Temporarily skip this test due to Jest ESM/CommonJS compatibility issues
 describe.skip("Complex Cross-Tag Scenarios", () => {

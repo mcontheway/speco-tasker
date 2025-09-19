@@ -1,6 +1,6 @@
 // SCOPE: 清理API合同测试，验证GET /ai-content、DELETE /ai-content、GET /brand-info、PATCH /brand-info、POST /validate端点的行为契约
 const supertest = require("supertest");
-const path = require("path");
+const path = require("node:path");
 
 // Mock the cleanup service
 const mockCleanupService = {

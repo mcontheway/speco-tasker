@@ -1,8 +1,8 @@
 // Integration test setup for Speco-Tasker
 // SCOPE: 集成测试环境配置，测试组件和服务间的交互
 
-const path = require("path");
-const fs = require("fs");
+const path = require("node:path");
+const fs = require("node:fs");
 
 // Setup integration test environment
 beforeAll(async () => {
@@ -56,7 +56,7 @@ beforeAll(async () => {
 			const scenarioPath = path.join(
 				__dirname,
 				"../fixtures/integration",
-				scenarioName + ".json",
+				`${scenarioName}.json`,
 			);
 			if (fs.existsSync(scenarioPath)) {
 				return JSON.parse(fs.readFileSync(scenarioPath, "utf8"));
@@ -68,5 +68,5 @@ beforeAll(async () => {
 
 afterAll(async () => {
 	// Cleanup integration test resources
-	delete global.integrationUtils;
+	global.integrationUtils = undefined;
 });

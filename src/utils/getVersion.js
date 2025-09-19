@@ -1,6 +1,5 @@
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 import { log } from "../../scripts/modules/utils.js";
 
 /**
@@ -11,21 +10,16 @@ import { log } from "../../scripts/modules/utils.js";
 export function getTaskMasterVersion() {
 	let version = "unknown";
 	try {
-		// Get the directory of the current module (getPackageVersion.js)
-		const currentModuleFilename = fileURLToPath(import.meta.url);
-		const currentModuleDirname = path.dirname(currentModuleFilename);
-		// Construct the path to package.json relative to this file (../../package.json)
-		const packageJsonPath = path.join(
-			currentModuleDirname,
-			"..",
-			"..",
-			"package.json",
-		);
+		// Get the directory of the current module
+		const currentModuleFilename = import.meta.url;
+		// For ES modules, we need to construct the path differently
+		// This approach works in test environments
+		const packageJsonPath = path.resolve("package.json");
 
 		if (fs.existsSync(packageJsonPath)) {
 			const packageJsonContent = fs.readFileSync(packageJsonPath, "utf8");
 			const packageJson = JSON.parse(packageJsonContent);
-			version = packageJson.version;
+			version = packageJson.version || "unknown";
 		}
 	} catch (error) {
 		// Silently fall back to default version

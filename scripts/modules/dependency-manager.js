@@ -432,12 +432,12 @@ function validateTaskDependencies(tasks) {
 	const issues = [];
 
 	// Check each task's dependencies
-	tasks.forEach((task) => {
+	for (const task of tasks) {
 		if (!task.dependencies) {
-			return; // No dependencies to validate
+			continue; // No dependencies to validate
 		}
 
-		task.dependencies.forEach((depId) => {
+		for (const depId of task.dependencies) {
 			// Check for self-dependencies
 			if (String(depId) === String(task.id)) {
 				issues.push({
@@ -445,7 +445,7 @@ function validateTaskDependencies(tasks) {
 					taskId: task.id,
 					message: `Task ${task.id} depends on itself`,
 				});
-				return;
+				continue;
 			}
 
 			// Check if dependency exists
@@ -457,7 +457,7 @@ function validateTaskDependencies(tasks) {
 					message: `Task ${task.id} depends on non-existent task ${depId}`,
 				});
 			}
-		});
+		}
 
 		// Check for circular dependencies
 		if (isCircularDependency(tasks, task.id)) {
@@ -470,15 +470,15 @@ function validateTaskDependencies(tasks) {
 
 		// Check subtask dependencies if they exist
 		if (task.subtasks && task.subtasks.length > 0) {
-			task.subtasks.forEach((subtask) => {
+			for (const subtask of task.subtasks) {
 				if (!subtask.dependencies) {
-					return; // No dependencies to validate
+					continue; // No dependencies to validate
 				}
 
 				// Create a full subtask ID for reference
 				const fullSubtaskId = `${task.id}.${subtask.id}`;
 
-				subtask.dependencies.forEach((depId) => {
+				for (const depId of subtask.dependencies) {
 					// Check for self-dependencies in subtasks
 					if (
 						String(depId) === String(fullSubtaskId) ||
@@ -489,7 +489,7 @@ function validateTaskDependencies(tasks) {
 							taskId: fullSubtaskId,
 							message: `Subtask ${fullSubtaskId} depends on itself`,
 						});
-						return;
+						continue;
 					}
 
 					// Check if dependency exists
@@ -501,7 +501,7 @@ function validateTaskDependencies(tasks) {
 							message: `Subtask ${fullSubtaskId} depends on non-existent task/subtask ${depId}`,
 						});
 					}
-				});
+				}
 
 				// Check for circular dependencies in subtasks
 				if (isCircularDependency(tasks, fullSubtaskId)) {
@@ -511,9 +511,9 @@ function validateTaskDependencies(tasks) {
 						message: `Subtask ${fullSubtaskId} is part of a circular dependency chain`,
 					});
 				}
-			});
+			}
 		}
-	});
+	}
 
 	return {
 		valid: issues.length === 0,
@@ -605,11 +605,11 @@ async function validateDependenciesCommand(tasksPath, options = {}) {
 	// Count of tasks and subtasks for reporting
 	const taskCount = data.tasks.length;
 	let subtaskCount = 0;
-	data.tasks.forEach((task) => {
+	for (const task of data.tasks) {
 		if (task.subtasks && Array.isArray(task.subtasks)) {
 			subtaskCount += task.subtasks.length;
 		}
-	});
+	}
 
 	log(
 		"info",
@@ -625,13 +625,13 @@ async function validateDependenciesCommand(tasksPath, options = {}) {
 				"error",
 				`Dependency validation failed. Found ${validationResult.issues.length} issue(s):`,
 			);
-			validationResult.issues.forEach((issue) => {
+			for (const issue of validationResult.issues) {
 				let errorMsg = `  [${issue.type.toUpperCase()}] Task ${issue.taskId}: ${issue.message}`;
 				if (issue.dependencyId) {
 					errorMsg += ` (Dependency: ${issue.dependencyId})`;
 				}
 				log("error", errorMsg); // Log each issue as an error
-			});
+			}
 
 			// Optionally exit if validation fails, depending on desired behavior
 			// process.exit(1); // Uncomment if validation failure should stop the process
@@ -685,7 +685,7 @@ async function validateDependenciesCommand(tasksPath, options = {}) {
 function countAllDependencies(tasks) {
 	let count = 0;
 
-	tasks.forEach((task) => {
+	for (const task of tasks) {
 		// Count main task dependencies
 		if (task.dependencies && Array.isArray(task.dependencies)) {
 			count += task.dependencies.length;
@@ -693,13 +693,13 @@ function countAllDependencies(tasks) {
 
 		// Count subtask dependencies
 		if (task.subtasks && Array.isArray(task.subtasks)) {
-			task.subtasks.forEach((subtask) => {
+			for (const subtask of task.subtasks) {
 				if (subtask.dependencies && Array.isArray(subtask.dependencies)) {
 					count += subtask.dependencies.length;
 				}
-			});
+			}
 		}
-	});
+	}
 
 	return count;
 }
@@ -735,7 +735,7 @@ async function fixDependenciesCommand(tasksPath, options = {}) {
 		};
 
 		// First phase: Remove duplicate dependencies in tasks
-		data.tasks.forEach((task) => {
+		for (const task of data.tasks) {
 			if (task.dependencies && Array.isArray(task.dependencies)) {
 				const uniqueDeps = new Set();
 				const originalLength = task.dependencies.length;
@@ -759,7 +759,7 @@ async function fixDependenciesCommand(tasksPath, options = {}) {
 
 			// Check for duplicates in subtasks
 			if (task.subtasks && Array.isArray(task.subtasks)) {
-				task.subtasks.forEach((subtask) => {
+				for (const subtask of task.subtasks) {
 					if (subtask.dependencies && Array.isArray(subtask.dependencies)) {
 						const uniqueDeps = new Set();
 						const originalLength = subtask.dependencies.length;
@@ -783,23 +783,23 @@ async function fixDependenciesCommand(tasksPath, options = {}) {
 							stats.subtasksFixed++;
 						}
 					}
-				});
+				}
 			}
-		});
+		}
 
 		// Create validity maps for tasks and subtasks
 		const validTaskIds = new Set(data.tasks.map((t) => t.id));
 		const validSubtaskIds = new Set();
-		data.tasks.forEach((task) => {
+		for (const task of data.tasks) {
 			if (task.subtasks && Array.isArray(task.subtasks)) {
-				task.subtasks.forEach((subtask) => {
+				for (const subtask of task.subtasks) {
 					validSubtaskIds.add(`${task.id}.${subtask.id}`);
-				});
+				}
 			}
-		});
+		}
 
 		// Second phase: Remove invalid task dependencies (non-existent tasks)
-		data.tasks.forEach((task) => {
+		for (const task of data.tasks) {
 			if (task.dependencies && Array.isArray(task.dependencies)) {
 				const originalLength = task.dependencies.length;
 				task.dependencies = task.dependencies.filter((depId) => {
@@ -838,7 +838,7 @@ async function fixDependenciesCommand(tasksPath, options = {}) {
 
 			// Check subtask dependencies for invalid references
 			if (task.subtasks && Array.isArray(task.subtasks)) {
-				task.subtasks.forEach((subtask) => {
+				for (const subtask of task.subtasks) {
 					if (subtask.dependencies && Array.isArray(subtask.dependencies)) {
 						const originalLength = subtask.dependencies.length;
 						const subtaskId = `${task.id}.${subtask.id}`;
@@ -924,18 +924,18 @@ async function fixDependenciesCommand(tasksPath, options = {}) {
 							stats.subtasksFixed++;
 						}
 					}
-				});
+				}
 			}
-		});
+		}
 
 		// Third phase: Check for circular dependencies
 		log("info", "Checking for circular dependencies...");
 
 		// Build the dependency map for subtasks
 		const subtaskDependencyMap = new Map();
-		data.tasks.forEach((task) => {
+		for (const task of data.tasks) {
 			if (task.subtasks && Array.isArray(task.subtasks)) {
-				task.subtasks.forEach((subtask) => {
+				for (const subtask of task.subtasks) {
 					const subtaskId = `${task.id}.${subtask.id}`;
 
 					if (subtask.dependencies && Array.isArray(subtask.dependencies)) {
@@ -952,9 +952,9 @@ async function fixDependenciesCommand(tasksPath, options = {}) {
 					} else {
 						subtaskDependencyMap.set(subtaskId, []);
 					}
-				});
+				}
 			}
-		});
+		}
 
 		// Check for and fix circular dependencies
 		for (const [subtaskId, dependencies] of subtaskDependencyMap.entries()) {
@@ -1099,13 +1099,13 @@ function ensureAtLeastOneIndependentSubtask(tasksData) {
 
 	let changesDetected = false;
 
-	tasksData.tasks.forEach((task) => {
+	for (const task of tasksData.tasks) {
 		if (
 			!task.subtasks ||
 			!Array.isArray(task.subtasks) ||
 			task.subtasks.length === 0
 		) {
-			return;
+			continue;
 		}
 
 		// Check if any subtask has no dependencies
@@ -1128,7 +1128,7 @@ function ensureAtLeastOneIndependentSubtask(tasksData) {
 				changesDetected = true;
 			}
 		}
-	});
+	}
 
 	return changesDetected;
 }
@@ -1180,7 +1180,7 @@ function validateAndFixDependencies(
 	});
 
 	// 2. Remove invalid task dependencies (non-existent tasks)
-	tasksData.tasks.forEach((task) => {
+	for (const task of tasksData.tasks) {
 		// Clean up task dependencies
 		if (task.dependencies) {
 			task.dependencies = task.dependencies.filter((depId) => {
@@ -1195,7 +1195,7 @@ function validateAndFixDependencies(
 
 		// Clean up subtask dependencies
 		if (task.subtasks) {
-			task.subtasks.forEach((subtask) => {
+			for (const subtask of task.subtasks) {
 				if (subtask.dependencies) {
 					subtask.dependencies = subtask.dependencies.filter((depId) => {
 						// Handle numeric subtask references
@@ -1207,12 +1207,12 @@ function validateAndFixDependencies(
 						return taskExists(tasksData.tasks, depId);
 					});
 				}
-			});
+			}
 		}
-	});
+	}
 
 	// 3. Ensure at least one subtask has no dependencies in each task
-	tasksData.tasks.forEach((task) => {
+	for (const task of tasksData.tasks) {
 		if (task.subtasks && task.subtasks.length > 0) {
 			const hasIndependentSubtask = task.subtasks.some(
 				(st) =>
@@ -1225,7 +1225,7 @@ function validateAndFixDependencies(
 				task.subtasks[0].dependencies = [];
 			}
 		}
-	});
+	}
 
 	// Check if any changes were made by comparing with original data
 	const changesDetected =
@@ -1366,7 +1366,7 @@ function findTaskCrossTagConflicts(task, targetTag, allTasks) {
 	// Filter out null/undefined dependencies and check each valid dependency
 	const validDependencies = task.dependencies.filter((depId) => depId != null);
 
-	validDependencies.forEach((depId) => {
+	for (const depId of validDependencies) {
 		const depTask = findDependencyTask(depId, task.id, allTasks);
 
 		if (depTask && depTask.tag !== targetTag) {
@@ -1377,7 +1377,7 @@ function findTaskCrossTagConflicts(task, targetTag, allTasks) {
 				message: `Task ${task.id} depends on ${depId} (in ${depTask.tag})`,
 			});
 		}
-	});
+	}
 
 	return conflicts;
 }
@@ -1436,7 +1436,7 @@ function findCrossTagDependencies(sourceTasks, sourceTag, targetTag, allTasks) {
 
 	const conflicts = [];
 
-	sourceTasks.forEach((task) => {
+	for (const task of sourceTasks) {
 		// Validate task object and dependencies array
 		if (
 			!task ||
@@ -1444,13 +1444,13 @@ function findCrossTagDependencies(sourceTasks, sourceTag, targetTag, allTasks) {
 			!Array.isArray(task.dependencies) ||
 			task.dependencies.length === 0
 		) {
-			return;
+			continue;
 		}
 
 		// Use the shared helper function to find conflicts for this task
 		const taskConflicts = findTaskCrossTagConflicts(task, targetTag, allTasks);
 		conflicts.push(...taskConflicts);
-	});
+	}
 
 	return conflicts;
 }
@@ -1476,7 +1476,9 @@ function findTasksThatDependOn(taskId, allTasks, dependentTaskIds) {
 	});
 
 	// Add all found reverse dependencies to the dependentTaskIds set
-	reverseDeps.forEach((depId) => dependentTaskIds.add(depId));
+	for (const depId of reverseDeps) {
+		dependentTaskIds.add(depId);
+	}
 }
 
 /**
@@ -1603,7 +1605,7 @@ function getDependentTaskIds(sourceTasks, crossTagDependencies, allTasks) {
 
 	// Add immediate dependency IDs from conflicts and find their dependencies recursively
 	const conflictTasksToProcess = [];
-	crossTagDependencies.forEach((conflict) => {
+	for (const conflict of crossTagDependencies) {
 		if (conflict?.dependencyId) {
 			const depId =
 				typeof conflict.dependencyId === "string"
@@ -1618,7 +1620,7 @@ function getDependentTaskIds(sourceTasks, crossTagDependencies, allTasks) {
 				}
 			}
 		}
-	});
+	}
 
 	// Find dependencies of conflict tasks
 	if (conflictTasksToProcess.length > 0) {
@@ -1629,33 +1631,35 @@ function getDependentTaskIds(sourceTasks, crossTagDependencies, allTasks) {
 				includeSelf: false,
 			},
 		);
-		conflictDependencies.forEach((depId) => dependentTaskIds.add(depId));
+		for (const depId of conflictDependencies) {
+			dependentTaskIds.add(depId);
+		}
 	}
 
 	// For --with-dependencies, we also need to find all dependencies of the source tasks
-	sourceTasks.forEach((sourceTask) => {
+	for (const sourceTask of sourceTasks) {
 		if (sourceTask?.id) {
 			// Find all tasks that this source task depends on (forward dependencies) - already handled above
 
 			// Find all tasks that depend on this source task (reverse dependencies)
 			findTasksThatDependOn(sourceTask.id, allTasks, dependentTaskIds);
 		}
-	});
+	}
 
 	// Also include any tasks that depend on the source tasks
-	sourceTasks.forEach((sourceTask) => {
+	for (const sourceTask of sourceTasks) {
 		if (!sourceTask || typeof sourceTask !== "object" || !sourceTask.id) {
-			return; // Skip invalid source tasks
+			continue; // Skip invalid source tasks
 		}
 
-		allTasks.forEach((task) => {
+		for (const task of allTasks) {
 			// Validate task and dependencies array
 			if (
 				!task ||
 				typeof task !== "object" ||
 				!Array.isArray(task.dependencies)
 			) {
-				return;
+				continue;
 			}
 
 			// Check if this task depends on the source task
@@ -1667,8 +1671,8 @@ function getDependentTaskIds(sourceTasks, crossTagDependencies, allTasks) {
 			if (hasDependency || subtasksHaveDependency) {
 				dependentTaskIds.add(task.id);
 			}
-		});
-	});
+		}
+	}
 
 	return Array.from(dependentTaskIds);
 }

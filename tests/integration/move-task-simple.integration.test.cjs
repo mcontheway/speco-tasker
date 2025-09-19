@@ -27,8 +27,15 @@ afterAll(() => {
 });
 
 // Get __dirname equivalent for ES modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+let __filename, __dirname;
+try {
+	__filename = fileURLToPath(import.meta.url);
+	__dirname = path.dirname(__filename);
+} catch (error) {
+	// Fallback for CommonJS environments
+	__filename = __filename || 'unknown';
+	__dirname = path.dirname(__filename);
+}
 
 describe("Cross-Tag Task Movement Simple Integration Tests", () => {
 	const testDataDir = path.join(__dirname, "fixtures");

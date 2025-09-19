@@ -25,9 +25,9 @@ describe("Task Status Constants", () => {
 		});
 
 		test("should contain only strings", () => {
-			TASK_STATUS_OPTIONS.forEach((status) => {
+			for (const status of TASK_STATUS_OPTIONS) {
 				expect(typeof status).toBe("string");
-			});
+			}
 		});
 
 		test("should have reasonable length", () => {
@@ -47,9 +47,9 @@ describe("Task Status Constants", () => {
 				"cancelled",
 			];
 
-			validStatuses.forEach((status) => {
+			for (const status of validStatuses) {
 				expect(isValidTaskStatus(status)).toBe(true);
-			});
+			}
 		});
 
 		test("should return false for invalid statuses", () => {
@@ -63,9 +63,9 @@ describe("Task Status Constants", () => {
 				123,
 			];
 
-			invalidStatuses.forEach((status) => {
+			for (const status of invalidStatuses) {
 				expect(isValidTaskStatus(status)).toBe(false);
-			});
+			}
 		});
 
 		test("should handle edge cases", () => {

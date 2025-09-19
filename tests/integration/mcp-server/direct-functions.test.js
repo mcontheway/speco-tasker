@@ -99,7 +99,7 @@ jest.mock("../../../mcp-server/src/core/utils/path-utils.js", () => ({
 
 // AI functionality has been removed from the project - no need to mock AI services
 // Mock task-manager.js to avoid real operations
-jest.mock("../scripts/modules/task-manager.js", () => ({
+jest.mock("../../../scripts/modules/task-manager.js", () => ({
 	generateTaskFiles: mockGenerateTaskFiles,
 	findTaskById: mockFindTaskById,
 	taskExists: mockTaskExists,
@@ -302,9 +302,9 @@ describe("MCP Server Direct Functions", () => {
 			expect(result.success).toBe(true);
 			expect(result.data.filter).toBe("pending");
 			// Should only include pending tasks
-			result.data.tasks.forEach((task) => {
+			for (const task of result.data.tasks) {
 				expect(task.status).toBe("pending");
-			});
+			}
 		});
 
 		test("should include subtasks when requested", async () => {
@@ -360,12 +360,12 @@ describe("MCP Server Direct Functions", () => {
 			expect(result.success).toBe(true);
 
 			// Check that tasks have complexity scores from the report
-			mockComplexityReport.complexityAnalysis.forEach((analysis) => {
+			for (const analysis of mockComplexityReport.complexityAnalysis) {
 				const task = result.data.tasks.find((t) => t.id === analysis.taskId);
 				if (task) {
 					expect(task.complexityScore).toBe(analysis.complexityScore);
 				}
-			});
+			}
 		});
 	});
 });

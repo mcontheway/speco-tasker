@@ -46,7 +46,7 @@ describe("Complete Task Management Workflow Integration Test", () => {
 			];
 
 			// Create initial project tasks
-			projectTasks.forEach((task) => {
+			for (const task of projectTasks) {
 				mockTaskManager.addTask.mockReturnValueOnce({
 					success: true,
 					data: {
@@ -65,7 +65,7 @@ describe("Complete Task Management Workflow Integration Test", () => {
 				expect(result.success).toBe(true);
 				expect(result.data.id).toBe(task.id);
 				expect(result.data.priority).toBe(task.priority);
-			});
+			}
 
 			// Phase 2: Establish Dependencies
 			const dependencies = [
@@ -76,7 +76,7 @@ describe("Complete Task Management Workflow Integration Test", () => {
 				{ taskId: 6, dependsOn: 5 }, // Deployment depends on Testing
 			];
 
-			dependencies.forEach((dep) => {
+			for (const dep of dependencies) {
 				mockDependencyManager.addDependency.mockReturnValueOnce({
 					success: true,
 					data: {
@@ -92,7 +92,7 @@ describe("Complete Task Management Workflow Integration Test", () => {
 				expect(result.success).toBe(true);
 				expect(result.data.taskId).toBe(dep.taskId);
 				expect(result.data.dependsOn).toBe(dep.dependsOn);
-			});
+			}
 
 			// Phase 3: Task Execution Workflow
 			// Start with first task (no dependencies)
@@ -195,7 +195,7 @@ describe("Complete Task Management Workflow Integration Test", () => {
 			];
 
 			// Create initial tasks
-			initialTasks.forEach((task) => {
+			for (const task of initialTasks) {
 				mockTaskManager.addTask.mockReturnValueOnce({
 					success: true,
 					data: task,
@@ -204,7 +204,7 @@ describe("Complete Task Management Workflow Integration Test", () => {
 
 				const result = mockTaskManager.addTask(task);
 				expect(result.success).toBe(true);
-			});
+			}
 
 			// Reorganize: Move user profile to be subtask of authentication
 			mockTaskManager.moveTask.mockReturnValueOnce({
@@ -262,7 +262,7 @@ describe("Complete Task Management Workflow Integration Test", () => {
 				{ id: 15, title: "Email Notifications" },
 			];
 
-			complexTasks.forEach((task) => {
+			for (const task of complexTasks) {
 				mockTaskManager.addTask.mockReturnValueOnce({
 					success: true,
 					data: { ...task, status: "pending", dependencies: [] },
@@ -271,7 +271,7 @@ describe("Complete Task Management Workflow Integration Test", () => {
 
 				const result = mockTaskManager.addTask(task);
 				expect(result.success).toBe(true);
-			});
+			}
 
 			// Establish complex dependencies
 			const complexDependencies = [
@@ -283,7 +283,7 @@ describe("Complete Task Management Workflow Integration Test", () => {
 				{ taskId: 15, dependsOn: 14 }, // Email depends on Payment
 			];
 
-			complexDependencies.forEach((dep) => {
+			for (const dep of complexDependencies) {
 				mockDependencyManager.addDependency.mockReturnValueOnce({
 					success: true,
 					data: {
@@ -296,7 +296,7 @@ describe("Complete Task Management Workflow Integration Test", () => {
 
 				const result = mockDependencyManager.addDependency(dep);
 				expect(result.success).toBe(true);
-			});
+			}
 
 			// Validate dependency structure
 			mockDependencyManager.validateDependencies.mockReturnValueOnce({
@@ -332,7 +332,7 @@ describe("Complete Task Management Workflow Integration Test", () => {
 
 			const allParallelTasks = [...frontendTasks, ...backendTasks];
 
-			allParallelTasks.forEach((task) => {
+			for (const task of allParallelTasks) {
 				mockTaskManager.addTask.mockReturnValueOnce({
 					success: true,
 					data: { ...task, status: "pending" },
@@ -342,7 +342,7 @@ describe("Complete Task Management Workflow Integration Test", () => {
 				const result = mockTaskManager.addTask(task);
 				expect(result.success).toBe(true);
 				expect(result.data.stream).toBe(task.stream);
-			});
+			}
 
 			// Start parallel work on both streams
 			mockTaskManager.setTaskStatus.mockReturnValueOnce({

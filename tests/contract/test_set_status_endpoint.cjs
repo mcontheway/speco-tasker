@@ -88,7 +88,7 @@ describe("POST /set-status Endpoint Contract Test", () => {
 				"deferred",
 			];
 
-			validStatuses.forEach((status) => {
+			for (const status of validStatuses) {
 				mockTaskManager.setTaskStatus.mockReturnValue({
 					success: true,
 					data: { id: 1, title: "Test Task", status: status },
@@ -102,7 +102,7 @@ describe("POST /set-status Endpoint Contract Test", () => {
 
 				expect(result.success).toBe(true);
 				expect(result.data.status).toBe(status);
-			});
+			}
 		});
 
 		it("should handle custom status values", () => {

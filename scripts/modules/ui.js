@@ -1051,7 +1051,7 @@ async function displayNextTask(
 		});
 
 		// Add subtasks to table
-		nextTask.subtasks.forEach((st) => {
+		for (const st of nextTask.subtasks) {
 			const statusColor =
 				{
 					done: chalk.green,
@@ -1102,7 +1102,7 @@ async function displayNextTask(
 				st.title,
 				subtaskDeps,
 			]);
-		});
+		}
 
 		console.log(subtaskTable.toString());
 	}
@@ -1405,7 +1405,7 @@ async function displayTaskById(
 		});
 
 		// Populate table with the potentially filtered subtasks
-		task.subtasks.forEach((st) => {
+		for (const st of task.subtasks) {
 			const statusColorMap = {
 				done: chalk.green,
 				completed: chalk.green,
@@ -1451,7 +1451,7 @@ async function displayTaskById(
 				st.title,
 				subtaskDeps,
 			]);
-		});
+		}
 		console.log(subtaskTable.toString());
 
 		// Display filter summary line *immediately after the table* if a filter was applied
@@ -1741,11 +1741,11 @@ async function displayComplexityReport(reportPath) {
 
 	// Create progress bar to show complexity distribution
 	const complexityDistribution = [0, 0, 0]; // Low (0-4), Medium (5-7), High (8-10)
-	sortedTasks.forEach((task) => {
+	for (const task of sortedTasks) {
 		if (task.complexityScore < 5) complexityDistribution[0]++;
 		else if (task.complexityScore < 8) complexityDistribution[1]++;
 		else complexityDistribution[2]++;
-	});
+	}
 
 	const percentLow = Math.round(
 		(complexityDistribution[0] / sortedTasks.length) * 100,
@@ -1797,7 +1797,7 @@ async function displayComplexityReport(reportPath) {
 	});
 
 	// When adding rows, don't truncate the expansion command
-	tasksNeedingExpansion.forEach((task) => {
+	for (const task of tasksNeedingExpansion) {
 		const expansionCommand = `task-master add-subtask --parent=${task.taskId} --title="Subtask title" --description="Subtask description"`;
 
 		complexTable.push([
@@ -1807,7 +1807,7 @@ async function displayComplexityReport(reportPath) {
 			task.recommendedSubtasks,
 			chalk.cyan(expansionCommand), // Don't truncate - allow wrapping
 		]);
-	});
+	}
 
 	console.log(complexTable.toString());
 
@@ -1833,14 +1833,14 @@ async function displayComplexityReport(reportPath) {
 			style: { head: [], border: [] },
 		});
 
-		simpleTasks.forEach((task) => {
+		for (const task of simpleTasks) {
 			simpleTable.push([
 				task.taskId,
 				truncate(task.taskTitle, 37),
 				getComplexityWithColor(task.complexityScore),
 				truncate(task.reasoning, 47),
 			]);
-		});
+		}
 
 		console.log(simpleTable.toString());
 	}
@@ -1918,13 +1918,13 @@ function displayApiKeyStatus(statusReport) {
 		chars: { mid: "", "left-mid": "", "mid-mid": "", "right-mid": "" },
 	});
 
-	statusReport.forEach(({ provider, cli, mcp }) => {
+	for (const { provider, cli, mcp } of statusReport) {
 		const cliStatus = cli ? chalk.green("✅ Found") : chalk.red("❌ Missing");
 		const mcpStatus = mcp ? chalk.green("✅ Found") : chalk.red("❌ Missing");
 		// Capitalize provider name for display
 		const providerName = provider.charAt(0).toUpperCase() + provider.slice(1);
 		table.push([providerName, cliStatus, mcpStatus]);
-	});
+	}
 
 	console.log(chalk.bold("\n🔑 API Key Status:"));
 	console.log(table.toString());
@@ -1985,7 +1985,7 @@ async function displayMultipleTasksSummary(
 	const foundTasks = [];
 	const notFoundIds = [];
 
-	taskIds.forEach((id) => {
+	for (const id of taskIds) {
 		const { task } = findTaskById(
 			data.tasks,
 			id,
@@ -1997,7 +1997,7 @@ async function displayMultipleTasksSummary(
 		} else {
 			notFoundIds.push(id);
 		}
-	});
+	}
 
 	// Show not found tasks
 	if (notFoundIds.length > 0) {
@@ -2072,7 +2072,7 @@ async function displayMultipleTasksSummary(
 	});
 
 	// Add each task to the summary table
-	foundTasks.forEach((task) => {
+	for (const task of foundTasks) {
 		// Handle subtask case
 		if (task.isSubtask || task.parentTask) {
 			const parentId = task.parentTask ? task.parentTask.id : "Unknown";
@@ -2084,7 +2084,7 @@ async function displayMultipleTasksSummary(
 				chalk.gray("N/A"),
 				chalk.gray("N/A"),
 			]);
-			return;
+			continue;
 		}
 
 		// Handle regular task
@@ -2140,7 +2140,7 @@ async function displayMultipleTasksSummary(
 			subtaskSummary,
 			progressBar,
 		]);
-	});
+	}
 
 	console.log(summaryTable.toString());
 
@@ -2248,7 +2248,7 @@ async function displayMultipleTasksSummary(
 					// Show dependency visualization
 					console.log(chalk.white.bold("\nDependency Relationships:"));
 					let hasDependencies = false;
-					foundTasks.forEach((task) => {
+					for (const task of foundTasks) {
 						if (task.dependencies && task.dependencies.length > 0) {
 							console.log(
 								chalk.cyan(
@@ -2257,7 +2257,7 @@ async function displayMultipleTasksSummary(
 							);
 							hasDependencies = true;
 						}
-					});
+					}
 					if (!hasDependencies) {
 						console.log(chalk.gray("No dependencies found for selected tasks"));
 					}
@@ -2347,9 +2347,9 @@ export function displayCrossTagDependencyError(
 	console.log(chalk.yellow("\nCross-tag dependency conflicts detected:"));
 
 	if (conflicts.length > 0) {
-		conflicts.forEach((conflict) => {
+		for (const conflict of conflicts) {
 			console.log(`  • ${conflict.message}`);
-		});
+		}
 	}
 
 	console.log(chalk.cyan("\nResolution options:"));
@@ -2492,7 +2492,7 @@ export function displayDependencyValidationHints(context = "general") {
 	console.log(chalk.cyan("\nHelpful hints:"));
 	// Convert to Set to ensure only unique hints are displayed
 	const uniqueHints = new Set(relevantHints);
-	uniqueHints.forEach((hint) => {
+	for (const hint of uniqueHints) {
 		console.log(`  ${hint}`);
-	});
+	}
 }

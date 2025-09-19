@@ -1,7 +1,7 @@
 // SCOPE: 路径配置系统真实集成测试，使用实际CLI命令验证路径配置的创建、读取、更新和验证的完整工作流
-const path = require("path");
-const fs = require("fs");
-const { execSync, spawn } = require("child_process");
+const path = require("node:path");
+const fs = require("node:fs");
+const { execSync, spawn } = require("node:child_process");
 
 describe("Path Configuration Realistic Integration Tests", () => {
 	const testProjectDir = path.join(
@@ -287,11 +287,11 @@ require('../mcp-server/server.js');
 		};
 
 		// 移除undefined值
-		Object.keys(pathsConfig.mappings).forEach((key) => {
+		for (const key of Object.keys(pathsConfig.mappings)) {
 			if (pathsConfig.mappings[key] === undefined) {
 				delete pathsConfig.mappings[key];
 			}
-		});
+		}
 
 		fs.writeFileSync(pathsFile, JSON.stringify(pathsConfig, null, 2));
 	}
@@ -343,7 +343,7 @@ require('../mcp-server/server.js');
 
 		it("should handle missing paths configuration gracefully", async () => {
 			// Temporarily remove paths file
-			const backupPath = pathsFile + ".backup";
+			const backupPath = `${pathsFile}.backup`;
 			if (fs.existsSync(pathsFile)) {
 				fs.renameSync(pathsFile, backupPath);
 			}
@@ -369,25 +369,25 @@ require('../mcp-server/server.js');
 			const pathsConfig = JSON.parse(result.stdout);
 
 			// Validate mappings structure
-			Object.entries(pathsConfig.mappings).forEach(([key, value]) => {
+			for (const [key, value] of Object.entries(pathsConfig.mappings)) {
 				expect(typeof key).toBe("string");
 				expect(typeof value).toBe("string");
 				expect(key.length).toBeGreaterThan(0);
 				expect(value.length).toBeGreaterThan(0);
-			});
+			}
 
 			// Validate cleanup patterns
-			pathsConfig.cleanup.patterns.forEach((pattern) => {
+			for (const pattern of pathsConfig.cleanup.patterns) {
 				expect(typeof pattern).toBe("string");
 				expect(pattern.length).toBeGreaterThan(0);
 				expect(pattern).toContain("*"); // Should contain glob patterns
-			});
+			}
 
 			// Validate exclude patterns
-			pathsConfig.cleanup.exclude.forEach((pattern) => {
+			for (const pattern of pathsConfig.cleanup.exclude) {
 				expect(typeof pattern).toBe("string");
 				expect(pattern.length).toBeGreaterThan(0);
-			});
+			}
 		});
 	});
 
@@ -435,18 +435,18 @@ require('../mcp-server/server.js');
 			const pathsConfig = JSON.parse(result.stdout);
 
 			// Ensure all mappings are still valid
-			Object.entries(pathsConfig.mappings).forEach(([key, value]) => {
+			for (const [key, value] of Object.entries(pathsConfig.mappings)) {
 				expect(typeof key).toBe("string");
 				expect(typeof value).toBe("string");
 				expect(key.length).toBeGreaterThan(0);
 				expect(value.length).toBeGreaterThan(0);
-			});
+			}
 
 			// Ensure cleanup patterns are valid
-			pathsConfig.cleanup.patterns.forEach((pattern) => {
+			for (const pattern of pathsConfig.cleanup.patterns) {
 				expect(typeof pattern).toBe("string");
 				expect(pattern.length).toBeGreaterThan(0);
-			});
+			}
 		});
 	});
 
@@ -487,18 +487,18 @@ require('../mcp-server/server.js');
 			const pathsConfig = JSON.parse(result.stdout);
 
 			// All mappings should have non-empty strings
-			Object.entries(pathsConfig.mappings).forEach(([key, value]) => {
+			for (const [key, value] of Object.entries(pathsConfig.mappings)) {
 				expect(key.trim()).toBe(key); // No leading/trailing spaces
 				expect(value.trim()).toBe(value);
 				expect(key.length).toBeGreaterThan(0);
 				expect(value.length).toBeGreaterThan(0);
-			});
+			}
 
 			// Cleanup patterns should be valid glob patterns
-			pathsConfig.cleanup.patterns.forEach((pattern) => {
+			for (const pattern of pathsConfig.cleanup.patterns) {
 				expect(pattern).toContain("*"); // Basic glob validation
 				expect(pattern.length).toBeGreaterThan(1);
-			});
+			}
 		});
 	});
 

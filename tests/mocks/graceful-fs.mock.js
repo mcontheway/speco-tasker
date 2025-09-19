@@ -3,7 +3,7 @@
  */
 
 // Use the actual fs module but mock problematic methods
-const fs = require("fs");
+const fs = require("node:fs");
 
 // Mock process.cwd() to return a safe fallback
 const originalCwd = process.cwd;

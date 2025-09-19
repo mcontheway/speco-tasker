@@ -4,25 +4,18 @@
 
 const fs = require("node:fs");
 const path = require("node:path");
-const { fileURLToPath } = require("node:url");
 
 // Mock fs and path modules with proper mock implementations
 const mockExistsSync = jest.fn();
 const mockReadFileSync = jest.fn();
-const mockDirname = jest.fn();
-const mockJoin = jest.fn();
-const mockFileURLToPath = jest.fn();
+const mockResolve = jest.fn();
 
 jest.mock("node:fs", () => ({
 	existsSync: mockExistsSync,
 	readFileSync: mockReadFileSync,
 }));
 jest.mock("node:path", () => ({
-	dirname: mockDirname,
-	join: mockJoin,
-}));
-jest.mock("node:url", () => ({
-	fileURLToPath: mockFileURLToPath,
+	resolve: mockResolve,
 }));
 
 // Mock the utils module
@@ -40,9 +33,9 @@ describe("Version Utilities", () => {
 
 	describe("getTaskMasterVersion", () => {
 		beforeEach(() => {
-			mockFileURLToPath.mockReturnValue("/path/to/src/utils/getVersion.js");
-			mockDirname.mockReturnValue("/path/to/src/utils");
-			mockJoin.mockImplementation((...args) => args.join("/"));
+			mockResolve.mockImplementation((...args) => {
+				return args.join("/");
+			});
 		});
 
 		test("should return version from package.json", () => {
@@ -54,7 +47,7 @@ describe("Version Utilities", () => {
 			const result = getTaskMasterVersion();
 			expect(result).toBe("1.2.3");
 			expect(mockReadFileSync).toHaveBeenCalledWith(
-				"/path/to/src/utils/../../package.json",
+				"package.json",
 				"utf8",
 			);
 		});
@@ -92,7 +85,7 @@ describe("Version Utilities", () => {
 			mockReadFileSync.mockReturnValue(JSON.stringify(mockPackageJson));
 
 			const result = getTaskMasterVersion();
-			expect(result).toBe(undefined);
+			expect(result).toBe("unknown");
 		});
 	});
 });

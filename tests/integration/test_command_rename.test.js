@@ -1,7 +1,7 @@
 // SCOPE: 命令重命名真实集成测试，使用实际CLI命令验证命令从task-master重命名为speco-tasker的完整工作流
-const path = require("path");
-const fs = require("fs");
-const { execSync, spawn } = require("child_process");
+const path = require("node:path");
+const fs = require("node:fs");
+const { execSync, spawn } = require("node:child_process");
 describe("Command Rename Realistic Integration Tests", () => {
 	const testProjectDir = path.join(
 		__dirname,
@@ -241,12 +241,41 @@ exports.main = () => {
 				fs.writeFileSync(newBinPath, updatedContent);
 				fs.unlinkSync(oldBinPath);
 			}
+
+			// 处理MCP二进制文件
+			const oldMcpBinPath = path.join(testProjectDir, "bin/task-master-mcp.js");
+			const newMcpBinPath = path.join(
+				testProjectDir,
+				"bin/speco-tasker-mcp.js",
+			);
+			if (fs.existsSync(oldMcpBinPath)) {
+				const content = fs.readFileSync(oldMcpBinPath, "utf8");
+				const updatedContent = content.replace(/task-master/g, "speco-tasker");
+				fs.writeFileSync(newMcpBinPath, updatedContent);
+				fs.unlinkSync(oldMcpBinPath);
+			}
 			// 更新README.md
 			const readmePath = path.join(testProjectDir, "README.md");
 			let readme = fs.readFileSync(readmePath, "utf8");
 			readme = readme.replace(/task-master/g, "speco-tasker");
 			readme = readme.replace(/Task Master AI/g, "Speco-Tasker");
 			fs.writeFileSync(readmePath, readme);
+
+			// 更新.speco/config.json
+			const configPath = path.join(testProjectDir, ".speco/config.json");
+			if (fs.existsSync(configPath)) {
+				let config = fs.readFileSync(configPath, "utf8");
+				config = config.replace(/task-master/g, "speco-tasker");
+				fs.writeFileSync(configPath, config);
+			}
+
+			// 确保package.json中的所有"task-master"都被替换
+			const packageJsonText = fs.readFileSync(packagePath, "utf8");
+			const updatedPackageJsonText = packageJsonText.replace(
+				/task-master/g,
+				"speco-tasker",
+			);
+			fs.writeFileSync(packagePath, updatedPackageJsonText);
 		}
 	}
 	describe("Command Detection Phase", () => {
@@ -342,7 +371,10 @@ exports.main = () => {
 			expect(verification.oldReferencesRemaining).toBe(0);
 			expect(verification.newReferencesCount).toBeGreaterThan(0);
 		});
-		it("should confirm no old command references remain", () => {
+		it("should confirm no old command references remain", async () => {
+			// First perform the rename operation
+			await mockExecuteCLICommand("rename-commands");
+
 			// Check that no old command references remain
 			const allFiles = fs
 				.readdirSync(testProjectDir, { recursive: true })

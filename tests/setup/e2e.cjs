@@ -1,9 +1,9 @@
 // E2E test setup for Speco-Tasker
 // SCOPE: 端到端测试环境配置，测试完整用户工作流
 
-const path = require("path");
-const fs = require("fs");
-const { execSync } = require("child_process");
+const path = require("node:path");
+const fs = require("node:fs");
+const { execSync } = require("node:child_process");
 
 // Setup E2E test environment
 beforeAll(async () => {
@@ -33,11 +33,11 @@ beforeAll(async () => {
 					'test("example", () => { expect(true).toBe(true); });',
 			};
 
-			Object.entries(structure).forEach(([filePath, content]) => {
+			for (const [filePath, content] of Object.entries(structure)) {
 				const fullPath = path.join(testProjectDir, filePath);
 				fs.mkdirSync(path.dirname(fullPath), { recursive: true });
 				fs.writeFileSync(fullPath, content);
-			});
+			}
 
 			// Initialize Speco-Tasker in test project
 			execSync("npm install", { cwd: testProjectDir, stdio: "pipe" });
@@ -68,7 +68,9 @@ beforeAll(async () => {
 		mockUserInput: (inputs) => {
 			// Mock inquirer or other interactive libraries
 			const mockPrompt = jest.fn();
-			inputs.forEach((input) => mockPrompt.mockResolvedValueOnce(input));
+			for (const input of inputs) {
+				mockPrompt.mockResolvedValueOnce(input);
+			}
 
 			jest.mock("inquirer", () => ({
 				prompt: mockPrompt,
@@ -79,10 +81,10 @@ beforeAll(async () => {
 
 		// Verify file system state
 		verifyProjectStructure: (projectDir, expectedStructure) => {
-			expectedStructure.forEach((filePath) => {
+			for (const filePath of expectedStructure) {
 				const fullPath = path.join(projectDir, filePath);
 				expect(fs.existsSync(fullPath)).toBe(true);
-			});
+			}
 		},
 
 		// Load E2E test scenarios
@@ -90,7 +92,7 @@ beforeAll(async () => {
 			const scenarioPath = path.join(
 				__dirname,
 				"../fixtures/e2e",
-				scenarioName + ".json",
+				`${scenarioName}.json`,
 			);
 			if (fs.existsSync(scenarioPath)) {
 				return JSON.parse(fs.readFileSync(scenarioPath, "utf8"));
@@ -102,5 +104,5 @@ beforeAll(async () => {
 
 afterAll(async () => {
 	// Cleanup E2E test resources
-	delete global.e2eUtils;
+	global.e2eUtils = undefined;
 });

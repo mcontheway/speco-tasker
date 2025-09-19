@@ -54,10 +54,10 @@ beforeAll(() => {
 
 		// Test assertion helpers
 		assertValidEntity: (entity, requiredFields) => {
-			requiredFields.forEach((field) => {
+			for (const field of requiredFields) {
 				expect(entity).toHaveProperty(field);
 				expect(entity[field]).toBeDefined();
-			});
+			}
 		},
 
 		// Performance testing helpers
@@ -74,5 +74,5 @@ beforeAll(() => {
 
 afterAll(() => {
 	// Cleanup unit test resources
-	delete global.unitUtils;
+	global.unitUtils = undefined;
 });

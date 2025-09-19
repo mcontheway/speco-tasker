@@ -1,7 +1,7 @@
 // SCOPE: 品牌重塑流程集成测试，验证从检测到更新的完整品牌重塑工作流
-const path = require("path");
-const fs = require("fs");
-const { execSync } = require("child_process");
+const path = require("node:path");
+const fs = require("node:fs");
+const { execSync } = require("node:child_process");
 
 describe("Brand Rebrand Integration Tests", () => {
 	const testProjectDir = path.join(
@@ -168,14 +168,14 @@ task-master next --smart
 		};
 
 		// Write test files
-		Object.entries(testFiles).forEach(([filePath, content]) => {
+		for (const [filePath, content] of Object.entries(testFiles)) {
 			const fullPath = path.join(testProjectDir, filePath);
 			const dir = path.dirname(fullPath);
 			if (!fs.existsSync(dir)) {
 				fs.mkdirSync(dir, { recursive: true });
 			}
 			fs.writeFileSync(fullPath, content);
-		});
+		}
 	});
 
 	afterAll(() => {
@@ -433,20 +433,20 @@ task-master next --smart
 				/AI CLI/i,
 			];
 
-			checkFiles.forEach((filePath) => {
+			for (const filePath of checkFiles) {
 				const fullPath = path.join(testProjectDir, filePath);
 				if (fs.existsSync(fullPath)) {
 					const content = fs.readFileSync(fullPath, "utf8");
 
 					// Check that old brand patterns are not present
-					oldBrandPatterns.forEach((pattern) => {
+					for (const pattern of oldBrandPatterns) {
 						// Allow some exceptions for speco-tasker (new brand)
 						if (!pattern.test("speco-tasker")) {
 							expect(content).not.toMatch(pattern);
 						}
-					});
+					}
 				}
-			});
+			}
 		});
 
 		it("should validate that new brand references are present", () => {

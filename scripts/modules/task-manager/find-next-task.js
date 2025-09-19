@@ -52,32 +52,32 @@ function findNextTask(tasks, complexityReport = null) {
 	// ---------- 1) look for eligible subtasks ------------------------------
 	const candidateSubtasks = [];
 
-	tasks
-		.filter((t) => t.status === "in-progress" && Array.isArray(t.subtasks))
-		.forEach((parent) => {
-			parent.subtasks.forEach((st) => {
-				const stStatus = (st.status || "pending").toLowerCase();
-				if (stStatus !== "pending" && stStatus !== "in-progress") return;
+	for (const parent of tasks.filter(
+		(t) => t.status === "in-progress" && Array.isArray(t.subtasks),
+	)) {
+		for (const st of parent.subtasks) {
+			const stStatus = (st.status || "pending").toLowerCase();
+			if (stStatus !== "pending" && stStatus !== "in-progress") continue;
 
-				const fullDeps =
-					st.dependencies?.map((d) => toFullSubId(parent.id, d)) ?? [];
+			const fullDeps =
+				st.dependencies?.map((d) => toFullSubId(parent.id, d)) ?? [];
 
-				const depsSatisfied =
-					fullDeps.length === 0 ||
-					fullDeps.every((depId) => completedIds.has(String(depId)));
+			const depsSatisfied =
+				fullDeps.length === 0 ||
+				fullDeps.every((depId) => completedIds.has(String(depId)));
 
-				if (depsSatisfied) {
-					candidateSubtasks.push({
-						id: `${parent.id}.${st.id}`,
-						title: st.title || `Subtask ${st.id}`,
-						status: st.status || "pending",
-						priority: st.priority || parent.priority || "medium",
-						dependencies: fullDeps,
-						parentId: parent.id,
-					});
-				}
-			});
-		});
+			if (depsSatisfied) {
+				candidateSubtasks.push({
+					id: `${parent.id}.${st.id}`,
+					title: st.title || `Subtask ${st.id}`,
+					status: st.status || "pending",
+					priority: st.priority || parent.priority || "medium",
+					dependencies: fullDeps,
+					parentId: parent.id,
+				});
+			}
+		}
+	}
 
 	if (candidateSubtasks.length > 0) {
 		// sort by priority → dep-count → parent-id → sub-id

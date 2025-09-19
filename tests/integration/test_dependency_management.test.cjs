@@ -162,7 +162,7 @@ describe("Dependency Management Integration Test", () => {
 				{ taskId: 5, dependsOn: 4 },
 			];
 
-			chain.forEach((dep) => {
+			for (const dep of chain) {
 				mockDependencyManager.addDependency.mockReturnValueOnce({
 					success: true,
 					data: {
@@ -177,7 +177,7 @@ describe("Dependency Management Integration Test", () => {
 				const result = mockDependencyManager.addDependency(dep);
 				expect(result.success).toBe(true);
 				expect(result.data.chainDepth).toBe(dep.taskId - 1);
-			});
+			}
 
 			// Validate chain structure
 			mockDependencyManager.validateDependencies.mockReturnValueOnce({

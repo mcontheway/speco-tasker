@@ -162,7 +162,7 @@ describe("Tag System Integration Test", () => {
 				{ name: "bugfix-critical", description: "Critical bug fixes" },
 			];
 
-			featureTags.forEach((tag) => {
+			for (const tag of featureTags) {
 				mockTagManager.addTag.mockReturnValueOnce({
 					success: true,
 					data: {
@@ -176,7 +176,7 @@ describe("Tag System Integration Test", () => {
 				const result = mockTagManager.addTag(tag);
 				expect(result.success).toBe(true);
 				expect(result.data.tagName).toBe(tag.name);
-			});
+			}
 
 			// Add tasks to different contexts
 			const contextTasks = [
@@ -191,7 +191,7 @@ describe("Tag System Integration Test", () => {
 				},
 			];
 
-			contextTasks.forEach((context) => {
+			for (const context of contextTasks) {
 				// Switch to context
 				mockTagManager.useTag.mockReturnValueOnce({
 					success: true,
@@ -202,7 +202,7 @@ describe("Tag System Integration Test", () => {
 				mockTagManager.useTag({ tagName: context.tag });
 
 				// Add tasks to context
-				context.tasks.forEach((title, index) => {
+				for (const [index, title] of context.tasks.entries()) {
 					mockTaskManager.addTask.mockReturnValueOnce({
 						success: true,
 						data: {
@@ -221,8 +221,8 @@ describe("Tag System Integration Test", () => {
 
 					expect(result.success).toBe(true);
 					expect(result.data.tag).toBe(context.tag);
-				});
-			});
+				}
+			}
 
 			// Verify tag isolation
 			mockTagManager.listTags.mockReturnValueOnce({
@@ -477,7 +477,7 @@ describe("Tag System Integration Test", () => {
 			// Create developer-specific tags
 			const teamTags = ["alice-backend", "bob-frontend", "charlie-devops"];
 
-			teamTags.forEach((tagName) => {
+			for (const tagName of teamTags) {
 				mockTagManager.addTag.mockReturnValueOnce({
 					success: true,
 					data: {
@@ -496,7 +496,7 @@ describe("Tag System Integration Test", () => {
 
 				expect(result.success).toBe(true);
 				expect(result.data.teamMember).toBe(tagName.split("-")[0]);
-			});
+			}
 
 			// Each team member works in isolation
 			mockTagManager.useTag.mockReturnValueOnce({

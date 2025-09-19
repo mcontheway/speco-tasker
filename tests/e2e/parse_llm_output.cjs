@@ -126,9 +126,9 @@ rl.on("close", async () => {
 			Array.isArray(reportData.llm_summary_points) &&
 			reportData.llm_summary_points.length > 0
 		) {
-			reportData.llm_summary_points.forEach((point) => {
+			for (const point of reportData.llm_summary_points) {
 				console.log(chalk.white(`  - ${point || "N/A"}`)); // Handle null/undefined points
-			});
+			}
 		} else {
 			console.log(chalk.gray("  No summary points provided."));
 		}
@@ -140,9 +140,9 @@ rl.on("close", async () => {
 			Array.isArray(reportData.verified_steps) &&
 			reportData.verified_steps.length > 0
 		) {
-			reportData.verified_steps.forEach((step) => {
+			for (const step of reportData.verified_steps) {
 				console.log(chalk.green(`  - ${step || "N/A"}`)); // Handle null/undefined steps
-			});
+			}
 		} else {
 			console.log(chalk.gray("  No verified steps listed."));
 		}

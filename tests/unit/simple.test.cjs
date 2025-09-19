@@ -2,7 +2,7 @@
  * Simple unit test to verify Jest configuration
  */
 
-const path = require("path");
+const path = require("node:path");
 
 describe("Jest Configuration Test", () => {
 	test("should resolve paths correctly", () => {
@@ -19,6 +19,6 @@ describe("Jest Configuration Test", () => {
 	test("should work with environment variables", () => {
 		process.env.TEST_VAR = "test_value";
 		expect(process.env.TEST_VAR).toBe("test_value");
-		delete process.env.TEST_VAR;
+		process.env.TEST_VAR = undefined;
 	});
 });

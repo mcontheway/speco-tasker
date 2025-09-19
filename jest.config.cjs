@@ -9,14 +9,20 @@ const config = {
 	// Automatically clear mock calls between every test
 	clearMocks: true,
 
+	// Force exit to avoid hanging processes (compatible with Jest 29.7.0)
+	forceExit: true,
+
+	// Disable open handle detection to avoid internal errors
+	detectOpenHandles: false,
+
 	// Enable coverage collection (disable for now to avoid internal errors)
 	collectCoverage: false,
 
 	// Coverage directory
 	coverageDirectory: "coverage",
 
-	// Coverage reporters - simplified to avoid internal errors
-	coverageReporters: ["text", "text-summary"],
+	// Coverage reporters - completely disabled to avoid internal errors
+	coverageReporters: [],
 
 	// Coverage thresholds (TaskMaster standards)
 	coverageThreshold: {

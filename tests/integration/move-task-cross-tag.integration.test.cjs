@@ -3,8 +3,15 @@ const path = require("node:path");
 const { fileURLToPath } = require("node:url");
 // const { jest } = require("@jest/globals"); // Jest is already global
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+let __filename, __dirname;
+try {
+	__filename = fileURLToPath(import.meta.url);
+	__dirname = path.dirname(__filename);
+} catch (error) {
+	// Fallback for CommonJS environments
+	__filename = __filename || 'unknown';
+	__dirname = path.dirname(__filename);
+}
 
 // Mock dependencies before importing
 const mockUtils = {
@@ -20,11 +27,11 @@ const mockUtils = {
 		if (direction === "forward") {
 			// Return dependencies that tasks have
 			const result = [];
-			sourceTasks.forEach((task) => {
+			for (const task of sourceTasks) {
 				if (task.dependencies && Array.isArray(task.dependencies)) {
 					result.push(...task.dependencies);
 				}
-			});
+			}
 			return result;
 		}
 		if (direction === "reverse") {
@@ -32,7 +39,7 @@ const mockUtils = {
 			const sourceIds = sourceTasks.map((t) => t.id);
 			const normalizedSourceIds = sourceIds.map((id) => String(id));
 			const result = [];
-			allTasks.forEach((task) => {
+			for (const task of allTasks) {
 				if (task.dependencies && Array.isArray(task.dependencies)) {
 					const hasDependency = task.dependencies.some((depId) =>
 						normalizedSourceIds.includes(String(depId)),
@@ -41,7 +48,7 @@ const mockUtils = {
 						result.push(task.id);
 					}
 				}
-			});
+			}
 			return result;
 		}
 		return [];
@@ -79,21 +86,21 @@ jest.unstable_mockModule("../scripts/modules/dependency-manager.js", () => ({
 				const task = allTasks.find((t) => t.id === taskId);
 				if (!task || !Array.isArray(task.dependencies)) return;
 
-				task.dependencies.forEach((depId) => {
+				for (const depId of task.dependencies) {
 					const normalizedDepId =
 						typeof depId === "string" ? Number.parseInt(depId, 10) : depId;
 					if (!Number.isNaN(normalizedDepId) && normalizedDepId !== taskId) {
 						dependentIds.add(normalizedDepId);
 						findAllDependencies(normalizedDepId);
 					}
-				});
+				}
 			}
 
-			sourceTasks.forEach((sourceTask) => {
+			for (const sourceTask of sourceTasks) {
 				if (sourceTask?.id) {
 					findAllDependencies(sourceTask.id);
 				}
-			});
+			}
 
 			return Array.from(dependentIds);
 		},

@@ -1,6 +1,6 @@
 // SCOPE: 路径配置API合同测试，验证GET /paths、PUT /paths、POST /paths/validate端点的行为契约
 const supertest = require("supertest");
-const path = require("path");
+const path = require("node:path");
 
 // Mock the path config service
 const mockPathConfigService = {

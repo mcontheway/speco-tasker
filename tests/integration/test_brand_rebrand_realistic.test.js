@@ -1,7 +1,7 @@
 // SCOPE: 品牌重塑流程真实集成测试，使用实际CLI命令验证完整工作流
-const path = require("path");
-const fs = require("fs");
-const { execSync, spawn } = require("child_process");
+const path = require("node:path");
+const fs = require("node:fs");
+const { execSync, spawn } = require("node:child_process");
 
 describe("Brand Rebrand Realistic Integration Tests", () => {
 	const testProjectDir = path.join(

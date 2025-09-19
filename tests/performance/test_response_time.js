@@ -381,17 +381,17 @@ describe("Task Master Command Response Time", () => {
 			}
 
 			console.log("\n=== Response Time Stability Analysis ===");
-			results.forEach((result) => {
+			for (const result of results) {
 				console.log(`${result.command}:`);
 				console.log(`  Average: ${result.average.toFixed(2)}ms`);
 				console.log(`  Std Dev: ${result.stdDev.toFixed(2)}ms`);
 				console.log(`  CV: ${(result.cv * 100).toFixed(2)}%`);
-			});
+			}
 
 			// Stability assertions - all commands should have reasonable consistency
-			results.forEach((result) => {
+			for (const result of results) {
 				expect(result.cv).toBeLessThan(0.3); // Coefficient of variation should be less than 30%
-			});
+			}
 		}, 60000);
 	});
 
@@ -418,12 +418,12 @@ describe("Task Master Command Response Time", () => {
 			}
 
 			console.log("\n=== Performance Baselines ===");
-			baselines.forEach((baseline) => {
+			for (const baseline of baselines) {
 				console.log(`${baseline.command}:`);
 				console.log(`  Baseline: ${baseline.baseline.toFixed(2)}ms`);
 				console.log(`  Expected Max: ${baseline.expectedMax}ms`);
 				console.log(`  Within Limit: ${baseline.withinLimit ? "✅" : "❌"}`);
-			});
+			}
 
 			// All commands should be within expected performance limits
 			const allWithinLimits = baselines.every((b) => b.withinLimit);

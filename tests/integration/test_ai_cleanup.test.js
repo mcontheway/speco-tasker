@@ -1,7 +1,7 @@
 // SCOPE: AI内容清理真实集成测试，使用实际CLI命令验证AI内容的检测、清理和验证的完整工作流
-const path = require("path");
-const fs = require("fs");
-const { execSync, spawn } = require("child_process");
+const path = require("node:path");
+const fs = require("node:fs");
+const { execSync, spawn } = require("node:child_process");
 
 describe("AI Content Cleanup Realistic Integration Tests", () => {
 	const testProjectDir = path.join(

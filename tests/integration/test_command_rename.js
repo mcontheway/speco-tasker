@@ -1,7 +1,7 @@
 // SCOPE: 命令重命名真实集成测试，使用实际CLI命令验证命令从task-master重命名为speco-tasker的完整工作流
-const path = require("path");
-const fs = require("fs");
-const { execSync, spawn } = require("child_process");
+const path = require("node:path");
+const fs = require("node:fs");
+const { execSync, spawn } = require("node:child_process");
 
 describe("Command Rename Realistic Integration Tests", () => {
 	const testProjectDir = path.join(

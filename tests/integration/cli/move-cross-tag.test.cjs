@@ -70,7 +70,7 @@ describe("Cross-Tag Move CLI Integration", () => {
 	beforeAll(async () => {
 		// Create a temporary directory for testing
 		tempDir = fs.mkdtempSync(
-			path.join(require("os").tmpdir(), "taskmaster-test-"),
+			path.join(require("node:os").tmpdir(), "taskmaster-test-"),
 		);
 		process.chdir(tempDir);
 
@@ -197,7 +197,9 @@ describe("Cross-Tag Move CLI Integration", () => {
 				// Print advisory tips when present
 				if (result && Array.isArray(result.tips) && result.tips.length > 0) {
 					console.log("Next Steps:");
-					result.tips.forEach((t) => console.log(`  • ${t}`));
+					for (const t of result.tips) {
+						console.log(`  • ${t}`);
+					}
 				}
 
 				// Generate task files for both tags

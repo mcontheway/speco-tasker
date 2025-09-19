@@ -5,6 +5,11 @@ describe.skip("manage-gitignore.js Integration Tests", () => {
 	});
 });
 
+// Required imports for when tests are re-enabled
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
+
 // Original code commented out:
 // /**
 //  * Integration tests for manage-gitignore.js module

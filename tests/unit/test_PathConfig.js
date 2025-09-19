@@ -96,7 +96,7 @@ describe("PathConfig", () => {
 				".speco*",
 			];
 
-			invalidPaths.forEach((invalidPath) => {
+			for (const invalidPath of invalidPaths) {
 				const config = new PathConfig({ root: { speco: invalidPath } });
 				const result = config.validate();
 
@@ -104,7 +104,7 @@ describe("PathConfig", () => {
 				expect(result.errors).toContain(
 					'root.speco 不能包含特殊字符 < > : " | ? *',
 				);
-			});
+			}
 		});
 
 		test("应该验证目录配置的有效性", () => {

@@ -128,11 +128,11 @@ export function getMcpPriorityIndicators() {
 export function getCliPriorityIndicators() {
 	return getCachedIndicators("cli-priority-all", () => {
 		const indicators = {};
-		PRIORITY_CONFIG.levels.forEach((level) => {
+		for (const level of PRIORITY_CONFIG.levels) {
 			const intensity = getIntensityFromLevel(level, PRIORITY_CONFIG.levels);
 			const color = PRIORITY_CONFIG.getColor(level);
 			indicators[level] = generateCliIndicator(intensity, color);
-		});
+		}
 		return indicators;
 	});
 }
@@ -220,11 +220,11 @@ const COMPLEXITY_CONFIG = new IndicatorConfig(
 export function getCliComplexityIndicators() {
 	return getCachedIndicators("cli-complexity-all", () => {
 		const indicators = {};
-		COMPLEXITY_CONFIG.levels.forEach((level) => {
+		for (const level of COMPLEXITY_CONFIG.levels) {
 			const intensity = getIntensityFromLevel(level, COMPLEXITY_CONFIG.levels);
 			const color = COMPLEXITY_CONFIG.getColor(level);
 			indicators[level] = generateCliIndicator(intensity, color);
-		});
+		}
 		return indicators;
 	});
 }

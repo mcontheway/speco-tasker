@@ -2,7 +2,7 @@
 // SCOPE: API合约测试环境配置，验证接口行为契约
 
 const supertest = require("supertest");
-const path = require("path");
+const path = require("node:path");
 
 // Setup contract test environment
 beforeAll(() => {
@@ -27,11 +27,11 @@ beforeAll(() => {
 		// Validate response against contract
 		validateResponse: (response, contract) => {
 			// Basic contract validation
-			if (contract.response && contract.response.status) {
+			if (contract.response?.status) {
 				expect(response.status).toBe(contract.response.status);
 			}
 
-			if (contract.response && contract.response.schema) {
+			if (contract.response?.schema) {
 				// Add JSON schema validation if needed
 				expect(response.body).toBeDefined();
 			}
@@ -43,5 +43,5 @@ beforeAll(() => {
 
 afterAll(() => {
 	// Cleanup contract test resources
-	delete global.contractUtils;
+	global.contractUtils = undefined;
 });

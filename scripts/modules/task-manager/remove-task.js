@@ -150,14 +150,14 @@ async function removeTask(tasksPath, taskIds, context = {}) {
 					fullTaggedData[tagName].tasks
 				) {
 					const currentTagTasks = fullTaggedData[tagName].tasks;
-					currentTagTasks.forEach((task) => {
+					for (const task of currentTagTasks) {
 						if (task.dependencies) {
 							task.dependencies = task.dependencies.filter(
 								(depId) => !allRemovedIds.has(depId),
 							);
 						}
 						if (task.subtasks) {
-							task.subtasks.forEach((subtask) => {
+							for (const subtask of task.subtasks) {
 								if (subtask.dependencies) {
 									subtask.dependencies = subtask.dependencies.filter(
 										(depId) =>
@@ -165,9 +165,9 @@ async function removeTask(tasksPath, taskIds, context = {}) {
 											!allRemovedIds.has(depId),
 									);
 								}
-							});
+							}
 						}
-					});
+					}
 				}
 			}
 
