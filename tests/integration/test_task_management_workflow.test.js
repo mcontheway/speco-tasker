@@ -3,6 +3,8 @@
  * Tests the full lifecycle of task management operations
  */
 
+import { vi } from "vitest";
+
 describe("Complete Task Management Workflow Integration Test", () => {
 	let mockTaskManager;
 	let mockDependencyManager;
@@ -10,26 +12,26 @@ describe("Complete Task Management Workflow Integration Test", () => {
 
 	beforeEach(() => {
 		mockTaskManager = {
-			addTask: jest.fn(),
-			getTasks: jest.fn(),
-			getTask: jest.fn(),
-			setTaskStatus: jest.fn(),
-			updateTask: jest.fn(),
-			removeTask: jest.fn(),
-			moveTask: jest.fn(),
-			addSubtask: jest.fn(),
-			findProjectRoot: jest.fn().mockReturnValue("/mock/project"),
+			addTask: vi.fn(),
+			getTasks: vi.fn(),
+			getTask: vi.fn(),
+			setTaskStatus: vi.fn(),
+			updateTask: vi.fn(),
+			removeTask: vi.fn(),
+			moveTask: vi.fn(),
+			addSubtask: vi.fn(),
+			findProjectRoot: vi.fn().mockReturnValue("/mock/project"),
 		};
 
 		mockDependencyManager = {
-			addDependency: jest.fn(),
-			removeDependency: jest.fn(),
-			validateDependencies: jest.fn(),
+			addDependency: vi.fn(),
+			removeDependency: vi.fn(),
+			validateDependencies: vi.fn(),
 		};
 
 		mockFileManager = {
-			generateTaskFiles: jest.fn(),
-			updateTaskFile: jest.fn(),
+			generateTaskFiles: vi.fn(),
+			updateTaskFile: vi.fn(),
 		};
 	});
 

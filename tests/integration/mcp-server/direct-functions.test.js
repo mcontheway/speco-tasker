@@ -4,7 +4,7 @@
 
 import path, { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { jest } from "@jest/globals";
+import { vi } from "vitest";
 
 // Get the current module's directory
 let __filename;
@@ -23,22 +23,22 @@ const testProjectRoot = path.join(__dirname, "../../fixtures");
 const testTasksPath = path.join(testProjectRoot, "test-tasks.json");
 
 // Create explicit mock functions
-const mockExistsSync = jest.fn().mockReturnValue(true);
-const mockWriteFileSync = jest.fn();
-const mockReadFileSync = jest.fn();
-const mockUnlinkSync = jest.fn();
-const mockMkdirSync = jest.fn();
+const mockExistsSync = vi.fn().mockReturnValue(true);
+const mockWriteFileSync = vi.fn();
+const mockReadFileSync = vi.fn();
+const mockUnlinkSync = vi.fn();
+const mockMkdirSync = vi.fn();
 
-const mockFindTasksJsonPath = jest.fn().mockReturnValue(testTasksPath);
-const mockReadJSON = jest.fn();
-const mockWriteJSON = jest.fn();
-const mockEnableSilentMode = jest.fn();
-const mockDisableSilentMode = jest.fn();
-const mockReadComplexityReport = jest.fn().mockReturnValue(null);
+const mockFindTasksJsonPath = vi.fn().mockReturnValue(testTasksPath);
+const mockReadJSON = vi.fn();
+const mockWriteJSON = vi.fn();
+const mockEnableSilentMode = vi.fn();
+const mockDisableSilentMode = vi.fn();
+const mockReadComplexityReport = vi.fn().mockReturnValue(null);
 
-const mockGetAnthropicClient = jest.fn().mockReturnValue({});
-const mockGetConfiguredAnthropicClient = jest.fn().mockReturnValue({});
-const mockHandleAnthropicStream = jest.fn().mockResolvedValue(
+const mockGetAnthropicClient = vi.fn().mockReturnValue({});
+const mockGetConfiguredAnthropicClient = vi.fn().mockReturnValue({});
+const mockHandleAnthropicStream = vi.fn().mockResolvedValue(
 	JSON.stringify([
 		{
 			id: 1,
@@ -56,7 +56,7 @@ const mockHandleAnthropicStream = jest.fn().mockResolvedValue(
 		},
 	]),
 );
-const mockParseSubtasksFromText = jest.fn().mockReturnValue([
+const mockParseSubtasksFromText = vi.fn().mockReturnValue([
 	{
 		id: 1,
 		title: "Mock Subtask 1",
@@ -73,12 +73,12 @@ const mockParseSubtasksFromText = jest.fn().mockReturnValue([
 	},
 ]);
 
-const mockGenerateTaskFiles = jest.fn().mockResolvedValue(true);
-const mockFindTaskById = jest.fn();
-const mockTaskExists = jest.fn().mockReturnValue(true);
+const mockGenerateTaskFiles = vi.fn().mockResolvedValue(true);
+const mockFindTaskById = vi.fn();
+const mockTaskExists = vi.fn().mockReturnValue(true);
 
 // Mock fs module to avoid file system operations
-jest.mock("fs", () => ({
+vi.mock("fs", () => ({
 	existsSync: mockExistsSync,
 	writeFileSync: mockWriteFileSync,
 	readFileSync: mockReadFileSync,
@@ -87,7 +87,7 @@ jest.mock("fs", () => ({
 }));
 
 // Mock utils functions to avoid actual file operations
-jest.mock("../../../scripts/modules/utils.js", () => ({
+vi.mock("../../../scripts/modules/utils.js", () => ({
 	readJSON: mockReadJSON,
 	writeJSON: mockWriteJSON,
 	enableSilentMode: mockEnableSilentMode,
@@ -101,13 +101,13 @@ jest.mock("../../../scripts/modules/utils.js", () => ({
 }));
 
 // Mock path-utils with findTasksJsonPath
-jest.mock("../../../mcp-server/src/core/utils/path-utils.js", () => ({
+vi.mock("../../../mcp-server/src/core/utils/path-utils.js", () => ({
 	findTasksJsonPath: mockFindTasksJsonPath,
 }));
 
 // AI functionality has been removed from the project - no need to mock AI services
 // Mock task-manager.js to avoid real operations
-jest.mock("../../../scripts/modules/task-manager.js", () => ({
+vi.mock("../../../scripts/modules/task-manager.js", () => ({
 	generateTaskFiles: mockGenerateTaskFiles,
 	findTaskById: mockFindTaskById,
 	taskExists: mockTaskExists,
@@ -118,10 +118,10 @@ import { sampleTasks } from "../../fixtures/sample-tasks.js";
 
 // Mock logger
 const mockLogger = {
-	info: jest.fn(),
-	error: jest.fn(),
-	debug: jest.fn(),
-	warn: jest.fn(),
+	info: vi.fn(),
+	error: vi.fn(),
+	debug: vi.fn(),
+	warn: vi.fn(),
 };
 
 // Mock session
@@ -135,7 +135,7 @@ const mockSession = {
 describe("MCP Server Direct Functions", () => {
 	// Set up before each test
 	beforeEach(() => {
-		jest.clearAllMocks();
+		vi.clearAllMocks();
 
 		// Default mockReadJSON implementation
 		mockReadJSON.mockReturnValue(JSON.parse(JSON.stringify(sampleTasks)));

@@ -3,23 +3,25 @@
  * Tests the complete dependency system including validation and resolution
  */
 
+import { vi } from "vitest";
+
 describe("Dependency Management Integration Test", () => {
 	let mockDependencyManager;
 	let mockTaskManager;
 
 	beforeEach(() => {
 		mockDependencyManager = {
-			addDependency: jest.fn(),
-			removeDependency: jest.fn(),
-			validateDependencies: jest.fn(),
-			fixDependencies: jest.fn(),
-			findProjectRoot: jest.fn().mockReturnValue("/mock/project"),
+			addDependency: vi.fn(),
+			removeDependency: vi.fn(),
+			validateDependencies: vi.fn(),
+			fixDependencies: vi.fn(),
+			findProjectRoot: vi.fn().mockReturnValue("/mock/project"),
 		};
 
 		mockTaskManager = {
-			getTasks: jest.fn(),
-			getTask: jest.fn(),
-			setTaskStatus: jest.fn(),
+			getTasks: vi.fn(),
+			getTask: vi.fn(),
+			setTaskStatus: vi.fn(),
 		};
 	});
 

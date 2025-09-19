@@ -1,23 +1,24 @@
+import path from "node:path";
 // SCOPE: 清理API合同测试，验证GET /ai-content、DELETE /ai-content、GET /brand-info、PATCH /brand-info、POST /validate端点的行为契约
-const supertest = require("supertest");
-const path = require("node:path");
+import supertest from "supertest";
+import { vi } from "vitest";
 
 // Mock the cleanup service
 const mockCleanupService = {
-	getAIContentList: jest.fn(),
-	cleanupAIContent: jest.fn(),
-	getBrandInfoList: jest.fn(),
-	updateBrandInfo: jest.fn(),
-	validateCleanup: jest.fn(),
+	getAIContentList: vi.fn(),
+	cleanupAIContent: vi.fn(),
+	getBrandInfoList: vi.fn(),
+	updateBrandInfo: vi.fn(),
+	validateCleanup: vi.fn(),
 };
 
 // Mock the cleanup controller
-jest.mock("../../src/controllers/CleanupController.js", () => ({
-	getAIContent: jest.fn(),
-	cleanupAIContent: jest.fn(),
-	getBrandInfo: jest.fn(),
-	updateBrandInfo: jest.fn(),
-	validateCleanup: jest.fn(),
+vi.mock("../../src/controllers/CleanupController.js", () => ({
+	getAIContent: vi.fn(),
+	cleanupAIContent: vi.fn(),
+	getBrandInfo: vi.fn(),
+	updateBrandInfo: vi.fn(),
+	validateCleanup: vi.fn(),
 }));
 
 const {
@@ -45,7 +46,7 @@ beforeAll(() => {
 });
 
 beforeEach(() => {
-	jest.clearAllMocks();
+	vi.clearAllMocks();
 });
 
 describe("Cleanup API Contract Tests", () => {

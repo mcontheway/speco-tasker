@@ -1,19 +1,20 @@
+import path from "node:path";
 // SCOPE: 路径配置API合同测试，验证GET /paths、PUT /paths、POST /paths/validate端点的行为契约
-const supertest = require("supertest");
-const path = require("node:path");
+import supertest from "supertest";
+import { vi } from "vitest";
 
 // Mock the path config service
 const mockPathConfigService = {
-	getPathConfig: jest.fn(),
-	updatePathConfig: jest.fn(),
-	validatePathConfig: jest.fn(),
+	getPathConfig: vi.fn(),
+	updatePathConfig: vi.fn(),
+	validatePathConfig: vi.fn(),
 };
 
 // Mock the path config controller
-jest.mock("../../src/controllers/PathConfigController.js", () => ({
-	getPathConfig: jest.fn(),
-	updatePathConfig: jest.fn(),
-	validatePathConfig: jest.fn(),
+vi.mock("../../src/controllers/PathConfigController.js", () => ({
+	getPathConfig: vi.fn(),
+	updatePathConfig: vi.fn(),
+	validatePathConfig: vi.fn(),
 }));
 
 const {
@@ -37,7 +38,7 @@ beforeAll(() => {
 });
 
 beforeEach(() => {
-	jest.clearAllMocks();
+	vi.clearAllMocks();
 });
 
 describe("Path Config API Contract Tests", () => {

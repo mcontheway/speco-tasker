@@ -3,26 +3,28 @@
  * Tests the complete tagged task lists system for multi-context management
  */
 
+import { vi } from "vitest";
+
 describe("Tag System Integration Test", () => {
 	let mockTagManager;
 	let mockTaskManager;
 
 	beforeEach(() => {
 		mockTagManager = {
-			listTags: jest.fn(),
-			addTag: jest.fn(),
-			deleteTag: jest.fn(),
-			useTag: jest.fn(),
-			renameTag: jest.fn(),
-			copyTag: jest.fn(),
-			findProjectRoot: jest.fn().mockReturnValue("/mock/project"),
+			listTags: vi.fn(),
+			addTag: vi.fn(),
+			deleteTag: vi.fn(),
+			useTag: vi.fn(),
+			renameTag: vi.fn(),
+			copyTag: vi.fn(),
+			findProjectRoot: vi.fn().mockReturnValue("/mock/project"),
 		};
 
 		mockTaskManager = {
-			getTasks: jest.fn(),
-			addTask: jest.fn(),
-			setTaskStatus: jest.fn(),
-			moveTask: jest.fn(),
+			getTasks: vi.fn(),
+			addTask: vi.fn(),
+			setTaskStatus: vi.fn(),
+			moveTask: vi.fn(),
 		};
 	});
 

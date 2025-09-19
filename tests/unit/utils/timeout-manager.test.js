@@ -2,6 +2,8 @@
  * Unit tests for timeout manager utilities
  */
 
+import { vi } from "vitest";
+
 import {
 	Duration,
 	createTimeoutController,
@@ -18,7 +20,7 @@ import {
 
 describe("Timeout Manager", () => {
 	afterEach(() => {
-		jest.clearAllMocks();
+		vi.clearAllMocks();
 	});
 
 	describe("withTimeout", () => {
@@ -49,7 +51,7 @@ describe("Timeout Manager", () => {
 
 		test("should clear timeout when promise resolves first", async () => {
 			const promise = Promise.resolve("success");
-			const clearTimeoutSpy = jest.spyOn(global, "clearTimeout");
+			const clearTimeoutSpy = vi.spyOn(global, "clearTimeout");
 
 			await withTimeout(promise, 1000, "Test");
 
