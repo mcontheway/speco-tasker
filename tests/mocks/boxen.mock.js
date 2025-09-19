@@ -19,9 +19,9 @@ const boxenMock = jest.fn((text, options) => {
 	const bottomBorder = '─'.repeat(width);
 
 	result = `┌${topBorder}┐\n`;
-	paddedLines.forEach(line => {
+	for (const line of paddedLines) {
 		result += `│${line.padEnd(width)}│\n`;
-	});
+	}
 	result += `└${bottomBorder}┘`;
 
 	// Add margin

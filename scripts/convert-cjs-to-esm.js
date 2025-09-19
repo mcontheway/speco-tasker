@@ -85,7 +85,9 @@ async function main() {
 	const cjsFiles = await findCjsTestFiles();
 	console.log(`Found ${cjsFiles.length} .cjs test files to convert:\n`);
 
-	cjsFiles.forEach(file => console.log(`  - ${file}`));
+	for (const file of cjsFiles) {
+		console.log(`  - ${file}`);
+	}
 	console.log('\n');
 
 	let successCount = 0;
