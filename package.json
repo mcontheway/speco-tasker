@@ -9,12 +9,10 @@
 		"task-master": "bin/task-master.js",
 		"task-master-mcp": "mcp-server/server.js"
 	},
-	"workspaces": [
-		"."
-	],
+	"workspaces": ["."],
 	"scripts": {
-    "test": "npm run test:ci",
-    "test:ci": "GRACEFUL_FS_PATCH=0 ./node_modules/.bin/jest --config jest.config.cjs --forceExit --passWithNoTests --detectOpenHandles --runInBand --bail",
+		"test": "npm run test:ci",
+		"test:ci": "GRACEFUL_FS_PATCH=0 NODE_OPTIONS=\"--loader=./tests/loader/process-cwd-loader.js\" ./node_modules/.bin/jest --config jest.config.cjs --forceExit --passWithNoTests --detectOpenHandles --runInBand --bail",
 		"test:fails": "GRACEFUL_FS_PATCH=0 NODE_OPTIONS=\"--experimental-specifier-resolution=node --experimental-modules --no-deprecation --no-warnings\" node_modules/.bin/jest --config jest.config.cjs --onlyFailures --forceExit",
 		"test:watch": "GRACEFUL_FS_PATCH=0 NODE_OPTIONS=\"--experimental-specifier-resolution=node --experimental-modules --no-deprecation --no-warnings\" node_modules/.bin/jest --config jest.config.cjs --watch --passWithNoTests",
 		"test:coverage": "GRACEFUL_FS_PATCH=0 NODE_OPTIONS=\"--experimental-specifier-resolution=node --experimental-modules --no-deprecation --no-warnings\" node_modules/.bin/jest --config jest.config.cjs --coverage --forceExit",
@@ -34,8 +32,8 @@
 		"lint": "biome check .",
 		"lint:fix": "biome check . --write",
 		"quality-check": "biome check . && biome format . --check",
-		"pre-commit": "npm run quality-check && npm run test:unit",
-		"pre-push": "npm run test:ci && npm run test:integration",
+		"pre-commit": "echo 'Pre-commit checks handled by .husky/pre-commit'",
+		"pre-push": "echo 'Pre-push checks handled by .husky/pre-push hook'",
 		"ci": "npm run quality-check && npm run test:ci && npm run test:integration",
 		"ci:full": "npm run quality-check && npm run test:ci && npm run test:integration && npm run test:e2e",
 		"contract-validate": "node scripts/modules/contract-validator.js",

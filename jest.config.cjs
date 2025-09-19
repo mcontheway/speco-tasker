@@ -8,13 +8,13 @@ process.env.NODE_OPTIONS = "--no-deprecation";
 
 // Critical fix: Override process.cwd globally to prevent ENOENT errors
 const originalCwd = process.cwd;
-Object.defineProperty(process, 'cwd', {
+Object.defineProperty(process, "cwd", {
 	value: () => {
 		try {
 			return originalCwd.call(process);
 		} catch (error) {
 			// Fallback to current directory if cwd fails
-			return '.';
+			return ".";
 		}
 	},
 	writable: false,
@@ -28,9 +28,6 @@ const config = {
 
 	// Automatically clear mock calls between every test
 	clearMocks: true,
-
-	// Force exit to avoid hanging processes (compatible with Jest 29.7.0)
-	forceExit: true,
 
 	// Disable open handle detection to avoid internal errors
 	detectOpenHandles: false,
@@ -87,13 +84,28 @@ const config = {
 		"!tests/setup/e2e.js",
 	],
 
-	// Simple transform configuration - disable Babel to avoid issues
-	transform: {},
-
-	// Transform all node_modules except problematic ones
-	transformIgnorePatterns: [
-		"node_modules/(?!((.*)/))",
-	],
+	// Smart transform configuration - conditional Babel support
+	transform: {
+		// Use Babel for files that need it (like integration tests)
+		"^.+\\.(js|jsx|mjs|cjs)$": [
+			"babel-jest",
+			{
+				presets: [
+					[
+						"@babel/preset-env",
+						{
+							targets: { node: "current" },
+							modules: false, // Keep ES modules
+							useBuiltIns: false,
+						},
+					],
+				],
+				plugins: [],
+				babelrc: false,
+				configFile: "<rootDir>/babel.config.js",
+			},
+		],
+	},
 
 	// Enhanced module name mapping for ESM compatibility
 	moduleNameMapper: {
@@ -146,9 +158,6 @@ const config = {
 
 	// Worker timeout settings
 	workerIdleMemoryLimit: "500MB",
-
-	// Force exit with timeout
-	forceExit: true,
 
 	// Setup files (already defined above)
 

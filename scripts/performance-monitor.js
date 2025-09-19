@@ -22,7 +22,7 @@ const CLI_PATH = path.resolve(__dirname, "../bin/task-master.js");
 async function monitorMemoryUsage(command, args = []) {
   return new Promise((resolve, reject) => {
     const samples = [];
-    let startTime = Date.now();
+    const startTime = Date.now();
 
     console.log(`🚀 Starting performance monitoring for: ${command} ${args.join(' ')}`);
 
@@ -69,8 +69,8 @@ async function monitorMemoryUsage(command, args = []) {
       }
 
       // Calculate statistics
-      const heapUsages = samples.map(s => parseFloat(s.heapUsed));
-      const rssValues = samples.map(s => parseFloat(s.rss));
+      const heapUsages = samples.map(s => Number.parseFloat(s.heapUsed));
+      const rssValues = samples.map(s => Number.parseFloat(s.rss));
 
       const stats = {
         duration: MONITOR_DURATION,
@@ -115,19 +115,19 @@ async function runBenchmark() {
     console.log('\n📈 Performance Results for CLI --help:');
     console.log(`Duration: ${helpStats.duration}ms`);
     console.log(`Samples: ${helpStats.samples}`);
-    console.log(`Average Memory:`);
+	console.log("Average Memory:");
     console.log(`  Heap Used: ${helpStats.memory.average.heapUsed} MB`);
     console.log(`  RSS: ${helpStats.memory.average.rss} MB`);
-    console.log(`Peak Memory:`);
+	console.log("Peak Memory:");
     console.log(`  Heap Used: ${helpStats.memory.peak.heapUsed} MB`);
     console.log(`  RSS: ${helpStats.memory.peak.rss} MB`);
     console.log(`Memory Growth: ${helpStats.memory.growth} MB`);
     console.log(`Exit Code: ${helpStats.exitCode}`);
 
     // Performance assertions
-    const avgHeap = parseFloat(helpStats.memory.average.heapUsed);
-    const peakHeap = parseFloat(helpStats.memory.peak.heapUsed);
-    const growth = Math.abs(parseFloat(helpStats.memory.growth));
+    const avgHeap = Number.parseFloat(helpStats.memory.average.heapUsed);
+    const peakHeap = Number.parseFloat(helpStats.memory.peak.heapUsed);
+    const growth = Math.abs(Number.parseFloat(helpStats.memory.growth));
 
     console.log('\n✅ Performance Assertions:');
     console.log(`Average heap memory < 100MB: ${avgHeap < 100 ? 'PASS' : 'FAIL'} (${avgHeap}MB)`);

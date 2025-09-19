@@ -104,8 +104,8 @@ describe("Path Utilities", () => {
 		});
 
 		test("should return cwd when no project markers found", () => {
-			mockFs.existsSync.mockReturnValue(false);
-			const spyCwd = jest.spyOn(process, 'cwd');
+		mockFs.existsSync.mockReturnValue(false);
+		const spyCwd = jest.spyOn(process, "cwd");
 			spyCwd.mockReturnValue("/current/dir");
 
 			const result = findProjectRoot("/start/dir");
@@ -122,7 +122,7 @@ describe("Path Utilities", () => {
 						p.includes(".taskmaster")),
 			);
 			mockPath.resolve.mockImplementation((p) => p);
-			const spyCwd = jest.spyOn(process, 'cwd');
+		const spyCwd = jest.spyOn(process, "cwd");
 			spyCwd.mockReturnValue("/current/dir");
 
 			const result = findProjectRoot("/home/user/project/src");
@@ -133,13 +133,28 @@ describe("Path Utilities", () => {
 	});
 
 	describe("resolveTasksOutputPath", () => {
+		let spyCwd;
+
 		beforeEach(() => {
+			spyCwd = jest.spyOn(process, "cwd");
+			spyCwd.mockReturnValue("/mock/cwd");
 			mockPath.isAbsolute.mockReturnValue(false);
-			mockPath.resolve.mockImplementation((...args) => args.join("/"));
+			mockPath.resolve.mockImplementation((...args) => {
+				if (args.length === 2 && args[0] === "/mock/cwd") {
+					return `/mocked/resolved/${args[1]}`;
+				}
+				return args.join("/");
+			});
 			mockPath.dirname.mockImplementation(
 				(p) => p.split("/").slice(0, -1).join("/") || "/",
 			);
 			mockPath.join.mockImplementation((...args) => args.join("/"));
+		});
+
+		afterEach(() => {
+			if (spyCwd) {
+				spyCwd.mockRestore();
+			}
 		});
 
 		test("should return explicit absolute path", () => {

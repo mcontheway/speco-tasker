@@ -24,7 +24,7 @@ export const DEFAULT_TASK_PRIORITY = "medium";
  * @returns {boolean} True if the priority is valid, false otherwise
  */
 export function isValidTaskPriority(priority) {
-	if (typeof priority !== 'string') return false;
+	if (typeof priority !== "string") return false;
 	return TASK_PRIORITY_OPTIONS.includes(priority.toLowerCase());
 }
 
@@ -34,7 +34,7 @@ export function isValidTaskPriority(priority) {
  * @returns {TaskPriority|null} The normalized priority or null if invalid
  */
 export function normalizeTaskPriority(priority) {
-	if (typeof priority !== 'string' || !priority.trim()) return null;
+	if (typeof priority !== "string" || !priority.trim()) return null;
 	const normalized = priority.trim().toLowerCase();
 	return TASK_PRIORITY_OPTIONS.includes(normalized) ? normalized : null;
 }

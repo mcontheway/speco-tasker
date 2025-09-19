@@ -24,7 +24,8 @@ afterAll(() => {
 });
 
 // Get __dirname equivalent for ES modules
-let __filename, __dirname;
+let __filename;
+let __dirname;
 try {
 	__filename = fileURLToPath(import.meta.url);
 	__dirname = path.dirname(__filename);

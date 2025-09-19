@@ -5,8 +5,8 @@
  * Usage: node scripts/convert-cjs-to-esm.js
  */
 
-const fs = require("fs");
-const path = require("path");
+const fs = require("node:fs");
+const path = require("node:path");
 const { glob } = require("glob");
 
 // Find all .test.cjs files
@@ -27,7 +27,7 @@ function convertToESM(content, filePath) {
 			// Handle relative paths - add .js extension for ESM
 			let esmPath = modulePath;
 			if (esmPath.startsWith("./") || esmPath.startsWith("../")) {
-				esmPath = esmPath.replace(/\.js$/, "") + ".js";
+				esmPath = `${esmPath.replace(/\.js$/, "")}.js`;
 			}
 			return `import ${varName} from '${esmPath}'`;
 		},
@@ -40,7 +40,7 @@ function convertToESM(content, filePath) {
 			// Handle relative paths - add .js extension for ESM
 			let esmPath = modulePath;
 			if (esmPath.startsWith("./") || esmPath.startsWith("../")) {
-				esmPath = esmPath.replace(/\.js$/, "") + ".js";
+				esmPath = `${esmPath.replace(/\.js$/, "")}.js`;
 			}
 			return `import { ${destructured} } from '${esmPath}'`;
 		},
@@ -101,7 +101,7 @@ async function main() {
 		}
 	}
 
-	console.log(`\n🎉 Conversion completed!`);
+	console.log("\n🎉 Conversion completed!");
 	console.log(`✅ Successfully converted: ${successCount} files`);
 	console.log(`❌ Failed to convert: ${failCount} files`);
 
