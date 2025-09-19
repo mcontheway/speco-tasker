@@ -109,6 +109,7 @@ describe("Path Utilities", () => {
 			mockIsAbsolute.mockReturnValue(false);
 			mockBasename.mockImplementation((p) => p.split("/").pop() || "");
 			mockParse.mockReturnValue({ root: "/" });
+			mockJoin.mockImplementation((...args) => args.join("/"));
 		});
 
 		test("should return cwd when no project markers found", () => {
