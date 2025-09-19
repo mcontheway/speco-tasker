@@ -1,8 +1,17 @@
 #!/usr/bin/env sh
-# Temporarily simplified for ESM compatibility fixes
-echo "🔍 Running simplified pre-push checks..."
+# Enhanced pre-push checks for quality assurance
+echo "🔍 Running comprehensive pre-push quality checks..."
 
-# Run only a quick unit test to verify core functionality
-GRACEFUL_FS_PATCH=0 NODE_OPTIONS="--loader=./tests/loader/process-cwd-loader.js" ./node_modules/.bin/jest --config jest.config.cjs --testPathPatterns="unit/simple" --passWithNoTests --forceExit --runInBand
+# Run code quality checks (same as pre-commit)
+echo "📏 Running code formatting and linting checks..."
+npm run quality-check
 
-echo "✅ Pre-push checks completed"
+# Run unit tests
+echo "🧪 Running unit tests..."
+npm run test:ci
+
+# Run integration tests (critical for quality)
+echo "🔗 Running integration tests..."
+npm run test:integration
+
+echo "✅ All pre-push quality checks completed successfully"

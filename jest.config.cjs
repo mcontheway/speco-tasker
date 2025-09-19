@@ -128,8 +128,6 @@ const config = {
 	// ESM-specific Jest configuration
 	testEnvironmentOptions: {
 		node: {
-			// Enable ESM support in test environment
-			loader: "node",
 			// Enable experimental VM modules for dynamic imports
 			experimentalVmModules: true,
 		},
@@ -239,8 +237,8 @@ const config = {
 	forceExit: true,
 
 	// Disable problematic detection features for Node.js compatibility
-	detectOpenHandles: false,
-	detectLeaks: false,
+	// detectOpenHandles: false,
+	// detectLeaks: false,
 
 	// Bail on first failure for faster feedback during development
 	bail: 0, // Set to 1 during strict TDD development
