@@ -94,9 +94,9 @@ const config = {
 		"^import\\.meta\\.url$": "<rootDir>/tests/mocks/import-meta-url.mock.js",
 	},
 
-	// ESM support - transform specific problematic packages
+	// ESM support - transform ALL packages to handle complex ESM dependencies
 	transformIgnorePatterns: [
-		"node_modules/(?!(gradient-string|chalk|boxen|ora|cli-table3|figlet|supports-color|strip-ansi|ansi-regex|wrap-ansi|widest-line|string-width)/)",
+		"node_modules/(?!(.*)/)",
 	],
 
 	// Enhanced ESM support configuration

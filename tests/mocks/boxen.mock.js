@@ -1,5 +1,5 @@
 // Enhanced mock for boxen ESM package
-const boxenMock = jest.fn((text, options) => {
+const boxenMock = (text, options) => {
 	// Simulate boxen behavior with basic formatting
 	const borderStyle = options?.borderStyle || 'single';
 	const padding = options?.padding || 1;
@@ -29,7 +29,7 @@ const boxenMock = jest.fn((text, options) => {
 	result = marginStr + result + marginStr;
 
 	return result;
-});
+};
 
 // Export as both default and named exports for ESM compatibility
 module.exports = boxenMock;
