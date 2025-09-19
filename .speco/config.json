@@ -1,47 +1,47 @@
 {
-  "project": {
-    "name": "speco-tasker",
-    "version": "1.2.0",
-    "description": "A project managed with Speco Tasker",
-    "author": "Vibe coder",
-    "license": "MIT WITH Commons-Clause"
-  },
-  "paths": {
-    "root": ".",
-    "src": "src",
-    "scripts": "scripts/modules",
-    "bin": "bin",
-    "tests": "tests",
-    "config": ".speco",
-    "docs": "docs",
-    "specs": "specs"
-  },
-  "features": {
-    "aiCleanup": false,
-    "brandRebrand": true,
-    "pathConfig": true,
-    "mcpServer": true,
-    "cli": true
-  },
-  "testing": {
-    "framework": "jest",
-    "coverage": {
-      "enabled": true,
-      "thresholds": {
-        "branches": 70,
-        "functions": 80,
-        "lines": 80,
-        "statements": 80
-      }
-    }
-  },
-  "quality": {
-    "eslint": true,
-    "prettier": true,
-    "biome": true
-  },
-  "logging": {
-    "level": "info",
-    "file": ".speco/logs/speco-tasker.log"
-  }
+	"project": {
+		"name": "speco-tasker",
+		"version": "1.2.0",
+		"description": "A project managed with Speco Tasker",
+		"author": "Vibe coder",
+		"license": "MIT WITH Commons-Clause"
+	},
+	"paths": {
+		"root": ".",
+		"src": "src",
+		"scripts": "scripts/modules",
+		"bin": "bin",
+		"tests": "tests",
+		"config": ".speco",
+		"docs": "docs",
+		"specs": "specs"
+	},
+	"features": {
+		"aiCleanup": false,
+		"brandRebrand": true,
+		"pathConfig": true,
+		"mcpServer": true,
+		"cli": true
+	},
+	"testing": {
+		"framework": "jest",
+		"coverage": {
+			"enabled": true,
+			"thresholds": {
+				"branches": 70,
+				"functions": 80,
+				"lines": 80,
+				"statements": 80
+			}
+		}
+	},
+	"quality": {
+		"eslint": true,
+		"prettier": true,
+		"biome": true
+	},
+	"logging": {
+		"level": "info",
+		"file": ".speco/logs/speco-tasker.log"
+	}
 }

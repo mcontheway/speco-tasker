@@ -6,7 +6,10 @@
 import fs from "fs/promises";
 import path from "path";
 import { PathConfig } from "../models/PathConfig.js";
-import { validateFileSecurity, validateDirectorySecurity } from "../utils/file-system-security.js";
+import {
+	validateFileSecurity,
+	validateDirectorySecurity,
+} from "../utils/file-system-security.js";
 import { getLoggerOrDefault } from "../utils/logger-utils.js";
 
 /**
@@ -75,9 +78,7 @@ class PathService {
 	 * 确保所有必要的目录存在
 	 */
 	async ensureDirectories() {
-		const dirs = [
-			await this.getAbsolutePath("root", "speco"),
-		];
+		const dirs = [await this.getAbsolutePath("root", "speco")];
 
 		// 收集所有目录路径
 		for (const [key, value] of Object.entries(this.pathConfig.dirs)) {
@@ -140,7 +141,10 @@ class PathService {
 
 		// 替换目录变量
 		for (const [key, value] of Object.entries(this.pathConfig.dirs)) {
-			resolved = resolved.replace(`{${key}}`, await this.getAbsolutePath("dir", key));
+			resolved = resolved.replace(
+				`{${key}}`,
+				await this.getAbsolutePath("dir", key),
+			);
 		}
 
 		// 替换文件变量
@@ -213,13 +217,13 @@ class PathService {
 			// 安全验证
 			if (this.securityEnabled) {
 				const securityResult = await validateFileSecurity(filePath, "read", {
-					logger: this.logger
+					logger: this.logger,
 				});
 
 				if (!securityResult.secure) {
 					this.logger.warn?.(`文件安全验证失败: ${filePath}`, {
 						violations: securityResult.violations.length,
-						warnings: securityResult.warnings.length
+						warnings: securityResult.warnings.length,
 					});
 					// 对于安全验证失败的文件，我们认为它不存在
 					return false;
@@ -245,14 +249,18 @@ class PathService {
 
 			// 安全验证
 			if (this.securityEnabled) {
-				const securityResult = await validateDirectorySecurity(dirPath, "read", {
-					logger: this.logger
-				});
+				const securityResult = await validateDirectorySecurity(
+					dirPath,
+					"read",
+					{
+						logger: this.logger,
+					},
+				);
 
 				if (!securityResult.secure) {
 					this.logger.error?.(`目录安全验证失败: ${dirPath}`, {
 						violations: securityResult.violations.length,
-						warnings: securityResult.warnings.length
+						warnings: securityResult.warnings.length,
 					});
 					throw new Error(`目录安全验证失败，无法读取目录内容`);
 				}
@@ -260,7 +268,7 @@ class PathService {
 				// 记录安全警告
 				if (securityResult.warnings.length > 0) {
 					this.logger.warn?.(`目录访问存在安全警告: ${dirPath}`, {
-						warnings: securityResult.warnings.length
+						warnings: securityResult.warnings.length,
 					});
 				}
 			}
@@ -305,21 +313,25 @@ class PathService {
 			if (this.securityEnabled) {
 				let securityResult;
 				if (stat.isDirectory()) {
-					securityResult = await validateDirectorySecurity(targetPath, "delete", {
-						logger: this.logger,
-						checkEmptyDirectory: !options.recursive
-					});
+					securityResult = await validateDirectorySecurity(
+						targetPath,
+						"delete",
+						{
+							logger: this.logger,
+							checkEmptyDirectory: !options.recursive,
+						},
+					);
 				} else {
 					securityResult = await validateFileSecurity(targetPath, "delete", {
 						logger: this.logger,
-						checkFileInUse: true
+						checkFileInUse: true,
 					});
 				}
 
 				if (!securityResult.secure) {
 					this.logger.error?.(`删除操作安全验证失败: ${targetPath}`, {
 						violations: securityResult.violations.length,
-						warnings: securityResult.warnings.length
+						warnings: securityResult.warnings.length,
 					});
 					throw new Error(`安全验证失败，无法删除 ${targetPath}`);
 				}
@@ -327,7 +339,7 @@ class PathService {
 				// 记录安全警告
 				if (securityResult.warnings.length > 0) {
 					this.logger.warn?.(`删除操作存在安全警告: ${targetPath}`, {
-						warnings: securityResult.warnings.length
+						warnings: securityResult.warnings.length,
 					});
 				}
 			}
@@ -375,35 +387,41 @@ class PathService {
 			if (this.securityEnabled) {
 				// 验证源文件
 				const srcSecurityResult = await validateFileSecurity(srcPath, "read", {
-					logger: this.logger
+					logger: this.logger,
 				});
 
 				if (!srcSecurityResult.secure) {
 					this.logger.error?.(`源文件安全验证失败: ${srcPath}`, {
-						violations: srcSecurityResult.violations.length
+						violations: srcSecurityResult.violations.length,
 					});
 					throw new Error(`源文件安全验证失败，无法复制`);
 				}
 
 				// 验证目标路径
-				const destSecurityResult = await validateFileSecurity(destPath, "write", {
-					logger: this.logger,
-					checkDiskSpace: true
-				});
+				const destSecurityResult = await validateFileSecurity(
+					destPath,
+					"write",
+					{
+						logger: this.logger,
+						checkDiskSpace: true,
+					},
+				);
 
 				if (!destSecurityResult.secure) {
 					this.logger.error?.(`目标文件安全验证失败: ${destPath}`, {
-						violations: destSecurityResult.violations.length
+						violations: destSecurityResult.violations.length,
 					});
 					throw new Error(`目标文件安全验证失败，无法复制`);
 				}
 
 				// 记录安全警告
-				const totalWarnings = srcSecurityResult.warnings.length + destSecurityResult.warnings.length;
+				const totalWarnings =
+					srcSecurityResult.warnings.length +
+					destSecurityResult.warnings.length;
 				if (totalWarnings > 0) {
 					this.logger.warn?.(`复制操作存在安全警告`, {
 						sourceWarnings: srcSecurityResult.warnings.length,
-						destWarnings: destSecurityResult.warnings.length
+						destWarnings: destSecurityResult.warnings.length,
 					});
 				}
 			}
@@ -435,13 +453,13 @@ class PathService {
 			if (this.securityEnabled) {
 				const securityResult = await validateFileSecurity(filePath, "read", {
 					logger: this.logger,
-					checkFileSize: true
+					checkFileSize: true,
 				});
 
 				if (!securityResult.secure) {
 					this.logger.warn?.(`路径信息获取安全验证失败: ${filePath}`, {
 						violations: securityResult.violations.length,
-						warnings: securityResult.warnings.length
+						warnings: securityResult.warnings.length,
 					});
 					// 对于安全验证失败的路径，返回受限信息
 					return {
@@ -450,14 +468,14 @@ class PathService {
 						exists: false,
 						error: "安全验证失败",
 						securityViolations: securityResult.violations.length,
-						securityWarnings: securityResult.warnings.length
+						securityWarnings: securityResult.warnings.length,
 					};
 				}
 
 				// 记录安全警告
 				if (securityResult.warnings.length > 0) {
 					this.logger.warn?.(`路径信息获取存在安全警告: ${filePath}`, {
-						warnings: securityResult.warnings.length
+						warnings: securityResult.warnings.length,
 					});
 				}
 			}
@@ -570,7 +588,7 @@ class PathService {
 	 */
 	setSecurityEnabled(enabled) {
 		this.securityEnabled = !!enabled;
-		this.logger.info?.(`文件系统安全验证已${enabled ? '启用' : '禁用'}`);
+		this.logger.info?.(`文件系统安全验证已${enabled ? "启用" : "禁用"}`);
 	}
 
 	/**
@@ -591,7 +609,7 @@ class PathService {
 			return {
 				secure: true,
 				totalOperations: operations.length,
-				message: "安全验证已禁用"
+				message: "安全验证已禁用",
 			};
 		}
 
@@ -600,7 +618,7 @@ class PathService {
 			totalOperations: operations.length,
 			violations: [],
 			warnings: [],
-			details: []
+			details: [],
 		};
 
 		for (const op of operations) {
@@ -609,12 +627,16 @@ class PathService {
 
 				let securityResult;
 				if (op.type === "dir") {
-					securityResult = await validateDirectorySecurity(filePath, op.operation, {
-						logger: this.logger
-					});
+					securityResult = await validateDirectorySecurity(
+						filePath,
+						op.operation,
+						{
+							logger: this.logger,
+						},
+					);
 				} else {
 					securityResult = await validateFileSecurity(filePath, op.operation, {
-						logger: this.logger
+						logger: this.logger,
 					});
 				}
 
@@ -623,7 +645,7 @@ class PathService {
 					operation: op.operation,
 					secure: securityResult.secure,
 					violations: securityResult.violations.length,
-					warnings: securityResult.warnings.length
+					warnings: securityResult.warnings.length,
 				});
 
 				if (!securityResult.secure) {
@@ -631,12 +653,11 @@ class PathService {
 					results.violations.push(...securityResult.violations);
 				}
 				results.warnings.push(...securityResult.warnings);
-
 			} catch (error) {
 				results.details.push({
 					path: await this.getAbsolutePath(op.type, op.key, op.tag),
 					operation: op.operation,
-					error: error.message
+					error: error.message,
 				});
 				results.secure = false;
 			}
@@ -646,7 +667,7 @@ class PathService {
 			total: results.totalOperations,
 			secure: results.secure,
 			violations: results.violations.length,
-			warnings: results.warnings.length
+			warnings: results.warnings.length,
 		});
 
 		return results;
@@ -664,8 +685,10 @@ class PathService {
 			configuration: {
 				projectRoot: this.projectRoot,
 				cacheSize: this.cache.size,
-				pathConfigValid: this.pathConfig ? this.pathConfig.validate().valid : false
-			}
+				pathConfigValid: this.pathConfig
+					? this.pathConfig.validate().valid
+					: false,
+			},
 		};
 	}
 

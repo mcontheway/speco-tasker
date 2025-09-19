@@ -96,7 +96,9 @@ describe("Path Utilities", () => {
 		});
 
 		test("should find project root with .taskmaster marker", () => {
-			fs.existsSync.mockImplementation((p) => typeof p === 'string' && p.includes(".taskmaster"));
+			fs.existsSync.mockImplementation(
+				(p) => typeof p === "string" && p.includes(".taskmaster"),
+			);
 			path.resolve.mockImplementation((p) => p);
 			process.cwd = jest.fn().mockReturnValue("/current/dir");
 
@@ -109,8 +111,8 @@ describe("Path Utilities", () => {
 		beforeEach(() => {
 			path.isAbsolute.mockImplementation(() => false);
 			path.resolve.mockImplementation((...args) => args.join("/"));
-			path.dirname.mockImplementation((p) =>
-				p.split("/").slice(0, -1).join("/") || "/",
+			path.dirname.mockImplementation(
+				(p) => p.split("/").slice(0, -1).join("/") || "/",
 			);
 			path.join.mockImplementation((...args) => args.join("/"));
 		});
@@ -118,8 +120,8 @@ describe("Path Utilities", () => {
 		test("should return explicit absolute path", () => {
 			path.isAbsolute.mockImplementation(() => true);
 			path.resolve.mockImplementation((...args) => args.join("/"));
-			path.dirname.mockImplementation((p) =>
-				p.split("/").slice(0, -1).join("/") || "/",
+			path.dirname.mockImplementation(
+				(p) => p.split("/").slice(0, -1).join("/") || "/",
 			);
 			const result = resolveTasksOutputPath("/explicit/path/tasks.json");
 			expect(result).toBe("/explicit/path/tasks.json");

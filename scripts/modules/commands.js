@@ -9,37 +9,37 @@
  */
 function detectCommandName() {
 	// Check if we're being called through speco-tasker
-	const execPath = process.argv[1] || '';
+	const execPath = process.argv[1] || "";
 	const execArgv = process.execArgv || [];
 
 	// Method 1: Check the script path
-	if (execPath.includes('speco-tasker')) {
-		return 'speco-tasker';
+	if (execPath.includes("speco-tasker")) {
+		return "speco-tasker";
 	}
 
 	// Method 2: Check parent process arguments (more reliable)
 	try {
-		const fs = require('fs');
-		const path = require('path');
+		const fs = require("fs");
+		const path = require("path");
 
 		// Check if parent process used speco-tasker
-		if (typeof process.env.PARENT_COMMAND === 'string') {
-			if (process.env.PARENT_COMMAND.includes('speco-tasker')) {
-				return 'speco-tasker';
+		if (typeof process.env.PARENT_COMMAND === "string") {
+			if (process.env.PARENT_COMMAND.includes("speco-tasker")) {
+				return "speco-tasker";
 			}
 		}
 
 		// Method 3: Check if we're called from bin/speco-tasker.js
 		const callerStack = new Error().stack;
-		if (callerStack && callerStack.includes('speco-tasker.js')) {
-			return 'speco-tasker';
+		if (callerStack && callerStack.includes("speco-tasker.js")) {
+			return "speco-tasker";
 		}
 	} catch (error) {
 		// Silently fall back to task-master if detection fails
 	}
 
 	// Default fallback
-	return 'task-master';
+	return "task-master";
 }
 
 /**
@@ -56,7 +56,7 @@ function getDisplayCommandName() {
  */
 function getDisplayPackageName() {
 	const commandName = detectCommandName();
-	return commandName === 'speco-tasker' ? 'speco-tasker' : 'task-master-ai';
+	return commandName === "speco-tasker" ? "speco-tasker" : "task-master-ai";
 }
 
 import fs from "node:fs";
@@ -226,14 +226,6 @@ function registerCommands(programInstance) {
 				tag,
 			});
 		});
-
-
-
-
-
-
-
-
 
 	// config command group
 	const configCommand = programInstance
@@ -3186,7 +3178,11 @@ function compareVersions(v1, v2) {
  * @param {string} latestVersion - Latest version
  * @param {string} packageName - Package name to use in update command
  */
-function displayUpgradeNotification(currentVersion, latestVersion, packageName = null) {
+function displayUpgradeNotification(
+	currentVersion,
+	latestVersion,
+	packageName = null,
+) {
 	const displayPackage = packageName || getDisplayPackageName();
 	const message = boxen(
 		`${chalk.blue.bold("Update Available!")} ${chalk.dim(currentVersion)} → ${chalk.green(latestVersion)}\n\n` +
@@ -3285,7 +3281,6 @@ async function runCLI(argv = process.argv) {
 		process.exit(1);
 	}
 }
-
 
 /**
  * 确认操作

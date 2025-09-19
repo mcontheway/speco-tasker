@@ -3,7 +3,6 @@
  * 处理清理相关的API端点
  */
 
-
 /**
  * CleanupController 类
  * 负责处理清理相关的HTTP请求

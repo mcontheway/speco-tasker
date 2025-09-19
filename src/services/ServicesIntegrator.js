@@ -148,7 +148,6 @@ export class ServicesIntegrator {
 		this.services = {};
 		this.initialized = false;
 	}
-
 }
 
 // ServicesIntegrator is already exported via class declaration

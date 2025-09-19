@@ -104,14 +104,36 @@ export class FileSystemSecurityValidator {
 			maxFileSize: options.maxFileSize || 100 * 1024 * 1024, // 100MB
 			maxPathLength: options.maxPathLength || 4096, // 最大路径长度
 			allowedFileExtensions: options.allowedFileExtensions || [
-				".js", ".ts", ".json", ".md", ".txt", ".yaml", ".yml"
+				".js",
+				".ts",
+				".json",
+				".md",
+				".txt",
+				".yaml",
+				".yml",
 			],
 			forbiddenPaths: options.forbiddenPaths || [
-				"/etc", "/usr", "/bin", "/sbin", "/boot", "/sys", "/proc",
-				"/root", "/home", "/var", "C:\\Windows", "C:\\Program Files"
+				"/etc",
+				"/usr",
+				"/bin",
+				"/sbin",
+				"/boot",
+				"/sys",
+				"/proc",
+				"/root",
+				"/home",
+				"/var",
+				"C:\\Windows",
+				"C:\\Program Files",
 			],
 			sensitiveDirectories: options.sensitiveDirectories || [
-				"node_modules", ".git", ".svn", "tmp", "temp", ".vscode", ".idea"
+				"node_modules",
+				".git",
+				".svn",
+				"tmp",
+				"temp",
+				".vscode",
+				".idea",
 			],
 			...options,
 		};
@@ -156,16 +178,20 @@ export class FileSystemSecurityValidator {
 			}
 
 			// 7. 操作特定验证
-			await this._validateOperationSpecific(filePath, operation, result, context);
+			await this._validateOperationSpecific(
+				filePath,
+				operation,
+				result,
+				context,
+			);
 
-			logger.debug?.(`文件操作验证完成: ${result.secure ? '安全' : '不安全'}`);
-
+			logger.debug?.(`文件操作验证完成: ${result.secure ? "安全" : "不安全"}`);
 		} catch (error) {
 			logger.error?.(`文件操作验证失败: ${error.message}`);
 			result.addViolation(
 				`验证过程中发生错误: ${error.message}`,
 				"VALIDATION_ERROR",
-				{ error: error.message, filePath, operation }
+				{ error: error.message, filePath, operation },
 			);
 		}
 
@@ -201,16 +227,20 @@ export class FileSystemSecurityValidator {
 			}
 
 			// 5. 目录结构验证
-			await this._validateDirectoryStructure(dirPath, operation, result, context);
+			await this._validateDirectoryStructure(
+				dirPath,
+				operation,
+				result,
+				context,
+			);
 
-			logger.debug?.(`目录操作验证完成: ${result.secure ? '安全' : '不安全'}`);
-
+			logger.debug?.(`目录操作验证完成: ${result.secure ? "安全" : "不安全"}`);
 		} catch (error) {
 			logger.error?.(`目录操作验证失败: ${error.message}`);
 			result.addViolation(
 				`目录验证过程中发生错误: ${error.message}`,
 				"DIRECTORY_VALIDATION_ERROR",
-				{ error: error.message, dirPath, operation }
+				{ error: error.message, dirPath, operation },
 			);
 		}
 
@@ -231,15 +261,16 @@ export class FileSystemSecurityValidator {
 
 		for (const operation of fileOperations) {
 			const { filePath, operation: op, context: opContext } = operation;
-			const opResult = await this.validateFileOperation(
-				filePath,
-				op,
-				{ ...context, ...opContext }
-			);
+			const opResult = await this.validateFileOperation(filePath, op, {
+				...context,
+				...opContext,
+			});
 			result.merge(opResult);
 		}
 
-		logger.debug?.(`批量验证完成: ${result.violations.length} 违规, ${result.warnings.length} 警告`);
+		logger.debug?.(
+			`批量验证完成: ${result.violations.length} 违规, ${result.warnings.length} 警告`,
+		);
 
 		return result;
 	}
@@ -264,18 +295,16 @@ export class FileSystemSecurityValidator {
 			result.addViolation(
 				`文件路径过长: ${filePath.length} 字符 (最大 ${this.options.maxPathLength})`,
 				"PATH_TOO_LONG",
-				{ length: filePath.length, maxLength: this.options.maxPathLength }
+				{ length: filePath.length, maxLength: this.options.maxPathLength },
 			);
 		}
 
 		// 检查非法字符
 		const illegalChars = /[<>:"|?*\x00-\x1f]/;
 		if (illegalChars.test(filePath)) {
-			result.addViolation(
-				"文件路径包含非法字符",
-				"INVALID_PATH_CHARACTERS",
-				{ path: filePath }
-			);
+			result.addViolation("文件路径包含非法字符", "INVALID_PATH_CHARACTERS", {
+				path: filePath,
+			});
 		}
 
 		// 检查文件扩展名
@@ -284,7 +313,7 @@ export class FileSystemSecurityValidator {
 			result.addWarning(
 				`文件扩展名 ${ext} 不在允许列表中`,
 				"UNSAFE_EXTENSION",
-				{ extension: ext, allowed: this.options.allowedFileExtensions }
+				{ extension: ext, allowed: this.options.allowedFileExtensions },
 			);
 		}
 	}
@@ -301,18 +330,17 @@ export class FileSystemSecurityValidator {
 			result.addViolation(
 				"检测到潜在的路径遍历攻击",
 				"PATH_TRAVERSAL_DETECTED",
-				{ path: filePath }
+				{ path: filePath },
 			);
 		}
 
 		// 检查规范化后的路径是否改变
 		const normalizedPath = path.normalize(filePath);
 		if (normalizedPath !== filePath) {
-			result.addWarning(
-				"路径包含冗余组件，已被规范化",
-				"PATH_NORMALIZED",
-				{ original: filePath, normalized: normalizedPath }
-			);
+			result.addWarning("路径包含冗余组件，已被规范化", "PATH_NORMALIZED", {
+				original: filePath,
+				normalized: normalizedPath,
+			});
 		}
 	}
 
@@ -331,7 +359,7 @@ export class FileSystemSecurityValidator {
 				result.addViolation(
 					`路径指向禁止的系统目录: ${forbidden}`,
 					"FORBIDDEN_PATH_DETECTED",
-					{ path: filePath, forbiddenPath: forbidden }
+					{ path: filePath, forbiddenPath: forbidden },
 				);
 				break;
 			}
@@ -339,13 +367,15 @@ export class FileSystemSecurityValidator {
 
 		// 检查敏感目录
 		for (const sensitive of this.options.sensitiveDirectories) {
-			if (normalizedPath.includes(`/${sensitive}/`) ||
+			if (
+				normalizedPath.includes(`/${sensitive}/`) ||
 				normalizedPath.startsWith(`${sensitive}/`) ||
-				normalizedPath.endsWith(`/${sensitive}`)) {
+				normalizedPath.endsWith(`/${sensitive}`)
+			) {
 				result.addWarning(
 					`路径包含敏感目录: ${sensitive}`,
 					"SENSITIVE_DIRECTORY_DETECTED",
-					{ path: filePath, sensitiveDir: sensitive }
+					{ path: filePath, sensitiveDir: sensitive },
 				);
 			}
 		}
@@ -368,7 +398,7 @@ export class FileSystemSecurityValidator {
 				result.addWarning(
 					`文件不存在，将创建新文件: ${filePath}`,
 					"FILE_NOT_EXISTS",
-					{ path: filePath, operation }
+					{ path: filePath, operation },
 				);
 			}
 
@@ -380,7 +410,7 @@ export class FileSystemSecurityValidator {
 					result.addViolation(
 						`文件无读权限: ${filePath}`,
 						"READ_PERMISSION_DENIED",
-						{ path: filePath, operation, error: error.message }
+						{ path: filePath, operation, error: error.message },
 					);
 				}
 			}
@@ -393,7 +423,7 @@ export class FileSystemSecurityValidator {
 					result.addViolation(
 						`文件无写权限: ${filePath}`,
 						"WRITE_PERMISSION_DENIED",
-						{ path: filePath, operation, error: error.message }
+						{ path: filePath, operation, error: error.message },
 					);
 				}
 			}
@@ -406,16 +436,15 @@ export class FileSystemSecurityValidator {
 					result.addViolation(
 						`文件无执行权限: ${filePath}`,
 						"EXECUTE_PERMISSION_DENIED",
-						{ path: filePath, operation, error: error.message }
+						{ path: filePath, operation, error: error.message },
 					);
 				}
 			}
-
 		} catch (error) {
 			result.addViolation(
 				`权限检查失败: ${error.message}`,
 				"PERMISSION_CHECK_ERROR",
-				{ path: filePath, operation, error: error.message }
+				{ path: filePath, operation, error: error.message },
 			);
 		}
 	}
@@ -436,7 +465,11 @@ export class FileSystemSecurityValidator {
 				result.addViolation(
 					`文件过大: ${stats.size} 字节 (最大 ${this.options.maxFileSize})`,
 					"FILE_TOO_LARGE",
-					{ path: filePath, size: stats.size, maxSize: this.options.maxFileSize }
+					{
+						path: filePath,
+						size: stats.size,
+						maxSize: this.options.maxFileSize,
+					},
 				);
 			}
 
@@ -445,17 +478,16 @@ export class FileSystemSecurityValidator {
 				result.addViolation(
 					`路径指向目录而非文件: ${filePath}`,
 					"PATH_IS_DIRECTORY",
-					{ path: filePath, operation }
+					{ path: filePath, operation },
 				);
 			}
 
 			// 检查是否为符号链接
 			if (stats.isSymbolicLink()) {
-				result.addWarning(
-					`路径指向符号链接: ${filePath}`,
-					"PATH_IS_SYMLINK",
-					{ path: filePath, operation }
-				);
+				result.addWarning(`路径指向符号链接: ${filePath}`, "PATH_IS_SYMLINK", {
+					path: filePath,
+					operation,
+				});
 			}
 
 			// 检查文件修改时间（可选）
@@ -467,17 +499,16 @@ export class FileSystemSecurityValidator {
 				result.addWarning(
 					`文件长时间未修改: ${Math.round(daysSinceModified)} 天`,
 					"FILE_OLD_MODIFIED",
-					{ path: filePath, daysSinceModified: Math.round(daysSinceModified) }
+					{ path: filePath, daysSinceModified: Math.round(daysSinceModified) },
 				);
 			}
-
 		} catch (error) {
 			// 文件不存在是正常的，不需要报错
 			if (error.code !== "ENOENT") {
 				result.addViolation(
 					`文件属性检查失败: ${error.message}`,
 					"ATTRIBUTE_CHECK_ERROR",
-					{ path: filePath, operation, error: error.message }
+					{ path: filePath, operation, error: error.message },
 				);
 			}
 		}
@@ -500,7 +531,7 @@ export class FileSystemSecurityValidator {
 				result.addWarning(
 					`父目录不存在: ${dirPath}`,
 					"PARENT_DIRECTORY_NOT_EXISTS",
-					{ path: filePath, dirPath, operation }
+					{ path: filePath, dirPath, operation },
 				);
 			} else {
 				// 检查目录权限
@@ -510,7 +541,7 @@ export class FileSystemSecurityValidator {
 			result.addViolation(
 				`目录权限检查失败: ${error.message}`,
 				"DIRECTORY_PERMISSION_DENIED",
-				{ path: filePath, dirPath, operation, error: error.message }
+				{ path: filePath, dirPath, operation, error: error.message },
 			);
 		}
 	}
@@ -553,7 +584,7 @@ export class FileSystemSecurityValidator {
 			result.addViolation(
 				`不允许删除重要文件: ${fileName}`,
 				"IMPORTANT_FILE_DELETION",
-				{ path: filePath, fileName }
+				{ path: filePath, fileName },
 			);
 		}
 
@@ -564,7 +595,7 @@ export class FileSystemSecurityValidator {
 			result.addWarning(
 				"无法检查文件是否正在使用",
 				"FILE_IN_USE_CHECK_UNAVAILABLE",
-				{ path: filePath }
+				{ path: filePath },
 			);
 		}
 	}
@@ -584,13 +615,13 @@ export class FileSystemSecurityValidator {
 				result.addWarning(
 					"无法检查可用磁盘空间",
 					"DISK_SPACE_CHECK_UNAVAILABLE",
-					{ path: filePath }
+					{ path: filePath },
 				);
 			} catch (error) {
 				result.addWarning(
 					`磁盘空间检查失败: ${error.message}`,
 					"DISK_SPACE_CHECK_ERROR",
-					{ path: filePath, error: error.message }
+					{ path: filePath, error: error.message },
 				);
 			}
 		}
@@ -612,7 +643,7 @@ export class FileSystemSecurityValidator {
 			result.addWarning(
 				`文件扩展名 ${ext} 不适合执行`,
 				"UNSAFE_EXECUTABLE_EXTENSION",
-				{ path: filePath, extension: ext, allowed: executableExtensions }
+				{ path: filePath, extension: ext, allowed: executableExtensions },
 			);
 		}
 
@@ -621,7 +652,7 @@ export class FileSystemSecurityValidator {
 			result.addWarning(
 				`Windows系统上的可执行文件应有扩展名`,
 				"EXECUTABLE_WITHOUT_EXTENSION",
-				{ path: filePath, platform }
+				{ path: filePath, platform },
 			);
 		}
 	}
@@ -639,11 +670,10 @@ export class FileSystemSecurityValidator {
 			const stats = await fs.stat(dirPath);
 
 			if (!stats.isDirectory()) {
-				result.addViolation(
-					`路径不是目录: ${dirPath}`,
-					"PATH_NOT_DIRECTORY",
-					{ path: dirPath, operation }
-				);
+				result.addViolation(`路径不是目录: ${dirPath}`, "PATH_NOT_DIRECTORY", {
+					path: dirPath,
+					operation,
+				});
 				return;
 			}
 
@@ -654,23 +684,21 @@ export class FileSystemSecurityValidator {
 					result.addWarning(
 						`目录不为空，包含 ${entries.length} 个项目`,
 						"DIRECTORY_NOT_EMPTY",
-						{ path: dirPath, entryCount: entries.length }
+						{ path: dirPath, entryCount: entries.length },
 					);
 				}
 			}
-
 		} catch (error) {
 			if (error.code === "ENOENT") {
-				result.addWarning(
-					`目录不存在: ${dirPath}`,
-					"DIRECTORY_NOT_EXISTS",
-					{ path: dirPath, operation }
-				);
+				result.addWarning(`目录不存在: ${dirPath}`, "DIRECTORY_NOT_EXISTS", {
+					path: dirPath,
+					operation,
+				});
 			} else {
 				result.addViolation(
 					`目录结构验证失败: ${error.message}`,
 					"DIRECTORY_STRUCTURE_ERROR",
-					{ path: dirPath, operation, error: error.message }
+					{ path: dirPath, operation, error: error.message },
 				);
 			}
 		}
@@ -703,7 +731,11 @@ const defaultSecurityValidator = new FileSystemSecurityValidator();
  * @returns {Promise<SecurityValidationResult>} 验证结果
  */
 export async function validateFileSecurity(filePath, operation, context = {}) {
-	return defaultSecurityValidator.validateFileOperation(filePath, operation, context);
+	return defaultSecurityValidator.validateFileOperation(
+		filePath,
+		operation,
+		context,
+	);
 }
 
 /**
@@ -713,8 +745,16 @@ export async function validateFileSecurity(filePath, operation, context = {}) {
  * @param {Object} context - 验证上下文
  * @returns {Promise<SecurityValidationResult>} 验证结果
  */
-export async function validateDirectorySecurity(dirPath, operation, context = {}) {
-	return defaultSecurityValidator.validateDirectoryOperation(dirPath, operation, context);
+export async function validateDirectorySecurity(
+	dirPath,
+	operation,
+	context = {},
+) {
+	return defaultSecurityValidator.validateDirectoryOperation(
+		dirPath,
+		operation,
+		context,
+	);
 }
 
 /**
@@ -724,7 +764,10 @@ export async function validateDirectorySecurity(dirPath, operation, context = {}
  * @returns {Promise<SecurityValidationResult>} 验证结果
  */
 export async function validateBatchFileSecurity(fileOperations, context = {}) {
-	return defaultSecurityValidator.validateBatchFileOperations(fileOperations, context);
+	return defaultSecurityValidator.validateBatchFileOperations(
+		fileOperations,
+		context,
+	);
 }
 
 // FileSystemSecurityValidator and SecurityValidationResult are already exported via class declarations

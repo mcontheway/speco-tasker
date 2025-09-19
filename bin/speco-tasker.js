@@ -76,7 +76,6 @@ class SpecoTaskerCLI {
 			.option("--force", "强制重新初始化")
 			.action(this.handleInit.bind(this));
 
-
 		this.program
 			.command("config")
 			.description("配置管理")
@@ -146,7 +145,6 @@ class SpecoTaskerCLI {
 		}
 	}
 
-
 	/**
 	 * 处理配置显示命令
 	 */
@@ -201,7 +199,6 @@ class SpecoTaskerCLI {
 			if (args && Array.isArray(args)) {
 				finalArgs = finalArgs.concat(args);
 			}
-
 
 			const child = spawn("node", [devScriptPath, ...finalArgs], {
 				stdio: "inherit",
@@ -328,7 +325,6 @@ class SpecoTaskerCLI {
 
 		console.log(`备份创建在: ${backupPath}`);
 	}
-
 
 	/**
 	 * 确认操作

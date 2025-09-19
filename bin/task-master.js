@@ -300,7 +300,8 @@ program
 	.action((command, options, cmd) => {
 		// Get all arguments after the command
 		const commandIndex = process.argv.indexOf(command);
-		const args = commandIndex !== -1 ? process.argv.slice(commandIndex) : [command];
+		const args =
+			commandIndex !== -1 ? process.argv.slice(commandIndex) : [command];
 
 		const child = spawn("node", [devScriptPath, ...args], {
 			stdio: "inherit",

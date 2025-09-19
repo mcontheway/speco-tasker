@@ -314,7 +314,6 @@ async function createSpecoConfig(targetDir, options) {
 			},
 		};
 
-
 		// 创建路径配置文件
 		const pathsConfig = {
 			root: {
