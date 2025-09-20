@@ -21,5 +21,5 @@ const figletMock = {
 };
 
 // Export as both default and named exports for ESM compatibility
-module.exports = figletMock;
-module.exports.default = figletMock;
+export default figletMock;
+export { figletMock };

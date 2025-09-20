@@ -16,8 +16,14 @@ import {
 	resolveEnvVariable,
 } from "./core-utils.js";
 
-// Calculate __dirname in ESM
-const __filename = fileURLToPath(import.meta.url);
+// Calculate __dirname in ESM - Jest compatible
+let __filename;
+try {
+	__filename = fileURLToPath(import.meta.url);
+} catch (e) {
+	// Fallback for Jest environment - use a simple approach
+	__filename = path.resolve(process.cwd(), "scripts/modules/config-manager.js");
+}
 const __dirname = path.dirname(__filename);
 
 // AI functionality has been removed - no model loading needed

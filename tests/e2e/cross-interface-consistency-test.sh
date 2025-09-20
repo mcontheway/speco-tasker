@@ -16,14 +16,14 @@ echo "  📁 测试目录: $TEST_DIR"
 
 # 初始化项目
 echo "  🚀 初始化项目..."
-if ! node "$OLDPWD/bin/task-master.js" init --name "Cross Interface Test" --description "Test cross-interface consistency" --yes > /dev/null 2>&1; then
+if ! node "$OLDPWD/bin/speco-tasker.js" init --name "Cross Interface Test" --description "Test cross-interface consistency" --yes > /dev/null 2>&1; then
     echo "❌ 项目初始化失败"
     exit 1
 fi
 
 # 使用CLI添加任务
 echo "  📝 使用CLI添加任务..."
-if ! node "$OLDPWD/bin/task-master.js" add-task --prompt "跨界面一致性测试任务" > /dev/null 2>&1; then
+if ! node "$OLDPWD/bin/speco-tasker.js" add-task --prompt "跨界面一致性测试任务" > /dev/null 2>&1; then
     echo "❌ CLI添加任务失败"
     exit 1
 fi

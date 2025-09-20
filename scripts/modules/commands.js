@@ -3088,7 +3088,7 @@ async function checkForUpdate() {
 		// Get the latest version from npm registry
 		const options = {
 			hostname: "registry.npmjs.org",
-			path: "/task-master-ai",
+			path: "/speco-tasker",
 			method: "GET",
 			headers: {
 				Accept: "application/vnd.npm.install-v1+json", // Lightweight response

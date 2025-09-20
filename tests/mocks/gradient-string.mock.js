@@ -27,5 +27,5 @@ const gradient = {
 };
 
 // Export as both default and named exports for ESM compatibility
-module.exports = gradient;
-module.exports.default = gradient;
+export default gradient;
+export { gradient };

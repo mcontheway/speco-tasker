@@ -5,14 +5,12 @@
 	"main": "index.js",
 	"type": "module",
 	"bin": {
-		"speco-tasker": "bin/speco-tasker.js",
-		"task-master": "bin/task-master.js",
-		"task-master-mcp": "mcp-server/server.js"
+		"speco-tasker": "bin/speco-tasker.js"
 	},
 	"workspaces": ["."],
 	"scripts": {
 		"test": "npm run test:ci",
-		"test:ci": "GRACEFUL_FS_PATCH=0 ./node_modules/.bin/vitest run",
+		"test:ci": "NODE_OPTIONS=\"--experimental-specifier-resolution=node --experimental-modules --no-deprecation --no-warnings\" ./node_modules/.bin/jest --config jest.config.cjs --forceExit",
 		"test:fails": "GRACEFUL_FS_PATCH=0 NODE_OPTIONS=\"--experimental-specifier-resolution=node --experimental-modules --no-deprecation --no-warnings\" node_modules/.bin/jest --config jest.config.cjs --onlyFailures --forceExit",
 		"test:watch": "GRACEFUL_FS_PATCH=0 NODE_OPTIONS=\"--experimental-specifier-resolution=node --experimental-modules --no-deprecation --no-warnings\" node_modules/.bin/jest --config jest.config.cjs --watch --passWithNoTests",
 		"test:coverage": "GRACEFUL_FS_PATCH=0 NODE_OPTIONS=\"--experimental-specifier-resolution=node --experimental-modules --no-deprecation --no-warnings\" node_modules/.bin/jest --config jest.config.cjs --coverage --forceExit",

@@ -17,5 +17,5 @@ const TableMock = jest.fn((options) => {
 });
 
 // Export as both default and named exports for ESM compatibility
-module.exports = TableMock;
-module.exports.default = TableMock;
+export default TableMock;
+export { TableMock };

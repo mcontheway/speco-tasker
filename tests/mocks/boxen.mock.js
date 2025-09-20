@@ -34,5 +34,5 @@ const boxenMock = (text, options) => {
 };
 
 // Export as both default and named exports for ESM compatibility
-module.exports = boxenMock;
-module.exports.default = boxenMock;
+export default boxenMock;
+export { boxenMock };

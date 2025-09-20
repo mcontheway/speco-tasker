@@ -5,7 +5,7 @@
 
 // SCOPE: 测试 PathConfig 实体的完整功能，包括配置验证、路径生成、序列化等核心业务逻辑
 
-const { PathConfig } = require("../../src/models/PathConfig");
+import { PathConfig } from "../../src/models/PathConfig.js";
 
 describe("PathConfig", () => {
 	describe("构造函数", () => {

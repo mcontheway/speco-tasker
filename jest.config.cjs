@@ -27,6 +27,30 @@ const config = {
 		"^ora$": "<rootDir>/tests/mocks/ora.mock.js",
 		"^cli-table3$": "<rootDir>/tests/mocks/cli-table3.mock.js",
 		"^figlet$": "<rootDir>/tests/mocks/figlet.mock.js",
+		// Map test fixtures to absolute paths to avoid resolution issues
+		"^../../fixtures/sample-tasks.js$":
+			"<rootDir>/tests/fixtures/sample-tasks.js",
+	},
+
+	// Transform ignore patterns - allow node_modules ESM packages
+	transformIgnorePatterns: [
+		"node_modules/(?!(fastmcp|@modelcontextprotocol)/)",
+	],
+
+	// Explicit test match patterns to include all test files
+	testMatch: [
+		"**/__tests__/**/*.?([mc])[jt]s?(x)",
+		"**/?(*.)+(spec|test).?([mc])[jt]s?(x)",
+		"**/test_*.js",
+		"**/simple-config-test.js",
+		"**/es-module-test.mjs",
+	],
+
+	// Enable ESM support for Babel
+	globals: {
+		"babel-jest": {
+			useESM: true,
+		},
 	},
 };
 

@@ -24,6 +24,7 @@ import { spawn } from "node:child_process";
 // ES模块导入
 import fs from "node:fs/promises";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import chalk from "chalk";
 import { Command } from "commander";
 
@@ -32,16 +33,31 @@ import { initializeProject } from "../scripts/init.js";
 import { PathService } from "../src/services/PathService.js";
 
 // 获取脚本路径
-const __filename = new URL(import.meta.url).pathname;
+const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const projectRoot = path.resolve(__dirname, "..");
 const devScriptPath = path.resolve(projectRoot, "scripts/dev.js");
 const packageJsonPath = path.resolve(projectRoot, "package.json");
 
-// 获取包信息
+// 获取包信息 - 从当前工作目录读取，而不是从link的目录
 import { readFileSync } from "node:fs";
-const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf8"));
-const version = packageJson.version;
+let version = "unknown";
+try {
+	// 尝试从当前工作目录读取package.json，这样可以确保读取到正确的版本
+	const cwdPackageJsonPath = path.resolve(process.cwd(), "package.json");
+	const packageJson = JSON.parse(readFileSync(cwdPackageJsonPath, "utf8"));
+	version = packageJson.version || version;
+} catch (error) {
+	// 如果无法读取当前目录的package.json，尝试从脚本目录读取
+	try {
+		const packageJsonPath = path.resolve(projectRoot, "package.json");
+		const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf8"));
+		version = packageJson.version || version;
+	} catch (fallbackError) {
+		// 如果都无法读取，保持为unknown
+		version = "unknown";
+	}
+}
 
 /**
  * 主CLI类

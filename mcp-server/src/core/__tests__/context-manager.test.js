@@ -1,3 +1,63 @@
+// Mock FastMCP and LRUCache to avoid ES module issues
+jest.mock("fastmcp", () => ({
+	FastMCP: jest.fn().mockImplementation(() => ({
+		setRequestHandler: jest.fn(),
+		start: jest.fn(),
+	})),
+}));
+
+jest.mock("lru-cache", () => ({
+	__esModule: true,
+	LRUCache: class MockLRUCache {
+		constructor(options) {
+			this.max = options?.max || 10;
+			this.ttl = options?.ttl || 1000;
+			this.size = 0;
+			this.data = {};
+			this.timestamps = {};
+		}
+
+		set(key, value) {
+			this.data[key] = value;
+			this.timestamps[key] = Date.now();
+			this.size = Object.keys(this.data).length;
+			return true;
+		}
+		get(key) {
+			const now = Date.now();
+			const timestamp = this.timestamps[key];
+
+			if (timestamp && now - timestamp > this.ttl) {
+				// TTL expired, remove the item
+				delete this.data[key];
+				delete this.timestamps[key];
+				this.size = Object.keys(this.data).length;
+				return undefined;
+			}
+
+			return this.data[key];
+		}
+		has(key) {
+			this.data = this.data || {};
+			return key in this.data;
+		}
+		delete(key) {
+			this.data = this.data || {};
+			if (key in this.data) {
+				delete this.data[key];
+				this.size = Object.keys(this.data).length;
+				return true;
+			}
+			return false;
+		}
+		clear() {
+			this.data = {};
+			this.size = 0;
+			return undefined;
+		}
+	},
+}));
+
 import { jest } from "@jest/globals";
 import { ContextManager } from "../context-manager.js";
 

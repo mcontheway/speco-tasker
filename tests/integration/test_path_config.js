@@ -102,10 +102,6 @@ require('../mcp-server/server.js');
 						name: "task-master-ai",
 						version: "1.0.0",
 					},
-					ai: {
-						provider: "openai",
-						model: "gpt-4",
-					},
 				},
 				null,
 				2,

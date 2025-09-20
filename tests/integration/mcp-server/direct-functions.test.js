@@ -36,26 +36,7 @@ const mockEnableSilentMode = vi.fn();
 const mockDisableSilentMode = vi.fn();
 const mockReadComplexityReport = vi.fn().mockReturnValue(null);
 
-const mockGetAnthropicClient = vi.fn().mockReturnValue({});
-const mockGetConfiguredAnthropicClient = vi.fn().mockReturnValue({});
-const mockHandleAnthropicStream = vi.fn().mockResolvedValue(
-	JSON.stringify([
-		{
-			id: 1,
-			title: "Mock Subtask 1",
-			description: "First mock subtask",
-			dependencies: [],
-			details: "Implementation details for mock subtask 1",
-		},
-		{
-			id: 2,
-			title: "Mock Subtask 2",
-			description: "Second mock subtask",
-			dependencies: [1],
-			details: "Implementation details for mock subtask 2",
-		},
-	]),
-);
+// AI-related mocks removed - Speco Tasker has no AI functionality
 const mockParseSubtasksFromText = vi.fn().mockReturnValue([
 	{
 		id: 1,

@@ -800,24 +800,24 @@ function createProjectStructure(
 			boxen(
 				`${chalk.cyan.bold("接下来您可以做的事情:")}\n\n${chalk.white("1. ")}${chalk.yellow(
 					"创建您的第一个任务",
-				)}\n${chalk.white("   └─ ")}${chalk.dim('使用: task-master add-task --title="任务标题" --description="任务描述"')}\n${chalk.white("2. ")}${chalk.yellow(
+				)}\n${chalk.white("   └─ ")}${chalk.dim('使用: speco-tasker add-task --title="任务标题" --description="任务描述"')}\n${chalk.white("2. ")}${chalk.yellow(
 					"查看所有任务列表",
-				)}\n${chalk.white("   └─ ")}${chalk.dim("使用: task-master list")}\n${chalk.white("3. ")}${chalk.yellow(
+				)}\n${chalk.white("   └─ ")}${chalk.dim("使用: speco-tasker list")}\n${chalk.white("3. ")}${chalk.yellow(
 					"查看下一个要处理的任务",
-				)}\n${chalk.white("   └─ ")}${chalk.dim("使用: task-master next")}\n${chalk.white("4. ")}${chalk.yellow(
+				)}\n${chalk.white("   └─ ")}${chalk.dim("使用: speco-tasker next")}\n${chalk.white("4. ")}${chalk.yellow(
 					"开始处理任务并更新状态",
-				)}\n${chalk.white("   └─ ")}${chalk.dim("使用: task-master set-status --id=<id> --status=in-progress")}\n${chalk.white("5. ")}${chalk.yellow(
+				)}\n${chalk.white("   └─ ")}${chalk.dim("使用: speco-tasker set-status --id=<id> --status=in-progress")}\n${chalk.white("5. ")}${chalk.yellow(
 					"为复杂任务添加子任务",
-				)}\n${chalk.white("   └─ ")}${chalk.dim('使用: task-master add-subtask --parent=<id> --title="子任务标题"')}\n${chalk.white("6. ")}${chalk.yellow(
+				)}\n${chalk.white("   └─ ")}${chalk.dim('使用: speco-tasker add-subtask --parent=<id> --title="子任务标题"')}\n${chalk.white("6. ")}${chalk.yellow(
 					"管理任务依赖关系",
-				)}\n${chalk.white("   └─ ")}${chalk.dim("使用: task-master add-dependency --id=<id> --depends-on=<dependency-id>")}\n${chalk.white("7. ")}${chalk.yellow(
+				)}\n${chalk.white("   └─ ")}${chalk.dim("使用: speco-tasker add-dependency --id=<id> --depends-on=<dependency-id>")}\n${chalk.white("7. ")}${chalk.yellow(
 					"使用标签组织不同功能的任务",
-				)}\n${chalk.white("   └─ ")}${chalk.dim('使用: task-master add-tag <tag-name> --description="标签描述"')}\n${chalk.white("8. ")}${chalk.yellow(
+				)}\n${chalk.white("   └─ ")}${chalk.dim('使用: speco-tasker add-tag <tag-name> --description="标签描述"')}\n${chalk.white("8. ")}${chalk.yellow(
 					"生成任务文件以便查看和管理",
-				)}\n${chalk.white("   └─ ")}${chalk.dim("使用: task-master generate")}\n${chalk.white("9. ")}${chalk.yellow(
+				)}\n${chalk.white("   └─ ")}${chalk.dim("使用: speco-tasker generate")}\n${chalk.white("9. ")}${chalk.yellow(
 					"完成任务后标记为完成",
-				)}\n${chalk.white("   └─ ")}${chalk.dim("使用: task-master set-status --id=<id> --status=done")}\n${chalk.white("10. ")}${chalk.green.bold("开始您的开发工作流程!")}\n\n${chalk.dim(
-					"💡 提示: 使用 task-master --help 查看所有可用命令",
+				)}\n${chalk.white("   └─ ")}${chalk.dim("使用: speco-tasker set-status --id=<id> --status=done")}\n${chalk.white("10. ")}${chalk.green.bold("开始您的开发工作流程!")}\n\n${chalk.dim(
+					"💡 提示: 使用 speco-tasker --help 查看所有可用命令",
 				)}\n${chalk.dim("📖 文档: 查看 docs/tutorial.md 了解完整的使用指南")}`,
 				{
 					padding: 1,

@@ -1,59 +1,56 @@
 import fs from "node:fs";
 import path from "node:path";
-import { vi } from "vitest";
+import { jest } from "@jest/globals";
 
 // --- Define mock functions ---
-const mockMoveTasksBetweenTags = vi.fn();
-const mockMoveTask = vi.fn();
-const mockGenerateTaskFiles = vi.fn();
-const mockLog = vi.fn();
+const mockMoveTasksBetweenTags = jest.fn();
+const mockMoveTask = jest.fn();
+const mockGenerateTaskFiles = jest.fn();
+const mockLog = jest.fn();
 
-// --- Setup mocks using vi.mock ---
-vi.mock("../../../scripts/modules/task-manager/move-task.js", () => ({
+// --- Setup mocks using jest.mock ---
+jest.mock("../../../scripts/modules/task-manager/move-task.js", () => ({
 	default: mockMoveTask,
 	moveTasksBetweenTags: mockMoveTasksBetweenTags,
 }));
 
-vi.mock("../../../scripts/modules/task-manager/generate-task-files.js", () => ({
-	default: mockGenerateTaskFiles,
-}));
+jest.mock(
+	"../../../scripts/modules/task-manager/generate-task-files.js",
+	() => ({
+		default: mockGenerateTaskFiles,
+	}),
+);
 
 // Mock utils module with manual mock setup
 const mockUtils = {
 	log: mockLog,
-	readJSON: vi.fn(),
-	writeJSON: vi.fn(),
-	findProjectRoot: vi.fn(),
-	getCurrentTag: vi.fn(),
+	readJSON: jest.fn(),
+	writeJSON: jest.fn(),
+	findProjectRoot: jest.fn(),
+	getCurrentTag: jest.fn(),
 };
 
 // Mock the entire utils module
-vi.mock("../../../scripts/modules/utils.js", () => mockUtils);
+jest.mock("../../../scripts/modules/utils.js", () => mockUtils);
 
 // --- Mock chalk for consistent output formatting ---
 const mockChalk = {
-	red: vi.fn((text) => text),
-	yellow: vi.fn((text) => text),
-	blue: vi.fn((text) => text),
-	green: vi.fn((text) => text),
-	gray: vi.fn((text) => text),
-	dim: vi.fn((text) => text),
+	red: jest.fn((text) => text),
+	yellow: jest.fn((text) => text),
+	blue: jest.fn((text) => text),
+	green: jest.fn((text) => text),
+	gray: jest.fn((text) => text),
+	dim: jest.fn((text) => text),
+	cyan: jest.fn((text) => text),
+	white: jest.fn((text) => text),
 	bold: {
-		cyan: vi.fn((text) => text),
-		white: vi.fn((text) => text),
-		red: vi.fn((text) => text),
-	},
-	cyan: {
-		bold: vi.fn((text) => text),
-	},
-	white: {
-		bold: vi.fn((text) => text),
+		cyan: jest.fn((text) => text),
+		white: jest.fn((text) => text),
+		red: jest.fn((text) => text),
 	},
 };
 
-vi.mock("chalk", () => ({
-	default: mockChalk,
-}));
+jest.mock("chalk", () => mockChalk);
 
 // --- Import modules (AFTER mock setup) ---
 let moveTaskModule;
@@ -92,7 +89,7 @@ describe("Cross-Tag Move CLI Integration", () => {
 	});
 
 	beforeEach(() => {
-		vi.clearAllMocks();
+		jest.clearAllMocks();
 	});
 
 	// Helper function to capture console output and process.exit calls
@@ -105,15 +102,15 @@ describe("Cross-Tag Move CLI Integration", () => {
 		const logMessages = [];
 		const exitCodes = [];
 
-		console.error = vi.fn((...args) => {
+		console.error = jest.fn((...args) => {
 			errorMessages.push(args.join(" "));
 		});
 
-		console.log = vi.fn((...args) => {
+		console.log = jest.fn((...args) => {
 			logMessages.push(args.join(" "));
 		});
 
-		process.exit = vi.fn((code) => {
+		process.exit = jest.fn((code) => {
 			exitCodes.push(code);
 		});
 

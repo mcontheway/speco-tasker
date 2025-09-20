@@ -1,5 +1,5 @@
 // Enhanced mock for chalk ESM package
-const createColorFunction = (colorName) => vi.fn((text) => text);
+const createColorFunction = (colorName) => jest.fn((text) => text);
 
 const chalkMock = {
 	// Basic colors
@@ -45,13 +45,13 @@ const chalkMock = {
 	strikethrough: createColorFunction("strikethrough"),
 
 	// RGB and hex colors
-	rgb: vi.fn((r, g, b) => createColorFunction("rgb")),
-	hex: vi.fn((hex) => createColorFunction("hex")),
-	hsl: vi.fn((h, s, l) => createColorFunction("hsl")),
-	hsv: vi.fn((h, s, v) => createColorFunction("hsv")),
-	hwb: vi.fn((h, w, b) => createColorFunction("hwb")),
-	ansi: vi.fn((ansi) => createColorFunction("ansi")),
-	ansi256: vi.fn((ansi) => createColorFunction("ansi256")),
+	rgb: jest.fn((r, g, b) => createColorFunction("rgb")),
+	hex: jest.fn((hex) => createColorFunction("hex")),
+	hsl: jest.fn((h, s, l) => createColorFunction("hsl")),
+	hsv: jest.fn((h, s, v) => createColorFunction("hsv")),
+	hwb: jest.fn((h, w, b) => createColorFunction("hwb")),
+	ansi: jest.fn((ansi) => createColorFunction("ansi")),
+	ansi256: jest.fn((ansi) => createColorFunction("ansi256")),
 
 	// Color levels
 	level: 3,

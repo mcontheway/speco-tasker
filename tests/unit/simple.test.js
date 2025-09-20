@@ -2,11 +2,13 @@
  * Simple unit test to verify Jest configuration
  */
 
-const path = require("node:path");
+// SCOPE: 测试 Jest 配置的基本功能，包括路径解析、mock和环境变量处理
+
+import path from "node:path";
 
 describe("Jest Configuration Test", () => {
 	test("should resolve paths correctly", () => {
-		const projectRoot = path.resolve(__dirname, "../..");
+		const projectRoot = path.resolve(process.cwd(), "tests/..");
 		expect(projectRoot).toBeDefined();
 		expect(typeof projectRoot).toBe("string");
 	});

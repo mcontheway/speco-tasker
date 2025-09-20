@@ -21,5 +21,5 @@ const oraMock = jest.fn((options) => {
 });
 
 // Export as both default and named exports for ESM compatibility
-module.exports = oraMock;
-module.exports.default = oraMock;
+export default oraMock;
+export { oraMock };

@@ -65,8 +65,7 @@ MAIN_ENV_FILE="$TASKMASTER_SOURCE_DIR/.env"
 # ---
 
 # <<< Source the helper script >>>
-# shellcheck source=tests/e2e/e2e_helpers.sh
-source "$TASKMASTER_SOURCE_DIR/tests/e2e/e2e_helpers.sh"
+# e2e_helpers.sh removed - no AI functionality in Speco Tasker
 
 # ==========================================
 # >>> Global Helper Functions Defined in run_e2e.sh <<<
@@ -315,6 +314,12 @@ log_step() {
   log_success "Using globally linked speco-tasker package."
 
   log_step "Initializing Speco Tasker project (non-interactive)"
+  # Clean up any existing .speco directory from previous runs
+  if [ -d ".speco" ]; then
+    log_info "Removing existing .speco directory from previous run"
+    rm -rf ".speco"
+  fi
+  # Run init in the current directory (TEST_RUN_DIR) to create a fresh project
   "$ORIGINAL_DIR/bin/speco-tasker.js" init -y --name="E2E Test $TIMESTAMP"
   if [ ! -f ".speco/config.json" ]; then
     log_error "Initialization failed: .speco/config.json not found."
