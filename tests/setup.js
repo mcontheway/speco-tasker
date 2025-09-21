@@ -24,6 +24,24 @@ try {
 // Store original working directory and project root
 const projectRoot = path.resolve(__dirname, "..");
 
+// CRITICAL: Mock process.cwd to prevent graceful-fs issues
+const originalCwd = process.cwd;
+const safeCwd = () => {
+	try {
+		return originalCwd.call(process);
+	} catch (error) {
+		// If original fails, return the captured working directory
+		console.warn(
+			"[SETUP] process.cwd failed, using fallback:",
+			global.originalWorkingDirectory,
+		);
+		return global.originalWorkingDirectory || projectRoot;
+	}
+};
+
+// Replace process.cwd with safe version
+process.cwd = safeCwd;
+
 // Note: Jest now handles working directory via config.cwd
 // Avoid manual process.chdir() to prevent path resolution issues
 

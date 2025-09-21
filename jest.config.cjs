@@ -3,6 +3,12 @@ const config = {
 	// Use Node.js environment for testing
 	testEnvironment: "node",
 
+	// CRITICAL: Set working directory explicitly to prevent graceful-fs issues
+	cwd: process.cwd(),
+
+	// Mock process.cwd globally to prevent graceful-fs issues
+	setupFiles: ["<rootDir>/tests/setup.js"],
+
 	// Test execution settings
 	verbose: true,
 

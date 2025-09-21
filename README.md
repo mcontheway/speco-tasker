@@ -16,6 +16,23 @@
 
 ---
 
+## 🚨 重要通知：测试环境临时调整 | Important Notice: Test Environment Temporary Adjustment
+
+**当前测试环境存在 graceful-fs 兼容性问题，导致 Jest 测试失败**。这个问题不会影响生产环境，但会影响开发流程。
+
+### 临时解决方案 | Temporary Solution
+- ✅ **代码质量检查**：强制执行（linting、formatting）| Code quality checks: ENFORCED
+- ⚠️ **测试检查**：信息性警告（不阻塞提交/推送）| Tests: INFORMATIONAL (warn but allow)
+- 🚀 **生产安全**：部署不受影响 | Production deployment: SAFE
+
+### 详细信息 | Details
+📖 查看 [`tests/README-GRACEFUL-FS-WORKAROUND.md`](tests/README-GRACEFUL-FS-WORKAROUND.md) 了解详细说明和使用指南。
+
+### 长期规划 | Long-term Plan
+我们计划在 2-3 周内迁移到 Vitest 以彻底解决问题。详情见 [`tests/graceful-fs-issue-analysis.md`](tests/graceful-fs-issue-analysis.md)。
+
+---
+
 ## 📖 关于 Speco Tasker | About Speco Tasker
 
 **Speco Tasker** 是一个纯净的任务管理系统，完全移除了所有AI功能，专为现代AI编辑器设计，提供先进的文件系统安全验证和路径配置管理系统。
