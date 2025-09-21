@@ -268,6 +268,77 @@ vi.fn().mockReturnValue('mocked');
 - [ ] 更新 CI/CD 配置
 - [ ] 文档更新
 
+## 📋 后期的开发测试策略
+
+### 核心原则
+**"隔离问题，准备迁移，质量不降"**
+
+### 风险识别
+#### 🚨 高风险行为（严格禁止）
+1. **业务逻辑修改**: 为让测试通过而修改核心业务逻辑
+2. **测试删除**: 因"总是失败"而删除或跳过测试
+3. **依赖引入**: 添加可能加剧 graceful-fs 问题的依赖
+4. **Jest 特性依赖**: 过度使用 Jest 特定特性，增加迁移难度
+
+#### ✅ 安全行为（鼓励采用）
+1. **继续写测试**: 但要标记为 Vitest 兼容
+2. **记录问题**: 详细记录 graceful-fs 影响
+3. **隔离问题**: 新代码不依赖有问题的特性
+
+### 开发流程调整
+
+#### 每日开发检查清单
+```bash
+# 1. 编写代码和测试
+# 2. 运行质量检查（强制）
+npm run quality-check
+
+# 3. 运行测试（信息性）
+npm run test:ci  # 失败不阻塞
+
+# 4. 标记测试状态
+# - 新测试文件：添加 @vitest-ready 标记
+# - 现有测试：记录 graceful-fs 影响程度
+
+# 5. 提交前验证
+git add .
+npm run quality-check  # 必须通过
+git commit -m "feat: add new feature with tests"
+```
+
+#### 测试编写规范
+```javascript
+// ✅ 推荐：编写 Vitest 兼容的测试
+describe('NewFeature', () => {
+  it('should work correctly', () => {
+    // 使用标准断言，不要依赖 Jest 扩展
+    expect(result).toBe(expected);
+  });
+});
+
+// ❌ 避免：使用 Jest 特定特性
+describe('NewFeature (Vitest Ready)', () => {
+  it('should work correctly', () => {
+    // 标记为 Vitest 兼容
+    expect(result).toBe(expected);
+  });
+});
+```
+
+### 质量监控
+
+#### 自动化监控
+```bash
+# 定期检查（每周）
+npm run test:ci:strict  # 强制运行测试，评估真实状态
+npm run test:ci:audit   # 检查测试质量指标
+```
+
+#### 预警阈值
+- ⚠️ **警告**: 测试覆盖率下降 >5%
+- 🚨 **警报**: 测试数量减少或新功能无测试
+- 🔴 **紧急**: graceful-fs 问题扩展到新模块
+
 ---
 
 ## 🛡️ 临时缓解方案（当前实施）
