@@ -2155,18 +2155,10 @@ function registerCommands(programInstance) {
 	programInstance
 		.command("init")
 		.description("初始化 Speco Tasker（自动检测配置）")
-		.option("-y, --yes", "跳过交互式提示，使用默认配置", false)
 		.action(async (options) => {
 			try {
 				// Use intelligent defaults - no complex configuration needed
-				const finalOptions = {
-					yes: options.yes || false, // CLI mode allows interactive prompts for better UX unless --yes is specified
-				};
-				// Remove any inherited properties that might interfere
-				const cleanOptions = {
-					yes: finalOptions.yes,
-				};
-				await initializeProject(cleanOptions);
+				await initializeProject({});
 			} catch (error) {
 				console.error(
 					chalk.red(`Error during initialization: ${error.message}`),
