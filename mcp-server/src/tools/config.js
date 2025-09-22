@@ -37,9 +37,7 @@ export function registerGetConfigTool(server) {
 			section: z
 				.enum(["global", "paths", "all"])
 				.optional()
-				.describe(
-					"配置部分：global（全局）、paths（路径）、all（全部）",
-				),
+				.describe("配置部分：global（全局）、paths（路径）、all（全部）"),
 			format: z
 				.enum(["json", "table"])
 				.optional()
