@@ -101,9 +101,6 @@ function _loadAndValidateConfig(explicitRoot = null) {
 				global: { ...defaults.global, ...parsedConfig?.global },
 				project: parsedConfig?.project || {},
 				paths: parsedConfig?.paths || {},
-				features: parsedConfig?.features || {},
-				testing: parsedConfig?.testing || {},
-				quality: parsedConfig?.quality || {},
 				logging: parsedConfig?.logging || {},
 			};
 			configSource = `file (${configPath})`; // Update source info

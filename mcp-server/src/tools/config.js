@@ -35,10 +35,10 @@ export function registerGetConfigTool(server) {
 				.optional()
 				.describe("项目根目录路径（可选，会自动检测）"),
 			section: z
-				.enum(["global", "paths", "features", "all"])
+				.enum(["global", "paths", "all"])
 				.optional()
 				.describe(
-					"配置部分：global（全局）、paths（路径）、features（功能）、all（全部）",
+					"配置部分：global（全局）、paths（路径）、all（全部）",
 				),
 			format: z
 				.enum(["json", "table"])
