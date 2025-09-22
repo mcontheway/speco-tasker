@@ -123,11 +123,6 @@ require('../mcp-server/server.js');
 						docs: "docs",
 						specs: "specs",
 					},
-					features: {
-						pathConfig: true,
-						brandRebrand: true,
-						aiCleanup: true,
-					},
 				},
 				null,
 				2,
@@ -327,45 +322,26 @@ require('../mcp-server/server.js');
 	});
 
 	describe("Path Configuration Reading Phase", () => {
-		it("should read path configuration using CLI command", async () => {
-			// 确保配置文件存在
-			if (!fs.existsSync(pathsFile)) {
-				await mockExecuteCLICommand("init-paths");
-			}
+		it("should read path configuration from main config", () => {
+			// Verify main config file contains paths configuration
+			expect(fs.existsSync(configFile)).toBe(true);
 
-			// 当CLI命令实现后，替换为:
-			// const result = await executeCLICommand("show-paths");
-
-			// 当前阶段使用模拟:
-			const result = await mockExecuteCLICommand("show-paths");
-
-			expect(result.code).toBe(0);
-			const pathsConfig = JSON.parse(result.stdout);
-			expect(pathsConfig.mappings).toHaveProperty("task-master");
-			expect(pathsConfig.mappings["task-master"]).toBe("speco-tasker");
-			// 检查是否包含.taskmaster映射（可能是.taskmaster或".taskmaster"）
-			const hasTaskmasterMapping = Object.keys(pathsConfig.mappings).some(
-				(key) => key.includes("taskmaster") || key.includes(".taskmaster"),
-			);
-			expect(hasTaskmasterMapping).toBe(true);
-			expect(pathsConfig.mappings[".taskmaster"]).toBe(".speco");
+			const mainConfig = JSON.parse(fs.readFileSync(configFile, "utf8"));
+			expect(mainConfig).toHaveProperty("paths");
+			expect(mainConfig.paths).toHaveProperty("root");
+			expect(mainConfig.paths).toHaveProperty("config");
+			expect(mainConfig.paths.root).toBe(".");
+			expect(mainConfig.paths.config).toBe(".speco");
 		});
 
-		it("should handle missing paths configuration gracefully", async () => {
-			// Temporarily remove paths file
-			const backupPath = `${pathsFile}.backup`;
-			if (fs.existsSync(pathsFile)) {
-				fs.renameSync(pathsFile, backupPath);
-			}
+		it("should handle missing paths configuration gracefully", () => {
+			// Verify main config exists and has paths configuration
+			expect(fs.existsSync(configFile)).toBe(true);
 
-			// 当CLI命令实现后，这里会测试错误处理
-			// 当前阶段我们只是验证文件不存在
-			expect(fs.existsSync(pathsFile)).toBe(false);
-
-			// Restore file for other tests
-			if (fs.existsSync(backupPath)) {
-				fs.renameSync(backupPath, pathsFile);
-			}
+			const mainConfig = JSON.parse(fs.readFileSync(configFile, "utf8"));
+			// Paths configuration should always be present in main config
+			expect(mainConfig).toHaveProperty("paths");
+			expect(typeof mainConfig.paths).toBe("object");
 		});
 
 		it("should validate path configuration structure from CLI output", async () => {
@@ -516,8 +492,8 @@ require('../mcp-server/server.js');
 		it("should integrate with main project configuration", () => {
 			const mainConfig = JSON.parse(fs.readFileSync(configFile, "utf8"));
 
-			// Verify main config has path configuration enabled
-			expect(mainConfig.features.pathConfig).toBe(true);
+			// Verify main config has paths configuration
+			expect(mainConfig.paths).toBeDefined();
 			expect(mainConfig.paths.config).toBe(".speco");
 		});
 

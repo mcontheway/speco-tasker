@@ -291,29 +291,15 @@ async function createSpecoConfig(targetDir, options) {
 				docs: "docs",
 				specs: "specs",
 			},
-			features: {
-				aiCleanup: false,
-				brandRebrand: true,
-				pathConfig: true,
-				mcpServer: true,
-				cli: true,
-			},
-			testing: {
-				framework: "jest",
-				coverage: {
-					enabled: true,
-					thresholds: {
-						branches: 70,
-						functions: 80,
-						lines: 80,
-						statements: 80,
-					},
-				},
-			},
-			quality: {
-				eslint: true,
-				prettier: true,
-				biome: true,
+			paths: {
+				root: ".",
+				src: "src",
+				scripts: "scripts/modules",
+				bin: "bin",
+				tests: "tests",
+				config: ".speco",
+				docs: "docs",
+				specs: "specs",
 			},
 			logging: {
 				level: "info",
@@ -355,13 +341,10 @@ async function createSpecoConfig(targetDir, options) {
 
 		// 写入配置文件
 		const configPath = path.join(specoDir, "config.json");
-		const pathsPath = path.join(specoDir, "paths.json");
 
 		fs.writeFileSync(configPath, JSON.stringify(mainConfig, null, 2));
-		fs.writeFileSync(pathsPath, JSON.stringify(pathsConfig, null, 2));
 
-		log("success", "✓ Speco 主配置创建完成");
-		log("success", "✓ 路径配置创建完成");
+		log("success", "✓ Speco 配置创建完成");
 
 		// 验证配置
 		try {
