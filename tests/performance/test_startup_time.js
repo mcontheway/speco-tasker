@@ -5,16 +5,12 @@
 import { spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 // Test configuration
 const TEST_RUNS = 5;
 const TIMEOUT_MS = 30000; // 30 seconds timeout
-const CLI_PATH = path.resolve(__dirname, "../../bin/task-master.js");
-const MCP_SERVER_PATH = path.resolve(__dirname, "../../mcp-server/server.js");
+const CLI_PATH = path.resolve(process.cwd(), "bin/speco-tasker.js");
+const MCP_SERVER_PATH = path.resolve(process.cwd(), "mcp-server/server.js");
 
 /**
  * Measure the startup time of a Node.js process

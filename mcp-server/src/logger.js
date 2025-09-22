@@ -1,6 +1,6 @@
 import chalk from "chalk";
 import { getLogLevel } from "../../scripts/modules/config-manager.js";
-import { isSilentMode } from "../../scripts/modules/utils.js";
+import { isSilentMode, detectMCPMode } from "../../scripts/modules/utils.js";
 
 // Define log levels
 const LOG_LEVELS = {
@@ -20,8 +20,8 @@ const LOG_LEVEL = LOG_LEVELS[getLogLevel().toLowerCase()] ?? LOG_LEVELS.info;
  * @param  {...any} args - Arguments to log
  */
 function log(level, ...args) {
-	// Skip logging if silent mode is enabled
-	if (isSilentMode()) {
+	// Skip logging if silent mode or MCP mode is enabled
+	if (isSilentMode() || detectMCPMode()) {
 		return;
 	}
 

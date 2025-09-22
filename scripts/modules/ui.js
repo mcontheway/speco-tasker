@@ -71,13 +71,15 @@ function displayCurrentTagIndicator(tag, options = {}) {
 	// Skip display for main tag only if explicitly requested
 	if (skipIfMaster && tag === "main") return;
 
-	// Create a small, tasteful tag indicator
+	// Display project information and tag indicator
+	const projectName = getProjectName(null);
+	const projectText = chalk.dim("项目: ") + chalk.cyan(projectName);
 	const tagIcon = "🏷️";
 	const tagText = dim
 		? chalk.gray(`${tagIcon} tag: ${tag}`)
 		: chalk.dim(`${tagIcon} tag: `) + chalk.cyan(tag);
 
-	console.log(tagText);
+	console.log(`${projectText} | ${tagText}`);
 }
 
 /**
@@ -99,23 +101,6 @@ function displayBanner() {
 	console.log(
 		chalk.dim("by ") +
 			chalk.cyan.underline("https://github.com/mcontheway/speco-tasker"),
-	);
-
-	// Read version directly from package.json
-	const version = getTaskMasterVersion();
-
-	console.log(
-		boxen(
-			chalk.white(
-				`${chalk.bold("Version:")} ${version}   ${chalk.bold("Project:")} ${getProjectName(null)}`,
-			),
-			{
-				padding: 1,
-				margin: { top: 0, bottom: 1 },
-				borderStyle: "round",
-				borderColor: "cyan",
-			},
-		),
 	);
 }
 

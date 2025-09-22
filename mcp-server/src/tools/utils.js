@@ -328,7 +328,7 @@ async function handleApiResult(
 		? processFunction(result.data)
 		: result.data;
 
-	log.info("Successfully completed operation");
+	log.info("成功完成操作");
 
 	// Create the response payload including version info and tag info
 	const responsePayload = {

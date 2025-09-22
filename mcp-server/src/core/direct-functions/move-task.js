@@ -31,7 +31,7 @@ export async function moveTaskDirect(args, log, context = {}) {
 		return {
 			success: false,
 			error: {
-				message: "Source ID is required",
+				message: "需要源ID",
 				code: "MISSING_SOURCE_ID",
 			},
 		};
@@ -41,7 +41,7 @@ export async function moveTaskDirect(args, log, context = {}) {
 		return {
 			success: false,
 			error: {
-				message: "Destination ID is required",
+				message: "需要目标ID",
 				code: "MISSING_DESTINATION_ID",
 			},
 		};
@@ -56,7 +56,7 @@ export async function moveTaskDirect(args, log, context = {}) {
 					success: false,
 					error: {
 						message:
-							"Project root is required if tasksJsonPath is not provided",
+							"如果未提供 tasksJsonPath，则需要项目根目录",
 						code: "MISSING_PROJECT_ROOT",
 					},
 				};
@@ -87,7 +87,7 @@ export async function moveTaskDirect(args, log, context = {}) {
 			success: true,
 			data: {
 				...result,
-				message: `Successfully moved task/subtask ${args.sourceId} to ${args.destinationId}`,
+				message: `成功将任务/子任务 ${args.sourceId} 移动到 ${args.destinationId}`,
 			},
 		};
 	} catch (error) {

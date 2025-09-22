@@ -34,7 +34,7 @@ export async function addDependencyDirect(args, log) {
 				success: false,
 				error: {
 					code: "MISSING_ARGUMENT",
-					message: "tasksJsonPath is required",
+					message: "需要 tasksJsonPath",
 				},
 			};
 		}
@@ -45,7 +45,7 @@ export async function addDependencyDirect(args, log) {
 				success: false,
 				error: {
 					code: "INPUT_VALIDATION_ERROR",
-					message: "Task ID (id) is required",
+					message: "需要任务ID (id)",
 				},
 			};
 		}
@@ -55,7 +55,7 @@ export async function addDependencyDirect(args, log) {
 				success: false,
 				error: {
 					code: "INPUT_VALIDATION_ERROR",
-					message: "Dependency ID (dependsOn) is required",
+					message: "需要依赖ID (dependsOn)",
 				},
 			};
 		}
@@ -88,7 +88,7 @@ export async function addDependencyDirect(args, log) {
 		return {
 			success: true,
 			data: {
-				message: `Successfully added dependency: Task ${taskId} now depends on ${dependencyId}`,
+				message: `成功添加依赖关系：任务 ${taskId} 现在依赖于 ${dependencyId}`,
 				taskId: taskId,
 				dependencyId: dependencyId,
 			},

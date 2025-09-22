@@ -81,13 +81,13 @@ export async function setTaskStatusDirect(args, log, context = {}) {
 				tag,
 			});
 
-			log.info(`Successfully set task ${taskId} status to ${newStatus}`);
+			log.info(`成功将任务 ${taskId} 状态设置为 ${newStatus}`);
 
 			// Return success data
 			const result = {
 				success: true,
 				data: {
-					message: `Successfully updated task ${taskId} status to "${newStatus}"`,
+					message: `成功将任务 ${taskId} 状态更新为 "${newStatus}"`,
 					taskId,
 					status: newStatus,
 					tasksPath: tasksPath, // Return the path used
@@ -110,7 +110,7 @@ export async function setTaskStatusDirect(args, log, context = {}) {
 
 					if (nextResult.success) {
 						log.info(
-							`Successfully retrieved next task: ${nextResult.data.nextTask}`,
+							`成功检索到下一个任务: ${nextResult.data.nextTask}`,
 						);
 						result.data = {
 							...result.data,

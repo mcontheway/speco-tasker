@@ -47,7 +47,7 @@ export async function showTaskDirect(args, log) {
 			success: false,
 			error: {
 				code: "TASKS_FILE_NOT_FOUND",
-				message: `Failed to find tasks.json: ${error.message}`,
+				message: `查找 tasks.json 失败：${error.message}`,
 			},
 		};
 	}
@@ -59,7 +59,7 @@ export async function showTaskDirect(args, log) {
 		if (!tasksData || !tasksData.tasks) {
 			return {
 				success: false,
-				error: { code: "INVALID_TASKS_DATA", message: "Invalid tasks data" },
+				error: { code: "INVALID_TASKS_DATA", message: "无效的任务数据" },
 			};
 		}
 
@@ -74,7 +74,7 @@ export async function showTaskDirect(args, log) {
 				success: false,
 				error: {
 					code: "INVALID_TASK_ID",
-					message: "No valid task IDs provided",
+					message: "未提供有效的任务ID",
 				},
 			};
 		}
@@ -93,12 +93,12 @@ export async function showTaskDirect(args, log) {
 					success: false,
 					error: {
 						code: "TASK_NOT_FOUND",
-						message: `Task or subtask with ID ${taskIds[0]} not found`,
+						message: `未找到ID为 ${taskIds[0]} 的任务或子任务`,
 					},
 				};
 			}
 
-			log.info(`Successfully retrieved task ${taskIds[0]}.`);
+			log.info(`成功检索到任务 ${taskIds[0]}。`);
 
 			const returnData = { ...task };
 			if (originalSubtaskCount !== null) {
@@ -134,7 +134,7 @@ export async function showTaskDirect(args, log) {
 		}
 
 		log.info(
-			`Successfully retrieved ${foundTasks.length} of ${taskIds.length} requested tasks.`,
+			`成功检索到 ${foundTasks.length} 个，共请求 ${taskIds.length} 个任务。`,
 		);
 
 		// Return multiple tasks with metadata

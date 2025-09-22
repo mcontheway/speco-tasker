@@ -16,7 +16,7 @@ echo "  📁 测试目录: $TEST_DIR"
 
 # 初始化项目
 echo "  🚀 初始化项目..."
-if ! node "$OLDPWD/bin/speco-tasker.js" init --name "Cross Interface Test" --description "Test cross-interface consistency" --yes > /dev/null 2>&1; then
+if ! node "$OLDPWD/bin/speco-tasker.js" init --name "Cross Interface Test" > /dev/null 2>&1; then
     echo "❌ 项目初始化失败"
     exit 1
 fi

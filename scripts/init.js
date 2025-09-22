@@ -22,7 +22,7 @@ import boxen from "boxen";
 import chalk from "chalk";
 import figlet from "figlet";
 import gradient from "gradient-string";
-import { isSilentMode } from "./modules/utils.js";
+import { isSilentMode, detectMCPMode } from "./modules/utils.js";
 import { insideGitWorkTree } from "./modules/utils/git-utils.js";
 
 // 导入核心服务
@@ -65,7 +65,7 @@ const warmGradient = gradient(["#fb8b24", "#e36414", "#9a031e"]);
 
 // Display a fancy banner
 function displayBanner() {
-	if (isSilentMode()) return;
+	if (isSilentMode() || detectMCPMode()) return;
 
 	console.clear();
 	const bannerText = figlet.textSync("Speco Tasker", {
@@ -105,8 +105,8 @@ function log(level, ...args) {
 	if (LOG_LEVELS[level] >= LOG_LEVEL) {
 		const icon = icons[level] || "";
 
-		// Only output to console if not in silent mode
-		if (!isSilentMode()) {
+		// Only output to console if not in silent mode and not in MCP mode
+		if (!isSilentMode() && !detectMCPMode()) {
 			if (level === "error") {
 				console.error(icon, chalk.red(...args));
 			} else if (level === "warn") {
@@ -137,14 +137,14 @@ function ensureDirectoryExists(dirPath) {
 }
 
 // Function to add shell aliases to the user's shell configuration
-function addShellAliases() {
+function addShellAliases(shellType = null) {
 	const homeDir = process.env.HOME || process.env.USERPROFILE;
 	let shellConfigFile;
 
 	// Determine which shell config file to use
-	if (process.env.SHELL?.includes("zsh")) {
+	if (shellType === "zsh" || (!shellType && process.env.SHELL?.includes("zsh"))) {
 		shellConfigFile = path.join(homeDir, ".zshrc");
-	} else if (process.env.SHELL?.includes("bash")) {
+	} else if (shellType === "bash" || (!shellType && process.env.SHELL?.includes("bash"))) {
 		shellConfigFile = path.join(homeDir, ".bashrc");
 	} else {
 		log("warn", "Could not determine shell type. Aliases not added.");
@@ -163,7 +163,7 @@ function addShellAliases() {
 
 		// Check if aliases already exist
 		const configContent = fs.readFileSync(shellConfigFile, "utf8");
-		if (configContent.includes("alias tm='task-master'")) {
+		if (configContent.includes("alias st='speco-tasker'")) {
 			log("info", "Speco Tasker aliases already exist in shell config.");
 			return true;
 		}
@@ -171,8 +171,8 @@ function addShellAliases() {
 		// Add aliases to the shell config file
 		const aliasBlock = `
 # Speco Tasker aliases added on ${new Date().toLocaleDateString()}
-alias tm='task-master'
-alias taskmaster='task-master'
+alias st='speco-tasker'
+alias taskmaster='speco-tasker'
 `;
 
 		fs.appendFileSync(shellConfigFile, aliasBlock);
@@ -269,10 +269,11 @@ async function createSpecoConfig(targetDir, options) {
 		const mainConfig = {
 			project: {
 				name: options.name || "MyProject",
-				version: "1.2.0",
+				version: options.version || "1.2.0",
 				description: options.description || "使用 Speco Tasker 管理项目任务",
 				author: options.author || "Speco Team",
 				license: "MIT WITH Commons-Clause",
+				root: targetDir, // 持久化绝对根目录路径
 			},
 			paths: {
 				root: ".",
@@ -475,135 +476,56 @@ async function initializeProject(options = {}) {
 		displayBanner();
 	}
 
-	const projectRoot = process.cwd(); // Get current working directory as project root
+	// Determine project root - use provided root or current directory
+	const projectRoot = options.root || process.cwd();
 
-	// Check if we should skip prompts (for MCP mode or CLI mode with yes=true, or CLI mode with yes=false but we want to skip for simplicity)
-	const skipPrompts =
-		options.yes === true ||
-		isSilentMode() ||
-		(options.yes === false && !process.env.FORCE_INTERACTIVE);
+	// Get dynamic project name for default
+	const dynamicName = await getDynamicProjectName(projectRoot);
 
-	if (skipPrompts) {
-		// MCP mode or explicit yes - use intelligent defaults without prompts
-		const smartDefaults = {
-			name: await getDynamicProjectName(projectRoot), // Auto-detect from Git or directory
-			description: "A project managed with Speco Tasker",
-			version: "0.1.0",
-			author: "Vibe coder",
-			addAliases: false, // Don't modify user's shell config by default
-			initGit: !insideGitWorkTree(), // Only init Git if not already a Git repo
-			storeTasksInGit: insideGitWorkTree(), // Store in Git if it's already a Git repo
-			rules: ["cursor"], // Default to cursor rules for MCP
-			rulesExplicitlyProvided: true,
-		};
+	// Build final options with defaults and user overrides
+	const finalOptions = {
+		name: options.name || dynamicName, // Use provided name or auto-detect
+		description: options.description || "A project managed with Speco Tasker",
+		version: options.version || "0.1.0",
+		author: options.author || "Vibe coder",
+		addAliases: !!options.shell, // Add aliases if shell is specified
+		shell: options.shell, // Store shell type for later use
+		initGit: !insideGitWorkTree(), // Only init Git if not already a Git repo
+		storeTasksInGit: insideGitWorkTree(), // Store in Git if it's already a Git repo
+		root: projectRoot, // Use the determined root
+		rules: ["cursor"], // Default to cursor rules
+		rulesExplicitlyProvided: true,
+	};
 
-		// Apply smart defaults to options
-		const finalOptions = { ...smartDefaults, ...options };
-
-		// Log what we're doing
-		if (!isSilentMode()) {
-			console.log(
-				chalk.blue("🚀 Initializing Speco Tasker with intelligent defaults..."),
-			);
-			console.log(chalk.gray(`📁 Project root: ${projectRoot}`));
-			console.log(chalk.gray(`📦 Project name: ${finalOptions.name}`));
-			console.log(
-				chalk.gray(
-					`🔧 Git repository: ${finalOptions.initGit ? "Will initialize" : "Already exists"}`,
-				),
-			);
-			console.log(
-				chalk.gray(
-					`🔗 Shell aliases: ${finalOptions.addAliases ? "Will add" : "Skipping"}`,
-				),
-			);
-			console.log();
-		}
-
-		// Create project structure with smart defaults
-		createProjectStructure(
-			finalOptions.addAliases,
-			finalOptions.initGit,
-			finalOptions.storeTasksInGit,
-			false, // dryRun
-			finalOptions,
+	// Log what we're doing
+	if (!isSilentMode() && !detectMCPMode()) {
+		console.log(
+			chalk.blue("🚀 Initializing Speco Tasker with intelligent defaults..."),
 		);
-	} else {
-		// CLI mode with interactive prompts (legacy behavior for backward compatibility)
-		log("info", "Required options not provided, proceeding with prompts.");
-
-		try {
-			const rl = readline.createInterface({
-				input: process.stdin,
-				output: process.stdout,
-			});
-
-			// Get dynamic project name for default prompt
-			const defaultProjectName = await getDynamicProjectName(projectRoot);
-			const projectNameInput = await promptQuestion(
-				rl,
-				chalk.cyan(`Project name (${defaultProjectName}): `),
-			);
-			const projectName = projectNameInput.trim() || defaultProjectName;
-
-			// Use smart defaults for other options
-			const finalOptions = {
-				name: projectName,
-				description: "A project managed with Speco Tasker",
-				version: "0.1.0",
-				author: "Vibe coder",
-				addAliases: false, // Default to not adding aliases
-				initGit: !insideGitWorkTree(),
-				storeTasksInGit: insideGitWorkTree(),
-			};
-
-			log("info", `Project name set to: ${projectName}`);
-
-			// Show summary
-			console.log("\nSpeco Tasker Project settings:");
-			console.log(chalk.blue("Project Name:"), chalk.white(projectName));
-			console.log(
-				chalk.blue("Git repository:"),
-				chalk.white(
-					finalOptions.initGit ? "Will initialize" : "Already exists",
-				),
-			);
-			console.log(
-				chalk.blue("Shell aliases:"),
-				chalk.white(finalOptions.addAliases ? "Will add" : "Skipping"),
-			);
-
-			const confirmInput = await promptQuestion(
-				rl,
-				chalk.yellow("\nDo you want to continue with these settings? (Y/n): "),
-			);
-			const shouldContinue = confirmInput.trim().toLowerCase() !== "n";
-
-			if (!shouldContinue) {
-				rl.close();
-				log("info", "Project initialization cancelled by user");
-				process.exit(0);
-				return;
-			}
-
-			rl.close();
-
-			// Create project structure
-			createProjectStructure(
-				finalOptions.addAliases,
-				finalOptions.initGit,
-				finalOptions.storeTasksInGit,
-				false, // dryRun
-				finalOptions,
-			);
-		} catch (error) {
-			if (rl) {
-				rl.close();
-			}
-			log("error", `Error during initialization process: ${error.message}`);
-			process.exit(1);
-		}
+		console.log(chalk.gray(`📁 Project root: ${projectRoot}`));
+		console.log(chalk.gray(`📦 Project name: ${finalOptions.name}`));
+		console.log(
+			chalk.gray(
+				`🔧 Git repository: ${finalOptions.initGit ? "Will initialize" : "Already exists"}`,
+			),
+		);
+		console.log(
+			chalk.gray(
+				`🔗 Shell aliases: ${finalOptions.addAliases ? "Will add" : "Skipping"}`,
+			),
+		);
+		console.log();
 	}
+
+	// Create project structure with smart defaults
+	createProjectStructure(
+		finalOptions.addAliases,
+		finalOptions.initGit,
+		finalOptions.storeTasksInGit,
+		false, // dryRun
+		finalOptions,
+		finalOptions.shell,
+	);
 }
 
 // Helper function to promisify readline question
@@ -622,8 +544,9 @@ function createProjectStructure(
 	storeTasksInGit,
 	dryRun,
 	options,
+	shell = null,
 ) {
-	const targetDir = process.cwd();
+	const targetDir = options.root || process.cwd();
 	log("info", `Initializing project in ${targetDir}`);
 
 	// Create minimal .taskmaster directory structure (only what's needed)
@@ -641,66 +564,49 @@ function createProjectStructure(
 		createSpecoConfig(targetDir, options);
 	}
 
-	// Copy template files with replacements
-	const replacements = {
-		year: new Date().getFullYear(),
-		projectName: options.name || "MyProject", // Use resolved name from options
-	};
-
-	// Helper function to create rule profiles
-
-	// Skip .env.example - not needed for minimal initialization
-
-	// Copy config.json with project name and root to NEW location
-	copyTemplateFile(
-		"config.json",
-		path.join(targetDir, TASKMASTER_CONFIG_FILE),
-		{
-			...replacements,
-			projectRoot: targetDir, // Save the actual project root directory
-		},
-	);
-
-	// Note: maxTokens configuration update skipped (AI functionality removed)
+	// Note: Configuration files are now created by createSpecoConfig function above
+	// No additional template copying needed for config.json
 
 	// Skip example_prd.txt - not needed for minimal initialization
 
 	// Initialize git repository if git is available
 	try {
 		if (initGit === false) {
-			log("info", "Git initialization skipped due to --no-git flag.");
+			// 检查是否已经在Git仓库中，这是智能默认行为
+			if (insideGitWorkTree()) {
+				log("info", "已检测到现有Git仓库，跳过Git初始化。");
+			} else {
+				log("info", "Git初始化已禁用（--no-git标志）。");
+			}
 		} else if (initGit === true) {
 			if (insideGitWorkTree()) {
 				log(
 					"info",
-					"Existing Git repository detected – skipping git init despite --git flag.",
+					"已检测到现有Git仓库，跳过Git初始化。",
 				);
 			} else {
-				log("info", "Initializing Git repository due to --git flag...");
+				log("info", "正在初始化Git仓库...");
 				execSync("git init", { cwd: targetDir, stdio: "ignore" });
-				log("success", "Git repository initialized");
+				log("success", "Git仓库初始化完成");
 			}
 		} else {
 			// Default behavior when no flag is provided (from interactive prompt)
 			if (insideGitWorkTree()) {
-				log("info", "Existing Git repository detected – skipping git init.");
+				log("info", "已检测到现有Git仓库，跳过Git初始化。");
 			} else {
 				log(
 					"info",
-					"No Git repository detected. Initializing one in project root...",
+					"未检测到Git仓库，正在项目根目录初始化...",
 				);
 				execSync("git init", { cwd: targetDir, stdio: "ignore" });
-				log("success", "Git repository initialized");
+				log("success", "Git仓库初始化完成");
 			}
 		}
 	} catch (error) {
-		log("warn", "Git not available, skipping repository initialization");
+		log("warn", "Git不可用，跳过仓库初始化");
 	}
 
-	// Add shell aliases if requested
-	if (addAliases) {
-		addShellAliases();
-	}
+	// Add shell aliases if requested (handled later in the flow)
 
 	// Run npm install automatically
 	const npmInstallOptions = {
@@ -709,8 +615,8 @@ function createProjectStructure(
 		stdio: "inherit",
 	};
 
-	if (isSilentMode()) {
-		// If silent (MCP mode), suppress npm install output
+	if (isSilentMode() || detectMCPMode()) {
+		// If silent or MCP mode, suppress npm install output
 		npmInstallOptions.stdio = "ignore";
 		log("info", "Running npm install silently..."); // Log our own message
 	} else {
@@ -725,51 +631,11 @@ function createProjectStructure(
 		);
 	}
 
-	// === Add Model Configuration Step ===
-	if (!isSilentMode() && !dryRun && !options?.yes) {
-		console.log(
-			boxen(chalk.cyan("Configuring AI Models..."), {
-				padding: 0.5,
-				margin: { top: 1, bottom: 0.5 },
-				borderStyle: "round",
-				borderColor: "blue",
-			}),
-		);
-		log(
-			"info",
-			"Running interactive model setup. Please select your preferred AI models.",
-		);
-		try {
-			execSync("npx task-master models --setup", {
-				stdio: "inherit",
-				cwd: targetDir,
-			});
-			log("success", "AI Models configured.");
-		} catch (error) {
-			log("error", "Failed to configure AI models:", error.message);
-			log("warn", 'You may need to run "task-master models --setup" manually.');
-		}
-	} else if (isSilentMode() && !dryRun) {
-		log("info", "Skipping interactive model setup in silent (MCP) mode.");
-		log(
-			"warn",
-			'Please configure AI models using "task-master models --set-..." or the "models" MCP tool.',
-		);
-	} else if (dryRun) {
-		log("info", "DRY RUN: Skipping interactive model setup.");
-	} else if (options?.yes) {
-		log("info", "Skipping interactive model setup due to --yes flag.");
-		log(
-			"info",
-			'Default AI models will be used. You can configure different models later using "task-master models --setup" or "task-master models --set-..." commands.',
-		);
-	}
-	// ====================================
 
 	// Add shell aliases if requested
 	if (addAliases && !dryRun) {
 		log("info", "Adding shell aliases...");
-		const aliasResult = addShellAliases();
+		const aliasResult = addShellAliases(shell);
 		if (aliasResult) {
 			log("success", "Shell aliases added successfully");
 		}
@@ -778,7 +644,7 @@ function createProjectStructure(
 	}
 
 	// Display success message
-	if (!isSilentMode()) {
+	if (!isSilentMode() && !detectMCPMode()) {
 		console.log(
 			boxen(
 				`${warmGradient.multiline(
@@ -795,7 +661,7 @@ function createProjectStructure(
 	}
 
 	// Display next steps in a nice box
-	if (!isSilentMode()) {
+	if (!isSilentMode() && !detectMCPMode()) {
 		console.log(
 			boxen(
 				`${chalk.cyan.bold("接下来您可以做的事情:")}\n\n${chalk.white("1. ")}${chalk.yellow(

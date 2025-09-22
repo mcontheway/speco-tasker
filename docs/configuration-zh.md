@@ -6,9 +6,13 @@ Speco Tasker is a pure manual task management system with all AI features comple
 
 ## `.speco/config.json` 文件 | `.speco/config.json` File
 
-此 JSON 文件存储项目配置设置，包括日志级别、标签系统设置和项目默认值。
+此 JSON 文件存储项目配置设置，包括项目信息、日志级别、标签系统设置和项目默认值。
 
-This JSON file stores project configuration settings, including log levels, tag system settings, and project defaults.
+注意：为了简化配置，部分初始化时的配置项（如 paths、features、testing、quality）已被移除，仅保留运行时必需的配置项。
+
+This JSON file stores project configuration settings, including project information, log levels, tag system settings, and project defaults.
+
+Note: To simplify configuration, some initialization-time configuration items (such as paths, features, testing, quality) have been removed, keeping only the configuration items required at runtime.
 
 **位置：** 当您运行 `speco-tasker init` 初始化新项目时，此文件将在 `.speco/` 目录中创建。
 
@@ -21,6 +25,14 @@ This JSON file stores project configuration settings, including log levels, tag 
 **示例结构：| Example Structure:**
 ```json
 {
+  "project": {
+    "name": "Your Project Name",
+    "version": "1.0.0",
+    "description": "Project description",
+    "author": "Author Name",
+    "license": "MIT",
+    "root": "/path/to/project"
+  },
   "global": {
     "logLevel": "info",
     "debug": false,
@@ -29,6 +41,9 @@ This JSON file stores project configuration settings, including log levels, tag 
     "defaultPriority": "medium",
     "defaultTag": "main",
     "projectName": "Your Project Name"
+  },
+  "logging": {
+    "level": "info"
   },
   "tags": {
     "main": {

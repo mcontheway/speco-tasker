@@ -56,7 +56,7 @@ export async function addTaskDirect(args, log, context = {}) {
 				success: false,
 				error: {
 					code: "MISSING_ARGUMENT",
-					message: "tasksJsonPath is required",
+					message: "需要 tasksJsonPath",
 				},
 			};
 		}
@@ -155,7 +155,7 @@ export async function addTaskDirect(args, log, context = {}) {
 			success: true,
 			data: {
 				taskId: newTaskId,
-				message: `Successfully added new task #${newTaskId}`,
+				message: `成功添加新任务 #${newTaskId}`,
 			},
 		};
 	} catch (error) {

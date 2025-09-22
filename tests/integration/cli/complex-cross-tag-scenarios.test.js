@@ -27,7 +27,7 @@ beforeEach(() => {
 	process.chdir(testDir);
 
 	// Initialize task-master
-	execSync(`node ${binPath} init --yes`, {
+	execSync(`node ${binPath} init --name "Complex Test"`, {
 		stdio: "pipe",
 	});
 

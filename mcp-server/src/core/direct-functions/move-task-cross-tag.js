@@ -35,7 +35,7 @@ export async function moveTaskCrossTagDirect(args, log, context = {}) {
 		return {
 			success: false,
 			error: {
-				message: "Source IDs are required",
+				message: "需要源任务ID",
 				code: "MISSING_SOURCE_IDS",
 			},
 		};
@@ -45,7 +45,7 @@ export async function moveTaskCrossTagDirect(args, log, context = {}) {
 		return {
 			success: false,
 			error: {
-				message: "Source tag is required for cross-tag moves",
+				message: "跨标签移动需要源标签",
 				code: "MISSING_SOURCE_TAG",
 			},
 		};
@@ -55,7 +55,7 @@ export async function moveTaskCrossTagDirect(args, log, context = {}) {
 		return {
 			success: false,
 			error: {
-				message: "Target tag is required for cross-tag moves",
+				message: "跨标签移动需要目标标签",
 				code: "MISSING_TARGET_TAG",
 			},
 		};
@@ -66,12 +66,12 @@ export async function moveTaskCrossTagDirect(args, log, context = {}) {
 		return {
 			success: false,
 			error: {
-				message: `Source and target tags are the same ("${args.sourceTag}")`,
+				message: `源标签和目标标签相同（"${args.sourceTag}"）`,
 				code: "SAME_SOURCE_TARGET_TAG",
 				suggestions: [
-					"Use different tags for cross-tag moves",
-					"Use within-tag move: task-master move --from=<id> --to=<id> --tag=<tag>",
-					"Check available tags: task-master tags",
+					"使用不同的标签进行跨标签移动",
+					"使用 move_task 工具进行同标签内的移动",
+					"使用 list_tags 工具查看可用标签",
 				],
 			},
 		};
@@ -86,7 +86,7 @@ export async function moveTaskCrossTagDirect(args, log, context = {}) {
 					success: false,
 					error: {
 						message:
-							"Project root is required if tasksJsonPath is not provided",
+							"如果未提供 tasksJsonPath，则需要项目根目录",
 						code: "MISSING_PROJECT_ROOT",
 					},
 				};
@@ -121,7 +121,7 @@ export async function moveTaskCrossTagDirect(args, log, context = {}) {
 				success: true,
 				data: {
 					...result,
-					message: `Successfully moved ${sourceIds.length} task(s) from "${args.sourceTag}" to "${args.targetTag}"`,
+					message: `成功将 ${sourceIds.length} 个任务从 "${args.sourceTag}" 移动到 "${args.targetTag}"`,
 					moveOptions,
 					sourceTag: args.sourceTag,
 					targetTag: args.targetTag,
@@ -143,16 +143,16 @@ export async function moveTaskCrossTagDirect(args, log, context = {}) {
 		if (error.code === "CROSS_TAG_DEPENDENCY_CONFLICTS") {
 			errorCode = "CROSS_TAG_DEPENDENCY_CONFLICT";
 			suggestions = [
-				"Use --with-dependencies to move dependent tasks together",
-				"Use --ignore-dependencies to break cross-tag dependencies",
-				"Run task-master validate-dependencies to check for issues",
-				"Move dependencies first, then move the main task",
+				"使用 --with-dependencies 参数将相关任务一起移动",
+				"使用 --ignore-dependencies 参数断开跨标签依赖关系",
+				"使用 validate_dependencies 工具检查依赖关系问题",
+				"先移动依赖项，然后移动主任务",
 			];
 		} else if (error.code === "CANNOT_MOVE_SUBTASK") {
 			errorCode = "SUBTASK_MOVE_RESTRICTION";
 			suggestions = [
-				"Promote subtask to full task first: task-master remove-subtask --id=<subtaskId> --convert",
-				"Move the parent task with all subtasks using --with-dependencies",
+				"先使用 remove_subtask 工具将子任务转换为独立任务",
+				"使用 withDependencies 参数移动父任务及其所有子任务",
 			];
 		} else if (
 			error.code === "TASK_NOT_FOUND" ||
@@ -161,9 +161,9 @@ export async function moveTaskCrossTagDirect(args, log, context = {}) {
 		) {
 			errorCode = "TAG_OR_TASK_NOT_FOUND";
 			suggestions = [
-				"Check available tags: task-master tags",
-				"Verify task IDs exist: task-master list",
-				"Check task details: task-master show <id>",
+				"使用 list_tags 工具查看可用标签",
+				"使用 get_tasks 工具验证任务ID是否存在",
+				"使用 get_task 工具查看任务详情",
 			];
 		} else if (error.message.includes("cross-tag dependency conflicts")) {
 			// Fallback for legacy error messages
@@ -171,23 +171,23 @@ export async function moveTaskCrossTagDirect(args, log, context = {}) {
 			suggestions = [
 				"Use --with-dependencies to move dependent tasks together",
 				"Use --ignore-dependencies to break cross-tag dependencies",
-				"Run task-master validate-dependencies to check for issues",
+				"使用 validate_dependencies 工具检查依赖关系问题",
 				"Move dependencies first, then move the main task",
 			];
-		} else if (error.message.includes("Cannot move subtask")) {
+		} else if (error.message.includes("无法移动子任务")) {
 			// Fallback for legacy error messages
 			errorCode = "SUBTASK_MOVE_RESTRICTION";
 			suggestions = [
-				"Promote subtask to full task first: task-master remove-subtask --id=<subtaskId> --convert",
-				"Move the parent task with all subtasks using --with-dependencies",
+				"先使用 remove_subtask 工具将子任务转换为独立任务",
+				"使用 withDependencies 参数移动父任务及其所有子任务",
 			];
 		} else if (error.message.includes("not found")) {
 			// Fallback for legacy error messages
 			errorCode = "TAG_OR_TASK_NOT_FOUND";
 			suggestions = [
-				"Check available tags: task-master tags",
-				"Verify task IDs exist: task-master list",
-				"Check task details: task-master show <id>",
+				"使用 list_tags 工具查看可用标签",
+				"使用 get_tasks 工具验证任务ID是否存在",
+				"使用 get_task 工具查看任务详情",
 			];
 		} else if (
 			error.code === "TASK_ALREADY_EXISTS" ||

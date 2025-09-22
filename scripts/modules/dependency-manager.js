@@ -58,8 +58,9 @@ async function addDependency(tasksPath, taskId, dependencyId, context = {}) {
 
 	const data = readJSON(tasksPath, context.projectRoot, context.tag);
 	if (!data || !data.tasks) {
-		log("error", "No valid tasks found in tasks.json");
-		process.exit(1);
+		const errorMsg = "No valid tasks found in tasks.json";
+		log("error", errorMsg);
+		throw new DependencyError("INVALID_TASKS_FILE", errorMsg);
 	}
 
 	// Format the task and dependency IDs correctly
@@ -72,11 +73,9 @@ async function addDependency(tasksPath, taskId, dependencyId, context = {}) {
 
 	// Check if the dependency task or subtask actually exists
 	if (!taskExists(data.tasks, formattedDependencyId)) {
-		log(
-			"error",
-			`Dependency target ${formattedDependencyId} does not exist in tasks.json`,
-		);
-		process.exit(1);
+		const errorMsg = `Dependency target ${formattedDependencyId} does not exist in tasks.json`;
+		log("error", errorMsg);
+		throw new DependencyError("DEPENDENCY_NOT_FOUND", errorMsg);
 	}
 
 	// Find the task to update
@@ -91,29 +90,33 @@ async function addDependency(tasksPath, taskId, dependencyId, context = {}) {
 		const parentTask = data.tasks.find((t) => t.id === parentId);
 
 		if (!parentTask) {
-			log("error", `Parent task ${parentId} not found.`);
-			process.exit(1);
+			const errorMsg = `Parent task ${parentId} not found.`;
+			log("error", errorMsg);
+			throw new DependencyError("PARENT_TASK_NOT_FOUND", errorMsg);
 		}
 
 		if (!parentTask.subtasks) {
-			log("error", `Parent task ${parentId} has no subtasks.`);
-			process.exit(1);
+			const errorMsg = `Parent task ${parentId} has no subtasks.`;
+			log("error", errorMsg);
+			throw new DependencyError("NO_SUBTASKS", errorMsg);
 		}
 
 		targetTask = parentTask.subtasks.find((s) => s.id === subtaskId);
 		isSubtask = true;
 
 		if (!targetTask) {
-			log("error", `Subtask ${formattedTaskId} not found.`);
-			process.exit(1);
+			const errorMsg = `Subtask ${formattedTaskId} not found.`;
+			log("error", errorMsg);
+			throw new DependencyError("SUBTASK_NOT_FOUND", errorMsg);
 		}
 	} else {
 		// Regular task (not a subtask)
 		targetTask = data.tasks.find((t) => t.id === formattedTaskId);
 
 		if (!targetTask) {
-			log("error", `Task ${formattedTaskId} not found.`);
-			process.exit(1);
+			const errorMsg = `Task ${formattedTaskId} not found.`;
+			log("error", errorMsg);
+			throw new DependencyError("TASK_NOT_FOUND", errorMsg);
 		}
 	}
 
@@ -138,8 +141,9 @@ async function addDependency(tasksPath, taskId, dependencyId, context = {}) {
 
 	// Check if the task is trying to depend on itself - compare full IDs (including subtask parts)
 	if (String(formattedTaskId) === String(formattedDependencyId)) {
-		log("error", `Task ${formattedTaskId} cannot depend on itself.`);
-		process.exit(1);
+		const errorMsg = `Task ${formattedTaskId} cannot depend on itself.`;
+		log("error", errorMsg);
+		throw new DependencyError("SELF_DEPENDENCY", errorMsg);
 	}
 
 	// For subtasks of the same parent, we need to make sure we're not treating it as a self-dependency
@@ -170,8 +174,9 @@ async function addDependency(tasksPath, taskId, dependencyId, context = {}) {
 	}
 
 	if (isSelfDependency) {
-		log("error", `Subtask ${formattedTaskId} cannot depend on itself.`);
-		process.exit(1);
+		const errorMsg = `Subtask ${formattedTaskId} cannot depend on itself.`;
+		log("error", errorMsg);
+		throw new DependencyError("SELF_DEPENDENCY", errorMsg);
 	}
 
 	// Check for circular dependencies
@@ -225,11 +230,9 @@ async function addDependency(tasksPath, taskId, dependencyId, context = {}) {
 
 		log("info", "Task files regenerated with updated dependencies.");
 	} else {
-		log(
-			"error",
-			`Cannot add dependency ${formattedDependencyId} to task ${formattedTaskId} as it would create a circular dependency.`,
-		);
-		process.exit(1);
+		const errorMsg = `Cannot add dependency ${formattedDependencyId} to task ${formattedTaskId} as it would create a circular dependency.`;
+		log("error", errorMsg);
+		throw new DependencyError("CIRCULAR_DEPENDENCY", errorMsg);
 	}
 }
 

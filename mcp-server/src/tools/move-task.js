@@ -172,7 +172,7 @@ export function registerMoveTaskTool(server) {
 								data: {
 									moves: results,
 									skipped: skipped.length > 0 ? skipped : undefined,
-									message: `Successfully moved ${results.length} tasks${skipped.length > 0 ? `, skipped ${skipped.length}` : ""}`,
+									message: `成功移动 ${results.length} 个任务${skipped.length > 0 ? `，跳过 ${skipped.length} 个` : ""}`,
 								},
 							},
 							log,
@@ -187,7 +187,7 @@ export function registerMoveTaskTool(server) {
 							data: {
 								moves: results,
 								skippedMoves: skippedMoves,
-								message: `Successfully moved ${results.length} tasks${skippedMoves.length > 0 ? `, skipped ${skippedMoves.length} moves` : ""}`,
+								message: `成功移动 ${results.length} 个任务${skippedMoves.length > 0 ? `，跳过 ${skippedMoves.length} 次移动` : ""}`,
 							},
 						},
 						log,

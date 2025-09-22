@@ -25,6 +25,9 @@ import * as gitUtils from "./utils/git-utils.js";
 // Global silent mode flag
 let silentMode = false;
 
+// Global MCP mode detection
+let isMCPMode = null;
+
 // --- Environment Variable Resolution Utility ---
 // Now imported from core-utils.js
 
@@ -1746,6 +1749,55 @@ function stripAnsiCodes(text) {
 	return text.replace(/\x1B\[[0-9;]*[A-Za-z]/g, "");
 }
 
+/**
+ * Detects if the current execution context is MCP (Model Context Protocol) mode
+ * This is used to suppress console output that would interfere with MCP JSON responses
+ * @returns {boolean} - True if running in MCP mode, false otherwise
+ */
+function detectMCPMode() {
+	// Cache the result to avoid repeated detection
+	if (isMCPMode !== null) {
+		return isMCPMode;
+	}
+
+	try {
+		// Method 1: Check for MCP-specific environment variables
+		if (process.env.MCP_SERVER === 'true' || process.env.MCP_MODE === 'true') {
+			isMCPMode = true;
+			return true;
+		}
+
+		// Method 2: Check if we're running from MCP server
+		if (process.argv.some(arg => arg.includes('mcp-server'))) {
+			isMCPMode = true;
+			return true;
+		}
+
+		// Method 3: Check call stack for MCP-related functions
+		const stack = new Error().stack || '';
+		if (stack.includes('mcp-server') || stack.includes('fastmcp') || stack.includes('handleApiResult')) {
+			isMCPMode = true;
+			return true;
+		}
+
+		// Method 4: Check if process was spawned with specific MCP indicators
+		const execPath = process.execPath || '';
+		const scriptPath = process.argv[1] || '';
+		if (execPath.includes('mcp') || scriptPath.includes('mcp-server') || scriptPath.includes('server.js')) {
+			isMCPMode = true;
+			return true;
+		}
+
+		// Default to CLI mode
+		isMCPMode = false;
+		return false;
+	} catch (error) {
+		// On error, default to CLI mode to avoid breaking functionality
+		isMCPMode = false;
+		return false;
+	}
+}
+
 // Export all utility functions and configuration
 export {
 	LOG_LEVELS,
@@ -1785,6 +1837,7 @@ export {
 	ensureTagMetadata,
 	stripAnsiCodes,
 	normalizeTaskIds,
+	detectMCPMode,
 	// Parameter processing utilities
 	parseSpecFiles,
 	validateSpecFiles,

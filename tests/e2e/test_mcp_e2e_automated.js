@@ -1539,8 +1539,8 @@ async function main() {
 	}
 }
 
-// Run the test if this file is executed directly
-if (import.meta.url === `file://${process.argv[1]}`) {
+// Run the test if this file is executed directly (disabled in Jest)
+if (typeof process !== 'undefined' && process.argv[1] && process.argv[1].endsWith('test_mcp_e2e_automated.js')) {
 	main().catch((error) => {
 		console.error("❌ 未处理的错误:", error);
 		process.exit(1);

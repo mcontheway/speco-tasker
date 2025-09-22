@@ -107,3 +107,5 @@ backup/
 
 # 临时文件
 tmp/
+.speco/
+.taskmaster/

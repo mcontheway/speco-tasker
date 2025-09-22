@@ -73,7 +73,7 @@ export function registerAddDependencyTool(server) {
 
 				// Log result
 				if (result.success) {
-					log.info(`Successfully added dependency: ${result.data.message}`);
+					log.info(`成功添加依赖关系：${result.data.message}`);
 				} else {
 					log.error(`Failed to add dependency: ${result.error.message}`);
 				}

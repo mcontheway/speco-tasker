@@ -17,9 +17,9 @@ echo "  📁 测试目录: $TEST_DIR"
 # 初始化项目
 echo "  🚀 初始化项目..."
 TASK_MASTER_CLI="/Volumes/Data_SSD/Coding/startkits/Speco-Tasker/bin/speco-tasker.js"
-if ! node "$TASK_MASTER_CLI" init --name "CLI Test" --description "Test project for CLI functionality" --yes 2>&1; then
+if ! node "$TASK_MASTER_CLI" init --name "CLI Test" 2>&1; then
     echo "❌ 项目初始化失败 - 详细错误信息："
-    node "$TASK_MASTER_CLI" init --name "CLI Test" --description "Test project for CLI functionality" --yes
+    node "$TASK_MASTER_CLI" init --name "CLI Test"
     exit 1
 fi
 

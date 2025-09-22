@@ -5,16 +5,12 @@
 import { spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 // Test configuration
 const TEST_DURATION_MS = 10000; // 10 seconds test duration
 const SAMPLING_INTERVAL_MS = 500; // Sample memory every 500ms
-const CLI_PATH = path.resolve(__dirname, "../../bin/task-master.js");
-const MCP_SERVER_PATH = path.resolve(__dirname, "../../mcp-server/server.js");
+const CLI_PATH = path.resolve(process.cwd(), "bin/task-master.js");
+const MCP_SERVER_PATH = path.resolve(process.cwd(), "mcp-server/server.js");
 
 /**
  * Monitor memory usage of a Node.js process

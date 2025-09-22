@@ -140,7 +140,7 @@ export function registerUpdateSubtaskTool(server) {
 				);
 
 				if (result.success) {
-					log.info(`Successfully updated subtask with ID ${args.id}`);
+					log.info(`成功更新ID为 ${args.id} 的子任务`);
 				} else {
 					log.error(
 						`Failed to update subtask: ${result.error?.message || "Unknown error"}`,

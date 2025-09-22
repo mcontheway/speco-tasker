@@ -15,14 +15,8 @@ class PathConfig {
 	constructor(config = {}) {
 		// 根目录配置
 		this.root = {
-			speco:
-				config?.root && typeof config.root.speco === "string"
-					? config.root.speco
-					: ".speco",
-			legacy:
-				config?.root && typeof config.root.legacy === "string"
-					? config.root.legacy
-					: ".taskmaster",
+			speco: config?.root?.speco ?? ".speco",
+			legacy: config?.root?.legacy ?? ".taskmaster",
 		};
 
 		// 性能优化：延迟初始化缓存管理器
@@ -30,66 +24,24 @@ class PathConfig {
 
 		// 子目录映射
 		this.dirs = {
-			tasks:
-				config?.dirs && typeof config.dirs.tasks === "string"
-					? config.dirs.tasks
-					: "tasks",
-			docs:
-				config?.dirs && typeof config.dirs.docs === "string"
-					? config.dirs.docs
-					: "docs",
-			reports:
-				config?.dirs && typeof config.dirs.reports === "string"
-					? config.dirs.reports
-					: "reports",
-			templates:
-				config?.dirs && typeof config.dirs.templates === "string"
-					? config.dirs.templates
-					: "templates",
-			backups:
-				config?.dirs && typeof config.dirs.backups === "string"
-					? config.dirs.backups
-					: "backups",
-			logs:
-				config?.dirs && typeof config.dirs.logs === "string"
-					? config.dirs.logs
-					: "logs",
-			config:
-				config?.dirs && typeof config.dirs.config === "string"
-					? config.dirs.config
-					: "config",
+			tasks: config?.dirs?.tasks ?? "tasks",
+			docs: config?.dirs?.docs ?? "docs",
+			reports: config?.dirs?.reports ?? "reports",
+			templates: config?.dirs?.templates ?? "templates",
+			backups: config?.dirs?.backups ?? "backups",
+			logs: config?.dirs?.logs ?? "logs",
+			config: config?.dirs?.config ?? "config",
 		};
 
 		// 文件映射
 		this.files = {
-			tasks:
-				config?.files && typeof config.files.tasks === "string"
-					? config.files.tasks
-					: "tasks.json",
-			config:
-				config?.files && typeof config.files.config === "string"
-					? config.files.config
-					: "config.json",
-			state:
-				config?.files && typeof config.files.state === "string"
-					? config.files.state
-					: "state.json",
-			changelog:
-				config?.files && typeof config.files.changelog === "string"
-					? config.files.changelog
-					: "changelog.md",
-			brand:
-				config?.files && typeof config.files.brand === "string"
-					? config.files.brand
-					: "brand.json",
-			paths:
-				config?.files && typeof config.files.paths === "string"
-					? config.files.paths
-					: "paths.json",
-			cleanup:
-				config?.files && typeof config.files.cleanup === "string"
-					? config.files.cleanup
-					: "cleanup-rules.json",
+			tasks: config?.files?.tasks ?? "tasks.json",
+			config: config?.files?.config ?? "config.json",
+			state: config?.files?.state ?? "state.json",
+			changelog: config?.files?.changelog ?? "changelog.md",
+			brand: config?.files?.brand ?? "brand.json",
+			paths: config?.files?.paths ?? "paths.json",
+			cleanup: config?.files?.cleanup ?? "cleanup-rules.json",
 		};
 
 		// 标签配置（用于多任务上下文）

@@ -1,5 +1,440 @@
 {
-	"main": {
-		"tasks": []
-	}
+  "main": {
+    "updated": "2025-09-22T08:07:07.553Z",
+    "metadata": {
+      "created": "2025-09-22T08:03:49.029Z",
+      "updated": "2025-09-22T08:11:14.631Z",
+      "description": "Tasks for main context"
+    },
+    "tasks": [
+      {
+        "id": 1,
+        "title": "实现用户认证功能",
+        "description": "创建用户注册和登录功能",
+        "details": "使用 JWT 实现用户认证，包含密码加密和会话管理\n\n增加对密码强度的要求，包含特殊字符和长度验证",
+        "testStrategy": "单元测试和集成测试",
+        "status": "in-progress",
+        "dependencies": [
+          "3"
+        ],
+        "priority": "medium",
+        "spec_files": [
+          {
+            "type": "spec",
+            "title": "auth-api-spec.md",
+            "file": "auth-api-spec.md"
+          }
+        ],
+        "logs": "",
+        "subtasks": []
+      },
+      {
+        "id": 3,
+        "title": "实现用户界面",
+        "description": "创建用户登录界面",
+        "details": "使用 React 创建登录表单",
+        "testStrategy": "UI 组件测试",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "medium",
+        "spec_files": [
+          {
+            "type": "spec",
+            "title": "ui-spec.md",
+            "file": "ui-spec.md"
+          }
+        ],
+        "logs": "",
+        "subtasks": []
+      },
+      {
+        "id": 4,
+        "title": "API 文档编写",
+        "description": "编写 REST API 文档",
+        "details": "使用 Swagger 生成 API 文档",
+        "testStrategy": "文档验证",
+        "status": "done",
+        "dependencies": [],
+        "priority": "medium",
+        "spec_files": [
+          {
+            "type": "spec",
+            "title": "api-docs.md",
+            "file": "api-docs.md"
+          }
+        ],
+        "logs": "",
+        "subtasks": []
+      },
+      {
+        "id": 5,
+        "title": "数据库迁移脚本",
+        "description": "创建数据库迁移文件",
+        "details": "编写数据库表结构和数据迁移脚本",
+        "testStrategy": "数据库测试",
+        "status": "in-progress",
+        "dependencies": [],
+        "priority": "medium",
+        "spec_files": [
+          {
+            "type": "spec",
+            "title": "migration-spec.md",
+            "file": "migration-spec.md"
+          }
+        ],
+        "logs": "",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "创建数据库迁移文件",
+            "description": "编写数据库迁移脚本",
+            "details": "创建数据库表结构迁移文件",
+            "status": "pending",
+            "dependencies": [],
+            "priority": "medium",
+            "testStrategy": "数据库测试",
+            "spec_files": [],
+            "logs": "",
+            "parentTaskId": 5
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "错误处理中间件",
+        "description": "实现全局错误处理",
+        "details": "创建错误处理中间件和日志记录",
+        "testStrategy": "错误场景测试",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "medium",
+        "spec_files": [
+          {
+            "type": "spec",
+            "title": "error-handling-spec.md",
+            "file": "error-handling-spec.md"
+          }
+        ],
+        "logs": "",
+        "subtasks": []
+      },
+      {
+        "id": 7,
+        "title": "用户权限管理",
+        "description": "实现基于角色的权限控制",
+        "details": "创建用户角色和权限系统",
+        "testStrategy": "权限测试",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "medium",
+        "spec_files": [
+          {
+            "type": "spec",
+            "title": "permission-spec.md",
+            "file": "permission-spec.md"
+          }
+        ],
+        "logs": "",
+        "subtasks": []
+      },
+      {
+        "id": 8,
+        "title": "日志系统",
+        "description": "实现应用程序日志记录",
+        "details": "集成 Winston 日志库",
+        "testStrategy": "日志测试",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "medium",
+        "spec_files": [
+          {
+            "type": "spec",
+            "title": "logging-spec.md",
+            "file": "logging-spec.md"
+          }
+        ],
+        "logs": "",
+        "subtasks": []
+      },
+      {
+        "id": 9,
+        "title": "缓存系统",
+        "description": "实现 Redis 缓存",
+        "details": "集成 Redis 缓存中间件",
+        "testStrategy": "缓存测试",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "medium",
+        "spec_files": [
+          {
+            "type": "spec",
+            "title": "cache-spec.md",
+            "file": "cache-spec.md"
+          }
+        ],
+        "logs": "",
+        "subtasks": []
+      },
+      {
+        "id": 10,
+        "title": "邮件服务",
+        "description": "实现邮件发送功能",
+        "details": "集成 Nodemailer 发送邮件",
+        "testStrategy": "邮件测试",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "medium",
+        "spec_files": [
+          {
+            "type": "spec",
+            "title": "email-spec.md",
+            "file": "email-spec.md"
+          }
+        ],
+        "logs": "",
+        "subtasks": []
+      },
+      {
+        "id": 11,
+        "title": "文件上传",
+        "description": "实现文件上传功能",
+        "details": "使用 Multer 处理文件上传",
+        "testStrategy": "上传测试",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "medium",
+        "spec_files": [
+          {
+            "type": "spec",
+            "title": "upload-spec.md",
+            "file": "upload-spec.md"
+          }
+        ],
+        "logs": "",
+        "subtasks": []
+      },
+      {
+        "id": 12,
+        "title": "API 限流",
+        "description": "实现 API 速率限制",
+        "details": "使用 express-rate-limit",
+        "testStrategy": "限流测试",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "medium",
+        "spec_files": [
+          {
+            "type": "spec",
+            "title": "rate-limit-spec.md",
+            "file": "rate-limit-spec.md"
+          }
+        ],
+        "logs": "",
+        "subtasks": []
+      },
+      {
+        "id": 13,
+        "title": "CORS 配置",
+        "description": "跨域资源共享配置",
+        "details": "配置 CORS 中间件",
+        "testStrategy": "CORS 测试",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "medium",
+        "spec_files": [
+          {
+            "type": "spec",
+            "title": "cors-spec.md",
+            "file": "cors-spec.md"
+          }
+        ],
+        "logs": "",
+        "subtasks": []
+      },
+      {
+        "id": 14,
+        "title": "环境配置",
+        "description": "环境变量和配置管理",
+        "details": "使用 dotenv 管理配置",
+        "testStrategy": "配置测试",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "medium",
+        "spec_files": [
+          {
+            "type": "spec",
+            "title": "config-spec.md",
+            "file": "config-spec.md"
+          }
+        ],
+        "logs": "",
+        "subtasks": []
+      },
+      {
+        "id": 15,
+        "title": "数据库连接池",
+        "description": "数据库连接池配置",
+        "details": "配置数据库连接池",
+        "testStrategy": "连接池测试",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "medium",
+        "spec_files": [
+          {
+            "type": "spec",
+            "title": "connection-pool-spec.md",
+            "file": "connection-pool-spec.md"
+          }
+        ],
+        "logs": "",
+        "subtasks": []
+      },
+      {
+        "id": 16,
+        "title": "输入验证",
+        "description": "API 输入数据验证",
+        "details": "使用 Joi 进行数据验证",
+        "testStrategy": "验证测试",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "medium",
+        "spec_files": [
+          {
+            "type": "spec",
+            "title": "validation-spec.md",
+            "file": "validation-spec.md"
+          }
+        ],
+        "logs": "",
+        "subtasks": []
+      },
+      {
+        "id": 17,
+        "title": "安全头设置",
+        "description": "HTTP 安全头配置",
+        "details": "配置安全相关的 HTTP 头",
+        "testStrategy": "安全测试",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "medium",
+        "spec_files": [
+          {
+            "type": "spec",
+            "title": "security-headers-spec.md",
+            "file": "security-headers-spec.md"
+          }
+        ],
+        "logs": "",
+        "subtasks": []
+      },
+      {
+        "id": 18,
+        "title": "健康检查端点",
+        "description": "应用健康状态检查",
+        "details": "实现健康检查 API 端点",
+        "testStrategy": "健康检查测试",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "medium",
+        "spec_files": [
+          {
+            "type": "spec",
+            "title": "health-check-spec.md",
+            "file": "health-check-spec.md"
+          }
+        ],
+        "logs": "",
+        "subtasks": []
+      },
+      {
+        "id": 19,
+        "title": "监控指标",
+        "description": "应用性能监控",
+        "details": "集成 Prometheus 监控",
+        "testStrategy": "监控测试",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "medium",
+        "spec_files": [
+          {
+            "type": "spec",
+            "title": "metrics-spec.md",
+            "file": "metrics-spec.md"
+          }
+        ],
+        "logs": "",
+        "subtasks": []
+      },
+      {
+        "id": 20,
+        "title": "部署脚本",
+        "description": "自动化部署脚本",
+        "details": "编写部署和回滚脚本",
+        "testStrategy": "部署测试",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "medium",
+        "spec_files": [
+          {
+            "type": "spec",
+            "title": "deployment-spec.md",
+            "file": "deployment-spec.md"
+          }
+        ],
+        "logs": "",
+        "subtasks": []
+      },
+      {
+        "id": 21,
+        "title": "测试任务",
+        "description": "测试任务描述",
+        "details": "测试任务详情",
+        "testStrategy": "测试策略",
+        "status": "done",
+        "dependencies": [],
+        "priority": "medium",
+        "spec_files": [
+          {
+            "type": "spec",
+            "title": "test-spec.md",
+            "file": "test-spec.md"
+          }
+        ],
+        "logs": "",
+        "subtasks": []
+      }
+    ]
+  },
+  "authentication": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "实现第三方登录",
+        "description": "支持 Google 和 GitHub 登录",
+        "details": "集成 OAuth 2.0 实现第三方登录",
+        "testStrategy": "OAuth 流程测试",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "medium",
+        "spec_files": [
+          {
+            "type": "spec",
+            "title": "oauth-spec.md",
+            "file": "oauth-spec.md"
+          }
+        ],
+        "logs": "",
+        "subtasks": []
+      }
+    ],
+    "metadata": {
+      "created": "2025-09-22T08:04:37.629Z",
+      "updated": "2025-09-22T08:04:49.536Z",
+      "description": "用户认证功能开发",
+      "renamed": {
+        "from": "auth-feature",
+        "date": "2025-09-22T08:09:04.099Z"
+      }
+    }
+  }
 }

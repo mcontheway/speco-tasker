@@ -37,7 +37,7 @@ export async function removeSubtaskDirect(args, log) {
 				success: false,
 				error: {
 					code: "MISSING_ARGUMENT",
-					message: "tasksJsonPath is required",
+					message: "需要 tasksJsonPath",
 				},
 			};
 		}
@@ -49,7 +49,7 @@ export async function removeSubtaskDirect(args, log) {
 				error: {
 					code: "INPUT_VALIDATION_ERROR",
 					message:
-						'Subtask ID is required and must be in format "parentId.subtaskId"',
+						'需要子任务ID，且必须是 "parentId.subtaskId" 格式',
 				},
 			};
 		}
@@ -61,7 +61,7 @@ export async function removeSubtaskDirect(args, log) {
 				success: false,
 				error: {
 					code: "INPUT_VALIDATION_ERROR",
-					message: `Invalid subtask ID format: ${id}. Expected format: "parentId.subtaskId"`,
+					message: `无效的子任务ID格式: ${id}。期望格式: "parentId.subtaskId"`,
 				},
 			};
 		}
@@ -99,7 +99,7 @@ export async function removeSubtaskDirect(args, log) {
 			return {
 				success: true,
 				data: {
-					message: `Subtask ${id} successfully converted to task #${result.id}`,
+					message: `子任务 ${id} 成功转换为任务 #${result.id}`,
 					task: result,
 				},
 			};
@@ -108,7 +108,7 @@ export async function removeSubtaskDirect(args, log) {
 		return {
 			success: true,
 			data: {
-				message: `Subtask ${id} successfully removed`,
+				message: `子任务 ${id} 成功移除`,
 			},
 		};
 	} catch (error) {

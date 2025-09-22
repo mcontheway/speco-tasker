@@ -377,12 +377,6 @@ function registerCommands(programInstance) {
 					console.log(
 						`  - 全局配置: ${Object.keys(config.global || {}).length} 个参数`,
 					);
-					console.log(
-						`  - 路径配置: ${Object.keys(config.paths || {}).length} 个路径`,
-					);
-					console.log(
-						`  - 功能配置: ${Object.keys(config.features || {}).length} 个功能`,
-					);
 				} else {
 					console.log(chalk.red("✗ 配置验证失败"));
 					console.log(chalk.red("发现的错误:"));
@@ -2168,7 +2162,11 @@ function registerCommands(programInstance) {
 				const finalOptions = {
 					yes: options.yes || false, // CLI mode allows interactive prompts for better UX unless --yes is specified
 				};
-				await initializeProject(finalOptions);
+				// Remove any inherited properties that might interfere
+				const cleanOptions = {
+					yes: finalOptions.yes
+				};
+				await initializeProject(cleanOptions);
 			} catch (error) {
 				console.error(
 					chalk.red(`Error during initialization: ${error.message}`),

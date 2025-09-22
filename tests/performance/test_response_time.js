@@ -5,16 +5,12 @@
 import { spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 // Test configuration
 const TEST_RUNS = 5;
 const TIMEOUT_MS = 10000; // 10 seconds timeout per command
-const CLI_PATH = path.resolve(__dirname, "../../bin/task-master.js");
-const TEST_DATA_DIR = path.resolve(__dirname, "../fixtures");
+const CLI_PATH = path.resolve(process.cwd(), "bin/speco-tasker.js");
+const TEST_DATA_DIR = path.resolve(process.cwd(), "tests/fixtures");
 
 /**
  * Measure the response time of a CLI command

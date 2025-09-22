@@ -46,7 +46,7 @@ class PathService {
 				loadedConfig = JSON.parse(configContent);
 			} catch (error) {
 				// 配置文件不存在，使用默认配置
-				console.log("路径配置文件不存在，使用默认配置");
+				this.logger.info("路径配置文件不存在，使用默认配置");
 			}
 
 			// 合并配置

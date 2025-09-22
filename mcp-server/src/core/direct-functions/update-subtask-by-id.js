@@ -136,7 +136,7 @@ export async function updateSubtaskByIdDirect(args, log, context = {}) {
 
 			// Check if the update was successful
 			if (coreResult.success) {
-				const successMessage = `Successfully updated subtask with ID ${subtaskIdStr}`;
+				const successMessage = `成功更新ID为 ${subtaskIdStr} 的子任务`;
 				logWrapper.success(successMessage);
 				return {
 					success: true,
@@ -167,7 +167,7 @@ export async function updateSubtaskByIdDirect(args, log, context = {}) {
 				success: false,
 				error: {
 					code: "UPDATE_SUBTASK_CORE_ERROR",
-					message: error.message || "Unknown error updating subtask",
+					message: error.message || "更新子任务时发生未知错误",
 				},
 			};
 		} finally {
@@ -184,7 +184,7 @@ export async function updateSubtaskByIdDirect(args, log, context = {}) {
 			success: false,
 			error: {
 				code: "DIRECT_FUNCTION_SETUP_ERROR",
-				message: error.message || "Unknown setup error",
+				message: error.message || "设置错误",
 			},
 		};
 	}

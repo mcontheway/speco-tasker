@@ -42,7 +42,7 @@ export async function renameTagDirect(args, log, context = {}) {
 				success: false,
 				error: {
 					code: "MISSING_ARGUMENT",
-					message: "tasksJsonPath is required",
+					message: "需要 tasksJsonPath",
 				},
 			};
 		}
@@ -55,7 +55,7 @@ export async function renameTagDirect(args, log, context = {}) {
 				success: false,
 				error: {
 					code: "MISSING_PARAMETER",
-					message: "Old tag name is required and must be a string",
+					message: "需要旧标签名称，且必须是字符串",
 				},
 			};
 		}
@@ -67,7 +67,7 @@ export async function renameTagDirect(args, log, context = {}) {
 				success: false,
 				error: {
 					code: "MISSING_PARAMETER",
-					message: "New tag name is required and must be a string",
+					message: "需要新标签名称，且必须是字符串",
 				},
 			};
 		}
@@ -99,7 +99,7 @@ export async function renameTagDirect(args, log, context = {}) {
 				renamed: result.renamed,
 				taskCount: result.taskCount,
 				wasCurrentTag: result.wasCurrentTag,
-				message: `Successfully renamed tag from "${result.oldName}" to "${result.newName}"`,
+				message: `成功将标签从 "${result.oldName}" 重命名为 "${result.newName}"`,
 			},
 		};
 	} catch (error) {

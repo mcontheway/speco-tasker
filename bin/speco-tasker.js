@@ -86,9 +86,23 @@ class SpecoTaskerCLI {
 		// 核心命令
 		this.program
 			.command("init")
-			.description("初始化新项目")
-			.option("-y, --yes", "跳过确认提示")
+			.description("初始化新项目，支持自定义配置或使用智能默认值")
+			.addHelpText('after', `
+参数说明:
+  --name <name>     设置项目名称（默认: 自动从Git仓库或目录名检测）
+  --root <path>     指定项目根目录路径（默认: 当前工作目录）
+  --shell <type>    启用Shell别名并指定类型(zsh/bash)（默认: 不添加别名）
+  --force           强制重新初始化，即使项目已存在
+
+默认行为:
+  - 项目名称: 从Git仓库名或当前目录名自动检测
+  - 根目录: 当前工作目录
+  - Git: 自动初始化（如果不在Git仓库中）
+  - Shell别名: 不添加（使用--shell启用，添加'st'和'taskmaster'别名指向speco-tasker）
+`)
 			.option("--name <name>", "项目名称")
+			.option("--root <path>", "项目根目录路径")
+			.option("--shell <name>", "Shell类型 (zsh/bash)")
 			.option("--force", "强制重新初始化")
 			.action(this.handleInit.bind(this));
 
@@ -109,8 +123,9 @@ class SpecoTaskerCLI {
 			);
 
 		// 任务管理命令（代理到原有系统）
+		// 直接代理所有未定义的命令到原有系统
 		this.program
-			.command("task <command> [args...]")
+			.command("*")
 			.description("任务管理命令")
 			.allowUnknownOption()
 			.action(this.handleTaskCommand.bind(this));
@@ -120,7 +135,7 @@ class SpecoTaskerCLI {
 			console.log("\n示例:");
 			console.log('  $ speco-tasker init --name "my-project"');
 			console.log("  $ speco-tasker config show --paths");
-			console.log("  $ speco-tasker task list");
+			console.log("  $ speco-tasker list");
 		});
 	}
 
@@ -150,7 +165,9 @@ class SpecoTaskerCLI {
 			// 使用统一的初始化逻辑
 			await initializeProject({
 				name: options.name,
-				yes: options.yes,
+				root: options.root,
+				shell: options.shell,
+				force: options.force,
 				verbose: options.verbose,
 			});
 
@@ -206,17 +223,23 @@ class SpecoTaskerCLI {
 	/**
 	 * 处理任务管理命令
 	 */
-	async handleTaskCommand(command, args) {
+	async handleTaskCommand(...args) {
 		try {
-			// 代理到原有的任务管理脚本
-			let finalArgs = [command];
+			// 获取原始命令行参数（去掉 node 和脚本路径）
+			const rawArgs = process.argv.slice(2);
 
-			// args 现在是数组形式，包含所有剩余的参数
-			if (args && Array.isArray(args)) {
-				finalArgs = finalArgs.concat(args);
+			// 检查是否是已知的核心命令，如果是则不处理
+			const coreCommands = ['init', 'config'];
+			const firstArg = rawArgs[0];
+
+			if (coreCommands.includes(firstArg)) {
+				console.error(`未知命令: ${firstArg}`);
+				this.program.help();
+				process.exit(1);
 			}
 
-			const child = spawn("node", [devScriptPath, ...finalArgs], {
+			// 代理所有其他命令到原有的任务管理脚本
+			const child = spawn("node", [devScriptPath, ...rawArgs], {
 				stdio: "inherit",
 				cwd: process.cwd(),
 				env: {
@@ -229,7 +252,7 @@ class SpecoTaskerCLI {
 				process.exit(code);
 			});
 		} catch (error) {
-			console.error(chalk.red("✗ 任务命令执行失败:"), error.message);
+			console.error(chalk.red("✗ 命令执行失败:"), error.message);
 			process.exit(1);
 		}
 	}

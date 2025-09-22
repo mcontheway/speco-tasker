@@ -70,3 +70,4 @@ if (process.env.SILENCE_CONSOLE === "true") {
 		error: () => {},
 	};
 }
+

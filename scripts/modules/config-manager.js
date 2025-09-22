@@ -96,9 +96,15 @@ function _loadAndValidateConfig(explicitRoot = null) {
 			const rawData = fs.readFileSync(configPath, "utf-8");
 			const parsedConfig = JSON.parse(rawData);
 
-			// Deep merge parsed config onto defaults (only global config now)
+			// Deep merge parsed config onto defaults
 			config = {
 				global: { ...defaults.global, ...parsedConfig?.global },
+				project: parsedConfig?.project || {},
+				paths: parsedConfig?.paths || {},
+				features: parsedConfig?.features || {},
+				testing: parsedConfig?.testing || {},
+				quality: parsedConfig?.quality || {},
+				logging: parsedConfig?.logging || {},
 			};
 			configSource = `file (${configPath})`; // Update source info
 
@@ -126,7 +132,7 @@ function _loadAndValidateConfig(explicitRoot = null) {
 			// Only warn if an explicit root was *expected*.
 			console.warn(
 				chalk.yellow(
-					`Warning: Configuration file not found at provided project root (${explicitRoot}). Using default configuration. Run 'task-master models --setup' to configure.`,
+					`Warning: Configuration file not found at provided project root (${explicitRoot}). Using default configuration.`,
 				),
 			);
 		} else {
@@ -227,8 +233,9 @@ function getDefaultPriority(explicitRoot = null) {
 }
 
 function getProjectName(explicitRoot = null) {
-	// Directly return value from config
-	return getGlobalConfig(explicitRoot).projectName;
+	// Read project name from config.project.name, fallback to global default
+	const config = getConfig(explicitRoot);
+	return config?.project?.name || DEFAULTS.global.projectName;
 }
 
 /**
@@ -438,8 +445,6 @@ function getConfigValues(options = {}, explicitRoot = null) {
 	const config = getConfig(explicitRoot);
 	const result = {
 		global: config.global || {},
-		paths: config.paths || {},
-		features: config.features || {},
 		metadata: {
 			source: "file",
 			lastModified: null,
@@ -513,29 +518,8 @@ function validateConfiguration(config = null, explicitRoot = null) {
 			}
 		}
 
-		// 验证路径配置
-		if (configToValidate.paths) {
-			const pathsConfig = configToValidate.paths;
-
-			// 验证必需的路径
-			const requiredPaths = ["root", "dirs"];
-			for (const pathKey of requiredPaths) {
-				if (!pathsConfig[pathKey]) {
-					result.errors.push(`缺少必需的路径配置: ${pathKey}`);
-				}
-			}
-
-			// 验证路径格式
-			if (pathsConfig.root?.speco) {
-				const specoPath = pathsConfig.root.speco;
-				if (typeof specoPath !== "string" || specoPath.length === 0) {
-					result.errors.push("speco根路径必须是非空字符串");
-				}
-			}
-		}
-
 		// 检查配置一致性
-		if (configToValidate.global && configToValidate.paths) {
+		if (configToValidate.global) {
 			// 这里可以添加跨配置部分的验证逻辑
 		}
 

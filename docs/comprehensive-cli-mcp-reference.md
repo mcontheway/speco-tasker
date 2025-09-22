@@ -26,11 +26,19 @@ task-master init
 ```
 
 **MCP 工具参数：**
-- `projectRoot`: 项目根目录（可选，会自动检测）
+- `projectRoot`: 项目根目录路径（可选，会自动检测）
+- `projectName`: 项目名称（可选，会自动从Git仓库或目录名检测）
+- `projectDescription`: 项目描述（可选）
+- `projectVersion`: 项目版本（可选，默认为'0.1.0'）
+- `authorName`: 作者名称（可选，默认为'Vibe coder'）
+- `shell`: Shell类型（可选，zsh或bash，用于添加别名）
+- `force`: 强制重新初始化（可选，布尔值）
 
 **使用示例：**
 ```json
 {}  // 自动检测，无需参数
+{"projectRoot": "/path/to/project", "projectName": "my-project"}  // 指定项目路径和名称
+{"projectName": "my-project", "shell": "zsh"}  // 指定名称和Shell类型
 ```
 
 **特性说明：**

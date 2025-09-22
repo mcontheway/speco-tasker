@@ -38,6 +38,7 @@ const config = {
 			"<rootDir>/tests/fixtures/sample-tasks.js",
 	},
 
+
 	// Transform ignore patterns - allow node_modules ESM packages
 	transformIgnorePatterns: [
 		"node_modules/(?!(fastmcp|@modelcontextprotocol)/)",

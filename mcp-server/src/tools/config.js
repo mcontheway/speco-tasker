@@ -190,8 +190,6 @@ export function registerValidateConfigTool(server) {
 					warnings: validation.warnings || [],
 					configSummary: {
 						global: Object.keys(config.global || {}).length,
-						paths: Object.keys(config.paths || {}).length,
-						features: Object.keys(config.features || {}).length,
 					},
 					timestamp: new Date().toISOString(),
 				};

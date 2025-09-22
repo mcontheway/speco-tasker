@@ -44,7 +44,7 @@ export async function copyTagDirect(args, log, context = {}) {
 				success: false,
 				error: {
 					code: "MISSING_ARGUMENT",
-					message: "tasksJsonPath is required",
+					message: "需要 tasksJsonPath",
 				},
 			};
 		}
@@ -57,7 +57,7 @@ export async function copyTagDirect(args, log, context = {}) {
 				success: false,
 				error: {
 					code: "MISSING_PARAMETER",
-					message: "Source tag name is required and must be a string",
+					message: "需要源标签名称，且必须是字符串",
 				},
 			};
 		}
@@ -69,7 +69,7 @@ export async function copyTagDirect(args, log, context = {}) {
 				success: false,
 				error: {
 					code: "MISSING_PARAMETER",
-					message: "Target tag name is required and must be a string",
+					message: "需要目标标签名称，且必须是字符串",
 				},
 			};
 		}
@@ -106,7 +106,7 @@ export async function copyTagDirect(args, log, context = {}) {
 				copied: result.copied,
 				tasksCopied: result.tasksCopied,
 				description: result.description,
-				message: `Successfully copied tag from "${result.sourceName}" to "${result.targetName}"`,
+				message: `成功从 "${result.sourceName}" 复制标签到 "${result.targetName}"`,
 			},
 		};
 	} catch (error) {

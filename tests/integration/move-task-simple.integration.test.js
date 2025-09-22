@@ -27,7 +27,8 @@ afterAll(() => {
 let __filename;
 let __dirname;
 try {
-	__filename = fileURLToPath(import.meta.url);
+	// Use process.argv[1] for Jest compatibility
+	__filename = process.argv[1];
 	__dirname = path.dirname(__filename);
 } catch (error) {
 	// Fallback for CommonJS environments

@@ -32,7 +32,7 @@ export async function listTasksDirect(args, log, context = {}) {
 			success: false,
 			error: {
 				code: "MISSING_ARGUMENT",
-				message: "tasksJsonPath is required",
+				message: "需要 tasksJsonPath",
 			},
 		};
 	}
@@ -66,7 +66,7 @@ export async function listTasksDirect(args, log, context = {}) {
 					success: false,
 					error: {
 						code: "INVALID_CORE_RESPONSE",
-						message: "Invalid or empty response from listTasks core function",
+						message: "来自 listTasks 核心函数的响应无效或为空",
 					},
 				};
 			}
@@ -88,7 +88,7 @@ export async function listTasksDirect(args, log, context = {}) {
 				success: false,
 				error: {
 					code: "LIST_TASKS_CORE_ERROR",
-					message: error.message || "Failed to list tasks",
+					message: error.message || "获取任务列表失败",
 				},
 			};
 		}
