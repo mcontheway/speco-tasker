@@ -152,7 +152,6 @@ function setupTestData() {
 	const tasksData = {
 		meta: {
 			projectName: "Performance Test Project",
-			projectVersion: "1.0.0",
 			createdAt: new Date().toISOString(),
 			updatedAt: new Date().toISOString(),
 		},

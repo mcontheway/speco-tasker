@@ -450,8 +450,6 @@ class MCPAutomationTester {
 			await this.testStep("Initialize Project", async () => {
 				const initResult = await this.callMCPTool("initialize_project", {
 					projectName: `E2E Test ${this.timestamp}`,
-					projectDescription: "Automated MCP E2E testing",
-					authorName: "Test Automation",
 				});
 				return initResult;
 			});

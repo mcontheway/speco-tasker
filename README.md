@@ -77,18 +77,17 @@ Built-in Agents in AI editors like Cursor and Windsurf have natural advantages:
 - **标签管理** - 创建、重命名、删除、合并标签 | **Tag Management** - Create, rename, delete, merge tags
 - **并行开发** - 支持多条开发线同时进行 | **Parallel Development** - Support for multiple development lines simultaneously
 
-#### 🔗 智能依赖管理 | Intelligent Dependency Management
+#### 🔗 依赖关系管理 | Dependency Management
 - **依赖设置** - 为任务设置前置和后续依赖关系 | **Dependency Setup** - Set prerequisite and subsequent dependency relationships for tasks
 - **依赖验证** - 自动检查依赖关系的有效性和完整性 | **Dependency Validation** - Automatically check validity and completeness of dependency relationships
-- **循环检测** - 智能检测和防止循环依赖关系 | **Cycle Detection** - Intelligently detect and prevent circular dependency relationships
-- **依赖修复** - 自动修复无效或损坏的依赖关系 | **Dependency Repair** - Automatically fix invalid or broken dependency relationships
+- **循环检测** - 检测和防止循环依赖关系 | **Cycle Detection** - Detect and prevent circular dependency relationships
+- **依赖修复** - 修复无效或损坏的依赖关系 | **Dependency Repair** - Fix invalid or broken dependency relationships
 - **依赖可视化** - 显示任务的依赖状态和层级关系 | **Dependency Visualization** - Display task dependency status and hierarchical relationships
 
-#### 📊 进度追踪与分析 | Progress Tracking & Analysis
+#### 📊 进度追踪 | Progress Tracking
 - **完成度统计** - 可视化的进度条和百分比显示 | **Completion Statistics** - Visual progress bars and percentage display
 - **任务计数** - 按状态、标签、优先级统计任务数量 | **Task Counting** - Count tasks by status, tag, priority
 - **时间追踪** - 记录任务的创建、更新、完成时间 | **Time Tracking** - Record task creation, update, completion times
-- **工作量评估** - 基于任务复杂度进行工作量预估 | **Workload Assessment** - Estimate workload based on task complexity
 - **报告生成** - 生成详细的项目进度和状态报告 | **Report Generation** - Generate detailed project progress and status reports
 
 #### 🔄 高级任务操作 | Advanced Task Operations

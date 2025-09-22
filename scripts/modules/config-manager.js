@@ -3,7 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import chalk from "chalk";
 import { z } from "zod";
-import { AI_COMMAND_NAMES } from "../../src/constants/commands.js";
+// AI functionality has been removed - no AI command constants needed
 import {
 	LEGACY_CONFIG_FILE,
 	TASKMASTER_DIR,
@@ -324,30 +324,13 @@ function getUserId(explicitRoot = null) {
  * @returns {string[]} An array of all provider names.
  */
 function getAllProviders() {
-	// Since AI functionality has been removed, return a minimal list
-	return [
-		"anthropic",
-		"openai",
-		"google",
-		"perplexity",
-		"ollama",
-		"openrouter",
-		"mistral",
-		"xai",
-		"azure",
-	];
+	// AI functionality has been removed - no providers needed
+	return [];
 }
 
 function getBaseUrlForRole(role, explicitRoot = null) {
-	const roleConfig = getModelConfigForRole(role, explicitRoot);
-	if (roleConfig && typeof roleConfig.baseURL === "string") {
-		return roleConfig.baseURL;
-	}
-	const provider = roleConfig?.provider;
-	if (provider) {
-		const envVarName = `${provider.toUpperCase()}_BASE_URL`;
-		return resolveEnvVariable(envVarName, null, explicitRoot);
-	}
+	// AI functionality has been removed - this function is deprecated
+	// Return undefined as no role-based configuration exists
 	return undefined;
 }
 
@@ -808,100 +791,7 @@ function applyConfigChanges(config, changes) {
 	return result;
 }
 
-/**
- * 验证提供商名称是否有效
- * @param {string} provider - 要验证的提供商名称
- * @returns {boolean} 是否有效
- */
-function validateProvider(provider) {
-	if (!provider || typeof provider !== "string") {
-		return false;
-	}
-
-	const validProviders = [
-		"anthropic",
-		"openai",
-		"google",
-		"perplexity",
-		"ollama",
-		"openrouter",
-		"mistral",
-		"xai",
-		"azure",
-	];
-
-	return validProviders.includes(provider.toLowerCase());
-}
-
-/**
- * 验证提供商和模型组合是否有效
- * @param {string} provider - 提供商名称
- * @param {string} model - 模型名称
- * @returns {boolean} 是否有效组合
- */
-function validateProviderModelCombination(provider, model) {
-	if (!model) {
-		return false;
-	}
-
-	// 对于不在验证列表中的provider，默认返回true（向后兼容）
-	if (!validateProvider(provider)) {
-		return true;
-	}
-
-	// 对于某些提供商，模型列表是空的，说明支持所有模型
-	const emptyModelLists = ["ollama", "openrouter"];
-
-	if (emptyModelLists.includes(provider.toLowerCase())) {
-		return true;
-	}
-
-	// 基本的provider-model匹配验证
-	const providerLower = provider.toLowerCase();
-	const modelLower = model.toLowerCase();
-
-	// OpenAI提供商只能使用OpenAI的模型
-	if (providerLower === "openai") {
-		return modelLower.includes("gpt") || modelLower.includes("chatgpt");
-	}
-
-	// Anthropic提供商只能使用Claude模型
-	if (providerLower === "anthropic") {
-		return modelLower.includes("claude");
-	}
-
-	// Google提供商只能使用Gemini/PaLM模型
-	if (providerLower === "google") {
-		return (
-			modelLower.includes("gemini") ||
-			modelLower.includes("palm") ||
-			modelLower.includes("bard")
-		);
-	}
-
-	// Perplexity提供商只能使用Sonar模型
-	if (providerLower === "perplexity") {
-		return modelLower.includes("sonar");
-	}
-
-	// Mistral提供商只能使用Mistral模型
-	if (providerLower === "mistral") {
-		return modelLower.includes("mistral");
-	}
-
-	// XAI提供商只能使用Grok模型
-	if (providerLower === "xai") {
-		return modelLower.includes("grok");
-	}
-
-	// Azure提供商只能使用Azure OpenAI模型
-	if (providerLower === "azure") {
-		return modelLower.includes("gpt") || modelLower.includes("azure");
-	}
-
-	// 对于其他provider，默认返回true（向后兼容）
-	return true;
-}
+// AI functionality has been removed - provider validation no longer needed
 
 export {
 	// Core config access
@@ -924,8 +814,5 @@ export {
 	getConfigHistory,
 	rollbackConfig,
 	resetConfigToDefaults,
-	// Provider validation
-	validateProvider,
-	validateProviderModelCombination,
-	getAllProviders,
+	// AI functionality has been removed - no provider validation needed
 };

@@ -9,7 +9,7 @@ import {
 /**
  * Direct function wrapper for initializing a project.
  * Derives target directory from session, sets CWD, and calls core init logic.
- * @param {object} args - Arguments containing initialization options (projectName, projectDescription, projectVersion, authorName, shell, force, projectRoot)
+ * @param {object} args - Arguments containing initialization options (projectName, shell, force, projectRoot)
  * @param {object} log - The FastMCP logger instance.
  * @param {object} context - The context object, must contain { session }.
  * @returns {Promise<{success: boolean, data?: any, error?: {code: string, message: string}}>} - Standard result object.
@@ -82,9 +82,6 @@ export async function initializeProjectDirect(args, log, context = {}) {
 		// Build options from MCP tool parameters
 		const options = {
 			name: args.projectName, // Project name from tool parameter
-			description: args.projectDescription, // Project description
-			version: args.projectVersion, // Project version
-			author: args.authorName, // Author name
 			shell: args.shell, // Shell type for aliases
 			force: args.force, // Force re-initialization
 			rules: ["cursor"], // Default to Cursor profile for MCP

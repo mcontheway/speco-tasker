@@ -21,18 +21,6 @@ const initializeProjectParameterHelp = generateParameterHelp(
 			description: "项目名称（可选，会自动从Git仓库或目录名检测）",
 		},
 		{
-			name: "projectDescription",
-			description: "项目描述",
-		},
-		{
-			name: "projectVersion",
-			description: "项目版本（可选，默认为'0.1.0'）",
-		},
-		{
-			name: "authorName",
-			description: "作者名称（可选，默认为'Vibe coder'）",
-		},
-		{
 			name: "shell",
 			description: "Shell类型（可选，zsh或bash，用于添加别名）",
 		},
@@ -44,7 +32,7 @@ const initializeProjectParameterHelp = generateParameterHelp(
 	[],
 	[
 		"{}", // 无参数，使用智能默认值
-		'{"projectRoot": "/path/to/project", "projectName": "my-project"}', // 指定项目根目录和名称
+		'{"projectRoot": "/path/to/project"}', // 指定项目根目录
 		'{"projectName": "my-project", "shell": "zsh"}', // 指定名称和Shell类型
 	],
 );
@@ -63,15 +51,6 @@ export function registerInitializeProjectTool(server) {
 				.string()
 				.optional()
 				.describe("项目名称（可选，会自动从Git仓库或目录名检测）"),
-			projectDescription: z.string().optional().describe("项目描述"),
-			projectVersion: z
-				.string()
-				.optional()
-				.describe("项目版本（可选，默认为'0.1.0'）"),
-			authorName: z
-				.string()
-				.optional()
-				.describe("作者名称（可选，默认为'Vibe coder'）"),
 			shell: z
 				.string()
 				.optional()

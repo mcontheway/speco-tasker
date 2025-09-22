@@ -461,10 +461,6 @@ async function createSpecoConfig(targetDir, options) {
 		const mainConfig = {
 			project: {
 				name: options.name || "MyProject",
-				version: options.version || "1.2.0",
-				description: options.description || "使用 Speco Tasker 管理项目任务",
-				author: options.author || "Speco Team",
-				license: "MIT WITH Commons-Clause",
 				root: targetDir, // 持久化绝对根目录路径
 			},
 			paths: {
@@ -650,9 +646,6 @@ async function initializeProject(options = {}) {
 	// Build final options with defaults and user overrides
 	const finalOptions = {
 		name: options.name || dynamicName, // Use provided name or auto-detect
-		description: options.description || "A project managed with Speco Tasker",
-		version: options.version || "0.1.0",
-		author: options.author || "Vibe coder",
 		addAliases: !!options.shell, // Add aliases if shell is specified
 		shell: options.shell, // Store shell type for later use
 		initGit: !insideGitWorkTree(), // Only init Git if not already a Git repo

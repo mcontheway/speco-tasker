@@ -73,7 +73,7 @@ This field is **mandatory** for all tasks and subtasks. It establishes a clear l
 - `spec`：技术规范和需求 | `spec`: Technical specifications and requirements
 - `requirement`：业务需求文档 | `requirement`: Business requirement documents
 - `design`：设计文档和线框图 | `design`: Design documents and wireframes
-- `analysis`：分析报告和研究发现 | `analysis`: Analysis reports and research findings
+- `reference`：参考文档和相关材料 | `reference`: Reference documents and related materials
 
 **验证规则：| Validation Rules:**
 - 字段为必需且不能为空 | Field is required and cannot be empty

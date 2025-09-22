@@ -81,9 +81,7 @@
 2. 搜索并调用 `initialize_project` 工具，填入参数：
    ```json
    {
-     "projectName": "MCP 手动测试项目",
-     "projectDescription": "用于验证 MCP 功能的手动测试",
-     "authorName": "测试用户"
+     "projectName": "MCP 手动测试项目"
    }
    ```
 
@@ -834,9 +832,8 @@ verifyMCPFunctionality();
 ```json
 {
   "projectName": "string?",        // 项目名称
-  "projectDescription": "string?", // 项目描述
-  "authorName": "string?",         // 作者姓名
-  "projectVersion": "string?"      // 版本号
+  "shell": "string?",              // Shell类型
+  "force": "boolean?"              // 强制重新初始化
 }
 ```
 

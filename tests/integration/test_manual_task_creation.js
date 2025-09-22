@@ -311,7 +311,7 @@ describe("Manual Task Creation Workflow Integration Test", () => {
 
 			// Verify no AI-related fields are present
 			expect(result.data).not.toHaveProperty("aiGenerated");
-			expect(result.data).not.toHaveProperty("researchBacked");
+			// AI functionality has been removed - no researchBacked property expected
 			expect(result.data).not.toHaveProperty("promptUsed");
 		});
 
