@@ -22,7 +22,7 @@ import boxen from "boxen";
 import chalk from "chalk";
 import figlet from "figlet";
 import gradient from "gradient-string";
-import { isSilentMode, detectMCPMode } from "./modules/utils.js";
+import { detectMCPMode, isSilentMode } from "./modules/utils.js";
 import { insideGitWorkTree } from "./modules/utils/git-utils.js";
 
 // 导入核心服务
@@ -142,9 +142,15 @@ function addShellAliases(shellType = null) {
 	let shellConfigFile;
 
 	// Determine which shell config file to use
-	if (shellType === "zsh" || (!shellType && process.env.SHELL?.includes("zsh"))) {
+	if (
+		shellType === "zsh" ||
+		(!shellType && process.env.SHELL?.includes("zsh"))
+	) {
 		shellConfigFile = path.join(homeDir, ".zshrc");
-	} else if (shellType === "bash" || (!shellType && process.env.SHELL?.includes("bash"))) {
+	} else if (
+		shellType === "bash" ||
+		(!shellType && process.env.SHELL?.includes("bash"))
+	) {
 		shellConfigFile = path.join(homeDir, ".bashrc");
 	} else {
 		log("warn", "Could not determine shell type. Aliases not added.");
@@ -580,10 +586,7 @@ function createProjectStructure(
 			}
 		} else if (initGit === true) {
 			if (insideGitWorkTree()) {
-				log(
-					"info",
-					"已检测到现有Git仓库，跳过Git初始化。",
-				);
+				log("info", "已检测到现有Git仓库，跳过Git初始化。");
 			} else {
 				log("info", "正在初始化Git仓库...");
 				execSync("git init", { cwd: targetDir, stdio: "ignore" });
@@ -594,10 +597,7 @@ function createProjectStructure(
 			if (insideGitWorkTree()) {
 				log("info", "已检测到现有Git仓库，跳过Git初始化。");
 			} else {
-				log(
-					"info",
-					"未检测到Git仓库，正在项目根目录初始化...",
-				);
+				log("info", "未检测到Git仓库，正在项目根目录初始化...");
 				execSync("git init", { cwd: targetDir, stdio: "ignore" });
 				log("success", "Git仓库初始化完成");
 			}
@@ -630,7 +630,6 @@ function createProjectStructure(
 			}),
 		);
 	}
-
 
 	// Add shell aliases if requested
 	if (addAliases && !dryRun) {

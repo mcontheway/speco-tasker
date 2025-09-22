@@ -87,7 +87,9 @@ class SpecoTaskerCLI {
 		this.program
 			.command("init")
 			.description("初始化新项目，支持自定义配置或使用智能默认值")
-			.addHelpText('after', `
+			.addHelpText(
+				"after",
+				`
 参数说明:
   --name <name>     设置项目名称（默认: 自动从Git仓库或目录名检测）
   --root <path>     指定项目根目录路径（默认: 当前工作目录）
@@ -99,7 +101,8 @@ class SpecoTaskerCLI {
   - 根目录: 当前工作目录
   - Git: 自动初始化（如果不在Git仓库中）
   - Shell别名: 不添加（使用--shell启用，添加'st'和'taskmaster'别名指向speco-tasker）
-`)
+`,
+			)
 			.option("--name <name>", "项目名称")
 			.option("--root <path>", "项目根目录路径")
 			.option("--shell <name>", "Shell类型 (zsh/bash)")
@@ -229,7 +232,7 @@ class SpecoTaskerCLI {
 			const rawArgs = process.argv.slice(2);
 
 			// 检查是否是已知的核心命令，如果是则不处理
-			const coreCommands = ['init', 'config'];
+			const coreCommands = ["init", "config"];
 			const firstArg = rawArgs[0];
 
 			if (coreCommands.includes(firstArg)) {

@@ -48,8 +48,7 @@ export async function removeSubtaskDirect(args, log) {
 				success: false,
 				error: {
 					code: "INPUT_VALIDATION_ERROR",
-					message:
-						'需要子任务ID，且必须是 "parentId.subtaskId" 格式',
+					message: '需要子任务ID，且必须是 "parentId.subtaskId" 格式',
 				},
 			};
 		}

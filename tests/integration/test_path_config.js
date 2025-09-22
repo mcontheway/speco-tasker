@@ -309,17 +309,17 @@ require('../mcp-server/server.js');
 			expect(response.paths.mappings["task-master"]).toBe("speco-tasker");
 		});
 
-	it("should have path configuration file created after initialization", () => {
-		// Verify paths file was created by the CLI command
-		expect(fs.existsSync(pathsFile)).toBe(true);
+		it("should have path configuration file created after initialization", () => {
+			// Verify paths file was created by the CLI command
+			expect(fs.existsSync(pathsFile)).toBe(true);
 
-		const pathsConfig = JSON.parse(fs.readFileSync(pathsFile, "utf8"));
-		// Path configuration file still exists but config.json no longer contains paths
-		expect(pathsConfig).toHaveProperty("mappings");
-		expect(pathsConfig).toHaveProperty("cleanup");
-		expect(pathsConfig.mappings).toHaveProperty("task-master");
-		expect(pathsConfig.mappings["task-master"]).toBe("speco-tasker");
-	});
+			const pathsConfig = JSON.parse(fs.readFileSync(pathsFile, "utf8"));
+			// Path configuration file still exists but config.json no longer contains paths
+			expect(pathsConfig).toHaveProperty("mappings");
+			expect(pathsConfig).toHaveProperty("cleanup");
+			expect(pathsConfig.mappings).toHaveProperty("task-master");
+			expect(pathsConfig.mappings["task-master"]).toBe("speco-tasker");
+		});
 	});
 
 	describe("Path Configuration Reading Phase", () => {

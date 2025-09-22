@@ -46,8 +46,7 @@ export async function clearSubtasksDirect(args, log) {
 				success: false,
 				error: {
 					code: "INPUT_VALIDATION_ERROR",
-					message:
-						"必须提供 id 参数的任务ID或 all 参数",
+					message: "必须提供 id 参数的任务ID或 all 参数",
 				},
 			};
 		}

@@ -63,10 +63,7 @@ export function registerInitializeProjectTool(server) {
 				.string()
 				.optional()
 				.describe("项目名称（可选，会自动从Git仓库或目录名检测）"),
-			projectDescription: z
-				.string()
-				.optional()
-				.describe("项目描述"),
+			projectDescription: z.string().optional().describe("项目描述"),
 			projectVersion: z
 				.string()
 				.optional()
@@ -79,10 +76,7 @@ export function registerInitializeProjectTool(server) {
 				.string()
 				.optional()
 				.describe("Shell类型（可选，zsh或bash，用于添加别名）"),
-			force: z
-				.boolean()
-				.optional()
-				.describe("强制重新初始化，即使项目已存在"),
+			force: z.boolean().optional().describe("强制重新初始化，即使项目已存在"),
 		}),
 		execute: withNormalizedProjectRoot(async (args, context) => {
 			const { log } = context;

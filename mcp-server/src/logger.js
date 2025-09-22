@@ -1,6 +1,6 @@
 import chalk from "chalk";
 import { getLogLevel } from "../../scripts/modules/config-manager.js";
-import { isSilentMode, detectMCPMode } from "../../scripts/modules/utils.js";
+import { detectMCPMode, isSilentMode } from "../../scripts/modules/utils.js";
 
 // Define log levels
 const LOG_LEVELS = {

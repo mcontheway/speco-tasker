@@ -109,9 +109,7 @@ export async function setTaskStatusDirect(args, log, context = {}) {
 					);
 
 					if (nextResult.success) {
-						log.info(
-							`成功检索到下一个任务: ${nextResult.data.nextTask}`,
-						);
+						log.info(`成功检索到下一个任务: ${nextResult.data.nextTask}`);
 						result.data = {
 							...result.data,
 							nextTask: nextResult.data.nextTask,

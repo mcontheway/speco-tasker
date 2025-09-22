@@ -85,8 +85,7 @@ export async function moveTaskCrossTagDirect(args, log, context = {}) {
 				return {
 					success: false,
 					error: {
-						message:
-							"如果未提供 tasksJsonPath，则需要项目根目录",
+						message: "如果未提供 tasksJsonPath，则需要项目根目录",
 						code: "MISSING_PROJECT_ROOT",
 					},
 				};

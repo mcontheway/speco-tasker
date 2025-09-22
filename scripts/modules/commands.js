@@ -2164,7 +2164,7 @@ function registerCommands(programInstance) {
 				};
 				// Remove any inherited properties that might interfere
 				const cleanOptions = {
-					yes: finalOptions.yes
+					yes: finalOptions.yes,
 				};
 				await initializeProject(cleanOptions);
 			} catch (error) {

@@ -1762,28 +1762,36 @@ function detectMCPMode() {
 
 	try {
 		// Method 1: Check for MCP-specific environment variables
-		if (process.env.MCP_SERVER === 'true' || process.env.MCP_MODE === 'true') {
+		if (process.env.MCP_SERVER === "true" || process.env.MCP_MODE === "true") {
 			isMCPMode = true;
 			return true;
 		}
 
 		// Method 2: Check if we're running from MCP server
-		if (process.argv.some(arg => arg.includes('mcp-server'))) {
+		if (process.argv.some((arg) => arg.includes("mcp-server"))) {
 			isMCPMode = true;
 			return true;
 		}
 
 		// Method 3: Check call stack for MCP-related functions
-		const stack = new Error().stack || '';
-		if (stack.includes('mcp-server') || stack.includes('fastmcp') || stack.includes('handleApiResult')) {
+		const stack = new Error().stack || "";
+		if (
+			stack.includes("mcp-server") ||
+			stack.includes("fastmcp") ||
+			stack.includes("handleApiResult")
+		) {
 			isMCPMode = true;
 			return true;
 		}
 
 		// Method 4: Check if process was spawned with specific MCP indicators
-		const execPath = process.execPath || '';
-		const scriptPath = process.argv[1] || '';
-		if (execPath.includes('mcp') || scriptPath.includes('mcp-server') || scriptPath.includes('server.js')) {
+		const execPath = process.execPath || "";
+		const scriptPath = process.argv[1] || "";
+		if (
+			execPath.includes("mcp") ||
+			scriptPath.includes("mcp-server") ||
+			scriptPath.includes("server.js")
+		) {
 			isMCPMode = true;
 			return true;
 		}
