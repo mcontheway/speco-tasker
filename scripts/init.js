@@ -291,16 +291,6 @@ async function createSpecoConfig(targetDir, options) {
 				docs: "docs",
 				specs: "specs",
 			},
-			paths: {
-				root: ".",
-				src: "src",
-				scripts: "scripts/modules",
-				bin: "bin",
-				tests: "tests",
-				config: ".speco",
-				docs: "docs",
-				specs: "specs",
-			},
 			logging: {
 				level: "info",
 				file: ".speco/logs/speco-tasker.log",
