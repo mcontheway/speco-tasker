@@ -11,7 +11,6 @@
 - [📝 更新日志](docs/changelog.md) - 版本更新历史 | Version Update History
 - [📋 命令参考](docs/command-reference-zh.md) - 详细命令说明 | Detailed Command Reference
 - [⚙️ 配置指南](docs/configuration-zh.md) - 配置选项详解 | Configuration Options Details
-- [🛡️ 路径配置指南](docs/path-config-guide.md) - 路径配置和安全验证 | Path Configuration and Security Guide
 - [📚 使用教程](docs/tutorial.md) - 完整使用教程 | Complete Usage Tutorial
 
 ---
@@ -162,10 +161,6 @@ speco-tasker set-status --id=1 --status=done
 speco-tasker add-tag feature-name
 speco-tasker use-tag feature-name
 
-# 配置管理 | Configuration management
-speco-tasker config show
-speco-tasker config set paths.root.speco ".my-custom-path"
-
 # 安全验证 | Security validation
 speco-tasker validate-security --path=./src --operation=read
 ```
@@ -209,58 +204,6 @@ speco-tasker security-stats
 - **💾 路径缓存优化** - 高效的路径解析缓存，提升性能
 - **🔥 配置热更新** - 运行时更新路径配置，无需重启
 - **🏷️ 标签支持** - 不同标签可以使用独立的路径配置
-
-### 路径配置命令 | Path Configuration Commands
-
-```bash
-# 查看当前路径配置
-speco-tasker config show
-
-# 修改路径配置
-speco-tasker config set paths.root.speco ".my-custom-dir"
-speco-tasker config set dirs.tasks "project-tasks"
-
-# 批量更新配置
-speco-tasker config update --file=path-config.json
-
-# 验证配置
-speco-tasker config validate
-
-# 配置历史管理
-speco-tasker config history
-speco-tasker config rollback --version=v1.1.0
-```
-
-### 配置示例 | Configuration Example
-
-```json
-{
-  "version": "1.2.0",
-  "paths": {
-    "root": {
-      "speco": ".speco",
-      "legacy": ".taskmaster"
-    },
-    "dirs": {
-      "tasks": "tasks",
-      "docs": "docs",
-      "reports": "reports",
-      "templates": "templates"
-    },
-    "files": {
-      "tasks": "tasks.json",
-      "config": "config.json",
-      "state": "state.json"
-    }
-  },
-  "security": {
-    "enabled": true,
-    "maxFileSize": 104857600,
-    "allowedExtensions": [".js", ".ts", ".json", ".md"],
-    "forbiddenPaths": ["/etc", "/usr", "/bin"]
-  }
-}
-```
 
 
 ## 📈 性能优化 | Performance Optimizations

@@ -9,7 +9,6 @@ import { registerAddSubtaskTool } from "./add-subtask.js";
 import { registerAddTagTool } from "./add-tag.js";
 import { registerAddTaskTool } from "./add-task.js";
 import { registerClearSubtasksTool } from "./clear-subtasks.js";
-import { registerConfigTools } from "./config.js";
 import { registerCopyTagTool } from "./copy-tag.js";
 import { registerDeleteTagTool } from "./delete-tag.js";
 import { registerFixDependenciesTool } from "./fix-dependencies.js";
@@ -83,7 +82,7 @@ export function registerSpecoTaskerTools(server) {
 		registerCopyTagTool(server);
 
 		// Group 8: Configuration Management
-		registerConfigTools(server);
+		// Config tools removed
 
 		// Group 9: Research Features
 		// AI-based research tool removed in phase 3.3

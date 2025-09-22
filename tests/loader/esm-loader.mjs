@@ -38,8 +38,8 @@ const {
 } = require("./core-utils.js");
 
 // Calculate __dirname in CommonJS
-const __filename = __filename;
-const __dirname = __dirname;
+const __filename = require("node:path").resolve(process.cwd(), "scripts/modules/config-manager.js");
+const __dirname = require("node:path").dirname(__filename);
 
 ${source.replace(/export\s+(const|function|class)\s+(\w+)/g, "const $2")}
 ${source.replace(/export\s+\{([^}]+)\}/g, "module.exports = {$1}")}
@@ -56,12 +56,6 @@ module.exports = {
   getProjectName,
   getUserId,
   getConfigValue,
-  setConfigValue,
-  getConfigValues,
-  validateConfiguration,
-  getConfigHistory,
-  rollbackConfig,
-  resetConfigToDefaults,
 };
 `;
 

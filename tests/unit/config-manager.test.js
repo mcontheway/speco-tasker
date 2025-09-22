@@ -27,12 +27,6 @@ jest.mock("../../scripts/modules/config-manager.js", () => ({
 	getProjectName: jest.fn(),
 	getUserId: jest.fn(),
 	getConfigValue: jest.fn(),
-	setConfigValue: jest.fn(),
-	getConfigValues: jest.fn(),
-	validateConfiguration: jest.fn(),
-	getConfigHistory: jest.fn(),
-	rollbackConfig: jest.fn(),
-	resetConfigToDefaults: jest.fn(),
 }));
 
 // Import the module under test
