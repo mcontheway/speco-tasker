@@ -1250,10 +1250,9 @@ class ConfigBackupManager {
 	}
 }
 
-// Enhanced initialization with validation and backup
+// Enhanced initialization with validation
 async function initializeProjectWithValidation(options = {}) {
 	const validator = new EnvironmentValidator();
-	const backupManager = new ConfigBackupManager();
 
 	log("info", "开始环境验证...");
 	const validation = await validator.validate();
@@ -1276,10 +1275,6 @@ async function initializeProjectWithValidation(options = {}) {
 			log("warn", `⚠️  ${warning}`);
 		}
 	}
-
-	// Create backup before initialization
-	log("info", "创建配置备份...");
-	const backupPath = await backupManager.createBackup("pre-init");
 
 	try {
 		// Use transactional initialization
@@ -1336,45 +1331,21 @@ async function initializeProjectWithValidation(options = {}) {
 		const result = await transaction.execute();
 
 		if (result.success) {
-			// Cleanup old backups after successful initialization
-			await backupManager.cleanupOldBackups();
 			log("success", "Speco Tasker 初始化完成！");
-			return { success: true, backupPath };
+			return { success: true };
 		}
 
-		// Restore from backup on failure
 		log("error", `初始化失败: ${result.error}`);
-		if (backupPath) {
-			log("info", "正在从备份恢复...");
-			const restored = await backupManager.restoreBackup("pre-init");
-			if (restored) {
-				log("success", "配置已从备份恢复");
-			}
-		}
 		return {
 			success: false,
 			error: result.error,
 			failedStep: result.failedStep,
-			backupRestored: !!backupPath,
 		};
 	} catch (error) {
 		log("error", `初始化过程中发生意外错误: ${error.message}`);
-
-		// Attempt backup restoration
-		if (backupPath) {
-			log("info", "正在从备份恢复...");
-			try {
-				await backupManager.restoreBackup("pre-init");
-				log("success", "配置已从备份恢复");
-			} catch (restoreError) {
-				log("error", `备份恢复失败: ${restoreError.message}`);
-			}
-		}
-
 		return {
 			success: false,
 			error: error.message,
-			backupRestored: !!backupPath,
 		};
 	}
 }
