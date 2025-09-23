@@ -831,8 +831,8 @@ function displayHelp() {
 	// Show helpful hints
 	console.log(
 		boxen(
-			`${chalk.white.bold("Quick Start:")}\n\n${chalk.cyan("1. Create Project: ")}${chalk.white("task-master init")}\n${chalk.cyan("2. List Tasks: ")}${chalk.white("task-master list")}\n${chalk.cyan("3. Find Next Task: ")}${chalk.white("task-master next")}\n${chalk.cyan("4. Add New Task: ")}${chalk.white(
-				'task-master add-task --title="Task Title" --description="Task description"',
+			`${chalk.white.bold("Quick Start:")}\n\n${chalk.cyan("1. Create Project: ")}${chalk.white("speco-tasker init")}\n${chalk.cyan("2. List Tasks: ")}${chalk.white("speco-tasker list")}\n${chalk.cyan("3. Find Next Task: ")}${chalk.white("speco-tasker next")}\n${chalk.cyan("4. Add New Task: ")}${chalk.white(
+				'speco-tasker add-task --title="Task Title" --description="Task description"',
 			)}`,
 			{
 				padding: 1,
@@ -1097,7 +1097,7 @@ async function displayNextTask(
 		console.log(
 			boxen(
 				`${chalk.yellow("No subtasks found. Consider adding subtasks:")}\n${chalk.white(
-					`Run: ${chalk.cyan(`task-master add-subtask --parent=${nextTask.id} --title="Subtask title"`)}`,
+					`Run: ${chalk.cyan(`speco-tasker add-subtask --parent=${nextTask.id} --title="Subtask title"`)}`,
 				)}`,
 				{
 					padding: { top: 0, bottom: 0, left: 1, right: 1 },
@@ -1114,15 +1114,15 @@ async function displayNextTask(
 	if (isSubtask) {
 		// Suggested actions for a subtask
 		suggestedActionsContent +=
-			`${chalk.cyan("1.")} Mark as in-progress: ${chalk.yellow(`task-master set-status --id=${nextTask.id} --status=in-progress`)}\n` +
-			`${chalk.cyan("2.")} Mark as done when completed: ${chalk.yellow(`task-master set-status --id=${nextTask.id} --status=done`)}\n` +
-			`${chalk.cyan("3.")} View parent task: ${chalk.yellow(`task-master show --id=${nextTask.parentId}`)}`;
+			`${chalk.cyan("1.")} Mark as in-progress: ${chalk.yellow(`speco-tasker set-status --id=${nextTask.id} --status=in-progress`)}\n` +
+			`${chalk.cyan("2.")} Mark as done when completed: ${chalk.yellow(`speco-tasker set-status --id=${nextTask.id} --status=done`)}\n` +
+			`${chalk.cyan("3.")} View parent task: ${chalk.yellow(`speco-tasker show --id=${nextTask.parentId}`)}`;
 	} else {
 		// Suggested actions for a parent task
-		suggestedActionsContent += `${chalk.cyan("1.")} Mark as in-progress: ${chalk.yellow(`task-master set-status --id=${nextTask.id} --status=in-progress`)}\n${chalk.cyan("2.")} Mark as done when completed: ${chalk.yellow(`task-master set-status --id=${nextTask.id} --status=done`)}\n${
+		suggestedActionsContent += `${chalk.cyan("1.")} Mark as in-progress: ${chalk.yellow(`speco-tasker set-status --id=${nextTask.id} --status=in-progress`)}\n${chalk.cyan("2.")} Mark as done when completed: ${chalk.yellow(`speco-tasker set-status --id=${nextTask.id} --status=done`)}\n${
 			nextTask.subtasks && nextTask.subtasks.length > 0
-				? `${chalk.cyan("3.")} Update subtask status: ${chalk.yellow(`task-master set-status --id=${nextTask.id}.1 --status=done`)}` // Example: first subtask
-				: `${chalk.cyan("3.")} Add subtasks manually: ${chalk.yellow(`task-master add-subtask --parent=${nextTask.id} --title="Subtask title"`)}`
+				? `${chalk.cyan("3.")} Update subtask status: ${chalk.yellow(`speco-tasker set-status --id=${nextTask.id}.1 --status=done`)}` // Example: first subtask
+				: `${chalk.cyan("3.")} Add subtasks manually: ${chalk.yellow(`speco-tasker add-subtask --parent=${nextTask.id} --title="Subtask title"`)}`
 		}`;
 	}
 
@@ -1257,7 +1257,7 @@ async function displayTaskById(
 
 		console.log(
 			boxen(
-				`${chalk.white.bold("Suggested Actions:")}\n${chalk.cyan("1.")} Mark as in-progress: ${chalk.yellow(`task-master set-status --id=${task.parentTask.id}.${task.id} --status=in-progress`)}\n${chalk.cyan("2.")} Mark as done when completed: ${chalk.yellow(`task-master set-status --id=${task.parentTask.id}.${task.id} --status=done`)}\n${chalk.cyan("3.")} View parent task: ${chalk.yellow(`task-master show --id=${task.parentTask.id}`)}`,
+				`${chalk.white.bold("Suggested Actions:")}\n${chalk.cyan("1.")} Mark as in-progress: ${chalk.yellow(`speco-tasker set-status --id=${task.parentTask.id}.${task.id} --status=in-progress`)}\n${chalk.cyan("2.")} Mark as done when completed: ${chalk.yellow(`speco-tasker set-status --id=${task.parentTask.id}.${task.id} --status=done`)}\n${chalk.cyan("3.")} View parent task: ${chalk.yellow(`speco-tasker show --id=${task.parentTask.id}`)}`,
 				{
 					padding: { top: 0, bottom: 0, left: 1, right: 1 },
 					borderColor: "green",
@@ -1495,7 +1495,7 @@ async function displayTaskById(
 			console.log(
 				boxen(
 					`${chalk.yellow("No subtasks found. Consider adding subtasks:")}\n${chalk.white(
-						`Run: ${chalk.cyan(`task-master add-subtask --parent=${task.id} --title="Subtask title"`)}`,
+						`Run: ${chalk.cyan(`speco-tasker add-subtask --parent=${task.id} --title="Subtask title"`)}`,
 					)}`,
 					{
 						padding: { top: 0, bottom: 0, left: 1, right: 1 },
@@ -1583,22 +1583,22 @@ async function displayTaskById(
 
 	// Basic actions
 	actions.push(
-		`${chalk.cyan(`${actionNumber}.`)} Mark as in-progress: ${chalk.yellow(`task-master set-status --id=${task.id} --status=in-progress`)}`,
+		`${chalk.cyan(`${actionNumber}.`)} Mark as in-progress: ${chalk.yellow(`speco-tasker set-status --id=${task.id} --status=in-progress`)}`,
 	);
 	actionNumber++;
 	actions.push(
-		`${chalk.cyan(`${actionNumber}.`)} Mark as done when completed: ${chalk.yellow(`task-master set-status --id=${task.id} --status=done`)}`,
+		`${chalk.cyan(`${actionNumber}.`)} Mark as done when completed: ${chalk.yellow(`speco-tasker set-status --id=${task.id} --status=done`)}`,
 	);
 	actionNumber++;
 
 	// Subtask-related action
 	if (subtasksForProgress && subtasksForProgress.length > 0) {
 		actions.push(
-			`${chalk.cyan(`${actionNumber}.`)} Update subtask status: ${chalk.yellow(`task-master set-status --id=${task.id}.1 --status=done`)}`,
+			`${chalk.cyan(`${actionNumber}.`)} Update subtask status: ${chalk.yellow(`speco-tasker set-status --id=${task.id}.1 --status=done`)}`,
 		);
 	} else {
 		actions.push(
-			`${chalk.cyan(`${actionNumber}.`)} Add subtasks manually: ${chalk.yellow(`task-master add-subtask --parent=${task.id} --title="Subtask title"`)}`,
+			`${chalk.cyan(`${actionNumber}.`)} Add subtasks manually: ${chalk.yellow(`speco-tasker add-subtask --parent=${task.id} --title="Subtask title"`)}`,
 		);
 	}
 	actionNumber++;
@@ -1783,7 +1783,7 @@ async function displayComplexityReport(reportPath) {
 
 	// When adding rows, don't truncate the expansion command
 	for (const task of tasksNeedingExpansion) {
-		const expansionCommand = `task-master add-subtask --parent=${task.taskId} --title="Subtask title" --description="Subtask description"`;
+		const expansionCommand = `speco-tasker add-subtask --parent=${task.taskId} --title="Subtask title" --description="Subtask description"`;
 
 		complexTable.push([
 			task.taskId,
@@ -1833,7 +1833,7 @@ async function displayComplexityReport(reportPath) {
 	// Show action suggestions
 	console.log(
 		boxen(
-			`${chalk.white.bold("Suggested Actions:")}\n\n${chalk.cyan("1.")} Add subtasks to complex tasks: ${chalk.yellow(`task-master add-subtask --parent=<id> --title="Subtask title"`)}\n${chalk.cyan("2.")} Add subtasks to specific task: ${chalk.yellow(`task-master add-subtask --parent=<id> --title="Subtask title"`)}\n${chalk.cyan("3.")} View complexity report: ${chalk.yellow("task-master complexity-report")}`,
+			`${chalk.white.bold("Suggested Actions:")}\n\n${chalk.cyan("1.")} Add subtasks to complex tasks: ${chalk.yellow(`speco-tasker add-subtask --parent=<id> --title="Subtask title"`)}\n${chalk.cyan("2.")} Add subtasks to specific task: ${chalk.yellow(`speco-tasker add-subtask --parent=<id> --title="Subtask title"`)}\n${chalk.cyan("3.")} View complexity report: ${chalk.yellow("speco-tasker complexity-report")}`,
 			{
 				padding: 1,
 				borderColor: "cyan",
@@ -2188,7 +2188,7 @@ async function displayMultipleTasksSummary(
 				case "1":
 					console.log(
 						chalk.blue(
-							`\n→ Command: task-master set-status --id=${taskIdList} --status=in-progress`,
+							`\n→ Command: speco-tasker set-status --id=${taskIdList} --status=in-progress`,
 						),
 					);
 					console.log(
@@ -2200,7 +2200,7 @@ async function displayMultipleTasksSummary(
 				case "2":
 					console.log(
 						chalk.blue(
-							`\n→ Command: task-master set-status --id=${taskIdList} --status=done`,
+							`\n→ Command: speco-tasker set-status --id=${taskIdList} --status=done`,
 						),
 					);
 					console.log(
@@ -2210,7 +2210,7 @@ async function displayMultipleTasksSummary(
 					);
 					break;
 				case "3":
-					console.log(chalk.blue("\n→ Command: task-master next"));
+					console.log(chalk.blue("\n→ Command: speco-tasker next"));
 					console.log(
 						chalk.green(
 							"✓ Copy and run this command to see the next available task",
@@ -2220,7 +2220,7 @@ async function displayMultipleTasksSummary(
 				case "4":
 					console.log(
 						chalk.blue(
-							`\n→ Command: task-master add-subtask --parent=${taskIdList} --title="Subtask title"`,
+							`\n→ Command: speco-tasker add-subtask --parent=${taskIdList} --title="Subtask title"`,
 						),
 					);
 					console.log(
@@ -2249,7 +2249,7 @@ async function displayMultipleTasksSummary(
 					break;
 				}
 				case "6":
-					console.log(chalk.blue("\n→ Command: task-master generate"));
+					console.log(chalk.blue("\n→ Command: speco-tasker generate"));
 					console.log(
 						chalk.green("✓ Copy and run this command to generate task files"),
 					);
@@ -2275,7 +2275,7 @@ async function displayMultipleTasksSummary(
 		const task = foundTasks[0];
 		console.log(
 			boxen(
-				`${chalk.white.bold("Suggested Actions:")}\n${chalk.cyan("1.")} View full details: ${chalk.yellow(`task-master show ${task.id}`)}\n${chalk.cyan("2.")} Mark as in-progress: ${chalk.yellow(`task-master set-status --id=${task.id} --status=in-progress`)}\n${chalk.cyan("3.")} Mark as done: ${chalk.yellow(`task-master set-status --id=${task.id} --status=done`)}`,
+				`${chalk.white.bold("Suggested Actions:")}\n${chalk.cyan("1.")} View full details: ${chalk.yellow(`speco-tasker show ${task.id}`)}\n${chalk.cyan("2.")} Mark as in-progress: ${chalk.yellow(`speco-tasker set-status --id=${task.id} --status=in-progress`)}\n${chalk.cyan("3.")} Mark as done: ${chalk.yellow(`speco-tasker set-status --id=${task.id} --status=done`)}`,
 				{
 					padding: { top: 0, bottom: 0, left: 1, right: 1 },
 					borderColor: "green",
@@ -2339,17 +2339,17 @@ export function displayCrossTagDependencyError(
 
 	console.log(chalk.cyan("\nResolution options:"));
 	console.log(
-		`  1. Move with dependencies: task-master move --from=${sourceIds} --from-tag=${sourceTag} --to-tag=${targetTag} --with-dependencies`,
+		`  1. Move with dependencies: speco-tasker move --from=${sourceIds} --from-tag=${sourceTag} --to-tag=${targetTag} --with-dependencies`,
 	);
 	console.log(
-		`  2. Break dependencies: task-master move --from=${sourceIds} --from-tag=${sourceTag} --to-tag=${targetTag} --ignore-dependencies`,
+		`  2. Break dependencies: speco-tasker move --from=${sourceIds} --from-tag=${sourceTag} --to-tag=${targetTag} --ignore-dependencies`,
 	);
 	console.log(
-		"  3. Validate and fix dependencies: task-master validate-dependencies && task-master fix-dependencies",
+		"  3. Validate and fix dependencies: speco-tasker validate-dependencies && speco-tasker fix-dependencies",
 	);
 	if (conflicts.length > 0) {
 		console.log(
-			`  4. Move dependencies first: task-master move --from=${conflicts.map((c) => c.dependencyId).join(",")} --from-tag=${conflicts[0].dependencyTag} --to-tag=${targetTag}`,
+			`  4. Move dependencies first: speco-tasker move --from=${conflicts.map((c) => c.dependencyId).join(",")} --from-tag=${conflicts[0].dependencyTag} --to-tag=${targetTag}`,
 		);
 	}
 }
@@ -2413,13 +2413,13 @@ export function displaySubtaskMoveError(taskId, sourceTag, targetTag) {
 
 	console.log(chalk.cyan("\nResolution options:"));
 	console.log(
-		`  1. Promote subtask to full task: task-master remove-subtask --id=${displayTaskId} --convert`,
+		`  1. Promote subtask to full task: speco-tasker remove-subtask --id=${displayTaskId} --convert`,
 	);
 	console.log(
-		`  2. Then move the promoted task: task-master move --from=${parentId} --from-tag=${sourceTag} --to-tag=${targetTag}`,
+		`  2. Then move the promoted task: speco-tasker move --from=${parentId} --from-tag=${sourceTag} --to-tag=${targetTag}`,
 	);
 	console.log(
-		`  3. Or move the parent task with all subtasks: task-master move --from=${parentId} --from-tag=${sourceTag} --to-tag=${targetTag} --with-dependencies`,
+		`  3. Or move the parent task with all subtasks: speco-tasker move --from=${parentId} --from-tag=${sourceTag} --to-tag=${targetTag} --with-dependencies`,
 	);
 }
 
@@ -2443,9 +2443,9 @@ export function displayInvalidTagCombinationError(
 	console.log(chalk.cyan("\nResolution options:"));
 	console.log("  1. Use different tags for cross-tag moves");
 	console.log(
-		`  2. Use within-tag move: task-master move --from=<id> --to=<id> --tag=${sourceTag}`,
+		`  2. Use within-tag move: speco-tasker move --from=<id> --to=<id> --tag=${sourceTag}`,
 	);
-	console.log("  3. Check available tags: task-master tags");
+	console.log("  3. Check available tags: speco-tasker tags");
 }
 
 /**
@@ -2455,19 +2455,19 @@ export function displayInvalidTagCombinationError(
 export function displayDependencyValidationHints(context = "general") {
 	const hints = {
 		"before-move": [
-			'💡 Tip: Run "task-master validate-dependencies" to check for dependency issues before moving tasks',
-			'💡 Tip: Use "task-master fix-dependencies" to automatically resolve common dependency problems',
+			'💡 Tip: Run "speco-tasker validate-dependencies" to check for dependency issues before moving tasks',
+			'💡 Tip: Use "speco-tasker fix-dependencies" to automatically resolve common dependency problems',
 			"💡 Tip: Consider using --with-dependencies flag to move dependent tasks together",
 		],
 		"after-error": [
-			'🔧 Quick fix: Run "task-master validate-dependencies" to identify specific issues',
-			'🔧 Quick fix: Use "task-master fix-dependencies" to automatically resolve problems',
-			'🔧 Quick fix: Check "task-master show <id>" to see task dependencies before moving',
+			'🔧 Quick fix: Run "speco-tasker validate-dependencies" to identify specific issues',
+			'🔧 Quick fix: Use "speco-tasker fix-dependencies" to automatically resolve problems',
+			'🔧 Quick fix: Check "speco-tasker show <id>" to see task dependencies before moving',
 		],
 		general: [
-			'💡 Use "task-master validate-dependencies" to check for dependency issues',
-			'💡 Use "task-master fix-dependencies" to automatically resolve problems',
-			'💡 Use "task-master show <id>" to view task dependencies',
+			'💡 Use "speco-tasker validate-dependencies" to check for dependency issues',
+			'💡 Use "speco-tasker fix-dependencies" to automatically resolve problems',
+			'💡 Use "speco-tasker show <id>" to view task dependencies',
 			"💡 Use --with-dependencies flag to move dependent tasks together",
 		],
 	};
