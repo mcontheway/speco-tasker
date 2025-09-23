@@ -1,8 +1,10 @@
 // Mock the cli-progress module first
-jest.mock("cli-progress", () => ({
-	MultiBar: jest.fn().mockImplementation(() => ({
-		create: jest.fn(),
-		stop: jest.fn(),
+import { vi } from "vitest";
+
+vi.mock("cli-progress", () => ({
+	MultiBar: vi.fn().mockImplementation(() => ({
+		create: vi.fn(),
+		stop: vi.fn(),
 	})),
 	Presets: {
 		shades_classic: {},
@@ -13,15 +15,13 @@ jest.mock("cli-progress", () => ({
 }));
 
 // Mock the cli-progress-factory module
-const mockNewMultiBar = jest.fn();
-jest.mock("../../../src/progress/cli-progress-factory.js", () => ({
-	newMultiBar: mockNewMultiBar,
+vi.mock("../../../src/progress/cli-progress-factory.js", () => ({
+	newMultiBar: vi.fn(),
 }));
 
-// Use Jest's require to handle ES module
-const {
-	BaseProgressTracker,
-} = require("../../../src/progress/base-progress-tracker.js");
+// Import the module and get the mock
+import { BaseProgressTracker } from "../../../src/progress/base-progress-tracker.js";
+import { newMultiBar } from "../../../src/progress/cli-progress-factory.js";
 
 describe("BaseProgressTracker", () => {
 	let tracker;
@@ -30,28 +30,28 @@ describe("BaseProgressTracker", () => {
 	let mockMultiBar;
 
 	beforeEach(() => {
-		jest.clearAllMocks();
-		jest.useFakeTimers();
+		vi.clearAllMocks();
+		vi.useFakeTimers();
 
 		// Setup mocks
-		mockProgressBar = { update: jest.fn() };
-		mockTimeTokensBar = { update: jest.fn() };
+		mockProgressBar = { update: vi.fn() };
+		mockTimeTokensBar = { update: vi.fn() };
 		mockMultiBar = {
-			create: jest
+			create: vi
 				.fn()
 				.mockReturnValueOnce(mockTimeTokensBar)
 				.mockReturnValueOnce(mockProgressBar),
-			stop: jest.fn(),
+			stop: vi.fn(),
 		};
 
 		// Mock the newMultiBar function
-		mockNewMultiBar.mockReturnValue(mockMultiBar);
+		vi.mocked(newMultiBar).mockReturnValue(mockMultiBar);
 
 		tracker = new BaseProgressTracker({ numUnits: 10, unitName: "task" });
 	});
 
 	afterEach(() => {
-		jest.useRealTimers();
+		vi.useRealTimers();
 	});
 
 	describe("cleanup", () => {

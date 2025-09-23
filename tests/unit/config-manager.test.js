@@ -5,28 +5,20 @@
  */
 
 // Mock external dependencies
-import {
-	afterAll,
-	beforeAll,
-	beforeEach,
-	describe,
-	expect,
-	it,
-	jest,
-} from "@jest/globals";
+import { vi } from "vitest";
 
-jest.mock("../../scripts/modules/config-manager.js", () => ({
+vi.mock("../../scripts/modules/config-manager.js", () => ({
 	__esModule: true,
-	getConfig: jest.fn(),
-	writeConfig: jest.fn(),
-	isConfigFilePresent: jest.fn(),
-	getLogLevel: jest.fn(),
-	getDebugFlag: jest.fn(),
-	getDefaultNumTasks: jest.fn(),
-	getDefaultPriority: jest.fn(),
-	getProjectName: jest.fn(),
-	getUserId: jest.fn(),
-	getConfigValue: jest.fn(),
+	getConfig: vi.fn(),
+	writeConfig: vi.fn(),
+	isConfigFilePresent: vi.fn(),
+	getLogLevel: vi.fn(),
+	getDebugFlag: vi.fn(),
+	getDefaultNumTasks: vi.fn(),
+	getDefaultPriority: vi.fn(),
+	getProjectName: vi.fn(),
+	getUserId: vi.fn(),
+	getConfigValue: vi.fn(),
 }));
 
 // Import the module under test
@@ -45,19 +37,19 @@ let consoleWarnSpy;
 
 beforeAll(() => {
 	// Setup console spies to capture error/warning output
-	consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
-	consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
+	consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+	consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 });
 
 afterAll(() => {
 	// Restore all mocks and spies
-	jest.restoreAllMocks();
+	vi.restoreAllMocks();
 });
 
 describe("Config Manager Module", () => {
 	beforeEach(() => {
 		// Clear all mocks for test isolation
-		jest.clearAllMocks();
+		vi.clearAllMocks();
 	});
 
 	test("should export expected functions", () => {

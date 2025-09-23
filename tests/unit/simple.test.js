@@ -1,12 +1,13 @@
 /**
- * Simple unit test to verify Jest configuration
+ * Simple unit test to verify Vitest configuration
  */
 
-// SCOPE: 测试 Jest 配置的基本功能，包括路径解析、mock和环境变量处理
+// SCOPE: 测试 Vitest 配置的基本功能，包括路径解析、mock和环境变量处理
 
 import path from "node:path";
+import { vi } from "vitest";
 
-describe("Jest Configuration Test", () => {
+describe("Vitest Configuration Test", () => {
 	test("should resolve paths correctly", () => {
 		const projectRoot = path.resolve(process.cwd(), "tests/..");
 		expect(projectRoot).toBeDefined();
@@ -14,7 +15,7 @@ describe("Jest Configuration Test", () => {
 	});
 
 	test("should handle basic mocking", () => {
-		const mockFn = jest.fn().mockReturnValue("mocked");
+		const mockFn = vi.fn().mockReturnValue("mocked");
 		expect(mockFn()).toBe("mocked");
 	});
 

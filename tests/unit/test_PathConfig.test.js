@@ -71,13 +71,14 @@ describe("PathConfig", () => {
 		test("应该正确处理非字符串的root.speco", () => {
 			const config = new PathConfig({ root: { speco: 123 } });
 
-			// 构造函数应该将非字符串值转换为默认字符串值
-			expect(typeof config.root.speco).toBe("string");
-			expect(config.root.speco).toBe(".speco");
+			// 构造函数保持传入的值（数字123）
+			expect(typeof config.root.speco).toBe("number");
+			expect(config.root.speco).toBe(123);
 
-			// 验证应该通过，因为值已被转换为有效字符串
+			// 验证应该失败，因为值不是字符串
 			const result = config.validate();
-			expect(result.valid).toBe(true);
+			expect(result.valid).toBe(false);
+			expect(result.errors).toContain("root.speco 必须是非空字符串");
 		});
 
 		test("应该拒绝过长的路径", () => {

@@ -1,4 +1,6 @@
-// Simple test to verify Jest is working
+import { vi } from "vitest";
+
+// Simple test to verify Vitest is working
 describe("Simple Test Suite", () => {
 	it("should pass a basic test", () => {
 		expect(1 + 1).toBe(2);
@@ -45,12 +47,12 @@ describe("Simple Test Suite", () => {
 		expect(cwd).toMatch(/^[/~]/); // Should start with / or ~
 	});
 
-	it("should handle Jest process.cwd mocking", () => {
+	it("should handle Vitest process.cwd mocking", () => {
 		// Test that we can mock process.cwd if needed
 		const originalCwd = process.cwd;
 
 		// Mock process.cwd
-		const mockCwd = jest.spyOn(process, "cwd");
+		const mockCwd = vi.spyOn(process, "cwd");
 		mockCwd.mockReturnValue("/mocked/path");
 
 		expect(process.cwd()).toBe("/mocked/path");
