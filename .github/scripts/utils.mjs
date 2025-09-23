@@ -10,7 +10,7 @@ export function findRootDir(startDir) {
 		const pkgPath = join(currentDir, "package.json");
 		try {
 			const pkg = JSON.parse(readFileSync(pkgPath, "utf8"));
-			if (pkg.name === "task-master-ai" || pkg.repository) {
+			if (pkg.name === "speco-tasker" || pkg.name === "task-master-ai" || pkg.repository) {
 				return currentDir;
 			}
 		} catch {}
