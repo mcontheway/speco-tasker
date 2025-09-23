@@ -1,0 +1,25 @@
+{
+  "name": "speco-tasker",
+  "version": "1.2.2",
+  "description": "Pure Task Management System optimized for built-in Agents in AI editors like Cursor and Windsurf",
+  "type": "module",
+  "main": "index.js",
+  "bin": {
+    "speco-tasker": "mcp-server/server.js",
+    "speco-tasker-cli": "bin/speco-tasker.js"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:vitest": "vitest run",
+    "test:vitest:ci": "vitest run",
+    "test:compatibility": "vitest run tests/compatibility/",
+    "benchmark:polyfills": "node scripts/benchmark/polyfills-performance.js",
+    "verify:polyfills": "node scripts/verify/test-results.js",
+    "quality-check": "echo 'Quality check passed - no linting/formatting configured'",
+    "lint": "echo 'No linting configured'",
+    "format": "echo 'No formatting configured'"
+  },
+  "devDependencies": {
+    "vitest": "^3.2.4"
+  }
+}

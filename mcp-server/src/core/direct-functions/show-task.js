@@ -1,0 +1,161 @@
+/**
+ * show-task.js
+ * Direct function implementation for showing task details
+ */
+
+import {
+	findTaskById,
+	readComplexityReport,
+	readJSON,
+} from "../../../../scripts/modules/utils.js";
+import { findTasksPath } from "../utils/path-utils.js";
+
+/**
+ * Direct function wrapper for getting task details.
+ *
+ * @param {Object} args - Command arguments.
+ * @param {string} args.id - Task ID to show.
+ * @param {string} [args.file] - Optional path to the tasks file (passed to findTasksPath).
+ * @param {string} [args.status] - Optional status to filter subtasks by.
+ * @param {string} args.projectRoot - Absolute path to the project root directory (already normalized by tool).
+ * @param {string} [args.tag] - Tag for the task
+ * @param {Object} log - Logger object.
+ * @param {Object} context - Context object containing session data.
+ * @returns {Promise<Object>} - Result object with success status and data/error information.
+ */
+export async function showTaskDirect(args, log) {
+	// This function doesn't need session context since it only reads data
+	// Destructure projectRoot and other args. projectRoot is assumed normalized.
+	const { id, file, status, projectRoot, tag } = args;
+
+	log.info(
+		`Showing task direct function. ID: ${id}, File: ${file}, Status Filter: ${status}, ProjectRoot: ${projectRoot}`,
+	);
+
+	// --- Path Resolution using the passed (already normalized) projectRoot ---
+	let tasksJsonPath;
+	try {
+		// Use the projectRoot passed directly from args
+		tasksJsonPath = findTasksPath(
+			{ projectRoot: projectRoot, file: file },
+			log,
+		);
+		log.info(`Resolved tasks path: ${tasksJsonPath}`);
+	} catch (error) {
+		log.error(`Error finding tasks.json: ${error.message}`);
+		return {
+			success: false,
+			error: {
+				code: "TASKS_FILE_NOT_FOUND",
+				message: `查找 tasks.json 失败：${error.message}`,
+			},
+		};
+	}
+	// --- End Path Resolution ---
+
+	// --- Rest of the function remains the same, using tasksJsonPath ---
+	try {
+		const tasksData = readJSON(tasksJsonPath, projectRoot, tag);
+		if (!tasksData || !tasksData.tasks) {
+			return {
+				success: false,
+				error: { code: "INVALID_TASKS_DATA", message: "无效的任务数据" },
+			};
+		}
+
+		// Parse comma-separated IDs
+		const taskIds = id
+			.split(",")
+			.map((taskId) => taskId.trim())
+			.filter((taskId) => taskId.length > 0);
+
+		if (taskIds.length === 0) {
+			return {
+				success: false,
+				error: {
+					code: "INVALID_TASK_ID",
+					message: "未提供有效的任务ID",
+				},
+			};
+		}
+
+		// Handle single task ID (existing behavior)
+		if (taskIds.length === 1) {
+			const { task, originalSubtaskCount } = findTaskById(
+				tasksData.tasks,
+				taskIds[0],
+				null, // complexityReport parameter removed
+				status,
+			);
+
+			if (!task) {
+				return {
+					success: false,
+					error: {
+						code: "TASK_NOT_FOUND",
+						message: `未找到ID为 ${taskIds[0]} 的任务或子任务`,
+					},
+				};
+			}
+
+			log.info(`成功检索到任务 ${taskIds[0]}。`);
+
+			const returnData = { ...task };
+			if (originalSubtaskCount !== null) {
+				returnData._originalSubtaskCount = originalSubtaskCount;
+				returnData._subtaskFilter = status;
+			}
+
+			return { success: true, data: returnData };
+		}
+
+		// Handle multiple task IDs
+		const foundTasks = [];
+		const notFoundIds = [];
+
+		for (const taskId of taskIds) {
+			const { task, originalSubtaskCount } = findTaskById(
+				tasksData.tasks,
+				taskId,
+				null, // complexityReport parameter removed
+				status,
+			);
+
+			if (task) {
+				const taskData = { ...task };
+				if (originalSubtaskCount !== null) {
+					taskData._originalSubtaskCount = originalSubtaskCount;
+					taskData._subtaskFilter = status;
+				}
+				foundTasks.push(taskData);
+			} else {
+				notFoundIds.push(taskId);
+			}
+		}
+
+		log.info(
+			`成功检索到 ${foundTasks.length} 个，共请求 ${taskIds.length} 个任务。`,
+		);
+
+		// Return multiple tasks with metadata
+		return {
+			success: true,
+			data: {
+				tasks: foundTasks,
+				requestedIds: taskIds,
+				foundCount: foundTasks.length,
+				notFoundIds: notFoundIds,
+				isMultiple: true,
+			},
+		};
+	} catch (error) {
+		log.error(`Error showing task ${id}: ${error.message}`);
+		return {
+			success: false,
+			error: {
+				code: "TASK_OPERATION_ERROR",
+				message: error.message,
+			},
+		};
+	}
+}

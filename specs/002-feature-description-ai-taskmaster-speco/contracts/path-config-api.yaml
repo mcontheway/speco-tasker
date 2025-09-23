@@ -1,0 +1,227 @@
+openapi: 3.0.3
+info:
+  title: Speco Tasker 路径配置 API
+  description: 管理项目路径配置的内部API合约
+  version: 1.0.0
+  contact:
+    name: Speco Team
+
+servers:
+  - url: 'internal://speco-tasker/config'
+    description: 内部配置管理服务
+
+paths:
+  /paths:
+    get:
+      summary: 获取路径配置
+      description: 获取当前的路径配置信息
+      responses:
+        '200':
+          description: 成功获取路径配置
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PathConfig'
+        '500':
+          description: 服务器内部错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    put:
+      summary: 更新路径配置
+      description: 更新项目的路径配置
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PathConfig'
+      responses:
+        '200':
+          description: 路径配置更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        '400':
+          description: 请求参数错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: 服务器内部错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /paths/validate:
+    post:
+      summary: 验证路径配置
+      description: 验证路径配置的正确性和可用性
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PathConfig'
+      responses:
+        '200':
+          description: 路径配置验证成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationResult'
+        '400':
+          description: 路径配置验证失败
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+
+components:
+  schemas:
+    PathConfig:
+      type: object
+      required:
+        - root
+        - dirs
+        - files
+      properties:
+        root:
+          type: object
+          required:
+            - speco
+          properties:
+            speco:
+              type: string
+              description: 主目录路径
+              example: ".speco"
+            legacy:
+              type: string
+              description: 兼容旧版本路径
+              example: ".taskmaster"
+        dirs:
+          type: object
+          required:
+            - tasks
+            - docs
+            - reports
+            - templates
+          properties:
+            tasks:
+              type: string
+              description: 任务文件目录
+              example: "tasks"
+            docs:
+              type: string
+              description: 文档目录
+              example: "docs"
+            reports:
+              type: string
+              description: 报告目录
+              example: "reports"
+            templates:
+              type: string
+              description: 模板目录
+              example: "templates"
+            backups:
+              type: string
+              description: 备份目录
+              example: "backups"
+        files:
+          type: object
+          required:
+            - tasks
+            - config
+            - state
+          properties:
+            tasks:
+              type: string
+              description: 任务数据文件
+              example: "tasks.json"
+            config:
+              type: string
+              description: 配置文件
+              example: "config.json"
+            state:
+              type: string
+              description: 状态文件
+              example: "state.json"
+            changelog:
+              type: string
+              description: 更新日志
+              example: "changelog.md"
+
+    ValidationResult:
+      type: object
+      required:
+        - valid
+      properties:
+        valid:
+          type: boolean
+          description: 配置是否有效
+        issues:
+          type: array
+          items:
+            type: string
+          description: 验证问题列表
+
+    ValidationError:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          description: 错误代码
+          example: "PATH_VALIDATION_ERROR"
+        message:
+          type: string
+          description: 错误信息
+        details:
+          type: array
+          items:
+            type: string
+          description: 详细错误信息
+
+    Success:
+      type: object
+      required:
+        - success
+        - message
+      properties:
+        success:
+          type: boolean
+          description: 操作是否成功
+          example: true
+        message:
+          type: string
+          description: 成功消息
+          example: "路径配置已更新"
+        timestamp:
+          type: string
+          format: date-time
+          description: 操作时间戳
+
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          description: 错误代码
+          example: "CONFIG_UPDATE_ERROR"
+        message:
+          type: string
+          description: 错误信息
+          example: "路径配置更新失败"
+        details:
+          type: object
+          description: 错误详情

@@ -1,0 +1,9 @@
+{
+	"mcpServers": {
+		"speco-tasker": {
+			"type": "stdio",
+			"command": "npx",
+			"args": ["-y", "speco-tasker"]
+		}
+	}
+}

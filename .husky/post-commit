@@ -1,0 +1,7 @@
+#!/usr/bin/env sh
+
+# 检查是否有未处理的 changeset 文件
+if [ -d ".changeset" ] && [ "$(ls -A .changeset/*.md 2>/dev/null)" ]; then
+  echo "⚠️  检测到未处理的 changeset 文件，请考虑运行 'npm run release' 进行发布"
+  echo "   或查看 .changeset/ 目录中的变更文件"
+fi

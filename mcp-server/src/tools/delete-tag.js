@@ -1,0 +1,78 @@
+/**
+ * tools/delete-tag.js
+ * Tool to delete an existing tag
+ */
+
+import { z } from "zod";
+import { deleteTagDirect } from "../core/task-master-core.js";
+import { findTasksPath } from "../core/utils/path-utils.js";
+import {
+	createErrorResponse,
+	handleApiResult,
+	withNormalizedProjectRoot,
+} from "./utils.js";
+
+/**
+ * Register the deleteTag tool with the MCP server
+ * @param {Object} server - FastMCP server instance
+ */
+export function registerDeleteTagTool(server) {
+	server.addTool({
+		name: "delete_tag",
+		description: "删除现有标签及其所有任务",
+		parameters: z.object({
+			name: z.string().describe("要删除的标签名称"),
+			yes: z.boolean().optional().describe("跳过确认提示（默认：MCP下为true）"),
+			file: z
+				.string()
+				.optional()
+				.describe("任务文件路径（默认：tasks/tasks.json）"),
+			projectRoot: z
+				.string()
+				.optional()
+				.describe("项目根目录（可选，会自动检测）"),
+		}),
+		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
+			try {
+				log.info(`Starting delete-tag with args: ${JSON.stringify(args)}`);
+
+				// Use args.projectRoot directly (guaranteed by withNormalizedProjectRoot)
+				let tasksJsonPath;
+				try {
+					tasksJsonPath = findTasksPath(
+						{ projectRoot: args.projectRoot, file: args.file },
+						log,
+					);
+				} catch (error) {
+					log.error(`Error finding tasks.json: ${error.message}`);
+					return createErrorResponse(
+						`Failed to find tasks.json: ${error.message}`,
+					);
+				}
+
+				// Call the direct function (always skip confirmation for MCP)
+				const result = await deleteTagDirect(
+					{
+						tasksJsonPath: tasksJsonPath,
+						name: args.name,
+						yes: args.yes !== undefined ? args.yes : true, // Default to true for MCP
+						projectRoot: args.projectRoot,
+					},
+					log,
+					{ session },
+				);
+
+				return handleApiResult(
+					result,
+					log,
+					"Error deleting tag",
+					undefined,
+					args.projectRoot,
+				);
+			} catch (error) {
+				log.error(`Error in delete-tag tool: ${error.message}`);
+				return createErrorResponse(error.message);
+			}
+		}),
+	});
+}

@@ -1,0 +1,95 @@
+/**
+ * tools/generate.js
+ * Tool to generate individual task files from tasks.json
+ */
+
+import path from "node:path";
+import { z } from "zod";
+import { resolveTag } from "../../../scripts/modules/utils.js";
+import { generateTaskFilesDirect } from "../core/task-master-core.js";
+import { findTasksPath } from "../core/utils/path-utils.js";
+import {
+	createErrorResponse,
+	handleApiResult,
+	withNormalizedProjectRoot,
+} from "./utils.js";
+
+/**
+ * Register the generate tool with the MCP server
+ * @param {Object} server - FastMCP server instance
+ */
+export function registerGenerateTool(server) {
+	server.addTool({
+		name: "generate",
+		description: "基于tasks.json在tasks目录中生成单独的任务文件",
+		parameters: z.object({
+			file: z.string().optional().describe("任务文件的绝对路径"),
+			output: z
+				.string()
+				.optional()
+				.describe("输出目录（默认：与任务文件相同目录）"),
+			projectRoot: z
+				.string()
+				.optional()
+				.describe("项目根目录（可选，会自动检测）"),
+			tag: z.string().optional().describe("选择要处理的任务分组"),
+		}),
+		execute: withNormalizedProjectRoot(async (args, { log, session }) => {
+			try {
+				log.info(`Generating task files with args: ${JSON.stringify(args)}`);
+
+				const resolvedTag = resolveTag({
+					projectRoot: args.projectRoot,
+					tag: args.tag,
+				});
+				// Use args.projectRoot directly (guaranteed by withNormalizedProjectRoot)
+				let tasksJsonPath;
+				try {
+					tasksJsonPath = findTasksPath(
+						{ projectRoot: args.projectRoot, file: args.file },
+						log,
+					);
+				} catch (error) {
+					log.error(`Error finding tasks.json: ${error.message}`);
+					return createErrorResponse(
+						`Failed to find tasks.json: ${error.message}`,
+					);
+				}
+
+				const outputDir = args.output
+					? path.resolve(args.projectRoot, args.output)
+					: path.dirname(tasksJsonPath);
+
+				const result = await generateTaskFilesDirect(
+					{
+						tasksJsonPath: tasksJsonPath,
+						outputDir: outputDir,
+						projectRoot: args.projectRoot,
+						tag: resolvedTag,
+					},
+					log,
+					{ session },
+				);
+
+				if (result.success) {
+					log.info(`成功生成任务文件：${result.data.message}`);
+				} else {
+					log.error(
+						`Failed to generate task files: ${result.error?.message || "Unknown error"}`,
+					);
+				}
+
+				return handleApiResult(
+					result,
+					log,
+					"Error generating task files",
+					undefined,
+					args.projectRoot,
+				);
+			} catch (error) {
+				log.error(`Error in generate tool: ${error.message}`);
+				return createErrorResponse(error.message);
+			}
+		}),
+	});
+}
