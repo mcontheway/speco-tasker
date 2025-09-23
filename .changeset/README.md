@@ -11,7 +11,7 @@ Changesets are a way to track changes to packages in your repository. Each chang
 - Connects these changes with release notes
 - Automates the versioning and publishing process
 
-## How to Use Changesets in Task Master
+## How to Use Changesets in Speco Tasker
 
 ### 2. Making Changes
 
@@ -88,12 +88,13 @@ git push
 
 When it's time to make a release:
 
-1. Ensure all desired changesets are merged
-2. Run `npx changeset version` to update package versions and changelog
-3. Review and commit the changes
-4. Run `npm publish` to publish to npm
+1. Ensure all desired changesets are merged to main branch
+2. Run `npm run changeset:version` to update package versions and generate CHANGELOG.md
+3. Review the generated changes
+4. Commit and push the version bump: `git add . && git commit -m "chore: release vX.Y.Z"`
+5. Run `npm run changeset:release` to publish to npm (if needed)
 
-This can be automated through Github Actions
+The changelog is now automatically generated using the built-in changesets changelog formatter, which provides clean markdown formatting without requiring GitHub API access.
 
 ## Common Issues and Solutions
 

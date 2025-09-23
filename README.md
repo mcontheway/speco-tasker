@@ -1,9 +1,9 @@
 <div align="center">
   <h1>Speco Tasker</h1>
   <p><strong>纯净的任务管理系统 | Pure Task Management System</strong></p>
+  <p><em>基于 <a href="https://github.com/eyaltoledano/claude-task-master">claude-task-master</a> 二次开发，完全移除 AI 功能</em></p>
   <p>专为 Cursor、Windsurf 等 AI 编辑器内置 Agent 优化的任务管理工具</p>
   <p>Task management tool optimized for built-in Agents in AI editors like Cursor and Windsurf</p>
-  <p><em>基于 <a href="https://github.com/eyaltoledano/claude-task-master">claude-task-master</a> 二次开发，完全移除 AI 功能</em></p>
 </div>
 
 ## ✨ 核心功能 | Core Features
