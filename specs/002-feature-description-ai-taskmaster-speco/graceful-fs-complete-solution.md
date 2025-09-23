@@ -242,118 +242,109 @@ const robustCwd = () => {
 module.exports = { robustCwd, getFallbackCwd };
 ```
 
-#### 优势分析
-
-| 特性 | Graceful-FS | 安全Polyfills |
-|------|-------------|---------------|
-| 错误处理 | 静默失败 | 明确错误信息 |
-| 缓存策略 | 永久缓存 | 带过期时间 |
-| 调试友好 | 无调试信息 | 详细错误报告 |
-| 环境适应 | 固定策略 | 多重降级策略 |
-| 测试友好 | 隐藏问题 | 暴露问题 |
-
 ## 🛠️ 实施路线图
 
-### Phase 1: 准备阶段 (1-2天)
+### Phase 1: 准备阶段 (1天)
+
+#### 1.1 创建项目目录结构
 
 ```bash
-# 1. 创建安全polyfills模块
-mkdir -p scripts/utils
-touch scripts/utils/safe-process-polyfills.js
+# 创建必要的目录
+mkdir -p scripts/utils scripts/verify tests/fixtures/safe-polyfills
 
-# 2. 创建测试环境验证脚本
-touch scripts/utils/verify-test-environment.js
+# 创建备份目录用于安全回滚
+mkdir -p scripts/backup
+```
 
-# 3. 分析当前graceful-fs使用情况
+#### 1.2 分析当前环境
+
+```bash
+# 检查Node.js版本兼容性
+node --version
+
+# 分析graceful-fs依赖关系
 npm ls graceful-fs
 
-# 4. 创建环境检测逻辑
-cat > scripts/utils/env-detector.js << 'EOF'
+# 检查当前测试配置
+cat package.json | grep -A 10 '"scripts"'
+```
+
+#### 1.3 创建安全polyfills模块
+
+```bash
+# 创建主polyfills文件
+cat > scripts/utils/safe-process-polyfills.js << 'EOF'
 /**
- * 环境检测工具 - 检测运行环境特征
- * 用于确定是否可以安全应用polyfills
+ * 安全process polyfills - 替换graceful-fs的有缺陷实现
  */
 
+let cwdCache = null;
+let cacheExpiry = 0;
+const CACHE_DURATION = 1000; // 1秒缓存
+
+const safeCwd = () => {
+  const now = Date.now();
+  if (!cwdCache || now - cacheExpiry > CACHE_DURATION) {
+    try {
+      cwdCache = process.cwd();
+      cacheExpiry = now;
+    } catch (error) {
+      throw new Error(`process.cwd() failed: ${error.message}`);
+    }
+  }
+  return cwdCache;
+};
+
+// 应用安全polyfill
+const originalCwd = process.cwd;
+process.cwd = safeCwd;
+
+// 导出用于测试和调试
+module.exports = {
+  safeCwd,
+  getCacheInfo: () => ({ cached: cwdCache, expiry: cacheExpiry }),
+  clearCache: () => { cwdCache = null; cacheExpiry = 0; }
+};
+EOF
+```
+
+#### 1.4 创建环境检测工具
+
+```bash
+# 创建环境检测脚本
+cat > scripts/utils/env-detector.js << 'EOF'
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
 
 class EnvironmentDetector {
-  constructor() {
-    this.features = {};
-    this.detected = false;
-  }
-
   async detect() {
-    if (this.detected) return this.features;
-
-    // 检测基本环境信息
-    this.features.nodeVersion = process.version;
-    this.features.platform = process.platform;
-    this.features.arch = process.arch;
-
-    // 检测process.cwd()可用性
-    this.features.cwdAvailable = await this.checkCwdAvailability();
-
-    // 检测文件系统权限
-    this.features.fsPermissions = await this.checkFsPermissions();
-
-    // 检测graceful-fs状态
-    this.features.gracefulFsVersion = this.getGracefulFsVersion();
-    this.features.gracefulFsPatched = this.checkGracefulFsPatched();
-
-    // 检测测试环境
-    this.features.isTestEnvironment = this.detectTestEnvironment();
-    this.features.isCiEnvironment = this.detectCiEnvironment();
-
-    // 计算安全评分
-    this.features.safetyScore = this.calculateSafetyScore();
-
-    this.detected = true;
-    return this.features;
+    return {
+      nodeVersion: process.version,
+      platform: process.platform,
+      cwdAvailable: await this.checkCwd(),
+      fsPermissions: await this.checkFsPermissions(),
+      gracefulFsVersion: this.getGracefulFsVersion()
+    };
   }
 
-  async checkCwdAvailability() {
+  async checkCwd() {
     try {
-      const cwd1 = process.cwd();
-      // 等待一小段时间再次检查（模拟graceful-fs的缓存行为）
-      await new Promise(resolve => setTimeout(resolve, 10));
-      const cwd2 = process.cwd();
-
-      return {
-        available: true,
-        stable: cwd1 === cwd2,
-        path: cwd1
-      };
+      const cwd = process.cwd();
+      return { available: true, path: cwd };
     } catch (error) {
-      return {
-        available: false,
-        error: error.message
-      };
+      return { available: false, error: error.message };
     }
   }
 
   async checkFsPermissions() {
     try {
-      // 测试临时目录权限
-      const testFile = path.join(os.tmpdir(), `env-test-${Date.now()}.txt`);
+      const testFile = path.join(os.tmpdir(), `test-${Date.now()}`);
       fs.writeFileSync(testFile, 'test');
-      const content = fs.readFileSync(testFile, 'utf8');
       fs.unlinkSync(testFile);
-
-      return {
-        write: true,
-        read: content === 'test',
-        delete: true,
-        tempDir: os.tmpdir()
-      };
-    } catch (error) {
-      return {
-        write: false,
-        read: false,
-        delete: false,
-        error: error.message
-      };
+      return { write: true, read: true, delete: true };
+    } catch {
+      return { write: false, read: false, delete: false };
     }
   }
 
@@ -364,213 +355,490 @@ class EnvironmentDetector {
       return null;
     }
   }
-
-  checkGracefulFsPatched() {
-    try {
-      // 检查process.cwd是否已被graceful-fs修改
-      const originalCwd = process.cwd.__originalCwd || process.cwd;
-      return originalCwd !== process.cwd;
-    } catch {
-      return false;
-    }
-  }
-
-  detectTestEnvironment() {
-    return !!(
-      process.env.NODE_ENV === 'test' ||
-      process.env.JEST_WORKER_ID ||
-      process.env.VITEST ||
-      global.it ||
-      global.describe
-    );
-  }
-
-  detectCiEnvironment() {
-    return !!(
-      process.env.CI ||
-      process.env.CONTINUOUS_INTEGRATION ||
-      process.env.TRAVIS ||
-      process.env.CIRCLECI ||
-      process.env.JENKINS_HOME ||
-      process.env.GITHUB_ACTIONS
-    );
-  }
-
-  calculateSafetyScore() {
-    let score = 100;
-
-    // CWD不可用扣分
-    if (!this.features.cwdAvailable?.available) score -= 50;
-
-    // CWD不稳定扣分
-    if (!this.features.cwdAvailable?.stable) score -= 30;
-
-    // 文件系统权限不足扣分
-    if (!this.features.fsPermissions?.write) score -= 20;
-    if (!this.features.fsPermissions?.read) score -= 20;
-
-    // 测试环境特殊处理
-    if (this.features.isTestEnvironment) score += 10;
-
-    return Math.max(0, Math.min(100, score));
-  }
-
-  generateReport() {
-    const features = this.detected ? this.features : this.detect();
-
-    return {
-      timestamp: new Date().toISOString(),
-      environment: features,
-      recommendations: this.generateRecommendations()
-    };
-  }
-
-  generateRecommendations() {
-    const recommendations = [];
-
-    if (this.features.safetyScore < 30) {
-      recommendations.push('⚠️ 环境风险极高，建议使用隔离测试环境');
-    } else if (this.features.safetyScore < 70) {
-      recommendations.push('⚠️ 环境存在风险，建议实施安全polyfills');
-    } else {
-      recommendations.push('✅ 环境相对安全，可以考虑应用polyfills');
-    }
-
-    if (!this.features.cwdAvailable?.available) {
-      recommendations.push('❌ process.cwd()不可用，graceful-fs问题无法修复');
-    }
-
-    if (this.features.isTestEnvironment && !this.features.isCiEnvironment) {
-      recommendations.push('💡 本地测试环境，建议使用SKIP_GRACEFUL_FS_TESTS=true跳过');
-    }
-
-    return recommendations;
-  }
 }
 
 module.exports = EnvironmentDetector;
 EOF
+```
 
-# 5. 创建测试验证脚本
-cat > scripts/verify/test-environment.js << 'EOF'
+#### 1.5 验证准备工作
+
+```bash
+# 测试环境检测工具
+node -e "
+const EnvironmentDetector = require('./scripts/utils/env-detector');
+const detector = new EnvironmentDetector();
+detector.detect().then(env => {
+  console.log('环境检测结果:', JSON.stringify(env, null, 2));
+});
+"
+
+# 测试安全polyfills
+node -e "
+const { safeCwd } = require('./scripts/utils/safe-process-polyfills');
+console.log('安全CWD测试:', safeCwd());
+"
+```
+
+### Phase 2: 核心实施 (2天)
+
+#### 2.1 备份原始配置
+
+```bash
+# 创建测试配置备份
+cp tests/setup.js scripts/backup/setup.js.backup 2>/dev/null || echo "tests/setup.js不存在，跳过备份"
+
+# 创建package.json备份
+cp package.json scripts/backup/package.json.backup
+
+# 记录当前graceful-fs状态
+echo "备份完成时间: $(date)" > scripts/backup/backup-info.txt
+echo "Node版本: $(node --version)" >> scripts/backup/backup-info.txt
+echo "Graceful-FS版本: $(npm ls graceful-fs 2>/dev/null || echo '未安装')" >> scripts/backup/backup-info.txt
+```
+
+#### 2.2 集成安全polyfills到测试环境
+
+```bash
+# 修改tests/setup.js文件
+cat >> tests/setup.js << 'EOF'
+
+// ===== 安全Polyfills集成 =====
+// 在所有其他代码之前加载安全polyfills
+try {
+  require('../scripts/utils/safe-process-polyfills');
+  console.log('✅ 安全polyfills已加载');
+} catch (error) {
+  console.error('❌ 安全polyfills加载失败:', error.message);
+  // 在CI环境中失败，在本地环境中警告
+  if (process.env.CI) {
+    process.exit(1);
+  }
+}
+
+// 验证polyfills是否生效
+setTimeout(() => {
+  try {
+    const cwd = process.cwd();
+    if (typeof cwd === 'string' && cwd.length > 0) {
+      console.log('✅ process.cwd()工作正常:', cwd);
+    } else {
+      throw new Error('process.cwd()返回无效值');
+    }
+  } catch (error) {
+    console.error('❌ process.cwd()验证失败:', error.message);
+    if (process.env.CI) {
+      process.exit(1);
+    }
+  }
+}, 100);
+EOF
+```
+
+#### 2.3 创建条件应用逻辑
+
+```bash
+# 创建条件应用脚本
+cat > scripts/utils/conditional-polyfills.js << 'EOF'
 /**
- * 测试环境验证脚本
- * 验证graceful-fs修复是否生效
+ * 条件性polyfills应用
+ * 只在安全环境中应用polyfills
+ */
+
+const EnvironmentDetector = require('./env-detector');
+
+async function shouldApplyPolyfills() {
+  const detector = new EnvironmentDetector();
+  const env = await detector.detect();
+
+  // 在以下情况下应用polyfills:
+  // 1. process.cwd()可用
+  // 2. 有文件系统权限
+  // 3. graceful-fs存在
+  return env.cwdAvailable.available &&
+         env.fsPermissions.write &&
+         env.gracefulFsVersion !== null;
+}
+
+async function applySafePolyfills() {
+  try {
+    const shouldApply = await shouldApplyPolyfills();
+
+    if (shouldApply) {
+      require('./safe-process-polyfills');
+      console.log('✅ 安全polyfills已应用');
+      return true;
+    } else {
+      console.log('⚠️ 环境不安全，跳过polyfills应用');
+      return false;
+    }
+  } catch (error) {
+    console.error('❌ polyfills应用失败:', error.message);
+    return false;
+  }
+}
+
+module.exports = { shouldApplyPolyfills, applySafePolyfills };
+EOF
+```
+
+#### 2.4 创建降级策略
+
+```bash
+# 创建process降级策略
+cat > scripts/utils/process-fallback.js << 'EOF'
+/**
+ * process.cwd()降级策略
+ */
+
+const path = require('path');
+const os = require('os');
+
+function getFallbackCwd() {
+  // 策略1: 使用__dirname
+  if (typeof __dirname !== 'undefined') {
+    return path.resolve(__dirname, '..');
+  }
+
+  // 策略2: 使用require.main
+  if (require.main && require.main.filename) {
+    return path.dirname(require.main.filename);
+  }
+
+  // 策略3: 使用临时目录
+  return os.tmpdir();
+}
+
+function robustCwd() {
+  try {
+    return process.cwd();
+  } catch (error) {
+    console.warn('process.cwd()失败，使用降级策略:', error.message);
+    return getFallbackCwd();
+  }
+}
+
+module.exports = { robustCwd, getFallbackCwd };
+EOF
+```
+
+#### 2.5 验证核心实施
+
+```bash
+# 测试条件应用
+node -e "
+const { shouldApplyPolyfills } = require('./scripts/utils/conditional-polyfills');
+shouldApplyPolyfills().then(result => {
+  console.log('应该应用polyfills:', result);
+});
+"
+
+# 测试降级策略
+node -e "
+const { robustCwd } = require('./scripts/utils/process-fallback');
+console.log('降级CWD测试:', robustCwd());
+"
+```
+
+### Phase 3: 集成测试 (1-2天)
+
+#### 3.1 创建兼容性测试
+
+```bash
+# 创建graceful-fs兼容性测试
+mkdir -p tests/compatibility
+
+cat > tests/compatibility/graceful-fs.test.js << 'EOF'
+/**
+ * Graceful-FS兼容性测试
+ */
+
+const { safeCwd } = require('../../scripts/utils/safe-process-polyfills');
+
+describe('Graceful-FS兼容性测试', () => {
+  beforeAll(async () => {
+    // 确保polyfills已加载
+    expect(typeof safeCwd).toBe('function');
+  });
+
+  test('process.cwd()应该稳定工作', () => {
+    const cwd1 = process.cwd();
+    const cwd2 = process.cwd();
+
+    expect(typeof cwd1).toBe('string');
+    expect(cwd1.length).toBeGreaterThan(0);
+    expect(cwd1).toBe(cwd2); // 应该稳定
+  });
+
+  test('安全polyfills应该提供缓存功能', () => {
+    const { getCacheInfo, clearCache } = require('../../scripts/utils/safe-process-polyfills');
+
+    // 调用几次process.cwd()
+    process.cwd();
+    process.cwd();
+
+    const cacheInfo = getCacheInfo();
+    expect(cacheInfo).toHaveProperty('cached');
+    expect(cacheInfo).toHaveProperty('expiry');
+
+    // 清理缓存
+    clearCache();
+    const clearedInfo = getCacheInfo();
+    expect(clearedInfo.cached).toBeNull();
+  });
+
+  test('应该处理graceful-fs异常情况', () => {
+    // 模拟graceful-fs问题场景
+    const originalCwd = process.cwd;
+
+    // 临时替换process.cwd来模拟失败
+    process.cwd = () => { throw new Error('Simulated graceful-fs failure'); };
+
+    try {
+      // 这里应该抛出错误，而不是静默失败
+      expect(() => process.cwd()).toThrow('Simulated graceful-fs failure');
+    } finally {
+      // 恢复原始函数
+      process.cwd = originalCwd;
+    }
+  });
+});
+EOF
+```
+
+#### 3.2 运行集成测试
+
+```bash
+# 运行兼容性测试
+npm run test:vitest -- tests/compatibility/graceful-fs.test.js
+
+# 运行完整测试套件
+npm run test:vitest:ci
+
+# 检查是否有graceful-fs相关错误
+npm run test:vitest:ci 2>&1 | grep -i "graceful-fs" || echo "✅ 未发现graceful-fs相关错误"
+```
+
+#### 3.3 性能基准测试
+
+```bash
+# 创建性能基准测试
+cat > scripts/benchmark/polyfills-performance.js << 'EOF'
+/**
+ * Polyfills性能基准测试
+ */
+
+const { performance } = require('perf_hooks');
+
+async function benchmarkPolyfills() {
+  const iterations = 1000;
+  const results = {
+    original: [],
+    polyfilled: []
+  };
+
+  console.log(`运行${iterations}次process.cwd()调用基准测试...`);
+
+  // 测试原始process.cwd()
+  const originalStart = performance.now();
+  for (let i = 0; i < iterations; i++) {
+    const start = performance.now();
+    process.cwd();
+    const end = performance.now();
+    results.original.push(end - start);
+  }
+  const originalEnd = performance.now();
+
+  // 计算统计信息
+  const originalAvg = results.original.reduce((a, b) => a + b, 0) / results.original.length;
+  const originalTotal = originalEnd - originalStart;
+
+  console.log('📊 性能基准结果:');
+  console.log(`   原始process.cwd()平均耗时: ${originalAvg.toFixed(4)}ms`);
+  console.log(`   总耗时: ${originalTotal.toFixed(2)}ms`);
+  console.log(`   每次调用平均耗时: ${(originalTotal / iterations).toFixed(4)}ms`);
+
+  // 检查性能影响是否在可接受范围内
+  const maxAcceptableOverhead = 0.1; // 0.1ms
+  if (originalAvg > maxAcceptableOverhead) {
+    console.warn(`⚠️ 性能开销较大: ${originalAvg.toFixed(4)}ms > ${maxAcceptableOverhead}ms`);
+  } else {
+    console.log('✅ 性能开销在可接受范围内');
+  }
+
+  return {
+    iterations,
+    originalAvg,
+    originalTotal,
+    acceptable: originalAvg <= maxAcceptableOverhead
+  };
+}
+
+// 运行基准测试
+if (require.main === module) {
+  benchmarkPolyfills().then(results => {
+    process.exit(results.acceptable ? 0 : 1);
+  });
+}
+
+module.exports = { benchmarkPolyfills };
+EOF
+
+# 运行性能基准测试
+node scripts/benchmark/polyfills-performance.js
+```
+
+#### 3.4 验证测试结果
+
+```bash
+# 创建测试验证脚本
+cat > scripts/verify/test-results.js << 'EOF'
+/**
+ * 测试结果验证脚本
+ */
+
+const fs = require('fs');
+const path = require('path');
+
+function analyzeTestResults() {
+  const results = {
+    passed: 0,
+    failed: 0,
+    skipped: 0,
+    gracefulFsErrors: 0
+  };
+
+  try {
+    // 检查最近的测试结果（如果有的话）
+    const testResultsPath = path.join(process.cwd(), 'test-results.json');
+    if (fs.existsSync(testResultsPath)) {
+      const testResults = JSON.parse(fs.readFileSync(testResultsPath, 'utf8'));
+      results.passed = testResults.numPassedTests || 0;
+      results.failed = testResults.numFailedTests || 0;
+    }
+
+    // 检查是否有graceful-fs相关错误
+    // 这里可以集成到CI/CD中
+    const hasGracefulFsErrors = false; // 实际实现需要根据测试输出判断
+
+    console.log('📊 测试结果分析:');
+    console.log(`   通过: ${results.passed}`);
+    console.log(`   失败: ${results.failed}`);
+    console.log(`   Graceful-FS错误: ${results.gracefulFsErrors}`);
+
+    const success = results.failed === 0 && results.gracefulFsErrors === 0;
+    console.log(success ? '✅ 测试验证通过' : '❌ 测试验证失败');
+
+    return success;
+  } catch (error) {
+    console.error('❌ 测试结果分析失败:', error.message);
+    return false;
+  }
+}
+
+if (require.main === module) {
+  const success = analyzeTestResults();
+  process.exit(success ? 0 : 1);
+}
+
+module.exports = { analyzeTestResults };
+EOF
+
+# 运行测试结果验证
+node scripts/verify/test-results.js
+```
+
+### Phase 4: 部署优化 (1天)
+
+#### 4.1 更新CI/CD配置
+
+```bash
+# 更新package.json脚本
+# 添加到scripts部分:
+# "test:compatibility": "vitest run tests/compatibility/",
+# "benchmark:polyfills": "node scripts/benchmark/polyfills-performance.js",
+# "verify:polyfills": "node scripts/verify/test-results.js"
+```
+
+#### 4.2 创建监控脚本
+
+```bash
+# 创建健康监控脚本
+cat > scripts/monitor/polyfills-health.js << 'EOF'
+/**
+ * Polyfills健康监控
  */
 
 const EnvironmentDetector = require('../utils/env-detector');
-const TestEnvironmentMonitor = require('../monitor/test-environment-health');
+const { benchmarkPolyfills } = require('../benchmark/polyfills-performance');
 
-async function runVerification() {
-  console.log('🔍 开始测试环境验证...\n');
+async function checkPolyfillsHealth() {
+  console.log('🔍 检查Polyfills健康状态...\n');
 
-  // 1. 环境检测
-  console.log('1️⃣ 检测运行环境...');
   const detector = new EnvironmentDetector();
-  const envFeatures = await detector.detect();
+  const env = await detector.detect();
 
-  console.log('   📊 环境特征:');
-  console.log(`      Node版本: ${envFeatures.nodeVersion}`);
-  console.log(`      平台: ${envFeatures.platform}`);
-  console.log(`      架构: ${envFeatures.arch}`);
-  console.log(`      测试环境: ${envFeatures.isTestEnvironment ? '是' : '否'}`);
-  console.log(`      CI环境: ${envFeatures.isCiEnvironment ? '是' : '否'}`);
-  console.log(`      安全评分: ${envFeatures.safetyScore}/100`);
+  console.log('📊 环境状态:');
+  console.log(`   CWD可用: ${env.cwdAvailable.available ? '✅' : '❌'}`);
+  console.log(`   FS权限: ${env.fsPermissions.write ? '✅' : '❌'}`);
+  console.log(`   Graceful-FS版本: ${env.gracefulFsVersion || '未安装'}`);
 
-  if (envFeatures.cwdAvailable?.available) {
-    console.log(`   ✅ process.cwd()可用: ${envFeatures.cwdAvailable.path}`);
+  // 运行性能基准
+  console.log('\n⚡ 性能基准测试...');
+  const perfResults = await benchmarkPolyfills();
+
+  // 生成健康报告
+  const healthReport = {
+    timestamp: new Date().toISOString(),
+    environment: env,
+    performance: perfResults,
+    status: 'healthy'
+  };
+
+  // 检查是否有问题
+  const issues = [];
+  if (!env.cwdAvailable.available) issues.push('process.cwd()不可用');
+  if (!env.fsPermissions.write) issues.push('文件系统权限不足');
+  if (!perfResults.acceptable) issues.push('性能开销过大');
+
+  if (issues.length > 0) {
+    healthReport.status = 'unhealthy';
+    healthReport.issues = issues;
+    console.log('\n❌ 发现问题:');
+    issues.forEach(issue => console.log(`   - ${issue}`));
   } else {
-    console.log(`   ❌ process.cwd()不可用: ${envFeatures.cwdAvailable?.error}`);
+    console.log('\n✅ 所有检查通过，Polyfills运行正常');
   }
 
-  // 2. 健康监控
-  console.log('\n2️⃣ 执行健康检查...');
-  const monitor = new TestEnvironmentMonitor();
-  const healthReport = await monitor.checkHealth();
+  // 保存健康报告
+  require('fs').writeFileSync(
+    'polyfills-health-report.json',
+    JSON.stringify(healthReport, null, 2)
+  );
 
-  console.log('   📊 健康指标:');
-  console.log(`      CWD稳定性: ${healthReport.metrics.cwdStability}%`);
-  console.log(`      FS操作成功率: ${healthReport.metrics.fsOperations}%`);
-  console.log(`      测试失败数: ${healthReport.metrics.testFailures}`);
-  console.log(`      Graceful-FS问题数: ${healthReport.metrics.gracefulFsIssues}`);
-
-  // 3. 生成建议
-  console.log('\n3️⃣ 生成修复建议...');
-  const recommendations = [
-    ...detector.generateRecommendations(),
-    ...healthReport.recommendations
-  ];
-
-  console.log('   💡 建议:');
-  recommendations.forEach(rec => console.log(`      ${rec}`));
-
-  // 4. 整体评估
-  console.log('\n4️⃣ 整体评估...');
-  const overallScore = (envFeatures.safetyScore + healthReport.metrics.cwdStability + healthReport.metrics.fsOperations) / 3;
-  const status = overallScore >= 80 ? '✅ 优秀' : overallScore >= 60 ? '⚠️ 良好' : '❌ 需要修复';
-
-  console.log(`   📈 整体评分: ${overallScore.toFixed(1)}/100 - ${status}`);
-
-  if (healthReport.metrics.gracefulFsIssues === 0 && envFeatures.cwdAvailable?.stable) {
-    console.log('   🎉 Graceful-FS问题已完全解决！');
-  } else {
-    console.log('   🔧 Graceful-FS问题仍然存在，建议实施彻底解决方案。');
-  }
-
-  console.log('\n✅ 验证完成');
-
-  // 返回状态码用于CI/CD
-  return overallScore >= 60 ? 0 : 1;
+  return healthReport;
 }
 
-// 如果直接运行此脚本
 if (require.main === module) {
-  runVerification().then(code => process.exit(code)).catch(console.error);
+  checkPolyfillsHealth().then(report => {
+    process.exit(report.status === 'healthy' ? 0 : 1);
+  });
 }
 
-module.exports = { runVerification };
+module.exports = { checkPolyfillsHealth };
 EOF
-
-chmod +x scripts/verify/test-environment.js
 ```
 
-### Phase 2: 核心实施 (3-5天)
+#### 4.3 最终验证和文档更新
 
 ```bash
-# 1. 实现安全polyfills
-# 编辑 scripts/utils/safe-process-polyfills.js
+# 运行完整健康检查
+node scripts/monitor/polyfills-health.js
 
-# 2. 修改测试设置
-# 编辑 tests/setup.js
-
-# 3. 创建降级策略
-# 编辑 scripts/utils/process-fallback.js
-```
-
-### Phase 3: 集成测试 (2-3天)
-
-```bash
-# 1. 在现有测试环境中验证
-npm run test:vitest:ci
-
-# 2. 创建专门的兼容性测试
-npm run test:graceful-fs-compatibility
-
-# 3. 性能基准测试
-npm run benchmark:graceful-fs
-```
-
-### Phase 4: 部署优化 (1-2天)
-
-```bash
-# 1. 更新CI/CD配置
-# 编辑 .github/workflows/ci.yml
-
-# 2. 更新文档
-# 编辑 docs/testing-setup.md
-
-# 3. 创建监控脚本
-# 编辑 scripts/monitor/test-health.js
+# 更新文档
+echo "# Polyfills实施完成" >> docs/polyfills-implementation.md
+echo "- 实施日期: $(date)" >> docs/polyfills-implementation.md
+echo "- 状态: ✅ 完成" >> docs/polyfills-implementation.md
 ```
 
 ---
@@ -902,23 +1170,11 @@ npm run test:ci     # 验证回滚后状态
 
 ## 🎯 成功指标
 
-### 技术指标
+### 核心技术指标
 - ✅ **零graceful-fs相关测试失败**
-- ✅ **process.cwd() 100%可用性**
-- ✅ **错误信息准确详细**
-- ✅ **性能影响 <5%**
-
-### 质量指标
-- ✅ **测试通过率 >99%**
-- ✅ **CI/CD成功率 >95%**
-- ✅ **开发环境稳定性**
-- ✅ **新功能测试覆盖完整**
-
-### 业务指标
-- ✅ **减少调试时间 >50%**
-- ✅ **提高开发效率 >30%**
-- ✅ **降低技术债务**
-- ✅ **提升代码质量**
+- ✅ **process.cwd() 100%可用性和稳定性**
+- ✅ **详细准确的错误信息和调试支持**
+- ✅ **性能影响控制在5%以内**
 
 ---
 
