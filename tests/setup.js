@@ -4,6 +4,19 @@
  * This file is run before each test suite to set up the test environment.
  */
 
+// ===== 安全Polyfills集成 =====
+// 在所有其他代码之前加载安全polyfills
+try {
+  require('../scripts/utils/safe-process-polyfills');
+  console.log('✅ 安全polyfills已加载');
+} catch (error) {
+  console.error('❌ 安全polyfills加载失败:', error.message);
+  // 在CI环境中失败，在本地环境中警告
+  if (process.env.CI) {
+    process.exit(1);
+  }
+}
+
 // Import required modules
 import os from "node:os";
 import path from "node:path";

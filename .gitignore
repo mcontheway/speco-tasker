@@ -109,3 +109,6 @@ backup/
 tmp/
 .speco/
 .taskmaster/
+
+# Polyfills健康报告
+polyfills-health-report.json

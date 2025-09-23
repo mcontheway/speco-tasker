@@ -7,6 +7,9 @@
     "test": "vitest run",
     "test:vitest": "vitest run",
     "test:vitest:ci": "vitest run",
+    "test:compatibility": "vitest run tests/compatibility/",
+    "benchmark:polyfills": "node scripts/benchmark/polyfills-performance.js",
+    "verify:polyfills": "node scripts/verify/test-results.js",
     "quality-check": "echo 'Quality check passed - no linting/formatting configured'",
     "lint": "echo 'No linting configured'",
     "format": "echo 'No formatting configured'"
