@@ -23,7 +23,7 @@ describe("Version Utilities", () => {
 			expect(result.length).toBeGreaterThan(0);
 			// In test environment, it might return "unknown" if package.json not found
 			// This is acceptable behavior
-			expect(result === "unknown" || result.match(/^\d+\.\d+\.\d+/)).toBe(true);
+			expect(result === "unknown" || !!result.match(/^\d+\.\d+\.\d+/)).toBe(true);
 		});
 	});
 });

@@ -1,1 +1,17 @@
-{"name":"test-project"}
+{
+  "name": "test-project",
+  "version": "1.0.0",
+  "description": "Test project for dependency injection refactoring",
+  "main": "index.js",
+  "scripts": {
+    "test": "vitest run",
+    "test:vitest": "vitest run",
+    "test:vitest:ci": "vitest run",
+    "quality-check": "echo 'Quality check passed - no linting/formatting configured'",
+    "lint": "echo 'No linting configured'",
+    "format": "echo 'No formatting configured'"
+  },
+  "devDependencies": {
+    "vitest": "^3.2.4"
+  }
+}

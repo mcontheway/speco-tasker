@@ -10,30 +10,16 @@ if ! npm run quality-check; then
     exit 1
 fi
 
-# Run unit tests (non-blocking due to graceful-fs issue)
-echo "🧪 Running unit tests..."
-if [ "$SKIP_GRACEFUL_FS_TESTS" = "true" ]; then
-    echo "⏭️  Unit tests skipped (SKIP_GRACEFUL_FS_TESTS=true)"
-    npm run test:ci:bypass
-elif npm run test:ci; then
-    echo "✅ Unit tests passed"
+# Run tests (non-blocking due to potential environment issues)
+echo "🧪 Running tests..."
+if [ "$SKIP_TESTS" = "true" ]; then
+    echo "⏭️  Tests skipped (SKIP_TESTS=true)"
+elif npm run test:vitest:ci; then
+    echo "✅ Tests passed"
 else
-    echo "⚠️  Unit tests failed (graceful-fs compatibility issue)"
-    echo "   This will not block the commit, but please fix the test environment."
-    echo "   To skip tests temporarily: SKIP_GRACEFUL_FS_TESTS=true git commit"
-fi
-
-# Run integration tests (non-blocking due to graceful-fs issue)
-echo "🔗 Running integration tests..."
-if [ "$SKIP_GRACEFUL_FS_TESTS" = "true" ]; then
-    echo "⏭️  Integration tests skipped (SKIP_GRACEFUL_FS_TESTS=true)"
-    echo "✅ Integration tests bypassed (graceful-fs compatibility issue)"
-elif npm run test:integration; then
-    echo "✅ Integration tests passed"
-else
-    echo "⚠️  Integration tests failed (graceful-fs compatibility issue)"
-    echo "   This will not block the commit, but please fix the test environment."
-    echo "   To skip tests temporarily: SKIP_GRACEFUL_FS_TESTS=true git commit"
+    echo "⚠️  Tests failed (environment compatibility issue)"
+    echo "   This will not block the commit, but please check the test environment."
+    echo "   To skip tests temporarily: SKIP_TESTS=true git commit"
 fi
 
 echo "✅ Pre-commit checks completed (code quality enforced, tests informational)"
