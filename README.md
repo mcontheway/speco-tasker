@@ -13,28 +13,6 @@
 - [⚙️ 配置指南](docs/configuration-zh.md) - 配置选项详解 | Configuration Options Details
 - [📚 使用教程](docs/tutorial.md) - 完整使用教程 | Complete Usage Tutorial
 
----
-
-## 🚨 重要通知：测试环境临时调整 | Important Notice: Test Environment Temporary Adjustment
-
-**当前测试环境存在 graceful-fs 兼容性问题，导致 Jest 测试失败**。这个问题不会影响生产环境，但会影响开发流程。
-
-### 临时解决方案 | Temporary Solution
-- ✅ **代码质量检查**：强制执行（linting、formatting）| Code quality checks: ENFORCED
-- ⚠️ **测试检查**：信息性警告（不阻塞提交/推送）| Tests: INFORMATIONAL (warn but allow)
-- 🚀 **生产安全**：部署不受影响 | Production deployment: SAFE
-
-### 详细信息 | Details
-📖 查看 [`tests/README-GRACEFUL-FS-WORKAROUND.md`](tests/README-GRACEFUL-FS-WORKAROUND.md) 了解详细说明和使用指南。
-
-### 测试框架迁移 | Test Framework Migration
-✅ **已完成**：项目已成功迁移到 Vitest，完全解决了 graceful-fs 兼容性问题。
-- 零 graceful-fs 依赖 | Zero graceful-fs dependencies
-- 原生 ES 模块支持 | Native ES module support
-- 更快的测试执行 | Faster test execution
-- 更清晰的错误信息 | Better error messages
-
-详情见 [`tests/graceful-fs-issue-analysis.md`](tests/graceful-fs-issue-analysis.md)。
 
 ---
 
