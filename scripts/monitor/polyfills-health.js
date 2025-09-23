@@ -2,9 +2,9 @@
  * Polyfills健康监控
  */
 
-import fs from 'fs';
-import EnvironmentDetector from '../utils/env-detector.js';
-import { benchmarkPolyfills } from '../benchmark/polyfills-performance.js';
+const fs = require('fs');
+const EnvironmentDetector = require('../utils/env-detector');
+const { benchmarkPolyfills } = require('../benchmark/polyfills-performance');
 
 async function checkPolyfillsHealth() {
   console.log('🔍 检查Polyfills健康状态...\n');
@@ -53,10 +53,10 @@ async function checkPolyfillsHealth() {
   return healthReport;
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (require.main === module) {
   checkPolyfillsHealth().then(report => {
     process.exit(report.status === 'healthy' ? 0 : 1);
   });
 }
 
-export { checkPolyfillsHealth };
+module.exports = { checkPolyfillsHealth };

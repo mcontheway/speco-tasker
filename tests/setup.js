@@ -7,7 +7,7 @@
 // ===== 安全Polyfills集成 =====
 // 在所有其他代码之前加载安全polyfills
 try {
-  await import('../scripts/utils/safe-process-polyfills.js');
+  require('../scripts/utils/safe-process-polyfills');
   console.log('✅ 安全polyfills已加载');
 } catch (error) {
   console.error('❌ 安全polyfills加载失败:', error.message);
