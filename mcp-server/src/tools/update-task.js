@@ -49,9 +49,17 @@ export function registerUpdateTaskTool(server) {
 				.optional()
 				.describe("更新任务依赖关系，依赖的任务ID列表，用逗号分隔"),
 			spec_files: z
-				.string()
+				.array(
+					z.object({
+						type: z
+							.enum(["plan", "spec", "requirement", "design", "test", "other"])
+							.describe('文档类型：plan（计划）、spec（规格）、requirement（需求）、design（设计）、test（测试）、other（其他）'),
+						title: z.string().describe("文档标题"),
+						file: z.string().describe("文档文件路径"),
+					}),
+				)
 				.optional()
-				.describe("更新规范文档文件路径列表，用逗号分隔"),
+				.describe("更新规范文档列表，每个文档包含类型、标题和文件路径"),
 			logs: z
 				.string()
 				.optional()
@@ -105,16 +113,7 @@ export function registerUpdateTaskTool(server) {
 						dependencies: args.dependencies
 							? args.dependencies.split(",").map((id) => id.trim()).filter((id) => id.length > 0)
 							: undefined,
-						spec_files: args.spec_files
-							? args.spec_files.split(",").map((f) => {
-									const trimmed = f.trim();
-									return {
-										type: "spec",
-										title: trimmed.split("/").pop() || "Specification Document",
-										file: trimmed,
-									};
-								})
-							: undefined,
+						spec_files: args.spec_files || undefined,
 						logs: args.logs,
 					},
 					appendMode: args.append !== false,

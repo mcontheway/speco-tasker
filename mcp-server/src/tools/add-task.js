@@ -41,8 +41,8 @@ const addTaskParameterHelp = generateParameterHelp(
 		{ name: "tag", description: "选择要处理的任务分组" },
 	],
 	[
-		'{"projectRoot": "/path/to/project", "title": "用户认证", "description": "实现JWT用户认证功能", "details": "使用JWT库实现token生成和验证", "testStrategy": "单元测试token生成，集成测试认证流程", "spec_files": "docs/auth-spec.md,docs/api-spec.yaml"}',
-		'{"projectRoot": "/path/to/project", "title": "数据库迁移", "description": "创建用户表结构", "details": "使用SQL创建users表，包含id, email, password字段", "testStrategy": "测试表创建和数据插入", "spec_files": "docs/database-schema.md,docs/migration-plan.md"}',
+		'{"projectRoot": "/path/to/project", "title": "用户认证", "description": "实现JWT用户认证功能", "details": "使用JWT库实现token生成和验证", "testStrategy": "单元测试token生成，集成测试认证流程", "spec_files": [{"type": "spec", "title": "认证API规格", "file": "docs/auth-api-spec.yaml"}, {"type": "plan", "title": "认证实施计划", "file": "docs/auth-implementation-plan.md"}]}',
+		'{"projectRoot": "/path/to/project", "title": "数据库迁移", "description": "创建用户表结构", "details": "使用SQL创建users表，包含id, email, password字段", "testStrategy": "测试表创建和数据插入", "spec_files": [{"type": "design", "title": "数据库设计文档", "file": "docs/database-schema.md"}, {"type": "plan", "title": "迁移计划", "file": "docs/migration-plan.md"}]}',
 	],
 );
 
@@ -68,8 +68,17 @@ export function registerAddTaskTool(server) {
 				.optional()
 				.describe("任务优先级，支持high, medium, low"),
 			spec_files: z
-				.string()
-				.describe("规范文档文件路径列表，用逗号分隔（必需，至少一个文档）"),
+				.array(
+					z.object({
+						type: z
+							.enum(["plan", "spec", "requirement", "design", "test", "other"])
+							.describe('文档类型：plan（计划）、spec（规格）、requirement（需求）、design（设计）、test（测试）、other（其他）'),
+						title: z.string().describe("文档标题"),
+						file: z.string().describe("文档文件路径"),
+					}),
+				)
+				.min(1, "至少需要一个规范文档")
+				.describe("规范文档列表，每个文档包含类型、标题和文件路径"),
 			logs: z.string().optional().describe("任务相关的日志信息"),
 			file: z
 				.string()

@@ -100,20 +100,8 @@ export async function addTaskDirect(args, log, context = {}) {
 		let newTaskId;
 
 		if (isManualCreation) {
-			// Process spec_files into array format for spec-driven development
-			let processedSpecFiles = [];
-			if (typeof args.spec_files === "string") {
-				processedSpecFiles = args.spec_files.split(",").map((f) => {
-					const trimmed = f.trim();
-					return {
-						type: "spec",
-						title: trimmed.split("/").pop() || "Specification Document",
-						file: trimmed,
-					};
-				});
-			} else if (Array.isArray(args.spec_files)) {
-				processedSpecFiles = args.spec_files;
-			}
+			// spec_files is now always an array of objects from the MCP tool validation
+			const processedSpecFiles = args.spec_files;
 
 			// Create manual task data object with all required fields for spec-driven development
 			manualTaskData = {

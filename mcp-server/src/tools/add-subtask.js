@@ -35,6 +35,18 @@ export function registerAddSubtaskTool(server) {
 				.string()
 				.optional()
 				.describe("新子任务的依赖ID列表，用逗号分隔"),
+			spec_files: z
+				.array(
+					z.object({
+						type: z
+							.enum(["plan", "spec", "requirement", "design", "test", "other"])
+							.describe('文档类型：plan（计划）、spec（规格）、requirement（需求）、design（设计）、test（测试）、other（其他）'),
+						title: z.string().describe("文档标题"),
+						file: z.string().describe("文档文件路径"),
+					}),
+				)
+				.optional()
+				.describe("子任务规范文档列表，每个文档包含类型、标题和文件路径"),
 			file: z
 				.string()
 				.optional()
