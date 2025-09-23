@@ -90,6 +90,7 @@ export function registerAddSubtaskTool(server) {
 						details: args.details,
 						status: args.status,
 						dependencies: args.dependencies,
+						spec_files: args.spec_files,
 						skipGenerate: args.skipGenerate,
 						projectRoot: args.projectRoot,
 						tag: resolvedTag,
