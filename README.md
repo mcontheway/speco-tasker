@@ -29,7 +29,7 @@ npm install speco-tasker
 
 #### 一键添加到 Cursor | Add to Cursor
 
-[<img src="https://cursor.com/deeplink/mcp-install-dark.png" alt="Add Speco Tasker to Cursor" height="32">](cursor://anysphere.cursor-deeplink/mcp/install?name=speco-tasker&config=eyJjb21tYW5kIjoibnB4IiwiYXJncyI6WyJzcGVjby10YXNrZXIiXX0K)
+​[<img src="https://cursor.com/deeplink/mcp-install-dark.png" alt="Add Speco Tasker to Cursor" height="32">](cursor://anysphere.cursor-deeplink/mcp/install?name=speco-tasker&config=eyJjb21tYW5kIjoibnB4IiwiYXJncyI6WyJzcGVjby10YXNrZXIiXX0K)
 
 #### 手动配置 | Manual Configuration
 
