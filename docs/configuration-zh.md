@@ -130,7 +130,7 @@ Since Speco Tasker has completely removed AI features, environment variable conf
 
 ### 标签系统错误 | Tag System Errors
 
-- 如果遇到标签相关错误，请检查 `.taskmaster/state.json` 文件是否存在 | If you encounter tag-related errors, please check if the `.taskmaster/state.json` file exists
+- 如果遇到标签相关错误，请检查 `.speco/state.json` 文件是否存在 | If you encounter tag-related errors, please check if the `.speco/state.json` file exists
 - 使用 `speco-tasker tags` 查看可用标签 | Use `speco-tasker tags` to view available tags
 - 使用 `speco-tasker use-tag <tag-name>` 切换到特定标签 | Use `speco-tasker use-tag <tag-name>` to switch to a specific tag
 

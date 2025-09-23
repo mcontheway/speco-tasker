@@ -25,13 +25,13 @@ Moving tasks within the same tag context:
 
 ```bash
 # 移动单个任务 | Move single task
-task-master move --from=5 --to=7
+speco-tasker move --from=5 --to=7
 
 # 移动子任务 | Move subtask
-task-master move --from=5.2 --to=7.3
+speco-tasker move --from=5.2 --to=7.3
 
 # 移动多个任务 | Move multiple tasks
-task-master move --from=5,6,7 --to=10,11,12
+speco-tasker move --from=5,6,7 --to=10,11,12
 ```
 
 ### 跨标签移动 | Cross-Tag Movement
@@ -42,10 +42,10 @@ Moving tasks between different tag contexts:
 
 ```bash
 # 基本的跨标签移动 | Basic cross-tag movement
-task-master move --from=5 --from-tag=backlog --to-tag=in-progress
+speco-tasker move --from=5 --from-tag=backlog --to-tag=in-progress
 
 # 移动多个任务 | Move multiple tasks
-task-master move --from=5,6,7 --from-tag=backlog --to-tag=done
+speco-tasker move --from=5,6,7 --from-tag=backlog --to-tag=done
 ```
 
 ## 依赖关系解析 | Dependency Resolution
@@ -61,7 +61,7 @@ When moving tasks between tags, you may encounter cross-tag dependencies. Speco 
 Move the main task along with all its dependency tasks:
 
 ```bash
-task-master move --from=5 --from-tag=backlog --to-tag=in-progress --with-dependencies
+speco-tasker move --from=5 --from-tag=backlog --to-tag=in-progress --with-dependencies
 ```
 
 这确保所有依赖任务一起移动，维护任务关系。
@@ -75,7 +75,7 @@ This ensures all dependency tasks move together, maintaining task relationships.
 Break cross-tag dependencies and move only the specified tasks:
 
 ```bash
-task-master move --from=5 --from-tag=backlog --to-tag=in-progress --ignore-dependencies
+speco-tasker move --from=5 --from-tag=backlog --to-tag=in-progress --ignore-dependencies
 ```
 
 这将移除依赖关系，仅移动指定的任务。
@@ -113,10 +113,10 @@ When you encounter dependency conflicts, you will see:
   • 任务 6 依赖于任务 3（在 done 中）| • Task 6 depends on Task 3 (in done)
 
 解决选项：| Resolution options:
-  1. 连带依赖关系移动：task-master move --from=5,6 --from-tag=backlog --to-tag=in-progress --with-dependencies
-  2. 断开依赖关系：task-master move --from=5,6 --from-tag=backlog --to-tag=in-progress --ignore-dependencies
-  3. 验证并修复依赖关系：task-master validate-dependencies && task-master fix-dependencies
-  4. 先移动依赖任务：task-master move --from=2,3 --from-tag=backlog --to-tag=in-progress
+  1. 连带依赖关系移动：speco-tasker move --from=5,6 --from-tag=backlog --to-tag=in-progress --with-dependencies
+  2. 断开依赖关系：speco-tasker move --from=5,6 --from-tag=backlog --to-tag=in-progress --ignore-dependencies
+  3. 验证并修复依赖关系：speco-tasker validate-dependencies && speco-tasker fix-dependencies
+  4. 先移动依赖任务：speco-tasker move --from=2,3 --from-tag=backlog --to-tag=in-progress
   5. 决定后，使用 --with-dependencies 或 --ignore-dependencies 重新运行移动命令
 ```
 
@@ -134,9 +134,9 @@ Subtasks cannot be moved directly between tags:
   • 必须先将其提升为完整任务 | • Must first promote it to a complete task
 
 解决选项：| Resolution options:
-  1. 将子任务提升为完整任务：task-master remove-subtask --id=5.2 --convert
-  2. 然后移动提升后的任务：task-master move --from=5 --from-tag=backlog --to-tag=in-progress
-  3. 或连带所有子任务移动父任务：task-master move --from=5 --from-tag=backlog --to-tag=in-progress --with-dependencies
+  1. 将子任务提升为完整任务：speco-tasker remove-subtask --id=5.2 --convert
+  2. 然后移动提升后的任务：speco-tasker move --from=5 --from-tag=backlog --to-tag=in-progress
+  3. 或连带所有子任务移动父任务：speco-tasker move --from=5 --from-tag=backlog --to-tag=in-progress --with-dependencies
 ```
 
 ### 无效标签组合 | Invalid Tag Combinations
@@ -155,8 +155,8 @@ When source and target tags are the same:
 
 解决选项：| Resolution options:
   1. 为跨标签移动使用不同的标签 | Use different tags for cross-tag movement
-  2. 使用同标签内移动：task-master move --from=<id> --to=<id> --tag=backlog | Use within-tag movement: task-master move --from=<id> --to=<id> --tag=backlog
-  3. 检查可用标签：task-master tags | Check available tags: task-master tags
+  2. 使用同标签内移动：speco-tasker move --from=<id> --to=<id> --tag=backlog | Use within-tag movement: speco-tasker move --from=<id> --to=<id> --tag=backlog
+  3. 检查可用标签：speco-tasker tags | Check available tags: speco-tasker tags
 ```
 
 ## 最佳实践 | Best Practices
@@ -169,10 +169,10 @@ Validate dependencies before moving tasks:
 
 ```bash
 # 检查依赖关系问题 | Check for dependency issues
-task-master validate-dependencies
+speco-tasker validate-dependencies
 
 # 修复常见的依赖关系问题 | Fix common dependency issues
-task-master fix-dependencies
+speco-tasker fix-dependencies
 ```
 
 ### 2. 使用适当的标志 | Use Appropriate Flags
@@ -209,10 +209,10 @@ Move multiple tasks at once:
 
 ```bash
 # 连带依赖关系移动多个任务 | Move multiple tasks with dependencies
-task-master move --from=5,6,7 --from-tag=backlog --to-tag=in-progress --with-dependencies
+speco-tasker move --from=5,6,7 --from-tag=backlog --to-tag=in-progress --with-dependencies
 
 # 断开依赖关系移动多个任务 | Move multiple tasks ignoring dependencies
-task-master move --from=5,6,7 --from-tag=backlog --to-tag=in-progress --ignore-dependencies
+speco-tasker move --from=5,6,7 --from-tag=backlog --to-tag=in-progress --ignore-dependencies
 ```
 
 ### 标签创建 | Tag Creation
@@ -223,7 +223,7 @@ If the target tag doesn't exist, it will be created automatically:
 
 ```bash
 # 如果 "new-feature" 标签不存在，这将创建它 | If "new-feature" tag doesn't exist, this will create it
-task-master move --from=5 --from-tag=backlog --to-tag=new-feature
+speco-tasker move --from=5 --from-tag=backlog --to-tag=new-feature
 ```
 
 ### 当前标签回退 | Current Tag Fallback
@@ -234,7 +234,7 @@ If `--from-tag` is not provided, the current tag will be used:
 
 ```bash
 # 使用当前标签作为源 | Use current tag as source
-task-master move --from=5 --to-tag=in-progress
+speco-tasker move --from=5 --to-tag=in-progress
 ```
 
 ## MCP 集成 | MCP Integration
@@ -265,8 +265,8 @@ await moveTask({
 
 ### 常见问题 | Common Issues
 
-1. **"Source tag not found"**：使用 `task-master tags` 检查可用标签 | Use `task-master tags` to check available tags
-2. **"Task not found"**：使用 `task-master list` 验证任务 ID | Use `task-master list` to verify task ID
+1. **"Source tag not found"**：使用 `speco-tasker tags` 检查可用标签 | Use `speco-tasker tags` to check available tags
+2. **"Task not found"**：使用 `speco-tasker list` 验证任务 ID | Use `speco-tasker list` to verify task ID
 3. **"Cross-tag dependency conflicts"**：使用依赖关系解析标志 | Use dependency resolution flags
 4. **"Cannot move subtask"**：先提升子任务或移动父任务 | First promote subtask or move parent task
 
@@ -274,16 +274,16 @@ await moveTask({
 
 ```bash
 # 显示移动命令帮助 | Show move command help
-task-master move --help
+speco-tasker move --help
 
 # 检查可用标签 | Check available tags
-task-master tags
+speco-tasker tags
 
 # 验证依赖关系 | Validate dependencies
-task-master validate-dependencies
+speco-tasker validate-dependencies
 
 # 修复依赖关系问题 | Fix dependency issues
-task-master fix-dependencies
+speco-tasker fix-dependencies
 ```
 
 ## 示例 | Examples
@@ -292,17 +292,17 @@ task-master fix-dependencies
 
 ```bash
 # 首先检查依赖关系 | First check dependencies
-task-master validate-dependencies
+speco-tasker validate-dependencies
 
 # 连带依赖关系移动 | Move with dependencies
-task-master move --from=5 --from-tag=backlog --to-tag=in-progress --with-dependencies
+speco-tasker move --from=5 --from-tag=backlog --to-tag=in-progress --with-dependencies
 ```
 
 ### 场景 2：断开依赖关系 | Scenario 2: Break Dependencies
 
 ```bash
 # 移动任务，断开跨标签依赖关系 | Move task, break cross-tag dependencies
-task-master move --from=5 --from-tag=backlog --to-tag=done --ignore-dependencies
+speco-tasker move --from=5 --from-tag=backlog --to-tag=done --ignore-dependencies
 ```
 
 ### 场景 3：强制移动 | Scenario 3: Force Movement
@@ -313,21 +313,21 @@ Choose one of the following options explicitly:
 
 ```bash
 # 连带依赖关系一起移动 | Move along with dependencies
-task-master move --from=5 --from-tag=backlog --to-tag=in-progress --with-dependencies
+speco-tasker move --from=5 --from-tag=backlog --to-tag=in-progress --with-dependencies
 
 # 或断开依赖关系 | Or break dependencies
-task-master move --from=5 --from-tag=backlog --to-tag=in-progress --ignore-dependencies
+speco-tasker move --from=5 --from-tag=backlog --to-tag=in-progress --ignore-dependencies
 ```
 
 ### 场景 4：移动子任务 | Scenario 4: Moving Subtasks
 
 ```bash
 # 选项 1：先提升子任务 | Option 1: First promote subtask
-task-master remove-subtask --id=5.2 --convert
-task-master move --from=5 --from-tag=backlog --to-tag=in-progress
+speco-tasker remove-subtask --id=5.2 --convert
+speco-tasker move --from=5 --from-tag=backlog --to-tag=in-progress
 
 # 选项 2：连带所有子任务移动父任务 | Option 2: Move parent task along with all subtasks
-task-master move --from=5 --from-tag=backlog --to-tag=in-progress --with-dependencies
+speco-tasker move --from=5 --from-tag=backlog --to-tag=in-progress --with-dependencies
 ```
 
 ---

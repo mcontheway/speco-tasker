@@ -174,7 +174,7 @@
 ### 🐛 修复 | Bug Fixes
 
 - **🔧 初始化优化**：修复了项目初始化时创建过多不必要文件的问题 | **Initialization Optimization**: Fixed issue where project initialization created too many unnecessary files
-- **📁 目录结构简化**：初始化时只创建必要的 `.taskmaster/tasks/` 目录 | **Directory Structure Simplification**: Only create necessary `.taskmaster/tasks/` directory during initialization
+- **📁 目录结构简化**：初始化时只创建必要的 `.speco/tasks/` 目录 | **Directory Structure Simplification**: Only create necessary `.speco/tasks/` directory during initialization
 - **📄 文件精简**：移除了不必要的 `.env.example`、example_prd.txt等文件 | **File Streamlining**: Removed unnecessary files like `.env.example`, example_prd.txt, etc.
 - **✅ 任务文件创建**：确保初始化时正确创建 `tasks.json` 文件 | **Task File Creation**: Ensured `tasks.json` file is correctly created during initialization
 
