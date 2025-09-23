@@ -2,8 +2,8 @@
  * 测试结果验证脚本
  */
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
 function analyzeTestResults() {
   const results = {

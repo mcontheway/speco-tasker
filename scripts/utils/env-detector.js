@@ -1,6 +1,9 @@
-const fs = require('fs');
-const path = require('path');
-const os = require('os');
+import fs from 'fs';
+import path from 'path';
+import os from 'os';
+import { createRequire } from 'module';
+
+const require = createRequire(import.meta.url);
 
 class EnvironmentDetector {
   async detect() {
@@ -42,4 +45,4 @@ class EnvironmentDetector {
   }
 }
 
-module.exports = EnvironmentDetector;
+export default EnvironmentDetector;

@@ -2,13 +2,16 @@
  * process.cwd()降级策略
  */
 
-const path = require('path');
-const os = require('os');
+import path from 'path';
+import os from 'os';
+import { createRequire } from 'module';
 
-function getFallbackCwd() {
-  // 策略1: 使用__dirname
-  if (typeof __dirname !== 'undefined') {
-    return path.resolve(__dirname, '..');
+const require = createRequire(import.meta.url);
+
+export function getFallbackCwd() {
+  // 策略1: 使用import.meta.url
+  if (import.meta.url) {
+    return path.dirname(new URL(import.meta.url).pathname);
   }
 
   // 策略2: 使用require.main
@@ -20,7 +23,7 @@ function getFallbackCwd() {
   return os.tmpdir();
 }
 
-function robustCwd() {
+export function robustCwd() {
   try {
     return process.cwd();
   } catch (error) {
@@ -28,5 +31,3 @@ function robustCwd() {
     return getFallbackCwd();
   }
 }
-
-module.exports = { robustCwd, getFallbackCwd };

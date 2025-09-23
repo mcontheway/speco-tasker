@@ -2,7 +2,7 @@
  * Graceful-FS兼容性测试
  */
 
-const { safeCwd } = require('../../scripts/utils/safe-process-polyfills');
+import { safeCwd, getCacheInfo, clearCache } from '../../scripts/utils/safe-process-polyfills.js';
 
 describe('Graceful-FS兼容性测试', () => {
   beforeAll(async () => {
@@ -20,8 +20,6 @@ describe('Graceful-FS兼容性测试', () => {
   });
 
   test('安全polyfills应该提供缓存功能', () => {
-    const { getCacheInfo, clearCache } = require('../../scripts/utils/safe-process-polyfills');
-
     // 调用几次process.cwd()
     process.cwd();
     process.cwd();

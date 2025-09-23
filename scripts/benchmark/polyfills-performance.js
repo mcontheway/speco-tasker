@@ -2,7 +2,7 @@
  * Polyfills性能基准测试
  */
 
-const { performance } = require('perf_hooks');
+import { performance } from 'perf_hooks';
 
 async function benchmarkPolyfills() {
   const iterations = 1000;
@@ -49,10 +49,10 @@ async function benchmarkPolyfills() {
 }
 
 // 运行基准测试
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   benchmarkPolyfills().then(results => {
     process.exit(results.acceptable ? 0 : 1);
   });
 }
 
-module.exports = { benchmarkPolyfills };
+export { benchmarkPolyfills };

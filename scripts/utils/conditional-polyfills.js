@@ -3,9 +3,10 @@
  * 只在安全环境中应用polyfills
  */
 
-const EnvironmentDetector = require('./env-detector');
+import EnvironmentDetector from './env-detector.js';
+import './safe-process-polyfills.js';
 
-async function shouldApplyPolyfills() {
+export async function shouldApplyPolyfills() {
   const detector = new EnvironmentDetector();
   const env = await detector.detect();
 
@@ -18,12 +19,12 @@ async function shouldApplyPolyfills() {
          env.gracefulFsVersion !== null;
 }
 
-async function applySafePolyfills() {
+export async function applySafePolyfills() {
   try {
     const shouldApply = await shouldApplyPolyfills();
 
     if (shouldApply) {
-      require('./safe-process-polyfills');
+      // polyfills已在import时应用
       console.log('✅ 安全polyfills已应用');
       return true;
     } else {
@@ -35,5 +36,3 @@ async function applySafePolyfills() {
     return false;
   }
 }
-
-module.exports = { shouldApplyPolyfills, applySafePolyfills };

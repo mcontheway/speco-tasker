@@ -10,7 +10,7 @@ let cwdCache = null;
 let cacheExpiry = 0;
 const CACHE_DURATION = 1000; // 1秒缓存，避免过度调用
 
-const safeCwd = () => {
+export const safeCwd = () => {
   const now = Date.now();
 
   // 检查缓存是否过期
@@ -42,15 +42,20 @@ const safeCwd = () => {
 process.cwd = safeCwd;
 
 // 导出用于测试和调试
-module.exports = {
+export const getCacheInfo = () => ({
+  cached: cwdCache,
+  expiry: cacheExpiry,
+  age: Date.now() - cacheExpiry
+});
+
+export const clearCache = () => {
+  cwdCache = null;
+  cacheExpiry = 0;
+};
+
+// 默认导出
+export default {
   safeCwd,
-  getCacheInfo: () => ({
-    cached: cwdCache,
-    expiry: cacheExpiry,
-    age: Date.now() - cacheExpiry
-  }),
-  clearCache: () => {
-    cwdCache = null;
-    cacheExpiry = 0;
-  }
+  getCacheInfo,
+  clearCache
 };
