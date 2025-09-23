@@ -16,8 +16,8 @@ echo "  📁 测试目录: $TEST_DIR"
 
 # 初始化项目
 echo "  🚀 初始化项目..."
-TASK_MASTER_CLI="/Volumes/Data_SSD/Coding/startkits/Speco-Tasker/bin/task-master.js"
-if ! node "$TASK_MASTER_CLI" init --name "Consistency Test" --description "Test project for data consistency" --yes > /dev/null 2>&1; then
+TASK_MASTER_CLI="/Volumes/Data_SSD/Coding/startkits/Speco-Tasker/bin/speco-tasker.js"
+if ! node "$TASK_MASTER_CLI" init --name "Consistency Test" > /dev/null 2>&1; then
     echo "❌ 项目初始化失败"
     exit 1
 fi

@@ -13,36 +13,23 @@ import {
 } from "../../src/constants/paths.js";
 // Import specific config getters needed here
 import { getDebugFlag, getLogLevel } from "./config-manager.js";
+// Import core utilities that don't depend on config
+import {
+	findProjectRoot,
+	isEmpty,
+	log,
+	resolveEnvVariable,
+} from "./core-utils.js";
 import * as gitUtils from "./utils/git-utils.js";
 
 // Global silent mode flag
 let silentMode = false;
 
+// Global MCP mode detection
+let isMCPMode = null;
+
 // --- Environment Variable Resolution Utility ---
-/**
- * Resolves an environment variable's value.
- * Precedence:
- * 1. session.env (if session provided)
- * 2. process.env
- * @param {string} key - The environment variable key.
- * @param {object|null} [session=null] - The MCP session object.
- * @param {string|null} [projectRoot=null] - The project root directory (parameter kept for compatibility).
- * @returns {string|undefined} The value of the environment variable or undefined if not found.
- */
-function resolveEnvVariable(key, session = null, projectRoot = null) {
-	// 1. Check session.env (for MCP integrations)
-	if (session?.env?.[key]) {
-		return session.env[key];
-	}
-
-	// 2. Check process.env
-	if (process.env[key]) {
-		return process.env[key];
-	}
-
-	// Not found anywhere
-	return undefined;
-}
+// Now imported from core-utils.js
 
 // --- Tag-Aware Path Resolution Utility ---
 
@@ -176,15 +163,15 @@ function validateSpecFiles(specFiles, projectRoot = ".") {
 		return { isValid: false, errors, warnings };
 	}
 
-	specFiles.forEach((spec, index) => {
+	for (const [index, spec] of specFiles.entries()) {
 		if (!spec || typeof spec !== "object") {
 			errors.push(`spec_files[${index}]: must be an object`);
-			return;
+			continue;
 		}
 
 		if (!spec.file || typeof spec.file !== "string") {
 			errors.push(`spec_files[${index}]: file path is required`);
-			return;
+			continue;
 		}
 
 		// 检查文件是否存在
@@ -203,7 +190,7 @@ function validateSpecFiles(specFiles, projectRoot = ".") {
 		if (!spec.title || typeof spec.title !== "string") {
 			spec.title = path.basename(spec.file); // 设置默认值
 		}
-	});
+	}
 
 	return {
 		isValid: errors.length === 0,
@@ -268,7 +255,7 @@ function parseDependencies(input, allTasks = []) {
 		// 验证依赖任务存在性并过滤无效依赖
 		const validDeps = [];
 		if (allTasks.length > 0) {
-			parsedDeps.forEach((dep) => {
+			for (const dep of parsedDeps) {
 				const depExists = allTasks.some((task) => {
 					if (typeof dep === "string" && dep.includes(".")) {
 						// 子任务格式：检查 parentId.subtaskId
@@ -287,7 +274,7 @@ function parseDependencies(input, allTasks = []) {
 				} else {
 					warnings.push(`Dependency task/subtask '${dep}' does not exist`);
 				}
-			});
+			}
 		} else {
 			// 如果没有提供 allTasks，保留所有依赖（用于向后兼容）
 			validDeps.push(...parsedDeps);
@@ -441,36 +428,7 @@ function validateFieldUpdatePermission(fieldName, newValue, currentTask) {
  * @param {string[]} [markers=['package.json', '.git', LEGACY_CONFIG_FILE]] - Marker files/dirs to look for.
  * @returns {string|null} The path to the project root, or null if not found.
  */
-function findProjectRoot(
-	startDir = process.cwd(),
-	markers = ["package.json", "pyproject.toml", ".git", LEGACY_CONFIG_FILE],
-) {
-	let currentPath = path.resolve(startDir);
-	const rootPath = path.parse(currentPath).root;
-
-	while (currentPath !== rootPath) {
-		// Check if any marker exists in the current directory
-		const hasMarker = markers.some((marker) => {
-			const markerPath = path.join(currentPath, marker);
-			return fs.existsSync(markerPath);
-		});
-
-		if (hasMarker) {
-			return currentPath;
-		}
-
-		// Move up one directory
-		currentPath = path.dirname(currentPath);
-	}
-
-	// Check the root directory as well
-	const hasMarkerInRoot = markers.some((marker) => {
-		const markerPath = path.join(rootPath, marker);
-		return fs.existsSync(markerPath);
-	});
-
-	return hasMarkerInRoot ? rootPath : null;
-}
+// findProjectRoot now imported from core-utils.js
 
 // --- Dynamic Configuration Function --- (REMOVED)
 
@@ -520,49 +478,7 @@ function isSilentMode() {
  * @param {string} level - The log level (debug, info, warn, error)
  * @param  {...any} args - Arguments to log
  */
-function log(level, ...args) {
-	// Immediately return if silentMode is enabled
-	if (isSilentMode()) {
-		return;
-	}
-
-	// GUARD: Prevent circular dependency during config loading
-	// Use a simple fallback log level instead of calling getLogLevel()
-	let configLevel = "info"; // Default fallback
-	try {
-		// Only try to get config level if we're not in the middle of config loading
-		configLevel = getLogLevel() || "info";
-	} catch (error) {
-		// If getLogLevel() fails (likely due to circular dependency),
-		// use default 'info' level and continue
-		configLevel = "info";
-	}
-
-	// Use text prefixes instead of emojis
-	const prefixes = {
-		debug: chalk.gray("[DEBUG]"),
-		info: chalk.blue("[INFO]"),
-		warn: chalk.yellow("[WARN]"),
-		error: chalk.red("[ERROR]"),
-		success: chalk.green("[SUCCESS]"),
-	};
-
-	// Ensure level exists, default to info if not
-	const currentLevel = LOG_LEVELS.hasOwnProperty(level) ? level : "info";
-
-	// Check log level configuration
-	if (
-		LOG_LEVELS[currentLevel] >= (LOG_LEVELS[configLevel] ?? LOG_LEVELS.info)
-	) {
-		const prefix = prefixes[currentLevel] || "";
-		// Use console.log for all levels, let chalk handle coloring
-		// Construct the message properly
-		const message = args
-			.map((arg) => (typeof arg === "object" ? JSON.stringify(arg) : arg))
-			.join(" ");
-		console.log(`${prefix} ${message}`);
-	}
-}
+// log function now imported from core-utils.js
 
 /**
  * Checks if the data object has a tagged structure (contains tag objects with tasks arrays)
@@ -577,7 +493,7 @@ function hasTaggedStructure(data) {
 	// Check if any top-level properties are objects with tasks arrays
 	for (const key in data) {
 		if (
-			data.hasOwnProperty(key) &&
+			Object.hasOwn(data, key) &&
 			typeof data[key] === "object" &&
 			Array.isArray(data[key].tasks)
 		) {
@@ -594,7 +510,7 @@ function hasTaggedStructure(data) {
 function normalizeTaskIds(tasks) {
 	if (!Array.isArray(tasks)) return;
 
-	tasks.forEach((task) => {
+	for (const task of tasks) {
 		// Convert task ID to number with validation
 		if (task.id !== undefined) {
 			const parsedId = Number.parseInt(task.id, 10);
@@ -605,7 +521,7 @@ function normalizeTaskIds(tasks) {
 
 		// Convert subtask IDs to numbers with validation
 		if (Array.isArray(task.subtasks)) {
-			task.subtasks.forEach((subtask) => {
+			for (const subtask of task.subtasks) {
 				if (subtask.id !== undefined) {
 					// Check for dot notation (which shouldn't exist in storage)
 					if (typeof subtask.id === "string" && subtask.id.includes(".")) {
@@ -619,9 +535,9 @@ function normalizeTaskIds(tasks) {
 						}
 					}
 				}
-			});
+			}
 		}
-	});
+	}
 }
 
 /**
@@ -742,7 +658,7 @@ function readJSON(filepath, projectRoot = null, tag = null) {
 		// Ensure all tags have proper metadata before proceeding
 		for (const tagName in data) {
 			if (
-				data.hasOwnProperty(tagName) &&
+				Object.hasOwn(data, tagName) &&
 				typeof data[tagName] === "object" &&
 				data[tagName].tasks
 			) {
@@ -1394,16 +1310,7 @@ function truncate(text, maxLength) {
  * @param {*} value - The value to check
  * @returns {boolean} True if empty, false otherwise
  */
-function isEmpty(value) {
-	if (Array.isArray(value)) {
-		return value.length === 0;
-	}
-	if (typeof value === "object" && value !== null) {
-		return Object.keys(value).length === 0;
-	}
-
-	return false; // Not an array or object, or is null
-}
+// isEmpty now imported from core-utils.js
 
 /**
  * Find cycles in a dependency graph using DFS
@@ -1517,7 +1424,7 @@ function traverseDependencies(sourceTasks, allTasks, options = {}) {
 			return;
 		}
 
-		task.dependencies.forEach((depId) => {
+		for (const depId of task.dependencies) {
 			const normalizedDepId = normalizeDependencyId(depId);
 
 			// Skip invalid dependencies and optionally skip self-references
@@ -1525,13 +1432,13 @@ function traverseDependencies(sourceTasks, allTasks, options = {}) {
 				normalizedDepId == null ||
 				(!includeSelf && normalizedDepId === taskId)
 			) {
-				return;
+				continue;
 			}
 
 			dependentTaskIds.add(normalizedDepId);
 			// Recursively find dependencies of this dependency
 			findForwardDependencies(normalizedDepId, currentDepth + 1);
-		});
+		}
 	}
 
 	// Helper function for reverse dependency traversal
@@ -1554,7 +1461,7 @@ function traverseDependencies(sourceTasks, allTasks, options = {}) {
 		}
 		processedIds.add(taskId);
 
-		allTasks.forEach((task) => {
+		for (const task of allTasks) {
 			if (task.dependencies && Array.isArray(task.dependencies)) {
 				const dependsOnTaskId = task.dependencies.some((depId) => {
 					const normalizedDepId = normalizeDependencyId(depId);
@@ -1564,7 +1471,7 @@ function traverseDependencies(sourceTasks, allTasks, options = {}) {
 				if (dependsOnTaskId) {
 					// Skip invalid dependencies and optionally skip self-references
 					if (task.id == null || (!includeSelf && task.id === taskId)) {
-						return;
+						continue;
 					}
 
 					dependentTaskIds.add(task.id);
@@ -1572,7 +1479,7 @@ function traverseDependencies(sourceTasks, allTasks, options = {}) {
 					findReverseDependencies(task.id, currentDepth + 1);
 				}
 			}
-		});
+		}
 	}
 
 	// Choose traversal function based on direction
@@ -1580,11 +1487,11 @@ function traverseDependencies(sourceTasks, allTasks, options = {}) {
 		direction === "reverse" ? findReverseDependencies : findForwardDependencies;
 
 	// Start traversal from each source task
-	sourceTasks.forEach((sourceTask) => {
+	for (const sourceTask of sourceTasks) {
 		if (sourceTask?.id) {
 			traversalFunc(sourceTask.id);
 		}
-	});
+	}
 
 	return Array.from(dependentTaskIds);
 }
@@ -1738,16 +1645,14 @@ function getTasksForTag(data, tagName) {
  * @returns {Object} The updated data object
  */
 function setTasksForTag(data, tagName, tasks) {
-	if (!data) {
-		data = {};
+	const resultData = data || {};
+
+	if (!resultData[tagName]) {
+		resultData[tagName] = {};
 	}
 
-	if (!data[tagName]) {
-		data[tagName] = {};
-	}
-
-	data[tagName].tasks = tasks || [];
-	return data;
+	resultData[tagName].tasks = tasks || [];
+	return resultData;
 }
 
 /**
@@ -1839,7 +1744,66 @@ function stripAnsiCodes(text) {
 		return text;
 	}
 	// Remove ANSI escape sequences (color codes, cursor movements, etc.)
-	return text.replace(/\x1B\[[0-9;]*m/g, "");
+	// Using a simple pattern that covers most common ANSI escape sequences
+	// biome-ignore lint/suspicious/noControlCharactersInRegex: Required for ANSI escape sequence removal
+	return text.replace(/\x1B\[[0-9;]*[A-Za-z]/g, "");
+}
+
+/**
+ * Detects if the current execution context is MCP (Model Context Protocol) mode
+ * This is used to suppress console output that would interfere with MCP JSON responses
+ * @returns {boolean} - True if running in MCP mode, false otherwise
+ */
+function detectMCPMode() {
+	// Cache the result to avoid repeated detection
+	if (isMCPMode !== null) {
+		return isMCPMode;
+	}
+
+	try {
+		// Method 1: Check for MCP-specific environment variables
+		if (process.env.MCP_SERVER === "true" || process.env.MCP_MODE === "true") {
+			isMCPMode = true;
+			return true;
+		}
+
+		// Method 2: Check if we're running from MCP server
+		if (process.argv.some((arg) => arg.includes("mcp-server"))) {
+			isMCPMode = true;
+			return true;
+		}
+
+		// Method 3: Check call stack for MCP-related functions
+		const stack = new Error().stack || "";
+		if (
+			stack.includes("mcp-server") ||
+			stack.includes("fastmcp") ||
+			stack.includes("handleApiResult")
+		) {
+			isMCPMode = true;
+			return true;
+		}
+
+		// Method 4: Check if process was spawned with specific MCP indicators
+		const execPath = process.execPath || "";
+		const scriptPath = process.argv[1] || "";
+		if (
+			execPath.includes("mcp") ||
+			scriptPath.includes("mcp-server") ||
+			scriptPath.includes("server.js")
+		) {
+			isMCPMode = true;
+			return true;
+		}
+
+		// Default to CLI mode
+		isMCPMode = false;
+		return false;
+	} catch (error) {
+		// On error, default to CLI mode to avoid breaking functionality
+		isMCPMode = false;
+		return false;
+	}
 }
 
 // Export all utility functions and configuration
@@ -1881,6 +1845,7 @@ export {
 	ensureTagMetadata,
 	stripAnsiCodes,
 	normalizeTaskIds,
+	detectMCPMode,
 	// Parameter processing utilities
 	parseSpecFiles,
 	validateSpecFiles,

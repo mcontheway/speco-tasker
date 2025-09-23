@@ -4,15 +4,19 @@ Speco Tasker 是一个纯净的手动任务管理系统，已经完全移除了A
 
 Speco Tasker is a pure manual task management system with all AI features completely removed. Configuration focuses mainly on the tag system and other project settings.
 
-## `.taskmaster/config.json` 文件 | `.taskmaster/config.json` File
+## `.speco/config.json` 文件 | `.speco/config.json` File
 
-此 JSON 文件存储项目配置设置，包括日志级别、标签系统设置和项目默认值。
+此 JSON 文件存储项目配置设置，包括项目信息、日志级别、标签系统设置和项目默认值。
 
-This JSON file stores project configuration settings, including log levels, tag system settings, and project defaults.
+注意：为了简化配置，部分初始化时的配置项（如 paths、features、testing、quality）已被移除，仅保留运行时必需的配置项。
 
-**位置：** 当您运行 `task-master init` 初始化新项目时，此文件将在 `.taskmaster/` 目录中创建。
+This JSON file stores project configuration settings, including project information, log levels, tag system settings, and project defaults.
 
-**Location:** This file is created in the `.taskmaster/` directory when you run `task-master init` to initialize a new project.
+Note: To simplify configuration, some initialization-time configuration items (such as paths, features, testing, quality) have been removed, keeping only the configuration items required at runtime.
+
+**位置：** 当您运行 `speco-tasker init` 初始化新项目时，此文件将在 `.speco/` 目录中创建。
+
+**Location:** This file is created in the `.speco/` directory when you run `speco-tasker init` to initialize a new project.
 
 **管理：** 文件会在项目初始化时自动创建。您也可以手动编辑此文件，但建议通过命令行工具进行管理。
 
@@ -21,6 +25,14 @@ This JSON file stores project configuration settings, including log levels, tag 
 **示例结构：| Example Structure:**
 ```json
 {
+  "project": {
+    "name": "Your Project Name",
+    "version": "1.0.0",
+    "description": "Project description",
+    "author": "Author Name",
+    "license": "MIT",
+    "root": "/path/to/project"
+  },
   "global": {
     "logLevel": "info",
     "debug": false,
@@ -29,6 +41,9 @@ This JSON file stores project configuration settings, including log levels, tag 
     "defaultPriority": "medium",
     "defaultTag": "main",
     "projectName": "Your Project Name"
+  },
+  "logging": {
+    "level": "info"
   },
   "tags": {
     "main": {
@@ -43,9 +58,9 @@ This JSON file stores project configuration settings, including log levels, tag 
 
 ## 状态管理文件 | State Management File
 
-Speco Tasker 使用 `.taskmaster/state.json` 来跟踪标签系统运行时信息：
+Speco Tasker 使用 `.speco/state.json` 来跟踪标签系统运行时信息：
 
-Speco Tasker uses `.taskmaster/state.json` to track tag system runtime information:
+Speco Tasker uses `.speco/state.json` to track tag system runtime information:
 
 ```json
 {
@@ -85,7 +100,7 @@ Speco Tasker 通过 `--from-branch` 选项提供手动 git 集成：
 
 Speco Tasker provides manual git integration through the `--from-branch` option:
 
-- **手动标签创建**：使用 `task-master add-tag --from-branch` 根据当前 git 分支名称创建标签 | **Manual Tag Creation**: Use `task-master add-tag --from-branch` to create tags based on current git branch name
+- **手动标签创建**：使用 `speco-tasker add-tag --from-branch` 根据当前 git 分支名称创建标签 | **Manual Tag Creation**: Use `speco-tasker add-tag --from-branch` to create tags based on current git branch name
 - **用户控制**：没有自动标签切换 - 您控制何时以及如何创建标签 | **User Control**: No automatic tag switching - you control when and how tags are created
 - **灵活工作流**：支持任何 git 工作流，而不强制分支-标签映射 | **Flexible Workflow**: Supports any git workflow without forcing branch-tag mapping
 
@@ -109,17 +124,17 @@ Since Speco Tasker has completely removed AI features, environment variable conf
 
 ### 配置错误 | Configuration Errors
 
-- 如果 Speco Tasker 报告缺少配置或找不到配置文件错误，请在项目根目录运行 `task-master init` 来创建必要的配置文件。 | If Speco Tasker reports missing configuration or cannot find configuration file errors, please run `task-master init` in the project root directory to create the necessary configuration files.
-- 对于新项目，配置将在 `task-master init` 时自动创建。 | For new projects, configuration will be created automatically during `task-master init`.
+- 如果 Speco Tasker 报告缺少配置或找不到配置文件错误，请在项目根目录运行 `speco-tasker init` 来创建必要的配置文件。 | If Speco Tasker reports missing configuration or cannot find configuration file errors, please run `speco-tasker init` in the project root directory to create the necessary configuration files.
+- 对于新项目，配置将在 `speco-tasker init` 时自动创建。 | For new projects, configuration will be created automatically during `speco-tasker init`.
 - 标签系统将在首次使用时自动初始化。 | The tag system will be automatically initialized on first use.
 
 ### 标签系统错误 | Tag System Errors
 
-- 如果遇到标签相关错误，请检查 `.taskmaster/state.json` 文件是否存在 | If you encounter tag-related errors, please check if the `.taskmaster/state.json` file exists
-- 使用 `task-master tags` 查看可用标签 | Use `task-master tags` to view available tags
-- 使用 `task-master use-tag <tag-name>` 切换到特定标签 | Use `task-master use-tag <tag-name>` to switch to a specific tag
+- 如果遇到标签相关错误，请检查 `.speco/state.json` 文件是否存在 | If you encounter tag-related errors, please check if the `.speco/state.json` file exists
+- 使用 `speco-tasker tags` 查看可用标签 | Use `speco-tasker tags` to view available tags
+- 使用 `speco-tasker use-tag <tag-name>` 切换到特定标签 | Use `speco-tasker use-tag <tag-name>` to switch to a specific tag
 
-### 如果 `task-master init` 没有响应：| If `task-master init` doesn't respond:
+### 如果 `speco-tasker init` 没有响应：| If `speco-tasker init` doesn't respond:
 
 尝试直接使用 Node 运行它：
 

@@ -3,6 +3,62 @@
  * Command-line interface for the Speco Tasker CLI
  */
 
+/**
+ * Detect the command name used to invoke this script
+ * @returns {string} The command name ('speco-tasker' or 'task-master')
+ */
+function detectCommandName() {
+	// Check if we're being called through speco-tasker
+	const execPath = process.argv[1] || "";
+	const execArgv = process.execArgv || [];
+
+	// Method 1: Check the script path
+	if (execPath.includes("speco-tasker")) {
+		return "speco-tasker";
+	}
+
+	// Method 2: Check parent process arguments (more reliable)
+	try {
+		const fs = require("node:fs");
+		const path = require("node:path");
+
+		// Check if parent process used speco-tasker
+		if (typeof process.env.PARENT_COMMAND === "string") {
+			if (process.env.PARENT_COMMAND.includes("speco-tasker")) {
+				return "speco-tasker";
+			}
+		}
+
+		// Method 3: Check if we're called from bin/speco-tasker.js
+		const callerStack = new Error().stack;
+		if (callerStack?.includes("speco-tasker.js")) {
+			return "speco-tasker";
+		}
+	} catch (error) {
+		// Silently fall back to task-master if detection fails
+	}
+
+	// Default fallback
+	return "task-master";
+}
+
+/**
+ * Get the appropriate command name for display
+ * @returns {string} The command name to show to users
+ */
+function getDisplayCommandName() {
+	return detectCommandName();
+}
+
+/**
+ * Get the appropriate package name for display
+ * @returns {string} The package name to show to users
+ */
+function getDisplayPackageName() {
+	const commandName = detectCommandName();
+	return commandName === "speco-tasker" ? "speco-tasker" : "task-master-ai";
+}
+
 import fs from "node:fs";
 import http from "node:http";
 import https from "node:https";
@@ -79,6 +135,9 @@ import {
 
 import { initTaskMaster } from "../../src/task-master.js";
 
+// 导入核心服务
+import { PathService } from "../../src/services/PathService.js";
+
 import {
 	confirmProfilesRemove,
 	confirmRemoveAllRemainingProfiles,
@@ -117,10 +176,11 @@ function registerCommands(programInstance) {
 	// Add global error handler for unknown options
 	programInstance.on("option:unknown", function (unknownOption) {
 		const commandName = this._name || "unknown";
+		const displayCommand = getDisplayCommandName();
 		console.error(chalk.red(`Error: Unknown option '${unknownOption}'`));
 		console.error(
 			chalk.yellow(
-				`Run 'task-master ${commandName} --help' to see available options`,
+				`Run '${displayCommand} ${commandName} --help' to see available options`,
 			),
 		);
 		process.exit(1);
@@ -371,7 +431,7 @@ function registerCommands(programInstance) {
 
 			if (!fs.existsSync(tasksPath)) {
 				console.error(
-					`❌ No tasks.json file found. Please run "task-master init" or create a tasks.json file at ${TASKMASTER_TASKS_FILE}`,
+					`❌ No tasks.json file found. Please run "${getDisplayCommandName()} init" or create a tasks.json file at ${TASKMASTER_TASKS_FILE}`,
 				);
 				process.exit(1);
 			}
@@ -743,7 +803,7 @@ function registerCommands(programInstance) {
 					console.error(chalk.red("Error: --id parameter is required"));
 					console.log(
 						chalk.yellow(
-							'Usage example: task-master update-task --id=23 --title="New title"',
+							'Usage example: ${getDisplayCommandName()} update-task --id=23 --title="New title"',
 						),
 					);
 					process.exit(1);
@@ -759,7 +819,7 @@ function registerCommands(programInstance) {
 					);
 					console.log(
 						chalk.yellow(
-							'Usage example: task-master update-task --id=23 --title="New title"',
+							'Usage example: ${getDisplayCommandName()} update-task --id=23 --title="New title"',
 						),
 					);
 					process.exit(1);
@@ -775,7 +835,7 @@ function registerCommands(programInstance) {
 						details: options.details,
 						testStrategy: options.testStrategy,
 						dependencies: options.dependencies
-							? options.dependencies.split(",").map((id) => id.trim())
+							? options.dependencies.split(",").map((id) => id.trim()).filter((id) => id.length > 0)
 							: undefined,
 						spec_files: options.specFiles
 							? options.specFiles.split(",").map((f) => {
@@ -801,12 +861,12 @@ function registerCommands(programInstance) {
 					);
 					console.log(
 						chalk.yellow(
-							'Usage example: task-master update-task --id=23 --title="New title" --status="in-progress"',
+							'Usage example: ${getDisplayCommandName()} update-task --id=23 --title="New title" --status="in-progress"',
 						),
 					);
 					console.log(
 						chalk.yellow(
-							'For incremental updates: task-master update-task --id=23 --description="Additional info" --append',
+							'For incremental updates: ${getDisplayCommandName()} update-task --id=23 --description="Additional info" --append',
 						),
 					);
 					process.exit(1);
@@ -925,7 +985,7 @@ function registerCommands(programInstance) {
 					console.error(chalk.red("Error: --id parameter is required"));
 					console.log(
 						chalk.yellow(
-							'Usage example: task-master update-subtask --id=5.2 --title="New subtask title"',
+							'Usage example: ${getDisplayCommandName()} update-subtask --id=5.2 --title="New subtask title"',
 						),
 					);
 					process.exit(1);
@@ -940,7 +1000,7 @@ function registerCommands(programInstance) {
 					);
 					console.log(
 						chalk.yellow(
-							'Usage example: task-master update-subtask --id=5.2 --title="New subtask title"',
+							'Usage example: ${getDisplayCommandName()} update-subtask --id=5.2 --title="New subtask title"',
 						),
 					);
 					process.exit(1);
@@ -963,7 +1023,7 @@ function registerCommands(programInstance) {
 					);
 					console.log(
 						chalk.yellow(
-							'Usage example: task-master update-subtask --id=5.2 --title="New subtask title"',
+							'Usage example: ${getDisplayCommandName()} update-subtask --id=5.2 --title="New subtask title"',
 						),
 					);
 					process.exit(1);
@@ -979,7 +1039,7 @@ function registerCommands(programInstance) {
 						details: options.details,
 						testStrategy: options.testStrategy,
 						dependencies: options.dependencies
-							? options.dependencies.split(",").map((id) => id.trim())
+							? options.dependencies.split(",").map((id) => id.trim()).filter((id) => id.length > 0)
 							: undefined,
 						spec_files: options.specFiles
 							? options.specFiles.split(",").map((f) => {
@@ -1005,12 +1065,12 @@ function registerCommands(programInstance) {
 					);
 					console.log(
 						chalk.yellow(
-							'Usage example: task-master update-subtask --id=5.2 --title="New title" --status="in-progress"',
+							'Usage example: ${getDisplayCommandName()} update-subtask --id=5.2 --title="New title" --status="in-progress"',
 						),
 					);
 					console.log(
 						chalk.yellow(
-							'For incremental updates: task-master update-subtask --id=5.2 --description="Additional info" --append',
+							'For incremental updates: ${getDisplayCommandName()} update-subtask --id=5.2 --description="Additional info" --append',
 						),
 					);
 					process.exit(1);
@@ -1581,8 +1641,8 @@ function registerCommands(programInstance) {
 					);
 					console.log();
 
-					existingTasksToRemove.forEach(({ id, task }) => {
-						if (!task) return; // Should not happen due to taskExists check, but safeguard
+					for (const { id, task } of existingTasksToRemove) {
+						if (!task) continue; // Should not happen due to taskExists check, but safeguard
 						if (task.isSubtask) {
 							// Subtask - title is directly on the task object
 							console.log(
@@ -1602,7 +1662,7 @@ function registerCommands(programInstance) {
 								chalk.white.bold(`  Task ${id}: ${task.title || "(no title)"}`),
 							);
 						}
-					});
+					}
 
 					if (totalSubtasksToDelete > 0) {
 						console.log(
@@ -1618,9 +1678,9 @@ function registerCommands(programInstance) {
 								"⚠️ Warning: Dependencies on the following tasks will be removed:",
 							),
 						);
-						dependentTaskMessages.forEach((msg) =>
-							console.log(chalk.yellow(msg)),
-						);
+						for (const msg of dependentTaskMessages) {
+							console.log(chalk.yellow(msg));
+						}
 					}
 
 					console.log();
@@ -1716,14 +1776,11 @@ function registerCommands(programInstance) {
 	// init command (Directly calls the implementation from init.js)
 	programInstance
 		.command("init")
-		.description("初始化 Speco Tasker 项目（自动检测配置）")
-		.action(async () => {
+		.description("初始化 Speco Tasker（自动检测配置）")
+		.action(async (options) => {
 			try {
 				// Use intelligent defaults - no complex configuration needed
-				const options = {
-					yes: false, // CLI mode allows interactive prompts for better UX
-				};
-				await initializeProject(options);
+				await initializeProject({});
 			} catch (error) {
 				console.error(
 					chalk.red(`Error during initialization: ${error.message}`),
@@ -1775,7 +1832,7 @@ function registerCommands(programInstance) {
 						"  • Subtask movement: Promote subtask first with remove-subtask --convert",
 					)}\n${chalk.white(
 						"  • Invalid tags: Check available tags with task-master tags",
-					)}\n\n${chalk.gray("For more help, run: task-master move --help")}`,
+					)}\n\n${chalk.gray("For more help, run: ${getDisplayCommandName()} move --help")}`,
 				);
 			}
 
@@ -1819,7 +1876,9 @@ function registerCommands(programInstance) {
 				// Print any tips returned from the move operation (e.g., after ignoring dependencies)
 				if (Array.isArray(result.tips) && result.tips.length > 0) {
 					console.log(`\n${chalk.yellow.bold("提示:")}`);
-					result.tips.forEach((t) => console.log(chalk.white(`  • ${t}`)));
+					for (const t of result.tips) {
+						console.log(chalk.white(`  • ${t}`));
+					}
 				}
 
 				// Check if source tag still contains tasks before regenerating files
@@ -1996,15 +2055,15 @@ function registerCommands(programInstance) {
 
 						if (successfulMoves.length > 0) {
 							console.log(chalk.cyan("\nSuccessful moves:"));
-							successfulMoves.forEach(({ fromId, toId }) => {
+							for (const { fromId, toId } of successfulMoves) {
 								console.log(chalk.cyan(`  ${fromId} → ${toId}`));
-							});
+							}
 						}
 
 						console.log(chalk.red("\nFailed moves:"));
-						moveErrors.forEach(({ fromId, toId, error }) => {
+						for (const { fromId, toId, error } of moveErrors) {
 							console.log(chalk.red(`  ${fromId} → ${toId}: ${error}`));
-						});
+						}
 
 						console.log(
 							chalk.yellow(
@@ -2220,7 +2279,7 @@ function registerCommands(programInstance) {
 					);
 					console.log(
 						chalk.yellow(
-							"Hint: Run task-master init to create tasks.json first",
+							"Hint: Run ${getDisplayCommandName()} init to create tasks.json first",
 						),
 					);
 					process.exit(1);
@@ -2630,8 +2689,8 @@ function setupCLI() {
 }
 
 /**
- * Check for newer version of task-master-ai
- * @returns {Promise<{currentVersion: string, latestVersion: string, needsUpdate: boolean}>}
+ * Check for newer version of the detected package (speco-tasker or task-master-ai)
+ * @returns {Promise<{currentVersion: string, latestVersion: string, needsUpdate: boolean, packageName: string}>}
  */
 async function checkForUpdate() {
 	// Get current version from package.json ONLY
@@ -2641,7 +2700,7 @@ async function checkForUpdate() {
 		// Get the latest version from npm registry
 		const options = {
 			hostname: "registry.npmjs.org",
-			path: "/task-master-ai",
+			path: "/speco-tasker",
 			method: "GET",
 			headers: {
 				Accept: "application/vnd.npm.install-v1+json", // Lightweight response
@@ -2668,6 +2727,7 @@ async function checkForUpdate() {
 						currentVersion,
 						latestVersion,
 						needsUpdate,
+						packageName: getDisplayPackageName(), // Add package name to result
 					});
 				} catch (error) {
 					log("debug", `Error parsing npm response: ${error.message}`);
@@ -2675,6 +2735,7 @@ async function checkForUpdate() {
 						currentVersion,
 						latestVersion: currentVersion,
 						needsUpdate: false,
+						packageName: getDisplayPackageName(), // Add package name to result
 					});
 				}
 			});
@@ -2686,6 +2747,7 @@ async function checkForUpdate() {
 				currentVersion,
 				latestVersion: currentVersion,
 				needsUpdate: false,
+				packageName: getDisplayPackageName(), // Add package name to result
 			});
 		});
 
@@ -2697,6 +2759,7 @@ async function checkForUpdate() {
 				currentVersion,
 				latestVersion: currentVersion,
 				needsUpdate: false,
+				packageName: getDisplayPackageName(), // Add package name to result
 			});
 		});
 
@@ -2729,11 +2792,17 @@ function compareVersions(v1, v2) {
  * Display upgrade notification message
  * @param {string} currentVersion - Current version
  * @param {string} latestVersion - Latest version
+ * @param {string} packageName - Package name to use in update command
  */
-function displayUpgradeNotification(currentVersion, latestVersion) {
+function displayUpgradeNotification(
+	currentVersion,
+	latestVersion,
+	packageName = null,
+) {
+	const displayPackage = packageName || getDisplayPackageName();
 	const message = boxen(
 		`${chalk.blue.bold("Update Available!")} ${chalk.dim(currentVersion)} → ${chalk.green(latestVersion)}\n\n` +
-			`Run ${chalk.cyan("npm i task-master-ai@latest -g")} to update to the latest version with new features and bug fixes.`,
+			`Run ${chalk.cyan(`npm i ${displayPackage}@latest -g`)} to update to the latest version with new features and bug fixes.`,
 		{
 			padding: 1,
 			margin: { top: 1, bottom: 1 },
@@ -2777,6 +2846,7 @@ async function runCLI(argv = process.argv) {
 			displayUpgradeNotification(
 				updateInfo.currentVersion,
 				updateInfo.latestVersion,
+				updateInfo.packageName, // Pass the detected package name
 			);
 		}
 
@@ -2826,6 +2896,58 @@ async function runCLI(argv = process.argv) {
 
 		process.exit(1);
 	}
+}
+
+/**
+ * 确认操作
+ * @param {string} message - 确认消息
+ * @returns {Promise<boolean>} 用户确认结果
+ */
+async function confirmOperation(message) {
+	const readline = require("node:readline");
+	const rl = readline.createInterface({
+		input: process.stdin,
+		output: process.stdout,
+	});
+
+	return new Promise((resolve) => {
+		rl.question(`${message} (y/N): `, (answer) => {
+			rl.close();
+			resolve(answer.toLowerCase() === "y" || answer.toLowerCase() === "yes");
+		});
+	});
+}
+
+/**
+ * 创建备份
+ * @param {string} backupDir - 备份目录
+ * @param {string} projectRoot - 项目根目录
+ * @returns {Promise<void>}
+ */
+async function createBackup(backupDir, projectRoot) {
+	const fs = require("node:fs").promises;
+	const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+	const fullBackupDir = path.join(projectRoot, backupDir, timestamp);
+
+	await fs.mkdir(fullBackupDir, { recursive: true });
+
+	// 备份关键文件
+	const filesToBackup = [
+		"package.json",
+		"README.md",
+		".speco/config.json",
+		".speco/brand.json",
+	];
+
+	for (const file of filesToBackup) {
+		try {
+			const content = await fs.readFile(path.join(projectRoot, file), "utf8");
+			const backupFile = path.join(fullBackupDir, path.basename(file));
+			await fs.writeFile(backupFile, content);
+		} catch (error) {}
+	}
+
+	console.log(`备份创建在: ${fullBackupDir}`);
 }
 
 /**

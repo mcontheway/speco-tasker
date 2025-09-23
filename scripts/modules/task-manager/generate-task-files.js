@@ -3,7 +3,7 @@ import path from "node:path";
 import chalk from "chalk";
 
 import { getDebugFlag } from "../config-manager.js";
-import { validateAndFixDependencies } from "../dependency-manager.js";
+// validateAndFixDependencies will be imported dynamically to avoid circular dependency
 import { formatDependenciesWithStatus } from "../ui.js";
 import { log, readJSON } from "../utils.js";
 
@@ -17,7 +17,7 @@ import { log, readJSON } from "../utils.js";
  * @param {Object} [options.mcpLog] - MCP logger object
  * @returns {Object|undefined} Result object in MCP mode, undefined in CLI mode
  */
-function generateTaskFiles(tasksPath, outputDir, options = {}) {
+async function generateTaskFiles(tasksPath, outputDir, options = {}) {
 	try {
 		const isMcpMode = !!options?.mcpLog;
 		const { projectRoot, tag } = options;
@@ -51,12 +51,20 @@ function generateTaskFiles(tasksPath, outputDir, options = {}) {
 		);
 
 		// 3. Validate dependencies using the tag-specific data structure
-		validateAndFixDependencies(
-			tagData, // Pass only the tag-specific data with tasks array
-			tasksPath,
-			projectRoot,
-			tag, // Provide the current tag context for the operation
-		);
+		// Use dynamic import to avoid circular dependency
+		try {
+			const { validateAndFixDependencies } = await import(
+				"../dependency-manager.js"
+			);
+			validateAndFixDependencies(
+				tagData, // Pass only the tag-specific data with tasks array
+				tasksPath,
+				projectRoot,
+				tag, // Provide the current tag context for the operation
+			);
+		} catch (error) {
+			log("warn", `Could not validate dependencies: ${error.message}`);
+		}
 
 		const allTasksInTag = tagData.tasks;
 		const validTaskIds = allTasksInTag.map((task) => task.id);
@@ -97,10 +105,10 @@ function generateTaskFiles(tasksPath, outputDir, options = {}) {
 					"info",
 					`Found ${orphanedFiles.length} orphaned task files to remove for tag '${tag}'`,
 				);
-				orphanedFiles.forEach((file) => {
+				for (const file of orphanedFiles) {
 					const filePath = path.join(outputDir, file);
 					fs.unlinkSync(filePath);
-				});
+				}
 			} else {
 				log("info", "No orphaned task files found.");
 			}
@@ -110,7 +118,7 @@ function generateTaskFiles(tasksPath, outputDir, options = {}) {
 
 		// Generate task files for the target tag
 		log("info", `Generating individual task files for tag '${tag}'...`);
-		tasksForGeneration.forEach((task) => {
+		for (const task of tasksForGeneration) {
 			// Tag-aware file naming: master -> task_001.txt, other tags -> task_001_tagname.txt
 			const taskFileName =
 				tag === "main"
@@ -146,7 +154,7 @@ function generateTaskFiles(tasksPath, outputDir, options = {}) {
 
 			if (task.subtasks && task.subtasks.length > 0) {
 				content += "\n# Subtasks:\n";
-				task.subtasks.forEach((subtask) => {
+				for (const subtask of task.subtasks) {
 					content += `## ${subtask.id}. ${subtask.title} [${subtask.status || "pending"}]\n`;
 					if (subtask.dependencies && subtask.dependencies.length > 0) {
 						const subtaskDeps = subtask.dependencies
@@ -167,11 +175,11 @@ function generateTaskFiles(tasksPath, outputDir, options = {}) {
 						.map((line) => line)
 						.join("\n");
 					content += "\n\n";
-				});
+				}
 			}
 
 			fs.writeFileSync(taskPath, content);
-		});
+		}
 
 		log(
 			"success",

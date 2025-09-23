@@ -81,7 +81,10 @@ export function registerSpecoTaskerTools(server) {
 		registerRenameTagTool(server);
 		registerCopyTagTool(server);
 
-		// Group 8: Research Features
+		// Group 8: Configuration Management
+		// Config tools removed
+
+		// Group 9: Research Features
 		// AI-based research tool removed in phase 3.3
 	} catch (error) {
 		logger.error(`Error registering Speco Tasker tools: ${error.message}`);

@@ -70,7 +70,7 @@ export function registerRemoveDependencyTool(server) {
 				);
 
 				if (result.success) {
-					log.info(`Successfully removed dependency: ${result.data.message}`);
+					log.info(`成功移除依赖关系：${result.data.message}`);
 				} else {
 					log.error(`Failed to remove dependency: ${result.error.message}`);
 				}

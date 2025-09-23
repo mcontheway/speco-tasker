@@ -535,24 +535,24 @@ function moveTaskToNewId(tasks, sourceTaskIndex, sourceTask, destTaskId) {
 	};
 
 	// Update any dependencies that reference the old task ID
-	tasks.forEach((task) => {
+	for (const task of tasks) {
 		if (task.dependencies?.includes(sourceTask.id)) {
 			const depIndex = task.dependencies.indexOf(sourceTask.id);
 			task.dependencies[depIndex] = destTaskId;
 		}
 		if (task.subtasks) {
-			task.subtasks.forEach((subtask) => {
+			for (const subtask of task.subtasks) {
 				if (subtask.dependencies?.includes(sourceTask.id)) {
 					const depIndex = subtask.dependencies.indexOf(sourceTask.id);
 					subtask.dependencies[depIndex] = destTaskId;
 				}
-			});
+			}
 		}
-	});
+	}
 
 	// Update dependencies within movedTask's subtasks that reference sibling subtasks
 	if (Array.isArray(movedTask.subtasks)) {
-		movedTask.subtasks.forEach((subtask) => {
+		for (const subtask of movedTask.subtasks) {
 			if (Array.isArray(subtask.dependencies)) {
 				subtask.dependencies = subtask.dependencies.map((dep) => {
 					// If dependency is a string like "oldParent.subId", update to "newParent.subId"
@@ -566,7 +566,7 @@ function moveTaskToNewId(tasks, sourceTaskIndex, sourceTask, destTaskId) {
 					return dep;
 				});
 			}
-		});
+		}
 	}
 
 	// Strategy based on commit fixes: remove source first, then replace destination
@@ -666,9 +666,9 @@ async function validateMove(tasksPath, taskIds, sourceTag, targetTag, context) {
 	});
 
 	// Validate subtask movement
-	taskIds.forEach((taskId) => {
+	for (const taskId of taskIds) {
 		validateSubtaskMove(taskId, sourceTag, targetTag);
-	});
+	}
 
 	return { rawData, sourceTasks };
 }
@@ -765,7 +765,7 @@ async function resolveDependencies(
 	if (crossTagDependencies.length > 0) {
 		if (ignoreDependencies) {
 			// Break cross-tag dependencies (edge case - shouldn't normally happen)
-			sourceTasks.forEach((task) => {
+			for (const task of sourceTasks) {
 				const sourceTagTasks = tasksInSourceTag;
 				const targetTagTasks = Array.isArray(allTasks)
 					? allTasks.filter((t) => t && t.tag === targetTag)
@@ -792,7 +792,7 @@ async function resolveDependencies(
 					// Otherwise, keep as-is (unknown/unresolved dependency)
 					return true;
 				});
-			});
+			}
 
 			log(
 				"warn",
@@ -1028,7 +1028,7 @@ function detectIdConflicts(taskIds, targetTag, rawData) {
 		return conflicts;
 	}
 
-	taskIds.forEach((taskId) => {
+	for (const taskId of taskIds) {
 		// Normalize taskId to number for comparison
 		const normalizedTaskId =
 			typeof taskId === "string" ? Number.parseInt(taskId, 10) : taskId;
@@ -1038,7 +1038,7 @@ function detectIdConflicts(taskIds, targetTag, rawData) {
 		if (existingTask) {
 			conflicts.push(taskId);
 		}
-	});
+	}
 
 	return conflicts;
 }

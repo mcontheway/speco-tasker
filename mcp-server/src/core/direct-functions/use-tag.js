@@ -41,7 +41,7 @@ export async function useTagDirect(args, log, context = {}) {
 				success: false,
 				error: {
 					code: "MISSING_ARGUMENT",
-					message: "tasksJsonPath is required",
+					message: "需要 tasksJsonPath",
 				},
 			};
 		}
@@ -54,7 +54,7 @@ export async function useTagDirect(args, log, context = {}) {
 				success: false,
 				error: {
 					code: "MISSING_PARAMETER",
-					message: "Tag name is required and must be a string",
+					message: "需要标签名称，且必须是字符串",
 				},
 			};
 		}
@@ -84,7 +84,7 @@ export async function useTagDirect(args, log, context = {}) {
 				switched: result.switched,
 				previousTag: result.previousTag,
 				taskCount: result.taskCount,
-				message: `Successfully switched to tag "${result.currentTag}"`,
+				message: `成功切换到标签 "${result.currentTag}"`,
 			},
 		};
 	} catch (error) {

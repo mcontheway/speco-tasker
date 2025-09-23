@@ -78,7 +78,7 @@ export function registerRemoveTaskTool(server) {
 				);
 
 				if (result.success) {
-					log.info(`Successfully removed task: ${args.id}`);
+					log.info(`成功移除任务：${args.id}`);
 				} else {
 					log.error(`Failed to remove task: ${result.error.message}`);
 				}

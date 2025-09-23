@@ -21,13 +21,12 @@ import {
 } from "../../../src/constants/task-priority.js";
 import { getDefaultPriority } from "../config-manager.js";
 import {
-	displayBanner,
 	failLoadingIndicator,
 	getStatusWithColor,
 	startLoadingIndicator,
 	stopLoadingIndicator,
 	succeedLoadingIndicator,
-} from "../ui.js";
+} from "../loading-utils.js";
 import {
 	log as consoleLog,
 	ensureTagMetadata,
@@ -603,24 +602,24 @@ async function addTask(
 
 			// Get task titles for dependencies to display
 			const depTitles = {};
-			newTask.dependencies.forEach((dep) => {
+			for (const dep of newTask.dependencies) {
 				const depTask = allTasks.find((t) => t.id === dep);
 				if (depTask) {
 					depTitles[dep] = truncate(depTask.title, 30);
 				}
-			});
+			}
 
 			// Prepare dependency display string
 			let dependencyDisplay = "";
 			if (newTask.dependencies.length > 0) {
 				dependencyDisplay = `${chalk.white("Dependencies:")}\n`;
-				newTask.dependencies.forEach((dep) => {
+				for (const dep of newTask.dependencies) {
 					const isAdded = addedDeps.includes(dep);
 					const depType = isAdded ? chalk.yellow(" (automatically added)") : "";
 					dependencyDisplay += `${chalk.white(
 						`  - ${dep}: ${depTitles[dep] || "Unknown task"}${depType}`,
 					)}\n`;
-				});
+				}
 			} else {
 				dependencyDisplay = `${chalk.white("Dependencies: None")}\n`;
 			}
@@ -628,11 +627,11 @@ async function addTask(
 			// Add info about removed dependencies if any
 			if (removedDeps.length > 0) {
 				dependencyDisplay += `${chalk.gray("\nUser-specified dependencies that were not used:")}\n`;
-				removedDeps.forEach((dep) => {
+				for (const dep of removedDeps) {
 					const depTask = allTasks.find((t) => t.id === dep);
 					const title = depTask ? truncate(depTask.title, 30) : "Unknown task";
 					dependencyDisplay += `${chalk.gray(`  - ${dep}: ${title}`)}\n`;
-				});
+				}
 			}
 
 			// Add dependency analysis summary

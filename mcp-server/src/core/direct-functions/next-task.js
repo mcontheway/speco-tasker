@@ -34,7 +34,7 @@ export async function nextTaskDirect(args, log, context = {}) {
 			success: false,
 			error: {
 				code: "MISSING_ARGUMENT",
-				message: "tasksJsonPath is required",
+				message: "需要 tasksJsonPath",
 			},
 		};
 	}
@@ -92,14 +92,14 @@ export async function nextTaskDirect(args, log, context = {}) {
 
 			// Return the next task data with the full tasks array for reference
 			log.info(
-				`Successfully found next task ${nextTask.id}: ${nextTask.title}. Is subtask: ${isSubtask}`,
+				`成功找到下一个任务 ${nextTask.id}: ${nextTask.title}。是否为子任务: ${isSubtask}`,
 			);
 			return {
 				success: true,
 				data: {
 					nextTask,
 					isSubtask,
-					nextSteps: `When ready to work on the ${taskOrSubtask}, use set-status to set the status to "in progress" ${additionalAdvice}`,
+					nextSteps: `准备开始处理${taskOrSubtask}时，使用 set-status 将状态设置为 "in-progress" ${additionalAdvice}`,
 				},
 			};
 		} catch (error) {

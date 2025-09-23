@@ -41,7 +41,7 @@ export async function listTagsDirect(args, log, context = {}) {
 				success: false,
 				error: {
 					code: "MISSING_ARGUMENT",
-					message: "tasksJsonPath is required",
+					message: "需要 tasksJsonPath",
 				},
 			};
 		}
@@ -81,11 +81,11 @@ export async function listTagsDirect(args, log, context = {}) {
 				(acc, task) => {
 					if (task.subtasks && task.subtasks.length > 0) {
 						acc.totalSubtasks += task.subtasks.length;
-						task.subtasks.forEach((subtask) => {
+						for (const subtask of task.subtasks) {
 							const subStatus = subtask.status || "pending";
 							acc.subtasksByStatus[subStatus] =
 								(acc.subtasksByStatus[subStatus] || 0) + 1;
-						});
+						}
 					}
 					return acc;
 				},
@@ -113,7 +113,7 @@ export async function listTagsDirect(args, log, context = {}) {
 				tags: tagsSummary,
 				currentTag: result.currentTag,
 				totalTags: result.totalTags,
-				message: `Found ${result.totalTags} tag(s)`,
+				message: `找到 ${result.totalTags} 个标签`,
 			},
 		};
 	} catch (error) {

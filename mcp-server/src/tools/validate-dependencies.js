@@ -62,9 +62,7 @@ export function registerValidateDependenciesTool(server) {
 				);
 
 				if (result.success) {
-					log.info(
-						`Successfully validated dependencies: ${result.data.message}`,
-					);
+					log.info(`成功验证依赖关系：${result.data.message}`);
 				} else {
 					log.error(`Failed to validate dependencies: ${result.error.message}`);
 				}

@@ -3,6 +3,8 @@
 		"ignore": [
 			"build",
 			"coverage",
+			"coverage/**",
+			"coverage/**/*",
 			".changeset",
 			"tasks",
 			"package-lock.json",
@@ -10,7 +12,14 @@
 			"dist",
 			"node_modules",
 			"apps/docs/build",
-			"*.d.ts"
+			"*.d.ts",
+			".speco/logs/**",
+			".speco/backups/**",
+			"tmp/**",
+			"tests/fixtures/**",
+			"specs/**",
+			"tests/unit/utils/stream-parser.test.cjs",
+			"bin/task-master.js"
 		],
 		"include": ["**/*.js", "**/*.ts", "**/*.json"]
 	},

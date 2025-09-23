@@ -37,19 +37,19 @@ export async function removeTaskDirect(args, log, context = {}) {
 				success: false,
 				error: {
 					code: "MISSING_ARGUMENT",
-					message: "tasksJsonPath is required",
+					message: "需要 tasksJsonPath",
 				},
 			};
 		}
 
 		// Validate task ID parameter
 		if (!id) {
-			log.error("Task ID is required");
+			log.error("需要任务ID");
 			return {
 				success: false,
 				error: {
 					code: "INPUT_VALIDATION_ERROR",
-					message: "Task ID is required",
+					message: "需要任务ID",
 				},
 			};
 		}
@@ -68,7 +68,7 @@ export async function removeTaskDirect(args, log, context = {}) {
 				success: false,
 				error: {
 					code: "INVALID_TASKS_FILE",
-					message: `No valid tasks found in ${tasksJsonPath}${tag ? ` for tag '${tag}'` : ""}`,
+					message: `在 ${tasksJsonPath}${tag ? ` 的标签 '${tag}' 中` : ""}未找到有效任务`,
 				},
 			};
 		}
@@ -82,7 +82,7 @@ export async function removeTaskDirect(args, log, context = {}) {
 				success: false,
 				error: {
 					code: "INVALID_TASK_ID",
-					message: `The following tasks were not found${tag ? ` in tag '${tag}'` : ""}: ${invalidTasks.join(", ")}`,
+					message: `以下任务未找到${tag ? ` (在标签 '${tag}' 中)` : ""}：${invalidTasks.join(", ")}`,
 				},
 			};
 		}
@@ -102,12 +102,12 @@ export async function removeTaskDirect(args, log, context = {}) {
 					success: false,
 					error: {
 						code: "REMOVE_TASK_ERROR",
-						message: result.error || "Failed to remove tasks",
+						message: result.error || "移除任务失败",
 					},
 				};
 			}
 
-			log.info(`Successfully removed ${result.removedTasks.length} task(s)`);
+			log.info(`成功移除 ${result.removedTasks.length} 个任务`);
 
 			return {
 				success: true,

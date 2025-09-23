@@ -126,20 +126,20 @@ function getTagInfo(projectRoot, log) {
  */
 function getProjectRoot(projectRootRaw, log) {
 	// PRECEDENCE ORDER:
-	// 1. Environment variable override (TASK_MASTER_PROJECT_ROOT)
+	// 1. Environment variable override (SPECO_PROJECT_ROOT)
 	// 2. Explicitly provided projectRoot in args
 	// 3. Previously found/cached project root
 	// 4. Current directory if it has project markers
 	// 5. Current directory with warning
 
 	// 1. Check for environment variable override
-	if (process.env.TASK_MASTER_PROJECT_ROOT) {
-		const envRoot = process.env.TASK_MASTER_PROJECT_ROOT;
+	if (process.env.SPECO_PROJECT_ROOT) {
+		const envRoot = process.env.SPECO_PROJECT_ROOT;
 		const absolutePath = path.isAbsolute(envRoot)
 			? envRoot
 			: path.resolve(process.cwd(), envRoot);
 		log.info(
-			`Using project root from TASK_MASTER_PROJECT_ROOT environment variable: ${absolutePath}`,
+			`Using project root from SPECO_PROJECT_ROOT environment variable: ${absolutePath}`,
 		);
 		return absolutePath;
 	}
@@ -181,7 +181,7 @@ function getProjectRoot(projectRootRaw, log) {
 		`No task-master project detected in current directory. Using ${currentDir} as project root.`,
 	);
 	log.warn(
-		"Consider using --project-root to specify the correct project location or set TASK_MASTER_PROJECT_ROOT environment variable.",
+		"Consider using --project-root to specify the correct project location or set SPECO_PROJECT_ROOT environment variable.",
 	);
 	return currentDir;
 }
@@ -328,7 +328,7 @@ async function handleApiResult(
 		? processFunction(result.data)
 		: result.data;
 
-	log.info("Successfully completed operation");
+	log.info("成功完成操作");
 
 	// Create the response payload including version info and tag info
 	const responsePayload = {
@@ -341,7 +341,14 @@ async function handleApiResult(
 		responsePayload.tag = tagInfo;
 	}
 
-	return createContentResponse(responsePayload);
+	const finalResponse = createContentResponse(responsePayload);
+
+	// Ensure we always return an object, never a string
+	if (typeof finalResponse !== "object" || finalResponse === null) {
+		throw new Error("handleApiResult must return an object");
+	}
+
+	return finalResponse;
 }
 
 /**
@@ -490,9 +497,9 @@ function processMCPResponseData(
 		const processedTask = { ...task };
 
 		// Remove specified fields from the task
-		fieldsToRemove.forEach((field) => {
+		for (const field of fieldsToRemove) {
 			delete processedTask[field];
-		});
+		}
 
 		// Recursively process subtasks if they exist and are an array
 		if (processedTask.subtasks && Array.isArray(processedTask.subtasks)) {
@@ -544,7 +551,7 @@ function processMCPResponseData(
  */
 function createContentResponse(content) {
 	// FastMCP requires text type, so we format objects as JSON strings
-	return {
+	const response = {
 		content: [
 			{
 				type: "text",
@@ -557,6 +564,13 @@ function createContentResponse(content) {
 			},
 		],
 	};
+
+	// Ensure we always return an object, never a string
+	if (typeof response !== "object" || response === null) {
+		throw new Error("createContentResponse must return an object");
+	}
+
+	return response;
 }
 
 /**
@@ -576,14 +590,12 @@ function createErrorResponse(
 	parameterHelp,
 ) {
 	// Provide fallback version info if not provided
-	if (!versionInfo) {
-		versionInfo = getVersionInfo();
-	}
+	const finalVersionInfo = versionInfo || getVersionInfo();
 
 	let responseText = `❌ Error: ${errorMessage}
 
-📋 Version: ${versionInfo.version}
-🏷️  Tool: ${versionInfo.name}`;
+📋 Version: ${finalVersionInfo.version}
+🏷️  Tool: ${finalVersionInfo.name}`;
 
 	// Add error code if provided
 	if (errorCode) {
@@ -637,7 +649,7 @@ ${parameterHelp.examples.join("\n")}`;
 💡 Suggestion: Check the parameter help above and ensure all required parameters are provided.`;
 	}
 
-	return {
+	const response = {
 		content: [
 			{
 				type: "text",
@@ -646,6 +658,13 @@ ${parameterHelp.examples.join("\n")}`;
 		],
 		isError: true,
 	};
+
+	// Ensure we always return an object, never a string
+	if (typeof response !== "object" || response === null) {
+		throw new Error("createErrorResponse must return an object");
+	}
+
+	return response;
 }
 
 /**
@@ -772,41 +791,68 @@ function getRawProjectRootFromSession(session, log) {
 }
 
 /**
+ * Validates that a tool response is in the correct format (object, not string)
+ * @param {any} response - The response to validate
+ * @param {string} toolName - Name of the tool for error reporting
+ * @returns {any} The validated response
+ * @throws {Error} If the response is not in the correct format
+ */
+function validateToolResponse(response, toolName) {
+	if (typeof response === "string") {
+		throw new Error(
+			`Tool "${toolName}" returned a string instead of an object. This is not allowed in MCP. Response: ${response.substring(0, 100)}...`,
+		);
+	}
+
+	if (typeof response !== "object" || response === null) {
+		throw new Error(
+			`Tool "${toolName}" returned invalid response type "${typeof response}". Expected object.`,
+		);
+	}
+
+	return response;
+}
+
+/**
  * Higher-order function to wrap MCP tool execute methods.
  * Ensures args.projectRoot is present and normalized before execution.
- * Uses TASK_MASTER_PROJECT_ROOT environment variable with proper precedence.
+ * Uses SPECO_PROJECT_ROOT environment variable with proper precedence.
  * @param {Function} executeFn - The original async execute(args, context) function.
+ * @param {string} [toolName] - Name of the tool for error reporting (auto-detected if not provided)
  * @returns {Function} The wrapped async execute function.
  */
-function withNormalizedProjectRoot(executeFn) {
+function withNormalizedProjectRoot(executeFn, toolName) {
 	return async (args, context) => {
 		const { log, session } = context;
 		let normalizedRoot = null;
 		let rootSource = "unknown";
 
+		// Use provided toolName or try to infer from context/stack
+		const finalToolName = toolName || "unknown-tool";
+
 		try {
 			// PRECEDENCE ORDER:
-			// 1. TASK_MASTER_PROJECT_ROOT environment variable (from process.env or session)
+			// 1. SPECO_PROJECT_ROOT environment variable (from process.env or session)
 			// 2. args.projectRoot (explicitly provided)
 			// 3. Session-based project root resolution
 			// 4. Current directory fallback
 
-			// 1. Check for TASK_MASTER_PROJECT_ROOT environment variable first
-			if (process.env.TASK_MASTER_PROJECT_ROOT) {
-				const envRoot = process.env.TASK_MASTER_PROJECT_ROOT;
+			// 1. Check for SPECO_PROJECT_ROOT environment variable first
+			if (process.env.SPECO_PROJECT_ROOT) {
+				const envRoot = process.env.SPECO_PROJECT_ROOT;
 				normalizedRoot = path.isAbsolute(envRoot)
 					? envRoot
 					: path.resolve(process.cwd(), envRoot);
-				rootSource = "TASK_MASTER_PROJECT_ROOT environment variable";
+				rootSource = "SPECO_PROJECT_ROOT environment variable";
 				log.info(`Using project root from ${rootSource}: ${normalizedRoot}`);
 			}
-			// Also check session environment variables for TASK_MASTER_PROJECT_ROOT
-			else if (session?.env?.TASK_MASTER_PROJECT_ROOT) {
-				const envRoot = session.env.TASK_MASTER_PROJECT_ROOT;
+			// Also check session environment variables for SPECO_PROJECT_ROOT
+			else if (session?.env?.SPECO_PROJECT_ROOT) {
+				const envRoot = session.env.SPECO_PROJECT_ROOT;
 				normalizedRoot = path.isAbsolute(envRoot)
 					? envRoot
 					: path.resolve(process.cwd(), envRoot);
-				rootSource = "TASK_MASTER_PROJECT_ROOT session environment variable";
+				rootSource = "SPECO_PROJECT_ROOT session environment variable";
 				log.info(`Using project root from ${rootSource}: ${normalizedRoot}`);
 			}
 			// 1.5. Try to read projectRoot from config file (new priority)
@@ -818,7 +864,7 @@ function withNormalizedProjectRoot(executeFn) {
 					);
 					if (fs.existsSync(configPath)) {
 						const config = JSON.parse(fs.readFileSync(configPath, "utf-8"));
-						if (config.global && config.global.projectRoot) {
+						if (config.global?.projectRoot) {
 							const savedRoot = config.global.projectRoot;
 							// Verify the saved root still exists and is valid
 							if (fs.existsSync(savedRoot)) {
@@ -890,7 +936,7 @@ function withNormalizedProjectRoot(executeFn) {
 					`Could not determine project root. Args: ${JSON.stringify({ hasProjectRoot: !!args.projectRoot, projectRootType: typeof args.projectRoot, projectRootValue: args.projectRoot })}`,
 				);
 				return createErrorResponse(
-					"Could not determine project root. Please provide a valid projectRoot argument (absolute path) or ensure TASK_MASTER_PROJECT_ROOT environment variable is set.",
+					"Could not determine project root. Please provide a valid projectRoot argument (absolute path) or ensure SPECO_PROJECT_ROOT environment variable is set.",
 				);
 			}
 
@@ -898,7 +944,10 @@ function withNormalizedProjectRoot(executeFn) {
 			const updatedArgs = { ...args, projectRoot: normalizedRoot };
 
 			// Execute the original function with normalized root in args
-			return await executeFn(updatedArgs, context);
+			const result = await executeFn(updatedArgs, context);
+
+			// Validate the response format
+			return validateToolResponse(result, finalToolName);
 		} catch (error) {
 			log.error(
 				`Error within withNormalizedProjectRoot HOF (Normalized Root: ${normalizedRoot}): ${error.message}`,
@@ -908,7 +957,8 @@ function withNormalizedProjectRoot(executeFn) {
 				log.debug(error.stack);
 			}
 			// Return a generic error or re-throw depending on desired behavior
-			return createErrorResponse(`Operation failed: ${error.message}`);
+			const errorResponse = createErrorResponse(`Operation failed: ${error.message}`);
+			return validateToolResponse(errorResponse, finalToolName);
 		}
 	};
 }
@@ -996,4 +1046,5 @@ export {
 	getRawProjectRootFromSession,
 	withNormalizedProjectRoot,
 	checkProgressCapability,
+	validateToolResponse,
 };

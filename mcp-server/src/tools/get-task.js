@@ -127,7 +127,7 @@ export function registerShowTaskTool(server) {
 				);
 
 				if (result.success) {
-					log.info(`Successfully retrieved task details for ID: ${args.id}`);
+					log.info(`成功检索到ID为 ${args.id} 的任务详情`);
 				} else {
 					log.error(`Failed to get task: ${result.error.message}`);
 				}

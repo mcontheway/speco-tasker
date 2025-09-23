@@ -56,7 +56,7 @@ export async function generateTaskFilesDirect(args, log) {
 			enableSilentMode();
 
 			// Pass projectRoot and tag so the core respects context
-			generateTaskFiles(tasksPath, resolvedOutputDir, {
+			await generateTaskFiles(tasksPath, resolvedOutputDir, {
 				projectRoot,
 				tag,
 				mcpLog: log,
@@ -79,7 +79,7 @@ export async function generateTaskFilesDirect(args, log) {
 		return {
 			success: true,
 			data: {
-				message: "Successfully generated task files",
+				message: "成功生成任务文件",
 				tasksPath: tasksPath,
 				outputDir: resolvedOutputDir,
 				taskFiles:
@@ -95,7 +95,7 @@ export async function generateTaskFilesDirect(args, log) {
 			success: false,
 			error: {
 				code: "GENERATE_TASKS_ERROR",
-				message: error.message || "Unknown error generating task files",
+				message: error.message || "生成任务文件时发生未知错误",
 			},
 		};
 	}

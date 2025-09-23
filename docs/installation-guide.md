@@ -116,9 +116,9 @@ Speco Tasker works completely offline with zero external dependencies.
 
 ## CLI备用方案 | CLI Fallback
 
-Speco Tasker也通过CLI命令提供，在终端中安装`npm install speco-tasker@latest`。运行`task-master help`将显示所有可用命令，这些命令与MCP服务器提供1:1的体验。
+Speco Tasker也通过CLI命令提供，在终端中安装`npm install speco-tasker@latest`。运行`speco-tasker help`将显示所有可用命令，这些命令与MCP服务器提供1:1的体验。
 
-Speco Tasker is also available via CLI commands, by installing with `npm install speco-tasker@latest` in a terminal. Running `task-master help` will show all available commands, which offer a 1:1 experience with the MCP server.
+Speco Tasker is also available via CLI commands, by installing with `npm install speco-tasker@latest` in a terminal. Running `speco-tasker help` will show all available commands, which offer a 1:1 experience with the MCP server.
 
 ## 后续步骤 | Next Steps
 

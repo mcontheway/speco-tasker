@@ -370,13 +370,13 @@ task-master sync-readme
 # 初始化新项目
 task-master init --name "My Project"
 
-# 使用默认设置快速初始化
-task-master init --yes
+# 使用自定义配置初始化
+task-master init --name "My Project" --shell zsh
 
 # MCP 使用
 {
   "projectName": "My Project",
-  "yes": false
+  "addAliases": false
 }
 ```
 

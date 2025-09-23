@@ -73,7 +73,7 @@ This field is **mandatory** for all tasks and subtasks. It establishes a clear l
 - `spec`：技术规范和需求 | `spec`: Technical specifications and requirements
 - `requirement`：业务需求文档 | `requirement`: Business requirement documents
 - `design`：设计文档和线框图 | `design`: Design documents and wireframes
-- `analysis`：分析报告和研究发现 | `analysis`: Analysis reports and research findings
+- `reference`：参考文档和相关材料 | `reference`: Reference documents and related materials
 
 **验证规则：| Validation Rules:**
 - 字段为必需且不能为空 | Field is required and cannot be empty
@@ -167,10 +167,10 @@ You can manually break down complex tasks into smaller subtasks:
 
 ```bash
 # 将任务分解为子任务 | Break down task into subtasks
-task-master add-subtask --parent=<task-id> --title="子任务标题" --description="子任务描述"
+speco-tasker add-subtask --parent=<task-id> --title="子任务标题" --description="子任务描述"
 
 # 为子任务设置依赖关系 | Set dependencies for subtasks
-task-master add-subtask --parent=<task-id> --title="依赖任务" --dependencies="1.1,1.2"
+speco-tasker add-subtask --parent=<task-id> --title="依赖任务" --dependencies="1.1,1.2"
 ```
 
 ### 任务重组 | Task Reorganization
@@ -181,13 +181,13 @@ Supports task reorganization and reordering:
 
 ```bash
 # 将子任务提升为独立任务 | Promote subtask to standalone task
-task-master remove-subtask --id=<parentId.subtaskId> --convert
+speco-tasker remove-subtask --id=<parentId.subtaskId> --convert
 
 # 在任务层次结构中移动任务 | Move task within task hierarchy
-task-master move --from=<id> --to=<new-position>
+speco-tasker move --from=<id> --to=<new-position>
 
 # 在不同标签之间移动任务 | Move task between different tags
-task-master move --from=<id> --from-tag=<source> --to-tag=<target>
+speco-tasker move --from=<id> --from-tag=<source> --to-tag=<target>
 ```
 
 ### 查找下一个任务 | Find Next Task
@@ -541,7 +541,7 @@ Speco Tasker 根据以下内容自动确定当前标签上下文：
 
 Speco Tasker automatically determines the current tag context based on:
 
-1. **状态配置**：存储在 `.taskmaster/state.json` 中的当前标签 | **State Configuration**: Current tag stored in `.taskmaster/state.json`
+1. **状态配置**：存储在 `.speco/state.json` 中的当前标签 | **State Configuration**: Current tag stored in `.speco/state.json`
 2. **默认回退**：未指定上下文时使用"main"标签 | **Default Fallback**: Uses "main" tag when no context is specified
 3. **未来增强**：基于 Git 分支的标签切换（第 2 部分） | **Future Enhancement**: Git branch-based tag switching (Part 2)
 
@@ -590,8 +590,8 @@ When Speco Tasker encounters a legacy format `tasks.json` file:
 
 1. **检测**：自动检测 `{"tasks": [...]}` 格式 | **Detection**: Automatically detects the `{"tasks": [...]}` format
 2. **转换**：转换为 `{"main": {"tasks": [...]}}` 格式 | **Conversion**: Converts to `{"main": {"tasks": [...]}}` format
-3. **配置**：使用带标签的系统设置更新 `.taskmaster/config.json` | **Configuration**: Updates `.taskmaster/config.json` with tagged system settings
-4. **状态创建**：创建 `.taskmaster/state.json` 用于标签管理 | **State Creation**: Creates `.taskmaster/state.json` for tag management
+3. **配置**：使用带标签的系统设置更新 `.speco/config.json` | **Configuration**: Updates `.speco/config.json` with tagged system settings
+4. **状态创建**：创建 `.speco/state.json` 用于标签管理 | **State Creation**: Creates `.speco/state.json` for tag management
 5. **通知**：显示关于新系统的一次性友好通知 | **Notification**: Displays a one-time friendly notification about the new system
 6. **保留**：所有现有任务数据完全按原样保留 | **Preservation**: All existing task data is preserved exactly as-is
 

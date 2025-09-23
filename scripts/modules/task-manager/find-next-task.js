@@ -2,14 +2,16 @@ import { log } from "../utils.js";
 import { addComplexityToTask } from "../utils.js";
 
 /**
- * Return the next work item:
- *   •  Prefer an eligible SUBTASK that belongs to any parent task
- *      whose own status is `in-progress`.
- *   •  If no such subtask exists, fall back to the best top-level task
- *      (previous behaviour).
+ * Return the next work item with improved priority logic:
+ *   1. Priority: Return any IN-PROGRESS task (top-level or subtask) to continue current work
+ *   2. Eligible subtasks of in-progress parents (pending subtasks ready to start)
+ *   3. New top-level tasks ready to start (dependencies satisfied, including in-progress deps)
+ *   4. Any remaining pending tasks (fallback)
  *
- * The function still exports the same name (`findNextTask`) so callers
- * don't need to change.  It now always returns an object with
+ * The algorithm prioritizes continuing existing work over starting new work,
+ * and allows more flexible dependency checking (in-progress dependencies are considered satisfied).
+ *
+ * Returns an object with:
  *  ─ id            →  number  (task)  or  "parentId.subId"  (subtask)
  *  ─ title         →  string
  *  ─ status        →  string
@@ -36,48 +38,110 @@ function findNextTask(tasks, complexityReport = null) {
 
 	// ---------- build completed-ID set (tasks *and* subtasks) --------------
 	const completedIds = new Set();
-	tasks.forEach((t) => {
+	for (const t of tasks) {
 		if (t.status === "done" || t.status === "completed") {
 			completedIds.add(String(t.id));
 		}
 		if (Array.isArray(t.subtasks)) {
-			t.subtasks.forEach((st) => {
+			for (const st of t.subtasks) {
 				if (st.status === "done" || st.status === "completed") {
 					completedIds.add(`${t.id}.${st.id}`);
 				}
+			}
+		}
+	}
+
+	// ---------- 1) Priority: Return in-progress tasks (including top-level) ------------------------------
+	const inProgressTasks = [];
+
+	// Collect in-progress top-level tasks
+	for (const task of tasks) {
+		if (task.status === "in-progress") {
+			inProgressTasks.push({
+				id: task.id,
+				title: task.title,
+				status: task.status,
+				priority: task.priority || "medium",
+				dependencies: task.dependencies || [],
+				parentId: null,
 			});
 		}
-	});
-
-	// ---------- 1) look for eligible subtasks ------------------------------
-	const candidateSubtasks = [];
-
-	tasks
-		.filter((t) => t.status === "in-progress" && Array.isArray(t.subtasks))
-		.forEach((parent) => {
-			parent.subtasks.forEach((st) => {
-				const stStatus = (st.status || "pending").toLowerCase();
-				if (stStatus !== "pending" && stStatus !== "in-progress") return;
-
-				const fullDeps =
-					st.dependencies?.map((d) => toFullSubId(parent.id, d)) ?? [];
-
-				const depsSatisfied =
-					fullDeps.length === 0 ||
-					fullDeps.every((depId) => completedIds.has(String(depId)));
-
-				if (depsSatisfied) {
-					candidateSubtasks.push({
-						id: `${parent.id}.${st.id}`,
+		// Collect in-progress subtasks
+		if (Array.isArray(task.subtasks)) {
+			for (const st of task.subtasks) {
+				if (st.status === "in-progress") {
+					inProgressTasks.push({
+						id: `${task.id}.${st.id}`,
 						title: st.title || `Subtask ${st.id}`,
-						status: st.status || "pending",
-						priority: st.priority || parent.priority || "medium",
-						dependencies: fullDeps,
-						parentId: parent.id,
+						status: st.status,
+						priority: st.priority || task.priority || "medium",
+						dependencies: st.dependencies?.map((d) => toFullSubId(task.id, d)) ?? [],
+						parentId: task.id,
 					});
 				}
-			});
+			}
+		}
+	}
+
+	if (inProgressTasks.length > 0) {
+		// Sort by priority → dep-count → id
+		inProgressTasks.sort((a, b) => {
+			const pa = priorityValues[a.priority] ?? 2;
+			const pb = priorityValues[b.priority] ?? 2;
+			if (pb !== pa) return pb - pa;
+
+			if (a.dependencies.length !== b.dependencies.length)
+				return a.dependencies.length - b.dependencies.length;
+
+			// For subtasks, compare parent then sub-id; for top-level, just id
+			if (a.id.includes(".") && b.id.includes(".")) {
+				const [aPar, aSub] = a.id.split(".").map(Number);
+				const [bPar, bSub] = b.id.split(".").map(Number);
+				if (aPar !== bPar) return aPar - bPar;
+				return aSub - bSub;
+			}
+			return a.id - b.id;
 		});
+
+		const nextTask = inProgressTasks[0];
+
+		// Add complexity to the task before returning
+		if (nextTask && complexityReport) {
+			addComplexityToTask(nextTask, complexityReport);
+		}
+
+		return nextTask;
+	}
+
+	// ---------- 2) look for eligible subtasks of in-progress parents ------------------------------
+	const candidateSubtasks = [];
+
+	for (const parent of tasks.filter(
+		(t) => t.status === "in-progress" && Array.isArray(t.subtasks),
+	)) {
+		for (const st of parent.subtasks) {
+			const stStatus = (st.status || "pending").toLowerCase();
+			if (stStatus !== "pending") continue; // Only pending subtasks of in-progress parents
+
+			const fullDeps =
+				st.dependencies?.map((d) => toFullSubId(parent.id, d)) ?? [];
+
+			const depsSatisfied =
+				fullDeps.length === 0 ||
+				fullDeps.every((depId) => completedIds.has(String(depId)));
+
+			if (depsSatisfied) {
+				candidateSubtasks.push({
+					id: `${parent.id}.${st.id}`,
+					title: st.title || `Subtask ${st.id}`,
+					status: st.status || "pending",
+					priority: st.priority || parent.priority || "medium",
+					dependencies: fullDeps,
+					parentId: parent.id,
+				});
+			}
+		}
+	}
 
 	if (candidateSubtasks.length > 0) {
 		// sort by priority → dep-count → parent-id → sub-id
@@ -105,17 +169,50 @@ function findNextTask(tasks, complexityReport = null) {
 		return nextTask;
 	}
 
-	// ---------- 2) fall back to top-level tasks (original logic) ------------
+	// ---------- 3) fall back to top-level tasks (new tasks ready to start) ------------
 	const eligibleTasks = tasks.filter((task) => {
 		const status = (task.status || "pending").toLowerCase();
-		if (status !== "pending" && status !== "in-progress") return false;
+		if (status !== "pending") return false; // Only pending tasks at this stage
 		const deps = task.dependencies ?? [];
-		return deps.every((depId) => completedIds.has(String(depId)));
+		// More flexible dependency check: allow in-progress dependencies
+		return deps.every((depId) => {
+			const depTask = tasks.find(t => String(t.id) === String(depId));
+			if (!depTask) return false; // Dependency task doesn't exist
+			const depStatus = depTask.status || "pending";
+			return ["done", "completed", "in-progress"].includes(depStatus);
+		});
 	});
 
-	if (eligibleTasks.length === 0) return null;
+	if (eligibleTasks.length > 0) {
+		const nextTask = eligibleTasks.sort((a, b) => {
+			const pa = priorityValues[a.priority || "medium"] ?? 2;
+			const pb = priorityValues[b.priority || "medium"] ?? 2;
+			if (pb !== pa) return pb - pa;
 
-	const nextTask = eligibleTasks.sort((a, b) => {
+			const da = (a.dependencies ?? []).length;
+			const db = (b.dependencies ?? []).length;
+			if (da !== db) return da - db;
+
+			return a.id - b.id;
+		})[0];
+
+		// Add complexity to the task before returning
+		if (nextTask && complexityReport) {
+			addComplexityToTask(nextTask, complexityReport);
+		}
+
+		return nextTask;
+	}
+
+	// ---------- 4) fall back to any remaining pending tasks (original fallback) ------------
+	const anyPendingTasks = tasks.filter((task) => {
+		const status = (task.status || "pending").toLowerCase();
+		return status === "pending";
+	});
+
+	if (anyPendingTasks.length === 0) return null;
+
+	const nextTask = anyPendingTasks.sort((a, b) => {
 		const pa = priorityValues[a.priority || "medium"] ?? 2;
 		const pb = priorityValues[b.priority || "medium"] ?? 2;
 		if (pb !== pa) return pb - pa;

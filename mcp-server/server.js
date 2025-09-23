@@ -23,7 +23,7 @@ async function startServer() {
 	try {
 		// Check for port argument to determine transport type
 		const portArg = process.argv.find((arg) => arg.startsWith("--port="));
-		const port = portArg ? parseInt(portArg.split("=")[1]) : null;
+		const port = portArg ? Number.parseInt(portArg.split("=")[1]) : null;
 
 		if (port) {
 			// SSE transport mode for testing (HTTP-based)

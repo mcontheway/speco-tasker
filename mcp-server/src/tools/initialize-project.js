@@ -16,11 +16,24 @@ const initializeProjectParameterHelp = generateParameterHelp(
 			name: "projectRoot",
 			description: "项目根目录的绝对路径（可选，会自动检测）",
 		},
+		{
+			name: "projectName",
+			description: "项目名称（可选，会自动从Git仓库或目录名检测）",
+		},
+		{
+			name: "shell",
+			description: "Shell类型（可选，zsh或bash，用于添加别名）",
+		},
+		{
+			name: "force",
+			description: "强制重新初始化，即使项目已存在",
+		},
 	],
 	[],
 	[
-		"{}", // 无参数，自动检测
+		"{}", // 无参数，使用智能默认值
 		'{"projectRoot": "/path/to/project"}', // 指定项目根目录
+		'{"projectName": "my-project", "shell": "zsh"}', // 指定名称和Shell类型
 	],
 );
 
@@ -33,7 +46,16 @@ export function registerInitializeProjectTool(server) {
 			projectRoot: z
 				.string()
 				.optional()
-				.describe("项目的根目录（可选，会自动检测当前工作目录）"),
+				.describe("项目的根目录路径（可选，会自动检测）"),
+			projectName: z
+				.string()
+				.optional()
+				.describe("项目名称（可选，会自动从Git仓库或目录名检测）"),
+			shell: z
+				.string()
+				.optional()
+				.describe("Shell类型（可选，zsh或bash，用于添加别名）"),
+			force: z.boolean().optional().describe("强制重新初始化，即使项目已存在"),
 		}),
 		execute: withNormalizedProjectRoot(async (args, context) => {
 			const { log } = context;

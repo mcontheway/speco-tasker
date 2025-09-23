@@ -50,7 +50,7 @@ export async function addSubtaskDirect(args, log) {
 				success: false,
 				error: {
 					code: "MISSING_ARGUMENT",
-					message: "tasksJsonPath is required",
+					message: "需要 tasksJsonPath",
 				},
 			};
 		}
@@ -154,7 +154,7 @@ export async function addSubtaskDirect(args, log) {
 		return {
 			success: true,
 			data: {
-				message: `New subtask ${parentId}.${result.id} successfully created`,
+				message: `新子任务 ${parentId}.${result.id} 创建成功`,
 				subtask: result,
 			},
 		};

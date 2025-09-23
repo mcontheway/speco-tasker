@@ -2,14 +2,14 @@
 
 ## 概述
 
-Speco Tasker 是一个纯净的手动任务管理系统，完全移除了AI功能，专注于高效的手动任务管理。本文档提供了所有 CLI 命令和 MCP 工具的完整参考，支持智能自动检测配置的简化初始化体验。
+Speco Tasker 是一个纯净的手动任务管理系统，完全移除了AI功能，专注于高效的手动任务管理。本文档提供了所有 CLI 命令和 MCP 工具的完整参考，支持自动检测配置的简化初始化体验。
 
 **重要说明：**
-- **智能初始化**：一键自动检测配置，无需复杂参数设置
+- **自动初始化**：一键自动检测配置，无需复杂参数设置
 - **CLI 命令**：用于终端直接交互或作为 MCP 的备选方案
 - **MCP 工具**：用于 Cursor 等集成工具的程序化交互，推荐使用
 - **🏷️ 标签系统**：支持多上下文任务管理，默认使用 "main" 标签
-- **文件位置**：所有命令默认操作 `.taskmaster/tasks/tasks.json`
+- **文件位置**：所有命令默认操作 `.speco/tasks/tasks.json`
 
 ---
 
@@ -22,20 +22,25 @@ Speco Tasker 是一个纯净的手动任务管理系统，完全移除了AI功�
 **CLI 命令：**
 ```bash
 # 智能初始化（推荐）
-task-master init
+speco-tasker init
 ```
 
 **MCP 工具参数：**
-- `projectRoot`: 项目根目录（可选，会自动检测）
+- `projectRoot`: 项目根目录路径（可选，会自动检测）
+- `projectName`: 项目名称（可选，会自动从Git仓库或目录名检测）
+- `shell`: Shell类型（可选，zsh或bash，用于添加别名）
+- `force`: 强制重新初始化（可选，布尔值）
 
 **使用示例：**
 ```json
 {}  // 自动检测，无需参数
+{"projectRoot": "/path/to/project", "projectName": "my-project"}  // 指定项目路径和名称
+{"projectName": "my-project", "shell": "zsh"}  // 指定名称和Shell类型
 ```
 
 **特性说明：**
 - 自动检测项目名称（从 Git 仓库或目录名）
-- 智能 Git 状态检测（有 Git 用现有，无 Git 初始化）
+- 自动 Git 状态检测（有 Git 用现有，无 Git 初始化）
 - 自动选择最佳配置，无需手动设置
 - MCP 模式下完全自动化
 
@@ -50,20 +55,20 @@ task-master init
 **CLI 命令：**
 ```bash
 # 列出所有任务
-task-master list
+speco-tasker list
 
 # 按状态过滤
-task-master list --status=pending
-task-master list --status=done,in-progress
+speco-tasker list --status=pending
+speco-tasker list --status=done,in-progress
 
 # 显示子任务
-task-master list --with-subtasks
+speco-tasker list --with-subtasks
 
 # 紧凑格式显示
-task-master list --compact
+speco-tasker list --compact
 
 # 指定标签
-task-master list --tag=feature-branch
+speco-tasker list --tag=feature-branch
 ```
 
 **MCP 工具参数：**
@@ -89,8 +94,8 @@ task-master list --tag=feature-branch
 
 **CLI 命令：**
 ```bash
-task-master next
-task-master next --tag=feature-branch
+speco-tasker next
+speco-tasker next --tag=feature-branch
 ```
 
 **MCP 工具参数：**
@@ -109,17 +114,17 @@ task-master next --tag=feature-branch
 **CLI 命令：**
 ```bash
 # 显示单个任务
-task-master show 1
-task-master show --id=1
+speco-tasker show 1
+speco-tasker show --id=1
 
 # 显示多个任务
-task-master show 1,3,5
+speco-tasker show 1,3,5
 
 # 显示子任务
-task-master show 1.2
+speco-tasker show 1.2
 
 # 指定标签
-task-master show 1 --tag=feature-branch
+speco-tasker show 1 --tag=feature-branch
 ```
 
 **MCP 工具参数：**
@@ -148,16 +153,16 @@ task-master show 1 --tag=feature-branch
 **CLI 命令：**
 ```bash
 # 设置单个任务状态
-task-master set-status --id=1 --status=done
+speco-tasker set-status --id=1 --status=done
 
 # 设置多个任务状态
-task-master set-status --id=1,2,3 --status=in-progress
+speco-tasker set-status --id=1,2,3 --status=in-progress
 
 # 设置子任务状态
-task-master set-status --id=1.2 --status=done
+speco-tasker set-status --id=1.2 --status=done
 
 # 指定标签
-task-master set-status --id=1 --status=done --tag=feature-branch
+speco-tasker set-status --id=1 --status=done --tag=feature-branch
 ```
 
 **MCP 工具参数：**
@@ -185,7 +190,7 @@ task-master set-status --id=1 --status=done --tag=feature-branch
 **CLI 命令：**
 ```bash
 # 基本任务添加
-task-master add-task \
+speco-tasker add-task \
   --title="用户认证" \
   --description="实现用户认证功能" \
   --details="实现登录、注册、密码重置功能" \
@@ -193,7 +198,7 @@ task-master add-task \
   --spec-files="docs/auth-spec.md"
 
 # 添加带依赖的任务
-task-master add-task \
+speco-tasker add-task \
   --title="数据库迁移" \
   --description="创建用户表结构" \
   --dependencies=1,2 \
@@ -201,7 +206,7 @@ task-master add-task \
   --spec-files="docs/database-schema.md"
 
 # 指定标签
-task-master add-task \
+speco-tasker add-task \
   --title="新功能" \
   --description="实现新功能" \
   --tag=feature-branch \
@@ -241,16 +246,16 @@ task-master add-task \
 **CLI 命令：**
 ```bash
 # 添加新子任务
-task-master add-subtask --parent=1 --title="子任务标题" --description="子任务描述"
+speco-tasker add-subtask --parent=1 --title="子任务标题" --description="子任务描述"
 
 # 将现有任务转换为子任务
-task-master add-subtask --parent=1 --task-id=5
+speco-tasker add-subtask --parent=1 --task-id=5
 
 # 添加带依赖的子任务
-task-master add-subtask --parent=1 --title="数据库迁移" --dependencies="1.1,1.2"
+speco-tasker add-subtask --parent=1 --title="数据库迁移" --dependencies="1.1,1.2"
 
 # 指定规范文档
-task-master add-subtask --parent=1 --title="实现功能" --spec-files="docs/feature-spec.md"
+speco-tasker add-subtask --parent=1 --title="实现功能" --spec-files="docs/feature-spec.md"
 ```
 
 **MCP 工具参数：**
@@ -277,13 +282,13 @@ task-master add-subtask --parent=1 --title="实现功能" --spec-files="docs/fea
 **CLI 命令：**
 ```bash
 # 更新任务字段
-task-master update-task --id=1 --status="in-progress" --details="开始实现API端点"
+speco-tasker update-task --id=1 --status="in-progress" --details="开始实现API端点"
 
 # 更新规范文档
-task-master update-task --id=1 --spec-files="docs/api-spec.md,docs/test-plan.md"
+speco-tasker update-task --id=1 --spec-files="docs/api-spec.md,docs/test-plan.md"
 
 # 追加模式更新（保留历史）
-task-master update-task --id=1 --details="添加错误处理逻辑" --append
+speco-tasker update-task --id=1 --details="添加错误处理逻辑" --append
 ```
 
 **MCP 工具参数：**
@@ -308,13 +313,13 @@ task-master update-task --id=1 --details="添加错误处理逻辑" --append
 **CLI 命令：**
 ```bash
 # 更新子任务状态和详情
-task-master update-subtask --id=1.2 --status="in-progress" --details="开始实现认证逻辑"
+speco-tasker update-subtask --id=1.2 --status="in-progress" --details="开始实现认证逻辑"
 
 # 追加模式更新（保留历史记录）
-task-master update-subtask --id=5.2 --details="更新：实现认证逻辑" --append
+speco-tasker update-subtask --id=5.2 --details="更新：实现认证逻辑" --append
 
 # 更新依赖关系
-task-master update-subtask --id=5.2 --dependencies="5.1,5.3"
+speco-tasker update-subtask --id=5.2 --dependencies="5.1,5.3"
 ```
 
 **MCP 工具参数：**
@@ -341,25 +346,25 @@ task-master update-subtask --id=5.2 --dependencies="5.1,5.3"
 **CLI 命令：**
 ```bash
 # 将任务移动为子任务
-task-master move --from=5 --to=7
+speco-tasker move --from=5 --to=7
 
 # 将子任务移动为独立任务
-task-master move --from=5.2 --to=7
+speco-tasker move --from=5.2 --to=7
 
 # 移动子任务到其他父任务
-task-master move --from=5.2 --to=7.3
+speco-tasker move --from=5.2 --to=7.3
 
 # 在同一父任务内重新排序子任务
-task-master move --from=5.2 --to=5.4
+speco-tasker move --from=5.2 --to=5.4
 
 # 移动到新ID位置（自动创建占位符）
-task-master move --from=5 --to=25
+speco-tasker move --from=5 --to=25
 
 # 同时移动多个任务
-task-master move --from=10,11,12 --to=16,17,18
+speco-tasker move --from=10,11,12 --to=16,17,18
 
 # 在不同标签间移动任务
-task-master move --from=5 --from-tag=source-tag --to-tag=target-tag
+speco-tasker move --from=5 --from-tag=source-tag --to-tag=target-tag
 ```
 
 **MCP 工具参数：**
@@ -380,16 +385,16 @@ task-master move --from=5 --from-tag=source-tag --to-tag=target-tag
 **CLI 命令：**
 ```bash
 # 删除单个任务
-task-master remove-task --id=1
+speco-tasker remove-task --id=1
 
 # 删除多个任务
-task-master remove-task --id=1,2,3
+speco-tasker remove-task --id=1,2,3
 
 # 指定标签
-task-master remove-task --id=1 --tag=feature-branch
+speco-tasker remove-task --id=1 --tag=feature-branch
 
 # 跳过确认提示
-task-master remove-task --id=1 --yes
+speco-tasker remove-task --id=1 --yes
 ```
 
 **MCP 工具参数：**
@@ -406,13 +411,13 @@ task-master remove-task --id=1 --yes
 **CLI 命令：**
 ```bash
 # 删除子任务
-task-master remove-subtask --id=1.2
+speco-tasker remove-subtask --id=1.2
 
 # 将子任务转换为独立任务
-task-master remove-subtask --id=1.2 --convert
+speco-tasker remove-subtask --id=1.2 --convert
 
 # 指定标签
-task-master remove-subtask --id=1.2 --tag=feature-branch
+speco-tasker remove-subtask --id=1.2 --tag=feature-branch
 ```
 
 **MCP 工具参数：**
@@ -433,8 +438,8 @@ task-master remove-subtask --id=1.2 --tag=feature-branch
 
 **CLI 命令：**
 ```bash
-task-master add-dependency --id=2 --depends-on=1
-task-master add-dependency --id=2 --depends-on=1 --tag=feature-branch
+speco-tasker add-dependency --id=2 --depends-on=1
+speco-tasker add-dependency --id=2 --depends-on=1 --tag=feature-branch
 ```
 
 **MCP 工具参数：**
@@ -450,8 +455,8 @@ task-master add-dependency --id=2 --depends-on=1 --tag=feature-branch
 
 **CLI 命令：**
 ```bash
-task-master remove-dependency --id=2 --depends-on=1
-task-master remove-dependency --id=2 --depends-on=1 --tag=feature-branch
+speco-tasker remove-dependency --id=2 --depends-on=1
+speco-tasker remove-dependency --id=2 --depends-on=1 --tag=feature-branch
 ```
 
 **MCP 工具参数：**
@@ -467,8 +472,8 @@ task-master remove-dependency --id=2 --depends-on=1 --tag=feature-branch
 
 **CLI 命令：**
 ```bash
-task-master validate-dependencies
-task-master validate-dependencies --tag=feature-branch
+speco-tasker validate-dependencies
+speco-tasker validate-dependencies --tag=feature-branch
 ```
 
 **MCP 工具参数：**
@@ -482,8 +487,8 @@ task-master validate-dependencies --tag=feature-branch
 
 **CLI 命令：**
 ```bash
-task-master fix-dependencies
-task-master fix-dependencies --tag=feature-branch
+speco-tasker fix-dependencies
+speco-tasker fix-dependencies --tag=feature-branch
 ```
 
 **MCP 工具参数：**
@@ -502,16 +507,16 @@ task-master fix-dependencies --tag=feature-branch
 **CLI 命令：**
 ```bash
 # 清除特定任务的子任务
-task-master clear-subtasks --id=1
+speco-tasker clear-subtasks --id=1
 
 # 清除多个任务的子任务
-task-master clear-subtasks --id=1,2,3
+speco-tasker clear-subtasks --id=1,2,3
 
 # 清除所有任务的子任务
-task-master clear-subtasks --all
+speco-tasker clear-subtasks --all
 
 # 指定标签
-task-master clear-subtasks --id=1 --tag=feature-branch
+speco-tasker clear-subtasks --id=1 --tag=feature-branch
 ```
 
 **MCP 工具参数：**
@@ -532,13 +537,13 @@ task-master clear-subtasks --id=1 --tag=feature-branch
 **CLI 命令：**
 ```bash
 # 生成任务文件
-task-master generate
+speco-tasker generate
 
 # 指定输出目录
-task-master generate --output=custom-tasks-dir
+speco-tasker generate --output=custom-tasks-dir
 
 # 指定标签
-task-master generate --tag=feature-branch
+speco-tasker generate --tag=feature-branch
 ```
 
 **MCP 工具参数：**
@@ -557,8 +562,8 @@ task-master generate --tag=feature-branch
 
 **CLI 命令：**
 ```bash
-task-master tags
-task-master tags --show-metadata
+speco-tasker tags
+speco-tasker tags --show-metadata
 ```
 
 **MCP 工具参数：**
@@ -572,19 +577,19 @@ task-master tags --show-metadata
 **CLI 命令：**
 ```bash
 # 创建空标签
-task-master add-tag new-feature
+speco-tasker add-tag new-feature
 
 # 创建带描述的标签
-task-master add-tag new-feature --description="新功能开发"
+speco-tasker add-tag new-feature --description="新功能开发"
 
 # 基于当前 git 分支创建标签
-task-master add-tag --from-branch
+speco-tasker add-tag --from-branch
 
 # 复制当前标签创建新标签
-task-master add-tag new-feature --copy-from-current
+speco-tasker add-tag new-feature --copy-from-current
 
 # 从指定标签复制
-task-master add-tag new-feature --copy-from=existing-tag
+speco-tasker add-tag new-feature --copy-from=existing-tag
 ```
 
 **MCP 工具参数：**
@@ -602,8 +607,8 @@ task-master add-tag new-feature --copy-from=existing-tag
 
 **CLI 命令：**
 ```bash
-task-master delete-tag old-feature
-task-master delete-tag old-feature --yes
+speco-tasker delete-tag old-feature
+speco-tasker delete-tag old-feature --yes
 ```
 
 **MCP 工具参数：**
@@ -618,7 +623,7 @@ task-master delete-tag old-feature --yes
 
 **CLI 命令：**
 ```bash
-task-master use-tag feature-branch
+speco-tasker use-tag feature-branch
 ```
 
 **MCP 工具参数：**
@@ -632,7 +637,7 @@ task-master use-tag feature-branch
 
 **CLI 命令：**
 ```bash
-task-master rename-tag old-name new-name
+speco-tasker rename-tag old-name new-name
 ```
 
 **MCP 工具参数：**
@@ -647,8 +652,8 @@ task-master rename-tag old-name new-name
 
 **CLI 命令：**
 ```bash
-task-master copy-tag source-tag target-tag
-task-master copy-tag source-tag target-tag --description="复制描述"
+speco-tasker copy-tag source-tag target-tag
+speco-tasker copy-tag source-tag target-tag --description="复制描述"
 ```
 
 **MCP 工具参数：**
@@ -667,10 +672,10 @@ task-master copy-tag source-tag target-tag --description="复制描述"
 
 **CLI 命令：**
 ```bash
-task-master sync-readme
-task-master sync-readme --status=done
-task-master sync-readme --with-subtasks
-task-master sync-readme --tag=feature-branch
+speco-tasker sync-readme
+speco-tasker sync-readme --status=done
+speco-tasker sync-readme --with-subtasks
+speco-tasker sync-readme --tag=feature-branch
 ```
 
 **MCP 工具：** 不适用
@@ -702,16 +707,16 @@ Speco Tasker 主要使用配置文件，通常不需要额外的环境变量配�
 
 ### 任务管理流程
 
-1. **智能初始化**: `task-master init`（自动检测配置）
-2. **查看任务**: `task-master list`
-3. **开始工作**: `task-master next`
-4. **查看详情**: `task-master show <id>`
-5. **更新状态**: `task-master set-status --id=<id> --status=in-progress`
-6. **完成任务**: `task-master set-status --id=<id> --status=done`
+1. **自动初始化**: `speco-tasker init`（自动检测配置）
+2. **查看任务**: `speco-tasker list`
+3. **开始工作**: `speco-tasker next`
+4. **查看详情**: `speco-tasker show <id>`
+5. **更新状态**: `speco-tasker set-status --id=<id> --status=in-progress`
+6. **完成任务**: `speco-tasker set-status --id=<id> --status=done`
 
 ### MCP 工具使用
 
-- **智能初始化**: `initialize_project` 无需参数，自动检测项目配置
+- **自动初始化**: `initialize_project` 无需参数，自动检测项目配置
 - **项目根目录**: 可选提供 `projectRoot`，会自动检测当前工作目录
 - **标签上下文**: 使用 `tag` 参数指定任务上下文
 - **批量操作**: 支持逗号分隔的多个 ID
@@ -724,13 +729,13 @@ Speco Tasker 主要使用配置文件，通常不需要额外的环境变量配�
 ### 文件未找到错误
 ```
 错误: Failed to find tasks.json
-解决方案: 确保项目已初始化 (task-master init)
+解决方案: 确保项目已初始化 (speco-tasker init)
 ```
 
 ### 标签不存在错误
 ```
 错误: Tag 'feature-x' does not exist
-解决方案: 先创建标签 (task-master add-tag feature-x)
+解决方案: 先创建标签 (speco-tasker add-tag feature-x)
 ```
 
 ### 依赖关系错误
@@ -744,9 +749,9 @@ Speco Tasker 主要使用配置文件，通常不需要额外的环境变量配�
 ## 版本信息
 
 - **当前版本**: 基于 Speco Tasker 纯净版
-- **最后更新**: 2025年09月17日（简化版更新）
+- **最后更新**: 2025年09月22日（简化版更新）
 - **文档版本**: 1.2
 
 ---
 
-*此文档提供了 Speco Tasker 所有 CLI 命令和 MCP 工具的完整参考。初始化功能已大幅简化，支持智能自动检测配置。如有问题，请参考项目文档或提交 Issue。*
+*此文档提供了 Speco Tasker 所有 CLI 命令和 MCP 工具的完整参考。初始化功能已大幅简化，支持自动检测配置。如有问题，请参考项目文档或提交 Issue。*

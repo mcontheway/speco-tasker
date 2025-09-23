@@ -5,9 +5,10 @@
  */
 
 // Disable graceful-fs polyfills to avoid uv_cwd issues
-process.env.GRACEFUL_FS_PATCH = '0';
+process.env.GRACEFUL_FS_PATCH = "0";
 
 const path = require("node:path");
+const os = require("node:os");
 
 // Capture the actual original working directory before any changes
 let originalWorkingDirectory;
@@ -15,7 +16,7 @@ try {
 	originalWorkingDirectory = process.cwd();
 } catch (error) {
 	// Fallback for environments where process.cwd() might fail
-	originalWorkingDirectory = require("node:os").homedir() || "/tmp";
+	originalWorkingDirectory = os.homedir() || "/tmp";
 	console.warn(
 		"Warning: Could not get current working directory, using fallback:",
 		originalWorkingDirectory,

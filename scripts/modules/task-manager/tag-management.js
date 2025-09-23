@@ -619,7 +619,7 @@ async function tags(
 			});
 
 			// Add rows
-			tagList.forEach((tag) => {
+			for (const tag of tagList) {
 				const row = [];
 
 				// Tag name with current indicator
@@ -643,7 +643,7 @@ async function tags(
 				}
 
 				table.push(row);
-			});
+			}
 
 			// console.log(
 			// 	boxen(
@@ -1457,14 +1457,6 @@ async function checkAndAutoSwitchTag(projectRoot, tasksPath, context = {}) {
 
 		// Git workflow has been removed - return null to disable auto-switching
 		return null;
-
-		// Perform auto-switch
-		return await autoSwitchTagForBranch(
-			tasksPath,
-			{ createIfMissing: true, copyFromCurrent: false },
-			context,
-			"json",
-		);
 	} catch (error) {
 		// Silently fail - this is not critical
 		return null;

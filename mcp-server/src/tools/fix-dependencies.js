@@ -61,7 +61,7 @@ export function registerFixDependenciesTool(server) {
 				);
 
 				if (result.success) {
-					log.info(`Successfully fixed dependencies: ${result.data.message}`);
+					log.info(`成功修复依赖关系：${result.data.message}`);
 				} else {
 					log.error(`Failed to fix dependencies: ${result.error.message}`);
 				}

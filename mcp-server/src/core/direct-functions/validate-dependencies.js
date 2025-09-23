@@ -28,7 +28,7 @@ export async function validateDependenciesDirect(args, log) {
 			success: false,
 			error: {
 				code: "MISSING_ARGUMENT",
-				message: "tasksJsonPath is required",
+				message: "需要 tasksJsonPath",
 			},
 		};
 	}
@@ -45,7 +45,7 @@ export async function validateDependenciesDirect(args, log) {
 				success: false,
 				error: {
 					code: "FILE_NOT_FOUND",
-					message: `Tasks file not found at ${tasksPath}`,
+					message: `在 ${tasksPath} 未找到任务文件`,
 				},
 			};
 		}
@@ -63,7 +63,7 @@ export async function validateDependenciesDirect(args, log) {
 		return {
 			success: true,
 			data: {
-				message: "Dependencies validated successfully",
+				message: "依赖关系验证成功",
 				tasksPath,
 			},
 		};

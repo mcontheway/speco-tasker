@@ -24,8 +24,8 @@ mkdir my-project
 cd my-project
 task-master init --name "My Project"
 
-# 或者从现有项目开始
-task-master init --yes
+# 或者从现有项目开始（使用智能默认值）
+task-master init
 ```
 
 ## 核心功能使用
@@ -286,7 +286,7 @@ task-master complexity-report
    ls -la .taskmaster/
 
    # 重新初始化
-   task-master init --yes
+   task-master init --force
    ```
 
 2. **命令执行失败**

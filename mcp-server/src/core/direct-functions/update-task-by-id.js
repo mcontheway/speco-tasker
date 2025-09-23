@@ -93,7 +93,7 @@ export async function updateTaskByIdDirect(args, log, context = {}) {
 				// Parse as integer for main task IDs
 				taskId = Number.parseInt(id, 10);
 				if (Number.isNaN(taskId)) {
-					const errorMessage = `Invalid task ID: ${id}. Task ID must be a positive integer or subtask ID (e.g., "5.2").`;
+					const errorMessage = `无效的任务ID：${id}。任务ID必须是正整数或子任务ID（例如："5.2"）。`;
 					logWrapper.error(errorMessage);
 					return {
 						success: false,
@@ -132,7 +132,7 @@ export async function updateTaskByIdDirect(args, log, context = {}) {
 
 			// Check if the update was successful
 			if (coreResult.success) {
-				const successMessage = `Successfully updated task with ID ${taskId}`;
+				const successMessage = `成功更新ID为 ${taskId} 的任务`;
 				logWrapper.success(successMessage);
 				return {
 					success: true,
@@ -162,7 +162,7 @@ export async function updateTaskByIdDirect(args, log, context = {}) {
 				success: false,
 				error: {
 					code: "UPDATE_TASK_CORE_ERROR",
-					message: error.message || "Unknown error updating task",
+					message: error.message || "更新任务时发生未知错误",
 				},
 			};
 		} finally {
@@ -177,7 +177,7 @@ export async function updateTaskByIdDirect(args, log, context = {}) {
 			success: false,
 			error: {
 				code: "DIRECT_FUNCTION_SETUP_ERROR",
-				message: error.message || "Unknown setup error",
+				message: error.message || "设置错误",
 			},
 		};
 	}

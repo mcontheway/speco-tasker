@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+package-lock.json
+yarn.lock
+
+# Build outputs
+coverage/
+dist/
+build/
+*.min.js
+
+# Speco configuration
+.speco/logs/
+.speco/backups/
+
+# Temporary files
+tmp/
+*.tmp
+
+# Generated files
+*.generated.js
+*.generated.ts
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Test fixtures
+tests/fixtures/
+specs/

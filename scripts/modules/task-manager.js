@@ -8,7 +8,7 @@ import addTask from "./task-manager/add-task.js";
 import clearSubtasks from "./task-manager/clear-subtasks.js";
 import findNextTask from "./task-manager/find-next-task.js";
 import generateTaskFiles from "./task-manager/generate-task-files.js";
-import { isTaskDependentOn } from "./task-manager/is-task-dependent.js";
+// isTaskDependentOn moved to task-dependency-utils.js
 import listTasks from "./task-manager/list-tasks.js";
 import { migrateProject } from "./task-manager/migrate.js";
 import moveTask from "./task-manager/move-task.js";
@@ -39,7 +39,6 @@ export {
 	findNextTask,
 	removeTask,
 	findTaskById,
-	isTaskDependentOn,
 	taskExists,
 	moveTask,
 	readComplexityReport,

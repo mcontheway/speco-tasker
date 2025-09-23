@@ -71,7 +71,7 @@ async function updateSubtaskManually(
 		const updatedFields = [];
 
 		// Update the fields that were provided
-		Object.keys(fieldsToUpdate).forEach((field) => {
+		for (const field of Object.keys(fieldsToUpdate)) {
 			const newValue = fieldsToUpdate[field];
 			if (newValue !== undefined) {
 				// Validate field update permission
@@ -160,7 +160,7 @@ async function updateSubtaskManually(
 					updatedFields.push(field);
 				}
 			}
-		});
+		}
 
 		// Write the updated data back
 		writeJSON(tasksPath, tasksData, projectRoot, tag);

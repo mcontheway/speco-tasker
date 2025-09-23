@@ -1,52 +1,57 @@
-import { jest } from "@jest/globals";
+// Mock the cli-progress module first
+import { vi } from "vitest";
 
-// Mock cli-progress factory before importing BaseProgressTracker
-jest.unstable_mockModule(
-	"../../../src/progress/cli-progress-factory.js",
-	() => ({
-		newMultiBar: jest.fn(() => ({
-			create: jest.fn(() => ({
-				update: jest.fn(),
-			})),
-			stop: jest.fn(),
-		})),
-	}),
-);
+vi.mock("cli-progress", () => ({
+	MultiBar: vi.fn().mockImplementation(() => ({
+		create: vi.fn(),
+		stop: vi.fn(),
+	})),
+	Presets: {
+		shades_classic: {},
+		shades_grey: {},
+		rect: {},
+		legacy: {},
+	},
+}));
 
-const { newMultiBar } = await import(
-	"../../../src/progress/cli-progress-factory.js"
-);
-const { BaseProgressTracker } = await import(
-	"../../../src/progress/base-progress-tracker.js"
-);
+// Mock the cli-progress-factory module
+vi.mock("../../../src/progress/cli-progress-factory.js", () => ({
+	newMultiBar: vi.fn(),
+}));
+
+// Import the module and get the mock
+import { BaseProgressTracker } from "../../../src/progress/base-progress-tracker.js";
+import { newMultiBar } from "../../../src/progress/cli-progress-factory.js";
 
 describe("BaseProgressTracker", () => {
 	let tracker;
-	let mockMultiBar;
 	let mockProgressBar;
 	let mockTimeTokensBar;
+	let mockMultiBar;
 
 	beforeEach(() => {
-		jest.clearAllMocks();
-		jest.useFakeTimers();
+		vi.clearAllMocks();
+		vi.useFakeTimers();
 
 		// Setup mocks
-		mockProgressBar = { update: jest.fn() };
-		mockTimeTokensBar = { update: jest.fn() };
+		mockProgressBar = { update: vi.fn() };
+		mockTimeTokensBar = { update: vi.fn() };
 		mockMultiBar = {
-			create: jest
+			create: vi
 				.fn()
 				.mockReturnValueOnce(mockTimeTokensBar)
 				.mockReturnValueOnce(mockProgressBar),
-			stop: jest.fn(),
+			stop: vi.fn(),
 		};
-		newMultiBar.mockReturnValue(mockMultiBar);
+
+		// Mock the newMultiBar function
+		vi.mocked(newMultiBar).mockReturnValue(mockMultiBar);
 
 		tracker = new BaseProgressTracker({ numUnits: 10, unitName: "task" });
 	});
 
 	afterEach(() => {
-		jest.useRealTimers();
+		vi.useRealTimers();
 	});
 
 	describe("cleanup", () => {

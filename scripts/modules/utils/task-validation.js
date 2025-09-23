@@ -26,12 +26,12 @@ export function validateSpecFiles(
 	const taskId = isSubtask ? `${task.parentTaskId}.${task.id}` : task.id;
 
 	// For subtasks, spec_files is optional - skip validation if not provided
-	if (isSubtask && !task.hasOwnProperty("spec_files")) {
+	if (isSubtask && !Object.hasOwn(task, "spec_files")) {
 		return result;
 	}
 
 	// For main tasks, spec_files is still required
-	if (!isSubtask && !task.hasOwnProperty("spec_files")) {
+	if (!isSubtask && !Object.hasOwn(task, "spec_files")) {
 		result.isValid = false;
 		result.errors.push(`缺少必填字段 'spec_files'，请先完成规范文档`);
 		return result;
@@ -95,7 +95,7 @@ export function validateLogs(task, report, isSubtask = false) {
 	};
 
 	// Logs is optional, so only validate if present
-	if (task.hasOwnProperty("logs")) {
+	if (Object.hasOwn(task, "logs")) {
 		if (typeof task.logs !== "string") {
 			result.isValid = false;
 			result.errors.push(`'logs' 字段必须是字符串类型`);
@@ -223,16 +223,16 @@ export function formatValidationError(
 
 	if (validationResult.allErrors.length > 0) {
 		message += "\n错误:\n";
-		validationResult.allErrors.forEach((error) => {
+		for (const error of validationResult.allErrors) {
 			message += `  - ${error}\n`;
-		});
+		}
 	}
 
 	if (validationResult.allWarnings.length > 0) {
 		message += "\n警告:\n";
-		validationResult.allWarnings.forEach((warning) => {
+		for (const warning of validationResult.allWarnings) {
 			message += `  - ${warning}\n`;
-		});
+		}
 	}
 
 	message += "\n请先完成规范文档，然后重试。";

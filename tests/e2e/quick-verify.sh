@@ -12,21 +12,21 @@ echo "  📋 检查基本CLI命令..."
 
 # Test --help (should not require any setup)
 echo "    测试 --help 命令..."
-if ! (node bin/task-master.js --help > /dev/null 2>&1); then
+if ! (node bin/speco-tasker.js --help > /dev/null 2>&1); then
     echo "❌ --help 命令失败"
     exit 1
 fi
 
 # Test --version
 echo "    测试 --version 命令..."
-if ! (node bin/task-master.js --version > /dev/null 2>&1); then
+if ! (node bin/speco-tasker.js --version > /dev/null 2>&1); then
     echo "❌ --version 命令失败"
     exit 1
 fi
 
 # Test list command (may fail if no tasks, but should not crash)
 echo "    测试 list 命令..."
-node bin/task-master.js list > /dev/null 2>&1 || true
+node bin/speco-tasker.js list > /dev/null 2>&1 || true
 
 echo "  ✅ 基本CLI功能正常"
 
@@ -43,7 +43,7 @@ if [ ! -d "src" ]; then
     exit 1
 fi
 
-if [ ! -f "bin/task-master.js" ]; then
+if [ ! -f "bin/speco-tasker.js" ]; then
     echo "❌ 主执行文件不存在"
     exit 1
 fi
@@ -62,8 +62,8 @@ fi
 echo "  🔍 快速语法检查..."
 
 # Check main CLI file syntax
-if ! node -c bin/task-master.js; then
-    echo "❌ bin/task-master.js 语法错误"
+if ! node -c bin/speco-tasker.js; then
+    echo "❌ bin/speco-tasker.js 语法错误"
     exit 1
 fi
 

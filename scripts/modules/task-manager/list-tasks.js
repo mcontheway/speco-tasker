@@ -52,7 +52,9 @@ function listTasks(
 		const complexityReport = readComplexityReport(reportPath);
 		// Apply complexity scores to tasks
 		if (complexityReport?.complexityAnalysis) {
-			data.tasks.forEach((task) => addComplexityToTask(task, complexityReport));
+			for (const task of data.tasks) {
+				addComplexityToTask(task, complexityReport);
+			}
 		}
 
 		// Filter tasks by status if specified - now supports comma-separated statuses
@@ -112,7 +114,7 @@ function listTasks(
 		let cancelledSubtasks = 0;
 		let reviewSubtasks = 0;
 
-		data.tasks.forEach((task) => {
+		for (const task of data.tasks) {
 			if (task.subtasks && task.subtasks.length > 0) {
 				totalSubtasks += task.subtasks.length;
 				completedSubtasks += task.subtasks.filter(
@@ -137,7 +139,7 @@ function listTasks(
 					(st) => st.status === "review",
 				).length;
 			}
-		});
+		}
 
 		const subtaskCompletionPercentage =
 			totalSubtasks > 0 ? (completedSubtasks / totalSubtasks) * 100 : 0;
@@ -179,13 +181,13 @@ function listTasks(
 
 		// Calculate most depended-on tasks
 		const dependencyCount = {};
-		data.tasks.forEach((task) => {
+		for (const task of data.tasks) {
 			if (task.dependencies && task.dependencies.length > 0) {
-				task.dependencies.forEach((depId) => {
+				for (const depId of task.dependencies) {
 					dependencyCount[depId] = (dependencyCount[depId] || 0) + 1;
-				});
+				}
 			}
-		});
+		}
 
 		// Find the most depended-on task
 		let mostDependedOnTaskId = null;
@@ -517,7 +519,7 @@ Complexity: ${nextItem?.complexityScore ? getComplexityWithColor(nextItem.comple
 		});
 
 		// Process tasks for the table
-		filteredTasks.forEach((task) => {
+		for (const task of filteredTasks) {
 			// Format dependencies with status indicators (colored)
 			let depText = "None";
 			if (task.dependencies && task.dependencies.length > 0) {
@@ -560,7 +562,7 @@ Complexity: ${nextItem?.complexityScore ? getComplexityWithColor(nextItem.comple
 
 			// Add subtasks if requested
 			if (withSubtasks && task.subtasks && task.subtasks.length > 0) {
-				task.subtasks.forEach((subtask) => {
+				for (const subtask of task.subtasks) {
 					// Format subtask dependencies with status indicators
 					let subtaskDepText = "None";
 					if (subtask.dependencies && subtask.dependencies.length > 0) {
@@ -623,9 +625,9 @@ Complexity: ${nextItem?.complexityScore ? getComplexityWithColor(nextItem.comple
 							? chalk.gray(`${subtask.complexityScore}`)
 							: chalk.gray("N/A"),
 					]);
-				});
+				}
 			}
-		});
+		}
 
 		// Ensure we output the table even if it had to wrap
 		try {
@@ -639,11 +641,11 @@ Complexity: ${nextItem?.complexityScore ? getComplexityWithColor(nextItem.comple
 					"\nFalling back to simple task list due to terminal width constraints:",
 				),
 			);
-			filteredTasks.forEach((task) => {
+			for (const task of filteredTasks) {
 				console.log(
 					`${chalk.cyan(task.id)}: ${chalk.white(task.title)} - ${getStatusWithColor(task.status)}`,
 				);
-			});
+			}
 		}
 
 		// Show filter info if applied
@@ -889,7 +891,7 @@ function generateMarkdownOutput(data, filteredTasks, stats) {
 	};
 
 	// Process all tasks
-	filteredTasks.forEach((task) => {
+	for (const task of filteredTasks) {
 		const taskTitle = task.title; // No truncation for README
 		const statusSymbol = getStatusSymbol(task.status);
 		const priority = task.priority || "medium";
@@ -902,7 +904,7 @@ function generateMarkdownOutput(data, filteredTasks, stats) {
 
 		// Add subtasks if requested
 		if (withSubtasks && task.subtasks && task.subtasks.length > 0) {
-			task.subtasks.forEach((subtask) => {
+			for (const subtask of task.subtasks) {
 				const subtaskTitle = `${subtask.title}`; // No truncation
 				const subtaskStatus = getStatusSymbol(subtask.status);
 				const subtaskDeps = formatDependenciesForMarkdown(
@@ -914,9 +916,9 @@ function generateMarkdownOutput(data, filteredTasks, stats) {
 					: "N/A";
 
 				markdown += `| ${task.id}.${subtask.id} | ${subtaskTitle} | ${subtaskStatus} | -            | ${subtaskDeps} | ${subtaskComplexity} |\n`;
-			});
+			}
 		}
-	});
+	}
 
 	return markdown;
 }
@@ -1001,15 +1003,15 @@ function renderCompactOutput(filteredTasks, withSubtasks) {
 
 	const output = [];
 
-	filteredTasks.forEach((task) => {
+	for (const task of filteredTasks) {
 		output.push(formatCompactTask(task));
 
 		if (withSubtasks && task.subtasks && task.subtasks.length > 0) {
-			task.subtasks.forEach((subtask) => {
+			for (const subtask of task.subtasks) {
 				output.push(formatCompactSubtask(subtask, task.id));
-			});
+			}
 		}
-	});
+	}
 
 	console.log(output.join("\n"));
 }

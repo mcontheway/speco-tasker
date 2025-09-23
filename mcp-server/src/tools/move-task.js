@@ -24,7 +24,16 @@ import {
 export function registerMoveTaskTool(server) {
 	server.addTool({
 		name: "move_task",
-		description: "将任务或子任务移动到新位置",
+		description: `将任务或子任务移动到新位置
+
+支持两种移动模式：
+• 标签内移动：使用 'from' 和 'to' 参数，将任务移动到同一标签内的不同位置
+• 跨标签移动：使用 'from', 'fromTag', 'toTag' 参数，将任务移动到其他标签
+
+示例：
+• 标签内移动单个任务：{"from": "5", "to": "3.1"}
+• 标签内移动多个任务：{"from": "5,6", "to": "3.1,3.2"}
+• 跨标签移动：{"from": "5,6", "fromTag": "main", "toTag": "backend"}`,
 		parameters: z.object({
 			from: z
 				.string()
@@ -35,16 +44,16 @@ export function registerMoveTaskTool(server) {
 				.string()
 				.optional()
 				.describe(
-					'目标ID（例如："7" 或 "7.3"）。标签内移动时必需。跨标签移动时，如果省略，任务将移动到目标标签并保持其原有ID',
+					'目标ID，仅用于标签内移动（例如："7" 或 "7.3"）。跨标签移动时请勿使用此参数',
 				),
 			file: z.string().optional().describe("自定义tasks.json文件路径"),
 			projectRoot: z
 				.string()
 				.optional()
 				.describe("项目根目录（可选，会自动检测）"),
-			tag: z.string().optional().describe("选择要处理的任务分组"),
-			fromTag: z.string().optional().describe("跨标签移动的源标签"),
-			toTag: z.string().optional().describe("跨标签移动的目标标签"),
+			tag: z.string().optional().describe("标签内移动时使用的标签上下文（可选，会使用当前标签）"),
+			fromTag: z.string().optional().describe("跨标签移动的源标签名称"),
+			toTag: z.string().optional().describe("跨标签移动的目标标签名称"),
 			withDependencies: z
 				.boolean()
 				.optional()
@@ -64,7 +73,7 @@ export function registerMoveTaskTool(server) {
 					// Cross-tag move logic
 					if (!args.from) {
 						return createErrorResponse(
-							"跨标签移动需要源ID",
+							"跨标签移动需要指定 'from' 参数（要移动的任务ID）",
 							"MISSING_SOURCE_IDS",
 						);
 					}
@@ -106,7 +115,7 @@ export function registerMoveTaskTool(server) {
 				// Within-tag move logic (existing functionality)
 				if (!args.to) {
 					return createErrorResponse(
-						"标签内移动需要目标ID",
+						"标签内移动需要指定 'to' 参数（目标位置ID）。如果要进行跨标签移动，请使用 'fromTag' 和 'toTag' 参数",
 						"MISSING_DESTINATION_ID",
 					);
 				}
@@ -172,7 +181,7 @@ export function registerMoveTaskTool(server) {
 								data: {
 									moves: results,
 									skipped: skipped.length > 0 ? skipped : undefined,
-									message: `Successfully moved ${results.length} tasks${skipped.length > 0 ? `, skipped ${skipped.length}` : ""}`,
+									message: `成功移动 ${results.length} 个任务${skipped.length > 0 ? `，跳过 ${skipped.length} 个` : ""}`,
 								},
 							},
 							log,
@@ -187,7 +196,7 @@ export function registerMoveTaskTool(server) {
 							data: {
 								moves: results,
 								skippedMoves: skippedMoves,
-								message: `Successfully moved ${results.length} tasks${skippedMoves.length > 0 ? `, skipped ${skippedMoves.length} moves` : ""}`,
+								message: `成功移动 ${results.length} 个任务${skippedMoves.length > 0 ? `，跳过 ${skippedMoves.length} 次移动` : ""}`,
 							},
 						},
 						log,

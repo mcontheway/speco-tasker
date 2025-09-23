@@ -9,7 +9,7 @@ import {
 /**
  * Direct function wrapper for initializing a project.
  * Derives target directory from session, sets CWD, and calls core init logic.
- * @param {object} args - Arguments containing initialization options (addAliases, initGit, storeTasksInGit, skipInstall, yes, projectRoot, rules)
+ * @param {object} args - Arguments containing initialization options (projectName, shell, force, projectRoot)
  * @param {object} log - The FastMCP logger instance.
  * @param {object} context - The context object, must contain { session }.
  * @returns {Promise<{success: boolean, data?: any, error?: {code: string, message: string}}>} - Standard result object.
@@ -21,9 +21,17 @@ export async function initializeProjectDirect(args, log, context = {}) {
 	log.info(`Args received in direct function: ${JSON.stringify(args)}`);
 
 	// --- Determine Target Directory ---
-	// TRUST the projectRoot passed from the tool layer via args
-	// The HOF in the tool layer already normalized and validated it came from a reliable source (args or session)
-	const targetDirectory = args.projectRoot;
+	// Check for SPECO_PROJECT_ROOT environment variable first (for test isolation)
+	let targetDirectory = args.projectRoot;
+	if (process.env.SPECO_PROJECT_ROOT) {
+		targetDirectory = process.env.SPECO_PROJECT_ROOT;
+		log.info(
+			`Using project root from SPECO_PROJECT_ROOT environment variable: ${targetDirectory}`,
+		);
+	} else if (args.projectRoot) {
+		targetDirectory = args.projectRoot;
+		log.info(`Using project root from args.projectRoot: ${targetDirectory}`);
+	}
 
 	// --- Validate the targetDirectory (basic sanity checks) ---
 	if (
@@ -50,7 +58,7 @@ export async function initializeProjectDirect(args, log, context = {}) {
 			error: {
 				code: "INVALID_TARGET_DIRECTORY",
 				message:
-					"Cannot initialize project: Invalid target directory received. Please provide a valid projectRoot argument (absolute path to your project directory).",
+					"无法初始化项目：收到了无效的目标目录。请提供有效的 projectRoot 参数（项目目录的绝对路径）。",
 				details: JSON.stringify(errorDetails, null, 2),
 			},
 		};
@@ -71,9 +79,11 @@ export async function initializeProjectDirect(args, log, context = {}) {
 
 	enableSilentMode();
 	try {
-		// Use intelligent defaults - no complex configuration needed
+		// Build options from MCP tool parameters
 		const options = {
-			yes: true, // Force yes mode for MCP (no interactive prompts)
+			name: args.projectName, // Project name from tool parameter
+			shell: args.shell, // Shell type for aliases
+			force: args.force, // Force re-initialization
 			rules: ["cursor"], // Default to Cursor profile for MCP
 			rulesExplicitlyProvided: true,
 		};
@@ -84,15 +94,15 @@ export async function initializeProjectDirect(args, log, context = {}) {
 		resultData = {
 			message: "项目初始化成功完成。",
 			next_steps: [
-				'创建您的第一个任务：task-master add-task --title="任务标题" --description="任务描述"',
-				"查看任务列表：task-master list",
-				"查看下一个要处理的任务：task-master next",
-				"开始处理任务：task-master set-status --id=<id> --status=in-progress",
-				'为复杂任务添加子任务：task-master add-subtask --parent=<id> --title="子任务标题"',
-				"管理任务依赖关系：task-master add-dependency --id=<id> --depends-on=<dependency-id>",
-				"生成任务文件：task-master generate",
-				"使用标签组织任务：task-master add-tag <tag-name>",
-				"完成任务后标记为完成：task-master set-status --id=<id> --status=done",
+				"使用 add_task 工具创建您的第一个任务",
+				"使用 get_tasks 工具查看任务列表",
+				"使用 next_task 工具查看下一个要处理的任务",
+				"使用 set_task_status 工具开始处理任务",
+				"使用 add_subtask 工具为复杂任务添加子任务",
+				"使用 add_dependency 工具管理任务依赖关系",
+				"使用 generate 工具生成任务文件",
+				"使用 add_tag 工具组织任务",
+				"使用 set_task_status 工具标记任务完成",
 			],
 			...result,
 		};
@@ -104,7 +114,7 @@ export async function initializeProjectDirect(args, log, context = {}) {
 		log.error(`Core initializeProject failed: ${error.message}`);
 		errorResult = {
 			code: "INITIALIZATION_FAILED",
-			message: `Core project initialization failed: ${error.message}`,
+			message: `核心项目初始化失败：${error.message}`,
 			details: error.stack,
 		};
 		success = false;

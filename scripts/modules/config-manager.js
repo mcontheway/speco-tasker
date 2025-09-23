@@ -3,16 +3,27 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import chalk from "chalk";
 import { z } from "zod";
-import { AI_COMMAND_NAMES } from "../../src/constants/commands.js";
+// AI functionality has been removed - no AI command constants needed
 import {
 	LEGACY_CONFIG_FILE,
 	TASKMASTER_DIR,
 } from "../../src/constants/paths.js";
 import { findConfigPath } from "../../src/utils/path-utils.js";
-import { findProjectRoot, isEmpty, log, resolveEnvVariable } from "./utils.js";
+import {
+	findProjectRoot,
+	isEmpty,
+	log,
+	resolveEnvVariable,
+} from "./core-utils.js";
 
-// Calculate __dirname in ESM
-const __filename = fileURLToPath(import.meta.url);
+// Calculate __dirname in ESM - Jest compatible
+let __filename;
+try {
+	__filename = fileURLToPath(import.meta.url);
+} catch (e) {
+	// Fallback for Jest environment - use a simple approach
+	__filename = path.resolve(process.cwd(), "scripts/modules/config-manager.js");
+}
 const __dirname = path.dirname(__filename);
 
 // AI functionality has been removed - no model loading needed
@@ -85,9 +96,12 @@ function _loadAndValidateConfig(explicitRoot = null) {
 			const rawData = fs.readFileSync(configPath, "utf-8");
 			const parsedConfig = JSON.parse(rawData);
 
-			// Deep merge parsed config onto defaults (only global config now)
+			// Deep merge parsed config onto defaults
 			config = {
 				global: { ...defaults.global, ...parsedConfig?.global },
+				project: parsedConfig?.project || {},
+				paths: parsedConfig?.paths || {},
+				logging: parsedConfig?.logging || {},
 			};
 			configSource = `file (${configPath})`; // Update source info
 
@@ -115,7 +129,7 @@ function _loadAndValidateConfig(explicitRoot = null) {
 			// Only warn if an explicit root was *expected*.
 			console.warn(
 				chalk.yellow(
-					`Warning: Configuration file not found at provided project root (${explicitRoot}). Using default configuration. Run 'task-master models --setup' to configure.`,
+					`Warning: Configuration file not found at provided project root (${explicitRoot}). Using default configuration.`,
 				),
 			);
 		} else {
@@ -216,8 +230,9 @@ function getDefaultPriority(explicitRoot = null) {
 }
 
 function getProjectName(explicitRoot = null) {
-	// Directly return value from config
-	return getGlobalConfig(explicitRoot).projectName;
+	// Read project name from config.project.name, fallback to global default
+	const config = getConfig(explicitRoot);
+	return config?.project?.name || DEFAULTS.global.projectName;
 }
 
 /**
@@ -309,23 +324,200 @@ function getUserId(explicitRoot = null) {
  * @returns {string[]} An array of all provider names.
  */
 function getAllProviders() {
-	return ALL_PROVIDERS;
+	// AI functionality has been removed - no providers needed
+	return [];
 }
 
 function getBaseUrlForRole(role, explicitRoot = null) {
-	const roleConfig = getModelConfigForRole(role, explicitRoot);
-	if (roleConfig && typeof roleConfig.baseURL === "string") {
-		return roleConfig.baseURL;
-	}
-	const provider = roleConfig?.provider;
-	if (provider) {
-		const envVarName = `${provider.toUpperCase()}_BASE_URL`;
-		return resolveEnvVariable(envVarName, null, explicitRoot);
-	}
+	// AI functionality has been removed - this function is deprecated
+	// Return undefined as no role-based configuration exists
 	return undefined;
 }
 
 // AI functionality has been removed - no provider constants needed
+
+/**
+ * 获取配置参数值
+ * @param {string} key - 配置键 (支持点号分隔，如 'global.logLevel')
+ * @param {string|null} explicitRoot - 可选的显式项目根目录
+ * @returns {any} 配置值
+ */
+function getConfigValue(key, explicitRoot = null) {
+	const config = getConfig(explicitRoot);
+	const keys = key.split(".");
+	let value = config;
+
+	for (const k of keys) {
+		if (value && typeof value === "object" && k in value) {
+			value = value[k];
+		} else {
+			return undefined;
+		}
+	}
+
+	return value;
+}
+
+/**
+ * 设置配置参数值
+ * @param {string} key - 配置键
+ * @param {any} value - 配置值
+ * @param {Object} options - 选项
+ * @param {string|null} explicitRoot - 可选的显式项目根目录
+ * @returns {boolean} 成功状态
+ */
+
+/**
+ * 获取所有配置参数
+ * @param {Object} options - 选项
+ * @param {string|null} explicitRoot - 可选的显式项目根目录
+ * @returns {Object} 配置对象
+ */
+
+/**
+ * 验证配置
+ * @param {Object} config - 要验证的配置对象
+ * @param {string|null} explicitRoot - 可选的显式项目根目录
+ * @returns {Object} 验证结果
+ */
+
+/**
+ * 获取配置变更历史
+ * @param {Object} options - 查询选项
+ * @param {string|null} explicitRoot - 可选的显式项目根目录
+ * @returns {Array} 历史记录
+ */
+
+/**
+ * 回滚配置到指定版本
+ * @param {string} versionId - 版本ID
+ * @param {string|null} explicitRoot - 可选的显式项目根目录
+ * @returns {boolean} 成功状态
+ */
+
+/**
+ * 重置配置为默认值
+ * @param {string|null} explicitRoot - 可选的显式项目根目录
+ * @returns {boolean} 成功状态
+ */
+
+/**
+ * 记录配置变更
+ * @private
+ * @param {string} key - 配置键
+ * @param {any} oldValue - 旧值
+ * @param {any} newValue - 新值
+ * @param {Object} options - 选项
+ * @param {string|null} explicitRoot - 项目根目录
+ */
+function recordConfigChange(
+	key,
+	oldValue,
+	newValue,
+	options = {},
+	explicitRoot = null,
+) {
+	try {
+		const historyFile = getConfigHistoryFile(explicitRoot);
+		let history = [];
+
+		// 读取现有历史
+		if (fs.existsSync(historyFile)) {
+			const content = fs.readFileSync(historyFile, "utf8");
+			history = JSON.parse(content);
+		}
+
+		// 创建历史条目
+		const entry = {
+			versionId: generateVersionId(),
+			timestamp: new Date().toISOString(),
+			key,
+			oldValue,
+			newValue,
+			userId: getUserId(explicitRoot),
+			source: options.source || "cli",
+			metadata: options.metadata || {},
+			rollbackData: generateRollbackData(key, oldValue, newValue),
+		};
+
+		history.push(entry);
+
+		// 限制历史记录数量
+		const maxHistory = 100;
+		if (history.length > maxHistory) {
+			history = history.slice(-maxHistory);
+		}
+
+		// 保存历史
+		fs.writeFileSync(historyFile, JSON.stringify(history, null, 2));
+	} catch (error) {
+		console.warn(`记录配置变更失败: ${error.message}`);
+	}
+}
+
+/**
+ * 获取配置历史文件路径
+ * @private
+ * @param {string|null} explicitRoot - 项目根目录
+ * @returns {string} 历史文件路径
+ */
+
+/**
+ * 生成版本ID
+ * @private
+ * @returns {string} 版本ID
+ */
+function generateVersionId() {
+	const timestamp = Date.now();
+	const random = Math.random().toString(36).substring(2, 8);
+	return `v${timestamp}_${random}`;
+}
+
+/**
+ * 生成回滚数据
+ * @private
+ * @param {string} key - 配置键
+ * @param {any} oldValue - 旧值
+ * @param {any} newValue - 新值
+ * @returns {Object} 回滚数据
+ */
+function generateRollbackData(key, oldValue, newValue) {
+	return {
+		key,
+		from: newValue,
+		to: oldValue,
+	};
+}
+
+/**
+ * 应用配置变更
+ * @private
+ * @param {Object} config - 当前配置
+ * @param {Object} changes - 变更数据
+ * @returns {Object} 修改后的配置
+ */
+function applyConfigChanges(config, changes) {
+	const result = JSON.parse(JSON.stringify(config)); // 深拷贝
+
+	// 这里实现配置变更应用逻辑
+	// 简化版本：直接设置值
+	const keys = changes.key.split(".");
+	let current = result;
+
+	for (let i = 0; i < keys.length - 1; i++) {
+		const key = keys[i];
+		if (!(key in current) || typeof current[key] !== "object") {
+			current[key] = {};
+		}
+		current = current[key];
+	}
+
+	current[keys[keys.length - 1]] = changes.to;
+
+	return result;
+}
+
+// AI functionality has been removed - provider validation no longer needed
 
 export {
 	// Core config access
@@ -340,4 +532,7 @@ export {
 	getDefaultPriority,
 	getProjectName,
 	getUserId,
+	// Configuration management
+	getConfigValue,
+	// AI functionality has been removed - no provider validation needed
 };

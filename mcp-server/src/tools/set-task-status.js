@@ -121,7 +121,7 @@ export function registerSetTaskStatusTool(server) {
 
 				if (result.success) {
 					log.info(
-						`Successfully updated status for task(s) ${args.id} to "${args.status}": ${result.data.message}`,
+						`成功将任务 ${args.id} 的状态更新为 "${args.status}"：${result.data.message}`,
 					);
 				} else {
 					log.error(

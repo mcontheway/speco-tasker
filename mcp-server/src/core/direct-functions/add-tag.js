@@ -56,7 +56,7 @@ export async function addTagDirect(args, log, context = {}) {
 				success: false,
 				error: {
 					code: "MISSING_ARGUMENT",
-					message: "tasksJsonPath is required",
+					message: "需要 tasksJsonPath",
 				},
 			};
 		}
@@ -72,13 +72,13 @@ export async function addTagDirect(args, log, context = {}) {
 
 			// Check if we're in a git repository
 			if (!(await gitUtils.isGitRepository(projectRoot))) {
-				log.error("Not in a git repository");
+				log.error("不在Git仓库中");
 				disableSilentMode();
 				return {
 					success: false,
 					error: {
 						code: "NOT_GIT_REPO",
-						message: "Not in a git repository. Cannot use fromBranch option.",
+						message: "不在Git仓库中。无法使用 fromBranch 选项。",
 					},
 				};
 			}
@@ -92,7 +92,7 @@ export async function addTagDirect(args, log, context = {}) {
 					success: false,
 					error: {
 						code: "NO_CURRENT_BRANCH",
-						message: "Could not determine current git branch.",
+						message: "无法确定当前Git分支。",
 					},
 				};
 			}
@@ -128,7 +128,7 @@ export async function addTagDirect(args, log, context = {}) {
 					tagName: result.tagName,
 					created: result.created,
 					mappingUpdated: result.mappingUpdated,
-					message: `Successfully created tag "${result.tagName}" from git branch "${result.branchName}"`,
+					message: `成功从Git分支 "${result.branchName}" 创建标签 "${result.tagName}"`,
 				},
 			};
 		}
@@ -140,7 +140,7 @@ export async function addTagDirect(args, log, context = {}) {
 				success: false,
 				error: {
 					code: "MISSING_PARAMETER",
-					message: "Tag name is required and must be a string",
+					message: "需要标签名称，且必须是字符串",
 				},
 			};
 		}
@@ -178,7 +178,7 @@ export async function addTagDirect(args, log, context = {}) {
 				tasksCopied: result.tasksCopied,
 				sourceTag: result.sourceTag,
 				description: result.description,
-				message: `Successfully created tag "${result.tagName}"`,
+				message: `成功创建标签 "${result.tagName}"`,
 			},
 		};
 	} catch (error) {

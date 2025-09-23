@@ -35,7 +35,7 @@ export async function clearSubtasksDirect(args, log) {
 				success: false,
 				error: {
 					code: "MISSING_ARGUMENT",
-					message: "tasksJsonPath is required",
+					message: "需要 tasksJsonPath",
 				},
 			};
 		}
@@ -46,8 +46,7 @@ export async function clearSubtasksDirect(args, log) {
 				success: false,
 				error: {
 					code: "INPUT_VALIDATION_ERROR",
-					message:
-						"Either task IDs with id parameter or all parameter must be provided",
+					message: "必须提供 id 参数的任务ID或 all 参数",
 				},
 			};
 		}
@@ -61,7 +60,7 @@ export async function clearSubtasksDirect(args, log) {
 				success: false,
 				error: {
 					code: "FILE_NOT_FOUND_ERROR",
-					message: `Tasks file not found at ${tasksPath}`,
+					message: `在 ${tasksPath} 未找到任务文件`,
 				},
 			};
 		}
@@ -76,7 +75,7 @@ export async function clearSubtasksDirect(args, log) {
 				success: false,
 				error: {
 					code: "INPUT_VALIDATION_ERROR",
-					message: `No tasks found in tasks file: ${tasksPath}`,
+					message: `在任务文件 ${tasksPath} 中未找到任务`,
 				},
 			};
 		}
@@ -92,7 +91,7 @@ export async function clearSubtasksDirect(args, log) {
 					success: false,
 					error: {
 						code: "INPUT_VALIDATION_ERROR",
-						message: `No tasks found in tag context '${currentTag}'`,
+						message: `在标签上下文 '${currentTag}' 中未找到任务`,
 					},
 				};
 			}
@@ -125,13 +124,13 @@ export async function clearSubtasksDirect(args, log) {
 
 		const taskSummary = taskIdArray.map((id) => {
 			const task = updatedTasks.find((t) => t.id === id);
-			return task ? { id, title: task.title } : { id, title: "Task not found" };
+			return task ? { id, title: task.title } : { id, title: "任务未找到" };
 		});
 
 		return {
 			success: true,
 			data: {
-				message: `Successfully cleared subtasks from ${clearedTasksCount} task(s) in tag '${currentTag}'`,
+				message: `成功从标签 '${currentTag}' 中的 ${clearedTasksCount} 个任务清除子任务`,
 				tasksCleared: taskSummary,
 				tag: currentTag,
 			},

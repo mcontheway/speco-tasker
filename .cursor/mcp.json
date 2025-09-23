@@ -1,8 +1,8 @@
 {
 	"mcpServers": {
 		"speco-tasker": {
-			"command": "npx",
-			"args": ["speco-tasker"]
+			"command": "node",
+			"args": ["mcp-server/server.js"]
 		}
 	}
 }

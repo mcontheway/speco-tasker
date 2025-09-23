@@ -122,9 +122,9 @@ async function updateSingleTaskStatus(
 					`Also marking ${pendingSubtasks.length} subtasks as '${newStatus}'`,
 				);
 
-				pendingSubtasks.forEach((subtask) => {
+				for (const subtask of pendingSubtasks) {
 					subtask.status = newStatus;
-				});
+				}
 			}
 		}
 	}

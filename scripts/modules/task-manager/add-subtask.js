@@ -1,6 +1,6 @@
 import path from "node:path";
 
-import { isTaskDependentOn } from "../task-manager.js";
+import { isTaskDependentOn } from "../task-dependency-utils.js";
 import { getCurrentTag, log, readJSON, writeJSON } from "../utils.js";
 import {
 	formatValidationError,

@@ -1,8 +1,8 @@
 # Speco Tasker 教程 | Tutorial
 
-本教程将指导您设置和使用 Speco Tasker 进行纯手动开发工作流程。
+本教程将指导您设置和使用 Speco Tasker 进行纯手动开发工作流程，包括新的路径配置系统和文件系统安全验证功能。
 
-This tutorial will guide you through setting up and using Speco Tasker for pure manual development workflows.
+This tutorial will guide you through setting up and using Speco Tasker for pure manual development workflows, including the new path configuration system and file system security validation features.
 
 ## 初始设置 | Initial Setup
 
@@ -46,7 +46,7 @@ npm i -g speco-tasker
 4. **在项目中初始化 Speco Tasker | Initialize Speco Tasker in Project**：
 
 ```bash
-task-master init
+speco-tasker init
 ```
 
 初始化过程将会：
@@ -54,20 +54,21 @@ task-master init
 The initialization process will:
 
 - 创建必要的项目结构 | Create the necessary project structure
-- 设置初始配置文件 | Set up initial configuration files
+- 设置初始配置文件和 `.speco/` 目录 | Set up initial configuration files and `.speco/` directory
+- 配置路径映射和安全验证 | Configure path mapping and security validation
 - 指导您完成其余设置过程 | Guide you through the rest of the setup process
 
 5. **开始手动创建任务 | Start Manually Creating Tasks**：
 
 ```bash
 # 添加您的第一个任务 | Add your first task
-task-master add-task --title="设置项目结构" --description="创建基本的项目目录结构和配置文件"
+speco-tasker add-task --title="设置项目结构" --description="创建基本的项目目录结构和配置文件"
 
 # 查看所有任务 | View all tasks
-task-master list
+speco-tasker list
 
 # 查看下一个要处理的任务 | View the next task to work on
-task-master next
+speco-tasker next
 ```
 
 ### 选项 2：手动安装 | Option 2: Manual Installation
@@ -90,10 +91,10 @@ Initialize new project:
 
 ```bash
 # 如果全局安装 | If globally installed
-task-master init
+speco-tasker init
 
 # 如果本地安装 | If locally installed
-npx task-master init
+npx speco-tasker init
 ```
 
 这将自动检测项目配置并使用必要的文件和结构设置新项目。
@@ -110,48 +111,48 @@ After setting up Speco Tasker, you can use these core commands for manual task m
 
 ```bash
 # 添加新任务 | Add new task
-task-master add-task --title="任务标题" --description="任务详细描述"
+speco-tasker add-task --title="任务标题" --description="任务详细描述"
 
 # 列出所有任务 | List all tasks
-task-master list
+speco-tasker list
 
 # 显示下一个要处理的任务 | Show next task to work on
-task-master next
+speco-tasker next
 
 # 查看特定任务的详细信息 | View details of specific task
-task-master show <task-id>
+speco-tasker show <task-id>
 
 # 更新任务状态 | Update task status
-task-master set-status --id=<task-id> --status=<status>
+speco-tasker set-status --id=<task-id> --status=<status>
 
 # 生成单个任务文件 | Generate single task file
-task-master generate
+speco-tasker generate
 ```
 
 ### 子任务管理 | Subtask Management
 
 ```bash
 # 为任务添加子任务 | Add subtask to task
-task-master add-subtask --parent=<parent-id> --title="子任务标题"
+speco-tasker add-subtask --parent=<parent-id> --title="子任务标题"
 
 # 从任务中移除子任务 | Remove subtask from task
-task-master remove-subtask --id=<parent-id.subtask-id>
+speco-tasker remove-subtask --id=<parent-id.subtask-id>
 
 # 清除任务的所有子任务 | Clear all subtasks from task
-task-master clear-subtasks --id=<task-id>
+speco-tasker clear-subtasks --id=<task-id>
 ```
 
 ### 任务重组 | Task Reorganization
 
 ```bash
 # 在任务层次结构中移动任务 | Move task within task hierarchy
-task-master move --from=<source-id> --to=<destination-id>
+speco-tasker move --from=<source-id> --to=<destination-id>
 
 # 添加任务依赖关系 | Add task dependency
-task-master add-dependency --id=<task-id> --depends-on=<dependency-id>
+speco-tasker add-dependency --id=<task-id> --depends-on=<dependency-id>
 
 # 移除任务依赖关系 | Remove task dependency
-task-master remove-dependency --id=<task-id> --depends-on=<dependency-id>
+speco-tasker remove-dependency --id=<task-id> --depends-on=<dependency-id>
 ```
 
 ## 设置 Cursor 集成 | Setting Up Cursor Integration
@@ -218,13 +219,13 @@ The simplest way to start using Speco Tasker is to manually add tasks:
 
 ```bash
 # 创建一个项目设置任务 | Create a project setup task
-task-master add-task --title="设置项目结构" --description="创建基本的项目目录结构，设置配置文件和依赖项"
+speco-tasker add-task --title="设置项目结构" --description="创建基本的项目目录结构，设置配置文件和依赖项"
 
 # 创建一个开发任务 | Create a development task
-task-master add-task --title="实现用户认证" --description="实现用户注册、登录和会话管理功能"
+speco-tasker add-task --title="实现用户认证" --description="实现用户注册、登录和会话管理功能"
 
 # 创建一个测试任务 | Create a testing task
-task-master add-task --title="编写单元测试" --description="为用户认证功能编写完整的单元测试套件"
+speco-tasker add-task --title="编写单元测试" --description="为用户认证功能编写完整的单元测试套件"
 ```
 
 ### 生成单个任务文件 | Generate Single Task Files
@@ -234,7 +235,7 @@ task-master add-task --title="编写单元测试" --description="为用户认证
 After creating tasks, you can generate single task files for better organization and reference:
 
 ```bash
-task-master generate
+speco-tasker generate
 ```
 
 这会在 `tasks/` 目录中创建单个任务文件（例如：`task_001.txt`、`task_002.txt`），使引用特定任务更容易。
@@ -245,13 +246,13 @@ This creates single task files in the `tasks/` directory (e.g., `task_001.txt`, 
 
 ```bash
 # 查看所有任务 | View all tasks
-task-master list
+speco-tasker list
 
 # 查看下一个要处理的任务 | View next task to work on
-task-master next
+speco-tasker next
 
 # 查看特定任务的详细信息 | View details of specific task
-task-master show 1
+speco-tasker show 1
 ```
 
 ## 手动开发工作流程 | Manual Development Workflow
@@ -268,13 +269,13 @@ View available tasks and select the task to work on:
 
 ```bash
 # 查看所有任务 | View all tasks
-task-master list
+speco-tasker list
 
 # 查看下一个要处理的任务 | View next task to work on
-task-master next
+speco-tasker next
 
 # 查看特定任务的详细信息 | View details of specific task
-task-master show 1
+speco-tasker show 1
 ```
 
 ### 2. 任务实现 | Task Implementation
@@ -296,7 +297,7 @@ For efficient context gathering and batch operations:
 
 ```bash
 # 查看多个任务的详细信息 | View details of multiple tasks
-task-master show 5,7,9
+speco-tasker show 5,7,9
 ```
 
 ### 4. 任务验证 | Task Verification
@@ -316,7 +317,7 @@ Before marking a task as complete, verify based on:
 When a task is completed, update its status:
 
 ```bash
-task-master set-status --id=3 --status=done
+speco-tasker set-status --id=3 --status=done
 ```
 
 ### 6. 处理实现变更 | Handle Implementation Changes
@@ -327,10 +328,10 @@ If you discover the need to modify tasks during implementation:
 
 ```bash
 # 更新单个任务 | Update single task
-task-master update-task --id=4 --title="修改后的标题"
+speco-tasker update-task --id=4 --title="修改后的标题"
 
 # 添加新的子任务 | Add new subtask
-task-master add-subtask --parent=4 --title="新的子任务"
+speco-tasker add-subtask --parent=4 --title="新的子任务"
 ```
 
 ### 7. 重组任务 | Reorganize Tasks
@@ -341,13 +342,13 @@ If you need to reorganize the task structure:
 
 ```bash
 # 将子任务移动到不同的父任务 | Move subtask to different parent task
-task-master move --from=5.2 --to=7.3
+speco-tasker move --from=5.2 --to=7.3
 
 # 将独立任务移动为子任务 | Move standalone task to become subtask
-task-master move --from=5 --to=7
+speco-tasker move --from=5 --to=7
 
 # 将子任务移动为独立任务 | Move subtask to become standalone task
-task-master move --from=5.2 --to=7
+speco-tasker move --from=5.2 --to=7
 ```
 
 您可以通过多种方式重组任务：
@@ -389,9 +390,9 @@ When collaborating with a team, if multiple team members create tasks on differe
 
 # 将您的任务移动到新位置（例如：16-18）
 # Move your tasks to new positions (e.g.: 16-18)
-task-master move --from=10 --to=16
-task-master move --from=11 --to=17
-task-master move --from=12 --to=18
+speco-tasker move --from=10 --to=16
+speco-tasker move --from=11 --to=17
+speco-tasker move --from=12 --to=18
 ```
 
 这种方法保留了每个人的工作，同时维护干净的任务结构，使处理任务冲突比尝试手动合并 JSON 文件更容易。
@@ -406,11 +407,11 @@ For complex tasks that need more granularity, you can manually add subtasks:
 
 ```bash
 # 为复杂任务添加子任务 | Add subtasks to complex task
-task-master add-subtask --parent=5 --title="实现用户注册功能"
+speco-tasker add-subtask --parent=5 --title="实现用户注册功能"
 
-task-master add-subtask --parent=5 --title="实现用户登录功能"
+speco-tasker add-subtask --parent=5 --title="实现用户登录功能"
 
-task-master add-subtask --parent=5 --title="添加密码重置功能"
+speco-tasker add-subtask --parent=5 --title="添加密码重置功能"
 ```
 
 您也可以清除现有子任务后重新添加：
@@ -419,10 +420,10 @@ You can also clear existing subtasks and re-add them:
 
 ```bash
 # 清除任务的所有子任务 | Clear all subtasks from task
-task-master clear-subtasks --id=5
+speco-tasker clear-subtasks --id=5
 
 # 然后重新添加新的子任务 | Then re-add new subtasks
-task-master add-subtask --parent=5 --title="新子任务"
+speco-tasker add-subtask --parent=5 --title="新子任务"
 ```
 
 ## 实际使用示例 | Practical Usage Examples
@@ -431,79 +432,79 @@ task-master add-subtask --parent=5 --title="新子任务"
 
 ```bash
 # 初始化项目 | Initialize project
-task-master init
+speco-tasker init
 
 # 创建您的第一个任务 | Create your first task
-task-master add-task --title="设置项目结构" --description="创建基本的项目目录结构"
+speco-tasker add-task --title="设置项目结构" --description="创建基本的项目目录结构"
 
 # 查看任务列表 | View task list
-task-master list
+speco-tasker list
 ```
 
 ### 处理任务 | Process Tasks
 
 ```bash
 # 查看下一个要处理的任务 | View next task to work on
-task-master next
+speco-tasker next
 
 # 查看特定任务的详细信息 | View details of specific task
-task-master show 1
+speco-tasker show 1
 
 # 开始处理任务 | Start working on task
-task-master set-status --id=1 --status=in-progress
+speco-tasker set-status --id=1 --status=in-progress
 ```
 
 ### 实现特定任务 | Implement Specific Tasks
 
 ```bash
 # 为任务添加子任务 | Add subtask to task
-task-master add-subtask --parent=1 --title="创建配置文件"
+speco-tasker add-subtask --parent=1 --title="创建配置文件"
 
 # 查看任务的完整详细信息 | View complete task details
-task-master show 1
+speco-tasker show 1
 ```
 
 ### 管理子任务 | Manage Subtasks
 
 ```bash
 # 清除任务的所有子任务 | Clear all subtasks from task
-task-master clear-subtasks --id=3
+speco-tasker clear-subtasks --id=3
 
 # 重新添加新的子任务
-task-master add-subtask --parent=3 --title="新实现方法"
+speco-tasker add-subtask --parent=3 --title="新实现方法"
 ```
 
 ### 处理变更
 
 ```bash
 # 更新任务标题
-task-master update-task --id=4 --title="修改后的标题"
+speco-tasker update-task --id=4 --title="修改后的标题"
 
 # 添加任务依赖关系
-task-master add-dependency --id=5 --depends-on=4
+speco-tasker add-dependency --id=5 --depends-on=4
 ```
 
 ### 完成工作
 
 ```bash
 # 标记任务为完成
-task-master set-status --id=2 --status=done
+speco-tasker set-status --id=2 --status=done
 
 # 查看下一个要处理的任务
-task-master next
+speco-tasker next
 ```
 
 ### 管理任务依赖
 
 ```bash
 # 添加依赖关系
-task-master add-dependency --id=10 --depends-on=5
+speco-tasker add-dependency --id=10 --depends-on=5
 
 # 移除依赖关系
-task-master remove-dependency --id=10 --depends-on=5
+speco-tasker remove-dependency --id=10 --depends-on=5
 
 # 验证依赖关系
-task-master validate-dependencies
+speco-tasker validate-dependencies
 ```
 
 ### 高效的任务管理技巧
@@ -514,54 +515,54 @@ Speco Tasker 提供了多种手动任务管理技巧，帮助您更有效地组�
 
 ```bash
 # 一次查看多个任务
-task-master show 1,2,3,4
+speco-tasker show 1,2,3,4
 
 # 批量更新任务状态（如果支持）
-task-master set-status --id=1,2,3 --status=done
+speco-tasker set-status --id=1,2,3 --status=done
 ```
 
 #### 任务依赖管理
 
 ```bash
 # 添加任务依赖关系
-task-master add-dependency --id=5 --depends-on=3
+speco-tasker add-dependency --id=5 --depends-on=3
 
 # 查看哪些任务可以开始处理
-task-master next
+speco-tasker next
 
 # 验证依赖关系是否正确
-task-master validate-dependencies
+speco-tasker validate-dependencies
 ```
 
 #### 任务重组技巧
 
 ```bash
 # 将复杂任务拆分为子任务
-task-master add-subtask --parent=5 --title="第一步"
-task-master add-subtask --parent=5 --title="第二步"
-task-master add-subtask --parent=5 --title="第三步"
+speco-tasker add-subtask --parent=5 --title="第一步"
+speco-tasker add-subtask --parent=5 --title="第二步"
+speco-tasker add-subtask --parent=5 --title="第三步"
 
 # 重新组织任务结构
-task-master move --from=5.2 --to=6.1  # 将子任务移到其他父任务
+speco-tasker move --from=5.2 --to=6.1  # 将子任务移到其他父任务
 ```
 
 #### 项目进度跟踪
 
 ```bash
 # 查看所有任务状态
-task-master list
+speco-tasker list
 
 # 查看特定状态的任务
-task-master list --status=done
-task-master list --status=in-progress
+speco-tasker list --status=done
+speco-tasker list --status=in-progress
 
 # 生成任务报告文件
-task-master generate
+speco-tasker generate
 ```
 
 #### 团队协作技巧
 
-- **使用标签隔离不同功能的工作**：`task-master add-tag feature-auth`
+- **使用标签隔离不同功能的工作**：`speco-tasker add-tag feature-auth`
 - **定期同步任务状态**：确保团队成员了解最新进展
 - **使用依赖关系协调工作**：避免多人同时处理相互依赖的任务
 
@@ -575,10 +576,10 @@ Speco Tasker 支持带标签的任务列表以进行多上下文开发，这在�
 
 ```bash
 # 基于您的当前 git 分支创建标签
-task-master add-tag --from-branch
+speco-tasker add-tag --from-branch
 
 # 或者使用特定名称创建标签
-task-master add-tag user-auth --description="User authentication feature tasks"
+speco-tasker add-tag user-auth --description="User authentication feature tasks"
 ```
 
 ### 在上下文之间切换
@@ -587,10 +588,10 @@ task-master add-tag user-auth --description="User authentication feature tasks"
 
 ```bash
 # 切换到特定的标签上下文
-task-master use-tag user-auth
+speco-tasker use-tag user-auth
 
 # 查看所有可用标签
-task-master tags
+speco-tasker tags
 ```
 
 ### 在标签之间复制任务
@@ -599,10 +600,10 @@ task-master tags
 
 ```bash
 # 从当前标签复制任务到新标签
-task-master add-tag testing --copy-from-current --description="QA and testing tasks"
+speco-tasker add-tag testing --copy-from-current --description="QA and testing tasks"
 
 # 从特定标签复制任务
-task-master add-tag staging --copy-from production
+speco-tasker add-tag staging --copy-from production
 ```
 
 ### 标签管理
@@ -611,10 +612,10 @@ task-master add-tag staging --copy-from production
 
 ```bash
 # 查看所有可用标签
-task-master tags
+speco-tasker tags
 
 # 查看标签的详细信息
-task-master tags --show-metadata
+speco-tasker tags --show-metadata
 ```
 
 ### 带标签任务列表的好处
@@ -630,9 +631,9 @@ task-master tags --show-metadata
 使用 Speco Tasker 标签的典型 git 工作流程：
 
 1. **创建功能分支**：`git checkout -b feature/user-auth`
-2. **创建匹配标签**：`task-master add-tag --from-branch`
+2. **创建匹配标签**：`speco-tasker add-tag --from-branch`
 3. **在隔离上下文中工作**：所有任务操作都在新标签内工作
-4. **根据需要切换上下文**：使用 `task-master use-tag <name>` 在不同的工作流之间切换
-5. **合并和清理**：合并分支后，可选择使用 `task-master delete-tag <name>` 删除标签
+4. **根据需要切换上下文**：使用 `speco-tasker use-tag <name>` 在不同的工作流之间切换
+5. **合并和清理**：合并分支后，可选择使用 `speco-tasker delete-tag <name>` 删除标签
 
 这个工作流程确保您的任务管理保持有组织，并且在与团队合作或处理多个功能时冲突最小化。
