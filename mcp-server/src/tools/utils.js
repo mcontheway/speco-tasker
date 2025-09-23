@@ -341,7 +341,14 @@ async function handleApiResult(
 		responsePayload.tag = tagInfo;
 	}
 
-	return createContentResponse(responsePayload);
+	const finalResponse = createContentResponse(responsePayload);
+
+	// Ensure we always return an object, never a string
+	if (typeof finalResponse !== "object" || finalResponse === null) {
+		throw new Error("handleApiResult must return an object");
+	}
+
+	return finalResponse;
 }
 
 /**
@@ -544,7 +551,7 @@ function processMCPResponseData(
  */
 function createContentResponse(content) {
 	// FastMCP requires text type, so we format objects as JSON strings
-	return {
+	const response = {
 		content: [
 			{
 				type: "text",
@@ -557,6 +564,13 @@ function createContentResponse(content) {
 			},
 		],
 	};
+
+	// Ensure we always return an object, never a string
+	if (typeof response !== "object" || response === null) {
+		throw new Error("createContentResponse must return an object");
+	}
+
+	return response;
 }
 
 /**
@@ -635,7 +649,7 @@ ${parameterHelp.examples.join("\n")}`;
 💡 Suggestion: Check the parameter help above and ensure all required parameters are provided.`;
 	}
 
-	return {
+	const response = {
 		content: [
 			{
 				type: "text",
@@ -644,6 +658,13 @@ ${parameterHelp.examples.join("\n")}`;
 		],
 		isError: true,
 	};
+
+	// Ensure we always return an object, never a string
+	if (typeof response !== "object" || response === null) {
+		throw new Error("createErrorResponse must return an object");
+	}
+
+	return response;
 }
 
 /**
@@ -770,17 +791,44 @@ function getRawProjectRootFromSession(session, log) {
 }
 
 /**
+ * Validates that a tool response is in the correct format (object, not string)
+ * @param {any} response - The response to validate
+ * @param {string} toolName - Name of the tool for error reporting
+ * @returns {any} The validated response
+ * @throws {Error} If the response is not in the correct format
+ */
+function validateToolResponse(response, toolName) {
+	if (typeof response === "string") {
+		throw new Error(
+			`Tool "${toolName}" returned a string instead of an object. This is not allowed in MCP. Response: ${response.substring(0, 100)}...`,
+		);
+	}
+
+	if (typeof response !== "object" || response === null) {
+		throw new Error(
+			`Tool "${toolName}" returned invalid response type "${typeof response}". Expected object.`,
+		);
+	}
+
+	return response;
+}
+
+/**
  * Higher-order function to wrap MCP tool execute methods.
  * Ensures args.projectRoot is present and normalized before execution.
  * Uses SPECO_PROJECT_ROOT environment variable with proper precedence.
  * @param {Function} executeFn - The original async execute(args, context) function.
+ * @param {string} [toolName] - Name of the tool for error reporting (auto-detected if not provided)
  * @returns {Function} The wrapped async execute function.
  */
-function withNormalizedProjectRoot(executeFn) {
+function withNormalizedProjectRoot(executeFn, toolName) {
 	return async (args, context) => {
 		const { log, session } = context;
 		let normalizedRoot = null;
 		let rootSource = "unknown";
+
+		// Use provided toolName or try to infer from context/stack
+		const finalToolName = toolName || "unknown-tool";
 
 		try {
 			// PRECEDENCE ORDER:
@@ -896,7 +944,10 @@ function withNormalizedProjectRoot(executeFn) {
 			const updatedArgs = { ...args, projectRoot: normalizedRoot };
 
 			// Execute the original function with normalized root in args
-			return await executeFn(updatedArgs, context);
+			const result = await executeFn(updatedArgs, context);
+
+			// Validate the response format
+			return validateToolResponse(result, finalToolName);
 		} catch (error) {
 			log.error(
 				`Error within withNormalizedProjectRoot HOF (Normalized Root: ${normalizedRoot}): ${error.message}`,
@@ -906,7 +957,8 @@ function withNormalizedProjectRoot(executeFn) {
 				log.debug(error.stack);
 			}
 			// Return a generic error or re-throw depending on desired behavior
-			return createErrorResponse(`Operation failed: ${error.message}`);
+			const errorResponse = createErrorResponse(`Operation failed: ${error.message}`);
+			return validateToolResponse(errorResponse, finalToolName);
 		}
 	};
 }
@@ -994,4 +1046,5 @@ export {
 	getRawProjectRootFromSession,
 	withNormalizedProjectRoot,
 	checkProgressCapability,
+	validateToolResponse,
 };
