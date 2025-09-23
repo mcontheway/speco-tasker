@@ -95,11 +95,13 @@ async function addSubtask(
 					: 0;
 			const newSubtaskId = highestSubtaskId + 1;
 
-			// Clone the existing task to be converted to a subtask
+			// Clone the existing task and merge newSubtaskData (for spec_files and other fields if provided)
 			newSubtask = {
 				...existingTask,
+				...newSubtaskData, // Merge newSubtaskData to prioritize provided fields
 				id: newSubtaskId,
 				parentTaskId: parentIdNum,
+				spec_files: newSubtaskData.spec_files || existingTask.spec_files || [], // Ensure spec_files is correctly set
 			};
 
 			// Add to parent's subtasks

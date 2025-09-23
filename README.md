@@ -8,6 +8,7 @@
 ## 📚 文档导航 | Documentation Navigation
 
 - [📖 快速开始](docs/installation-guide.md) - 安装和配置指南 | Installation and Configuration Guide
+- [🔧 MCP 工具指南](docs/mcp-tools-complete-guide.md) - MCP 工具完整使用指南 | Complete MCP Tools Guide
 - [📝 更新日志](docs/changelog.md) - 版本更新历史 | Version Update History
 - [📋 命令参考](docs/command-reference-zh.md) - 详细命令说明 | Detailed Command Reference
 - [⚙️ 配置指南](docs/configuration-zh.md) - 配置选项详解 | Configuration Options Details
@@ -126,6 +127,43 @@ speco-tasker init  # 自动检测配置，一键完成
 }
 ```
 
+### 从代码仓库配置 | Configuration from Code Repository
+
+**适用于开发者和贡献者：| For Developers and Contributors:**
+
+**Cursor 用户：| Cursor Users:**
+```json
+// 编辑 .cursor/mcp.json | Edit .cursor/mcp.json
+{
+  "mcpServers": {
+    "speco-tasker": {
+      "command": "node",
+      "args": ["mcp-server/server.js"]
+    }
+  }
+}
+```
+
+**VS Code 用户：| VS Code Users:**
+```json
+// 编辑 settings.json 中的 mcp.servers | Edit mcp.servers in settings.json
+{
+  "mcp.servers": {
+    "speco-tasker": {
+      "command": "node",
+      "args": ["mcp-server/server.js"],
+      "cwd": "/path/to/speco-tasker-repo",
+      "type": "stdio"
+    }
+  }
+}
+```
+
+**注意事项：| Notes:**
+- 确保当前目录为 Speco Tasker 代码仓库根目录 | Make sure current directory is the Speco Tasker repository root
+- 适用于测试最新功能和开发调试 | Suitable for testing latest features and development debugging
+- 需要先运行 `npm install` 安装依赖 | Need to run `npm install` first to install dependencies
+
 ### 基础使用 | Basic Usage
 
 ```bash
@@ -232,9 +270,6 @@ speco-tasker migrate
 speco-tasker validate-migration
 ```
 
-## 🤝 贡献 | Contributing
-
-我们欢迎各种形式的贡献！请查看我们的[贡献指南](CONTRIBUTING.md)了解详细信息。
 
 ### 开发环境设置 | Development Environment Setup
 

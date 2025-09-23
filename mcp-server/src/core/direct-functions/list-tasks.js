@@ -100,7 +100,7 @@ export async function listTasksDirect(args, log, context = {}) {
 		return result;
 	} catch (error) {
 		log.error(`Unexpected error during listTasks: ${error.message}`);
-		console.error(error.stack);
+		log.error(`Stack trace: ${error.stack}`);
 		return {
 			success: false,
 			error: {

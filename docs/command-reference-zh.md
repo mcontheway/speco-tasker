@@ -4,6 +4,12 @@
 
 This is a complete reference of all available commands. Speco Tasker is a pure manual task management system with all AI features completely removed, focusing on efficient manual task management.
 
+## 📚 文档导航 | Documentation Navigation
+
+- [📖 英文完整参考](comprehensive-cli-mcp-reference.md) - 包含更多使用提示和最佳实践
+- [🔧 MCP 工具指南](mcp-tools-complete-guide.md) - 专门的 MCP 工具使用指南
+- [📋 使用教程](tutorial.md) - 完整的使用教程和示例
+
 ## 项目初始化 | Project Initialization
 
 ```bash
@@ -72,6 +78,10 @@ speco-tasker set-status --id=1.1,1.2 --status=<status>
 
 # 在特定标签中设置任务状态 | Set task status in specific tag
 speco-tasker set-status --id=1 --status=done --tag=<tag-name>
+
+# 别名命令 | Alias commands
+speco-tasker mark --id=<id> --status=<status>    # set-status 的别名
+speco-tasker set --id=<id> --status=<status>     # set-status 的别名
 ```
 
 ## 添加新任务 | Add New Task
@@ -249,6 +259,44 @@ speco-tasker move --from=5 --from-tag=<source-tag> --to-tag=<target-tag>
 ```
 
 
+## 项目迁移
+
+```bash
+# 迁移现有项目以使用新的目录结构
+speco-tasker migrate
+
+# 强制迁移，即使目录已存在
+speco-tasker migrate --force
+
+# 迁移前创建备份
+speco-tasker migrate --backup
+
+# 成功迁移后删除旧文件
+speco-tasker migrate --cleanup
+
+# 跳过确认提示
+speco-tasker migrate --yes
+
+# 显示将要迁移的内容但不实际执行
+speco-tasker migrate --dry-run
+```
+
+## README 同步
+
+```bash
+# 将当前任务列表同步到项目根目录的 README.md 文件
+speco-tasker sync-readme
+
+# 在 README 输出中包含子任务
+speco-tasker sync-readme --with-subtasks
+
+# 仅显示匹配特定状态的任务
+speco-tasker sync-readme --status=pending
+
+# 在特定标签中同步任务
+speco-tasker sync-readme --tag=<tag-name>
+```
+
 ## 标签管理
 
 Speco Tasker 支持带标签的任务列表，用于多上下文任务管理。每个标签代表一个单独的、隔离的任务上下文。
@@ -313,4 +361,4 @@ speco-tasker init
 
 ---
 
-*最后更新：2025年09月17日*
+*最后更新：2025年09月23日*

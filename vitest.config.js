@@ -51,6 +51,8 @@ export default defineConfig({
 			"**/?(*.)+(spec|test).?([mc])[jt]s?(x)",
 			"**/simple-config-test.js",
 			"**/es-module-test.mjs",
+			"tests/contract/**/*.js",
+			"tests/integration/**/*.js",
 		],
 
 		// Exclude problematic files temporarily

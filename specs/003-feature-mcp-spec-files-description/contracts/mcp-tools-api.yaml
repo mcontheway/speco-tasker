@@ -1,0 +1,444 @@
+openapi: 3.0.3
+info:
+  title: Speco-Tasker MCP Tools API
+  description: MCP 工具接口规范 - spec_files 字段升级版
+  version: 1.1.0
+  contact:
+    name: Speco-Tasker Team
+
+servers:
+  - url: http://localhost:3000
+    description: Local MCP Server
+
+paths:
+  /tools/add_task:
+    post:
+      summary: 添加新任务
+      description: 创建一个新的任务，支持完整的规范文档对象数组
+      operationId: addTask
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddTaskRequest'
+      responses:
+        '200':
+          description: 任务创建成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskResponse'
+        '400':
+          description: 参数验证错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /tools/update_task:
+    post:
+      summary: 更新任务
+      description: 更新现有任务的属性，支持规范文档更新
+      operationId: updateTask
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTaskRequest'
+      responses:
+        '200':
+          description: 任务更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskResponse'
+        '400':
+          description: 参数验证错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /tools/add_subtask:
+    post:
+      summary: 添加子任务
+      description: 为现有任务添加子任务，支持规范文档关联
+      operationId: addSubtask
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddSubtaskRequest'
+      responses:
+        '200':
+          description: 子任务创建成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubtaskResponse'
+        '400':
+          description: 参数验证错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /tools/update_subtask:
+    post:
+      summary: 更新子任务
+      description: 更新现有子任务的属性，支持规范文档更新
+      operationId: updateSubtask
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSubtaskRequest'
+      responses:
+        '200':
+          description: 子任务更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubtaskResponse'
+        '400':
+          description: 参数验证错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    # 基础数据类型
+    SpecFile:
+      type: object
+      required:
+        - type
+        - title
+        - file
+      properties:
+        type:
+          type: string
+          enum: [plan, spec, requirement, design, test, other]
+          description: 文档类型
+          example: "spec"
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: 文档标题
+          example: "用户认证 API 规格"
+        file:
+          type: string
+          minLength: 1
+          description: 文件路径（相对路径）
+          example: "docs/auth-api-spec.yaml"
+
+    # 请求模式
+    AddTaskRequest:
+      type: object
+      required:
+        - title
+        - description
+        - details
+        - testStrategy
+        - spec_files
+      properties:
+        projectRoot:
+          type: string
+          description: 项目根目录路径
+        title:
+          type: string
+          minLength: 1
+          description: 任务标题
+        description:
+          type: string
+          minLength: 1
+          description: 任务描述
+        details:
+          type: string
+          minLength: 1
+          description: 实现细节
+        testStrategy:
+          type: string
+          minLength: 1
+          description: 测试策略
+        spec_files:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpecFile'
+          minItems: 1
+          description: 规范文档列表
+        dependencies:
+          type: string
+          description: 依赖任务ID（逗号分隔）
+        priority:
+          type: string
+          enum: [high, medium, low]
+          default: medium
+          description: 任务优先级
+        logs:
+          type: string
+          description: 任务日志
+        file:
+          type: string
+          description: 任务文件路径
+        tag:
+          type: string
+          description: 任务标签
+
+    UpdateTaskRequest:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          description: 任务ID
+        title:
+          type: string
+          description: 更新任务标题
+        description:
+          type: string
+          description: 更新任务描述
+        status:
+          type: string
+          enum: [pending, in-progress, done]
+          description: 更新任务状态
+        priority:
+          type: string
+          enum: [high, medium, low]
+          description: 更新任务优先级
+        details:
+          type: string
+          description: 更新任务细节
+        testStrategy:
+          type: string
+          description: 更新测试策略
+        dependencies:
+          type: string
+          description: 更新依赖关系（逗号分隔）
+        spec_files:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpecFile'
+          description: 更新规范文档列表
+        logs:
+          type: string
+          description: 更新任务日志
+        append:
+          type: boolean
+          default: true
+          description: 是否追加模式
+        file:
+          type: string
+          description: 任务文件路径
+        projectRoot:
+          type: string
+          description: 项目根目录
+        tag:
+          type: string
+          description: 任务标签
+
+    AddSubtaskRequest:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          description: 父任务ID
+        taskId:
+          type: string
+          description: 现有任务ID（转换为子任务）
+        title:
+          type: string
+          description: 子任务标题
+        description:
+          type: string
+          description: 子任务描述
+        details:
+          type: string
+          description: 子任务实现细节
+        status:
+          type: string
+          enum: [pending, in-progress, done]
+          default: pending
+          description: 子任务状态
+        dependencies:
+          type: string
+          description: 子任务依赖（逗号分隔）
+        spec_files:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpecFile'
+          description: 子任务规范文档列表
+        priority:
+          type: string
+          enum: [high, medium, low]
+          description: 子任务优先级
+        logs:
+          type: string
+          description: 子任务日志
+        file:
+          type: string
+          description: 任务文件路径
+        skipGenerate:
+          type: boolean
+          default: false
+          description: 是否跳过文件生成
+        projectRoot:
+          type: string
+          description: 项目根目录
+        tag:
+          type: string
+          description: 任务标签
+
+    UpdateSubtaskRequest:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          description: 子任务ID（格式：parentId.subtaskId）
+        title:
+          type: string
+          description: 更新子任务标题
+        description:
+          type: string
+          description: 更新子任务描述
+        status:
+          type: string
+          enum: [pending, in-progress, done]
+          description: 更新子任务状态
+        priority:
+          type: string
+          enum: [high, medium, low]
+          description: 更新子任务优先级
+        details:
+          type: string
+          description: 更新子任务细节
+        testStrategy:
+          type: string
+          description: 更新子任务测试策略
+        dependencies:
+          type: string
+          description: 更新子任务依赖关系
+        spec_files:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpecFile'
+          description: 更新子任务规范文档列表
+        logs:
+          type: string
+          description: 更新子任务日志
+        append:
+          type: boolean
+          default: true
+          description: 是否追加模式
+        file:
+          type: string
+          description: 任务文件路径
+        projectRoot:
+          type: string
+          description: 项目根目录
+        tag:
+          type: string
+          description: 任务标签
+
+    # 响应模式
+    TaskResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            taskId:
+              type: integer
+              description: 创建的任务ID
+              example: 5
+            message:
+              type: string
+              description: 成功消息
+              example: "成功添加新任务 #5"
+
+    SubtaskResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            message:
+              type: string
+              description: 成功消息
+              example: "新子任务 1.2 创建成功"
+            subtask:
+              $ref: '#/components/schemas/Subtask'
+
+    Subtask:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: 子任务ID
+        title:
+          type: string
+          description: 子任务标题
+        description:
+          type: string
+          description: 子任务描述
+        status:
+          type: string
+          enum: [pending, in-progress, done]
+          description: 子任务状态
+        priority:
+          type: string
+          enum: [high, medium, low]
+          description: 子任务优先级
+        spec_files:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpecFile'
+          description: 子任务规范文档列表
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              description: 错误代码
+              example: "VALIDATION_ERROR"
+            message:
+              type: string
+              description: 错误消息
+              example: "spec_files 参数格式错误"
+            details:
+              type: object
+              description: 详细错误信息
+              properties:
+                field:
+                  type: string
+                  example: "spec_files"
+                issue:
+                  type: string
+                  example: "缺少必要字段 'title'"
+                suggestion:
+                  type: string
+                  example: "请提供文档标题，例如: 'API 技术规格'"
