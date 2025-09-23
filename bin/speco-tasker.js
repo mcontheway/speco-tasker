@@ -128,7 +128,7 @@ class SpecoTaskerCLI {
 		// 任务管理命令（代理到原有系统）
 		// 直接代理所有未定义的命令到原有系统
 		this.program
-			.command("*")
+			.command("* [args...]", { isDefault: true })
 			.description("任务管理命令")
 			.allowUnknownOption()
 			.action(this.handleTaskCommand.bind(this));
