@@ -127,6 +127,43 @@ speco-tasker init  # 自动检测配置，一键完成
 }
 ```
 
+### 从代码仓库配置 | Configuration from Code Repository
+
+**适用于开发者和贡献者：| For Developers and Contributors:**
+
+**Cursor 用户：| Cursor Users:**
+```json
+// 编辑 .cursor/mcp.json | Edit .cursor/mcp.json
+{
+  "mcpServers": {
+    "speco-tasker": {
+      "command": "node",
+      "args": ["mcp-server/server.js"]
+    }
+  }
+}
+```
+
+**VS Code 用户：| VS Code Users:**
+```json
+// 编辑 settings.json 中的 mcp.servers | Edit mcp.servers in settings.json
+{
+  "mcp.servers": {
+    "speco-tasker": {
+      "command": "node",
+      "args": ["mcp-server/server.js"],
+      "cwd": "/path/to/speco-tasker-repo",
+      "type": "stdio"
+    }
+  }
+}
+```
+
+**注意事项：| Notes:**
+- 确保当前目录为 Speco Tasker 代码仓库根目录 | Make sure current directory is the Speco Tasker repository root
+- 适用于测试最新功能和开发调试 | Suitable for testing latest features and development debugging
+- 需要先运行 `npm install` 安装依赖 | Need to run `npm install` first to install dependencies
+
 ### 基础使用 | Basic Usage
 
 ```bash
