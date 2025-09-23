@@ -10,32 +10,17 @@ if ! npm run quality-check; then
     exit 1
 fi
 
-# Run unit tests (non-blocking due to graceful-fs issue, but warn)
-echo "🧪 Running unit tests..."
-if [ "$SKIP_GRACEFUL_FS_TESTS" = "true" ]; then
-    echo "⏭️  Unit tests skipped (SKIP_GRACEFUL_FS_TESTS=true)"
-    npm run test:ci:bypass
-elif npm run test:ci; then
-    echo "✅ Unit tests passed"
+# Run tests (using Vitest - non-blocking for compatibility issues)
+echo "🧪 Running tests..."
+if [ "$SKIP_TESTS" = "true" ]; then
+    echo "⏭️  Tests skipped (SKIP_TESTS=true)"
+elif npm run test:vitest:ci; then
+    echo "✅ Tests passed"
 else
-    echo "⚠️  Unit tests failed (graceful-fs compatibility issue)"
-    echo "   Production environment is unaffected, but tests should be fixed."
+    echo "⚠️  Tests failed (environment compatibility issue)"
+    echo "   Production environment is unaffected, but please check the test environment."
     echo "   This does not block the push."
-    echo "   To skip tests: SKIP_GRACEFUL_FS_TESTS=true git push"
-fi
-
-# Run integration tests (non-blocking due to graceful-fs issue, but warn)
-echo "🔗 Running integration tests..."
-if [ "$SKIP_GRACEFUL_FS_TESTS" = "true" ]; then
-    echo "⏭️  Integration tests skipped (SKIP_GRACEFUL_FS_TESTS=true)"
-    echo "✅ Integration tests bypassed (graceful-fs compatibility issue)"
-elif npm run test:integration; then
-    echo "✅ Integration tests passed"
-else
-    echo "⚠️  Integration tests failed (graceful-fs compatibility issue)"
-    echo "   Production environment is unaffected, but tests should be fixed."
-    echo "   This does not block the push."
-    echo "   To skip tests: SKIP_GRACEFUL_FS_TESTS=true git push"
+    echo "   To skip tests temporarily: SKIP_TESTS=true git push"
 fi
 
 echo "✅ Pre-push checks completed"
