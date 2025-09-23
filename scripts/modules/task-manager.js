@@ -6,7 +6,7 @@
 import addSubtask from "./task-manager/add-subtask.js";
 import addTask from "./task-manager/add-task.js";
 import clearSubtasks from "./task-manager/clear-subtasks.js";
-import findNextTask from "./task-manager/find-next-task.js";
+// findNextTask moved to task-finder.js to break circular dependencies
 import generateTaskFiles from "./task-manager/generate-task-files.js";
 // isTaskDependentOn moved to task-dependency-utils.js
 // Dynamic import to break circular dependency: import listTasks from "./task-manager/list-tasks.js";
@@ -35,7 +35,7 @@ export {
 	addTask,
 	addSubtask,
 	removeSubtask,
-	findNextTask,
+	// findNextTask moved to task-finder.js
 	removeTask,
 	findTaskById,
 	taskExists,

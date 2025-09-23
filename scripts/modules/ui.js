@@ -28,6 +28,7 @@ import {
 	readJSON,
 	truncate,
 } from "./utils.js";
+import { formatDependenciesWithStatus } from "./formatting-utils.js";
 
 // Create a color gradient for the banner
 const coolGradient = gradient(["#00b4d8", "#0077b6", "#03045e"]);
@@ -749,8 +750,8 @@ async function displayNextTask(
 	const { readComplexityReport } = await import("./core-utils.js");
 	const complexityReport = readComplexityReport(complexityReportPath);
 
-	// Find the next task - dynamic import to break circular dependency
-	const { findNextTask } = await import("./task-manager.js");
+	// Find the next task - import from dedicated task-finder module
+	const { default: findNextTask } = await import("./task-finder.js");
 	const nextTask = findNextTask(data.tasks, complexityReport);
 
 	if (!nextTask) {
