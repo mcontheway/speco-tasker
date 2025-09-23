@@ -4,6 +4,10 @@
   "description": "Pure Task Management System optimized for built-in Agents in AI editors like Cursor and Windsurf",
   "type": "module",
   "main": "index.js",
+  "bin": {
+    "speco-tasker": "mcp-server/server.js",
+    "speco-tasker-cli": "bin/speco-tasker.js"
+  },
   "scripts": {
     "test": "vitest run",
     "test:vitest": "vitest run",
