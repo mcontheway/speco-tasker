@@ -1,36 +1,36 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-// import {  jest  } from '@jest/globals'; // Jest is already global
+import { vi } from "vitest";
 
 // Use __dirname directly (available in CommonJS)
-const testDirname = __dirname;
+const testDirname = path.dirname(fileURLToPath(import.meta.url));
 
 // IMPORTANT: Mock ESM modules BEFORE any imports that use them
-jest.mock("boxen", () => ({
+vi.mock("boxen", () => ({
 	__esModule: true,
-	default: jest.fn((text, options) => `[BOX] ${text}`),
+	default: vi.fn((text, options) => `[BOX] ${text}`),
 }));
 
-jest.mock("chalk", () => ({
+vi.mock("chalk", () => ({
 	__esModule: true,
 	default: {
-		blue: jest.fn((text) => text),
-		green: jest.fn((text) => text),
-		red: jest.fn((text) => text),
-		yellow: jest.fn((text) => text),
-		cyan: jest.fn((text) => text),
-		magenta: jest.fn((text) => text),
-		white: jest.fn((text) => text),
-		gray: jest.fn((text) => text),
-		bold: jest.fn((text) => text),
+		blue: vi.fn((text) => text),
+		green: vi.fn((text) => text),
+		red: vi.fn((text) => text),
+		yellow: vi.fn((text) => text),
+		cyan: vi.fn((text) => text),
+		magenta: vi.fn((text) => text),
+		white: vi.fn((text) => text),
+		gray: vi.fn((text) => text),
+		bold: vi.fn((text) => text),
 	},
 }));
 
 // Mock config-manager to avoid ESM issues
-jest.mock("../../scripts/modules/config-manager.js", () => ({
-	getProjectName: jest.fn(() => "test-project"),
-	getMainProvider: jest.fn(() => ({
+vi.mock("../../scripts/modules/config-manager.js", () => ({
+	getProjectName: vi.fn(() => "test-project"),
+	getMainProvider: vi.fn(() => ({
 		name: "test-provider",
 		model: "test-model",
 	})),
@@ -39,12 +39,12 @@ jest.mock("../../scripts/modules/config-manager.js", () => ({
 
 // IMPORTANT: Mock dependencies BEFORE any imports that use them
 const mockUtils = {
-	readJSON: jest.fn(),
-	writeJSON: jest.fn(),
-	findProjectRoot: jest.fn(() => "/test/project/root"),
-	log: jest.fn(),
-	setTasksForTag: jest.fn(),
-	traverseDependencies: jest.fn((sourceTasks, allTasks, options = {}) => {
+	readJSON: vi.fn(),
+	writeJSON: vi.fn(),
+	findProjectRoot: vi.fn(() => "/test/project/root"),
+	log: vi.fn(),
+	setTasksForTag: vi.fn(),
+	traverseDependencies: vi.fn((sourceTasks, allTasks, options = {}) => {
 		// Mock realistic dependency behavior for testing
 		const { direction = "forward" } = options;
 
@@ -80,7 +80,7 @@ const mockUtils = {
 };
 
 // Mock the utils module BEFORE importing it using absolute paths
-jest.unstable_mockModule(
+vi.doMock(
 	path.join(__dirname, "../../scripts/modules/utils.js"),
 	() => mockUtils,
 );
@@ -88,15 +88,15 @@ jest.unstable_mockModule(
 // Mock other dependencies BEFORE importing them using absolute paths
 // Note: is-task-dependent.js doesn't exist, removing this mock
 
-jest.unstable_mockModule(
+vi.doMock(
 	path.join(__dirname, "../../scripts/modules/dependency-manager.js"),
 	() => ({
-		findCrossTagDependencies: jest.fn(() => {
+		findCrossTagDependencies: vi.fn(() => {
 			// Since dependencies can only exist within the same tag,
 			// this function should never find any cross-tag conflicts
 			return [];
 		}),
-		getDependentTaskIds: jest.fn(
+		getDependentTaskIds: vi.fn(
 			(sourceTasks, crossTagDependencies, allTasks) => {
 				// Since we now use findAllDependenciesRecursively in the actual implementation,
 				// this mock simulates finding all dependencies recursively within the same tag
@@ -129,7 +129,7 @@ jest.unstable_mockModule(
 				return Array.from(dependentIds);
 			},
 		),
-		validateSubtaskMove: jest.fn((taskId, sourceTag, targetTag) => {
+		validateSubtaskMove: vi.fn((taskId, sourceTag, targetTag) => {
 			// Throw error for subtask IDs
 			const taskIdStr = String(taskId);
 			if (taskIdStr.includes(".")) {
@@ -139,13 +139,13 @@ jest.unstable_mockModule(
 	}),
 );
 
-jest.unstable_mockModule(
+vi.doMock(
 	path.join(
 		__dirname,
 		"../../scripts/modules/task-manager/generate-task-files.js",
 	),
 	() => ({
-		default: jest.fn().mockResolvedValue(),
+		default: vi.fn().mockResolvedValue(),
 	}),
 );
 

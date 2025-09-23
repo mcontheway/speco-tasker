@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { vi } from "vitest";
 import mockFs from "mock-fs";
 
 // Import the actual move task functionality
@@ -12,10 +13,10 @@ const originalConsole = { ...console };
 beforeAll(() => {
 	global.console = {
 		...console,
-		log: jest.fn(),
-		error: jest.fn(),
-		warn: jest.fn(),
-		info: jest.fn(),
+		log: vi.fn(),
+		error: vi.fn(),
+		warn: vi.fn(),
+		info: vi.fn(),
 	};
 });
 
