@@ -319,7 +319,22 @@ async function handleApiResult(
 
 	if (!result.success) {
 		const errorMsg = result.error?.message || `Unknown ${errorPrefix}`;
-		log.error(`${errorPrefix}: ${errorMsg}`);
+
+		// Check if this is a user input validation error (not a program error)
+		const isUserInputError = errorMsg.includes("至少需要") ||
+			errorMsg.includes("字段") ||
+			errorMsg.includes("必须是") ||
+			errorMsg.includes("无效的") ||
+			errorMsg.includes("Required") ||
+			errorMsg.includes("Invalid");
+
+		// Log user input errors as info level, program errors as error level
+		if (isUserInputError) {
+			log.info(`${errorPrefix}: ${errorMsg}`);
+		} else {
+			log.error(`${errorPrefix}: ${errorMsg}`);
+		}
+
 		return createErrorResponse(errorMsg, versionInfo, tagInfo);
 	}
 
