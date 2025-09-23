@@ -568,12 +568,19 @@ describe.skip("Cross-Tag Move CLI Integration", () => {
 	});
 
 	it("should provide helpful error messages for dependency conflicts", async () => {
-		// Mock dependency conflict with detailed error
-		moveTaskModule.moveTasksBetweenTags.mockRejectedValue(
-			new Error(
-				"Cross-tag dependency conflicts detected. Task 1 depends on Task 2 which is in a different tag.",
-			),
+		// Create mock dependencies for dependency conflict scenario
+		let moveTasksCallCount = 0;
+		const dependencyError = new Error(
+			"Cross-tag dependency conflicts detected. Task 1 depends on Task 2 which is in a different tag."
 		);
+
+		const mockDeps = createTestMockDependencies({
+			moveTasksBetweenTags: () => async (...args) => {
+				moveTasksCallCount++;
+				throw dependencyError;
+			},
+			getCurrentTag: () => "main"
+		});
 
 		const options = {
 			from: "1",
@@ -583,15 +590,17 @@ describe.skip("Cross-Tag Move CLI Integration", () => {
 
 		const { errorMessages, restore } = captureConsoleAndExit();
 
-		await expect(moveAction(options)).rejects.toThrow(
-			"Cross-tag dependency conflicts detected. Task 1 depends on Task 2 which is in a different tag.",
+		// Execute and expect detailed error message
+		await expect(moveAction(options, mockDeps, { tempDir })).rejects.toThrow(
+			"Cross-tag dependency conflicts detected. Task 1 depends on Task 2 which is in a different tag."
 		);
 
-		expect(moveTaskModule.moveTasksBetweenTags).toHaveBeenCalled();
+		// Verify function was called and error was captured
+		expect(moveTasksCallCount).toBe(1);
 		expect(
 			errorMessages.some((msg) =>
-				msg.includes("Cross-tag dependency conflicts detected"),
-			),
+				msg.includes("Cross-tag dependency conflicts detected")
+			)
 		).toBe(true);
 
 		restore();
