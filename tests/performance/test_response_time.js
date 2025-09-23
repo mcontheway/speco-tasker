@@ -126,7 +126,9 @@ function setupTestData() {
 	const taskmasterDir = path.join(projectRoot, ".speco");
 
 	if (!fs.existsSync(taskmasterDir)) {
-		throw new Error("Project .speco directory not found. Run 'npm run init' first.");
+		throw new Error(
+			"Project .speco directory not found. Run 'npm run init' first.",
+		);
 	}
 
 	const configPath = path.join(taskmasterDir, "config.json");
@@ -141,7 +143,7 @@ function setupTestData() {
 		throw new Error("Project tasks.json not found. Create some tasks first.");
 	}
 
-	console.log(`Using actual project configuration:`);
+	console.log("Using actual project configuration:");
 	console.log(`- Project root: ${projectRoot}`);
 	console.log(`- Config: ${configPath}`);
 	console.log(`- Tasks: ${tasksPath}`);
@@ -158,7 +160,9 @@ function setupTestData() {
  * Note: Performance tests no longer create test fixtures, so cleanup is minimal
  */
 function cleanupTestData() {
-	console.log("Performance tests use actual project configuration - no cleanup needed");
+	console.log(
+		"Performance tests use actual project configuration - no cleanup needed",
+	);
 }
 
 describe("Task Master Command Response Time", () => {

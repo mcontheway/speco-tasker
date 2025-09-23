@@ -3,10 +3,10 @@
  */
 
 // Mock external dependencies before importing the module under test
-import { beforeEach, describe, expect, it, jest } from "@jest/globals";
+import { vi } from "vitest";
 
-jest.mock("../../../scripts/modules/utils.js", () => ({
-	log: jest.fn(),
+vi.mock("../../../scripts/modules/utils.js", () => ({
+	log: vi.fn(),
 }));
 
 // Import the module under test

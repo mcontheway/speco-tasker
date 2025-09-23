@@ -3,32 +3,42 @@
  */
 
 // Mock fs and path modules for testing with proper implementations
-jest.mock("node:fs", () => ({
-	existsSync: jest.fn(),
-	mkdirSync: jest.fn(),
-}));
-jest.mock("node:path", () => ({
-	resolve: jest.fn(),
-	dirname: jest.fn(),
-	isAbsolute: jest.fn(),
-	basename: jest.fn(),
-	parse: jest.fn(),
-	join: jest.fn(),
-	sep: "/",
-}));
+import { vi } from "vitest";
+
+vi.mock("node:fs", async (importOriginal) => {
+	const actual = await importOriginal();
+	return {
+		...actual,
+		existsSync: vi.fn(),
+		mkdirSync: vi.fn(),
+	};
+});
+vi.mock("node:path", async (importOriginal) => {
+	const actual = await importOriginal();
+	return {
+		...actual,
+		resolve: vi.fn(),
+		dirname: vi.fn(),
+		isAbsolute: vi.fn(),
+		basename: vi.fn(),
+		parse: vi.fn(),
+		join: vi.fn(),
+		sep: "/",
+	};
+});
 
 // Mock the utils module to avoid import.meta.url issues
-jest.mock("../../../scripts/modules/utils.js", () => ({
-	log: jest.fn(),
-	findProjectRoot: jest.fn(() => "/mock/project/root"),
-	isEmpty: jest.fn(() => false),
-	resolveEnvVariable: jest.fn(() => "mock_value"),
+vi.mock("../../../scripts/modules/utils.js", () => ({
+	log: vi.fn(),
+	findProjectRoot: vi.fn(() => "/mock/project/root"),
+	isEmpty: vi.fn(() => false),
+	resolveEnvVariable: vi.fn(() => "mock_value"),
 }));
 
 // Mock config-manager to avoid import.meta.url issues
-jest.mock("../../../scripts/modules/config-manager.js", () => ({
-	getDebugFlag: jest.fn(() => false),
-	getLogLevel: jest.fn(() => "info"),
+vi.mock("../../../scripts/modules/config-manager.js", () => ({
+	getDebugFlag: vi.fn(() => false),
+	getLogLevel: vi.fn(() => "info"),
 }));
 
 // Import after mocking
@@ -38,13 +48,13 @@ import {
 	resolveTasksOutputPath,
 } from "../../../src/utils/path-utils.js";
 
-// Get references to mocked functions (avoid jest.mocked with require to prevent process.cwd conflicts)
-const mockFs = require("node:fs");
-const mockPath = require("node:path");
+// Import mocked functions
+import { existsSync, mkdirSync } from "node:fs";
+import * as path from "node:path";
 
 describe("Path Utilities", () => {
 	beforeEach(() => {
-		jest.clearAllMocks();
+		vi.clearAllMocks();
 	});
 
 	describe("normalizeProjectRoot", () => {
@@ -93,19 +103,19 @@ describe("Path Utilities", () => {
 	describe("findProjectRoot", () => {
 		beforeEach(() => {
 			// Mock path functions
-			mockPath.resolve.mockImplementation((...args) => args.join("/"));
-			mockPath.dirname.mockImplementation(
+			path.resolve.mockImplementation((...args) => args.join("/"));
+			path.dirname.mockImplementation(
 				(p) => p.split("/").slice(0, -1).join("/") || "/",
 			);
-			mockPath.isAbsolute.mockReturnValue(false);
-			mockPath.basename.mockImplementation((p) => p.split("/").pop() || "");
-			mockPath.parse.mockReturnValue({ root: "/" });
-			mockPath.join.mockImplementation((...args) => args.join("/"));
+			path.isAbsolute.mockReturnValue(false);
+			path.basename.mockImplementation((p) => p.split("/").pop() || "");
+			path.parse.mockReturnValue({ root: "/" });
+			path.join.mockImplementation((...args) => args.join("/"));
 		});
 
 		test("should return cwd when no project markers found", () => {
-			mockFs.existsSync.mockReturnValue(false);
-			const spyCwd = jest.spyOn(process, "cwd");
+			existsSync.mockReturnValue(false);
+			const spyCwd = vi.spyOn(process, "cwd");
 			spyCwd.mockReturnValue("/current/dir");
 
 			const result = findProjectRoot("/start/dir");
@@ -115,14 +125,14 @@ describe("Path Utilities", () => {
 		});
 
 		test("should find project root with .speco marker", () => {
-			mockFs.existsSync.mockImplementation(
+			existsSync.mockImplementation(
 				(p) =>
 					typeof p === "string" &&
 					(p === "/home/user/project/src/.speco/tasks/tasks.json" ||
 						p.includes(".taskmaster")),
 			);
-			mockPath.resolve.mockImplementation((p) => p);
-			const spyCwd = jest.spyOn(process, "cwd");
+			path.resolve.mockImplementation((p) => p);
+			const spyCwd = vi.spyOn(process, "cwd");
 			spyCwd.mockReturnValue("/current/dir");
 
 			const result = findProjectRoot("/home/user/project/src");
@@ -136,19 +146,19 @@ describe("Path Utilities", () => {
 		let spyCwd;
 
 		beforeEach(() => {
-			spyCwd = jest.spyOn(process, "cwd");
+			spyCwd = vi.spyOn(process, "cwd");
 			spyCwd.mockReturnValue("/mock/cwd");
-			mockPath.isAbsolute.mockReturnValue(false);
-			mockPath.resolve.mockImplementation((...args) => {
+			path.isAbsolute.mockReturnValue(false);
+			path.resolve.mockImplementation((...args) => {
 				if (args.length === 2 && args[0] === "/mock/cwd") {
 					return `/mocked/resolved/${args[1]}`;
 				}
 				return args.join("/");
 			});
-			mockPath.dirname.mockImplementation(
+			path.dirname.mockImplementation(
 				(p) => p.split("/").slice(0, -1).join("/") || "/",
 			);
-			mockPath.join.mockImplementation((...args) => args.join("/"));
+			path.join.mockImplementation((...args) => args.join("/"));
 		});
 
 		afterEach(() => {
@@ -158,9 +168,9 @@ describe("Path Utilities", () => {
 		});
 
 		test("should return explicit absolute path", () => {
-			mockPath.isAbsolute.mockReturnValue(true);
-			mockPath.resolve.mockImplementation((...args) => args.join("/"));
-			mockPath.dirname.mockImplementation(
+			path.isAbsolute.mockReturnValue(true);
+			path.resolve.mockImplementation((...args) => args.join("/"));
+			path.dirname.mockImplementation(
 				(p) => p.split("/").slice(0, -1).join("/") || "/",
 			);
 			const result = resolveTasksOutputPath("/explicit/path/tasks.json");
@@ -169,18 +179,18 @@ describe("Path Utilities", () => {
 
 		test("should resolve explicit relative path", () => {
 			const result = resolveTasksOutputPath("custom/tasks.json");
-			expect(mockPath.resolve).toHaveBeenCalledWith(
+			expect(path.resolve).toHaveBeenCalledWith(
 				process.cwd(),
 				"custom/tasks.json",
 			);
 		});
 
 		test("should create default .speco path when no explicit path", () => {
-			mockFs.existsSync.mockReturnValue(false);
+			existsSync.mockReturnValue(false);
 
 			resolveTasksOutputPath(null, { projectRoot: "/project" });
 
-			expect(mockFs.mkdirSync).toHaveBeenCalledWith(
+			expect(mkdirSync).toHaveBeenCalledWith(
 				expect.stringContaining(".speco"),
 				{ recursive: true },
 			);

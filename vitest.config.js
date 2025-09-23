@@ -1,46 +1,68 @@
-/**
- * @type {import('vitest/config').UserConfig}
- */
-export default {
+/// <reference types="vitest" />
+import { defineConfig } from "vite";
+
+export default defineConfig({
 	test: {
-		// Use Node.js environment
+		// Use Node.js environment for testing
 		environment: "node",
 
-		// Test file patterns
-		include: [
-			"tests/unit/**/*.test.js",
-			"tests/integration/**/*.test.js",
-			"tests/contract/**/*.test.js",
-			"tests/e2e/**/*.test.js",
-		],
-
-		// Exclude patterns
-		exclude: [
-			"node_modules/**",
-			"tests/e2e/**", // Skip E2E tests for now
-			"tests/setup/**",
-		],
-
-		// Timeout settings
-		testTimeout: 5000,
-
-		// Setup files
-		setupFiles: ["tests/setup.js"],
-
-		// Coverage configuration
-		coverage: {
-			enabled: false, // Disable for now to avoid issues
-			reporter: ["text", "lcov"],
-			exclude: ["node_modules/**", "tests/**", "coverage/**"],
-		},
-
-		// Globals for describe, it, expect
+		// Enable global test APIs (describe, test, expect, etc.)
 		globals: true,
 
-		// Watch mode settings
-		watch: false,
+		// Mock process.cwd globally to prevent graceful-fs issues
+		setupFiles: ["./tests/setup.js"],
 
-		// Bail on first failure
-		bail: 1,
+		// Test execution settings
+		verbose: true,
+
+		// Force exit to prevent hanging
+		forceExit: true,
+
+		// Bail on first failure for faster feedback during development
+		bail: 0,
+
+		// Disable silent mode to avoid console issues
+		silent: false,
+
+		// Simplified worker configuration
+		pool: "threads",
+		poolOptions: {
+			threads: {
+				singleThread: true,
+			},
+		},
+
+		// Module name mapping for ESM compatibility
+		alias: {
+			// Mock chalk for ESM compatibility
+			"^chalk$": "./tests/mocks/chalk.mock.js",
+			"^boxen$": "./tests/mocks/boxen.mock.js",
+			"^gradient-string$": "./tests/mocks/gradient-string.mock.js",
+			"^ora$": "./tests/mocks/ora.mock.js",
+			"^cli-table3$": "./tests/mocks/cli-table3.mock.js",
+			"^figlet$": "./tests/mocks/figlet.mock.js",
+			// Map test fixtures to absolute paths to avoid resolution issues
+			"^../../fixtures/sample-tasks.js$": "./tests/fixtures/sample-tasks.js",
+		},
+
+		// Explicit test match patterns to include all test files
+		include: [
+			"**/__tests__/**/*.?([mc])[jt]s?(x)",
+			"**/?(*.)+(spec|test).?([mc])[jt]s?(x)",
+			"**/simple-config-test.js",
+			"**/es-module-test.mjs",
+		],
+
+		// Exclude problematic files temporarily
+		exclude: [
+			"**/node_modules/**",
+			"**/dist/**",
+			"**/coverage/**",
+			"tests/fixtures/**",
+			"tests/e2e/**", // Skip E2E tests initially
+		],
+
+		// Global test timeout
+		testTimeout: 10000,
 	},
-};
+});

@@ -16,9 +16,11 @@ import {
 	StreamingError,
 } from "../../../src/utils/stream-parser.js";
 
+import { vi } from "vitest";
+
 describe("Timeout Manager", () => {
 	afterEach(() => {
-		jest.clearAllMocks();
+		vi.clearAllMocks();
 	});
 
 	describe("withTimeout", () => {
@@ -49,7 +51,7 @@ describe("Timeout Manager", () => {
 
 		test("should clear timeout when promise resolves first", async () => {
 			const promise = Promise.resolve("success");
-			const clearTimeoutSpy = jest.spyOn(global, "clearTimeout");
+			const clearTimeoutSpy = vi.spyOn(global, "clearTimeout");
 
 			await withTimeout(promise, 1000, "Test");
 
@@ -131,11 +133,10 @@ describe("Timeout Manager", () => {
 		});
 
 		test("should return false for streaming errors without timeout message", () => {
-			const streamingError =
-				new (require("../../../src/utils/stream-parser.js").StreamingError)(
-					"Some other streaming error",
-					"STREAM_PROCESSING_FAILED",
-				);
+			const streamingError = new StreamingError(
+				"Some other streaming error",
+				STREAMING_ERROR_CODES.STREAM_PROCESSING_FAILED,
+			);
 
 			expect(isTimeoutError(streamingError)).toBe(false);
 		});

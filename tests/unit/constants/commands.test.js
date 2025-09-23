@@ -2,7 +2,7 @@
  * Unit tests for command constants
  */
 
-const { AI_COMMAND_NAMES } = require("../../../src/constants/commands.js");
+import { AI_COMMAND_NAMES } from "../../../src/constants/commands.js";
 
 describe("Command Constants", () => {
 	describe("AI_COMMAND_NAMES", () => {
