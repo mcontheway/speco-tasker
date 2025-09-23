@@ -8,6 +8,7 @@
 ## 📚 文档导航 | Documentation Navigation
 
 - [📖 快速开始](docs/installation-guide.md) - 安装和配置指南 | Installation and Configuration Guide
+- [🔧 MCP 工具指南](docs/mcp-tools-complete-guide.md) - MCP 工具完整使用指南 | Complete MCP Tools Guide
 - [📝 更新日志](docs/changelog.md) - 版本更新历史 | Version Update History
 - [📋 命令参考](docs/command-reference-zh.md) - 详细命令说明 | Detailed Command Reference
 - [⚙️ 配置指南](docs/configuration-zh.md) - 配置选项详解 | Configuration Options Details
@@ -232,9 +233,6 @@ speco-tasker migrate
 speco-tasker validate-migration
 ```
 
-## 🤝 贡献 | Contributing
-
-我们欢迎各种形式的贡献！请查看我们的[贡献指南](CONTRIBUTING.md)了解详细信息。
 
 ### 开发环境设置 | Development Environment Setup
 

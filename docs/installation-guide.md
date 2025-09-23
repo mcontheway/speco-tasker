@@ -4,6 +4,13 @@
 
 This guide helps AI assistants install and configure Speco Tasker for users in their development projects.
 
+## 📚 文档导航 | Documentation Navigation
+
+- [📖 使用教程](tutorial.md) - 包含完整的设置和使用指南
+- [📋 综合命令参考](comprehensive-cli-mcp-reference.md) - 详细的 CLI 命令和 MCP 工具参考
+- [🔧 MCP 工具指南](mcp-tools-complete-guide.md) - 专门的 MCP 工具使用指南
+- [🔧 命令参考（中文版）](command-reference-zh.md) - 中文用户的命令速查手册
+
 ## 什么是Speco Tasker？| What is Speco Tasker?
 
 Speco Tasker是一个纯手动任务管理系统，专为开发工作流设计。它帮助将项目分解为可管理的任务，跟踪依赖关系，并通过结构化规划保持开发势头 - 完全不需要AI辅助。
@@ -18,6 +25,18 @@ Speco Tasker is a pure manual task management system designed for development wo
 
 Add the following configuration to the user's MCP settings file (`.cursor/mcp.json` for Cursor, or equivalent for other editors):
 
+```json
+{
+	"mcpServers": {
+		"speco-tasker": {
+			"command": "npx",
+			"args": ["speco-tasker"]
+		}
+	}
+}
+```
+
+**或者使用明确指定包名的配置：**
 ```json
 {
 	"mcpServers": {

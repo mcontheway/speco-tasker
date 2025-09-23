@@ -8,8 +8,16 @@ Speco Tasker 是一个纯净的手动任务管理系统，完全移除了AI功�
 - **自动初始化**：一键自动检测配置，无需复杂参数设置
 - **CLI 命令**：用于终端直接交互或作为 MCP 的备选方案
 - **MCP 工具**：用于 Cursor 等集成工具的程序化交互，推荐使用
+  - 📖 详细的MCP工具使用指南请参考：[MCP 工具完整指南](mcp-tools-complete-guide.md)
 - **🏷️ 标签系统**：支持多上下文任务管理，默认使用 "main" 标签
 - **文件位置**：所有命令默认操作 `.speco/tasks/tasks.json`
+
+## 📚 文档导航 | Documentation Navigation
+
+- [📋 命令参考（中文版）](command-reference-zh.md) - 中文用户的命令速查手册
+- [🔧 MCP 工具完整指南](mcp-tools-complete-guide.md) - 专门的 MCP 工具使用指南
+- [📖 使用教程](tutorial.md) - 完整的使用教程和实际示例
+- [📝 安装指南](installation-guide.md) - 详细的安装和配置说明
 
 ---
 
