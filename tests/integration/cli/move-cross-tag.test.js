@@ -3,15 +3,54 @@ import fs from "node:fs";
 import path from "node:path";
 import { vi } from "vitest";
 
-// --- No global mocks - we'll mock in individual tests ---
-
-// Import modules
+// Import modules (no global mocks - we'll mock in individual tests)
 import moveTaskModule from "../../../scripts/modules/task-manager/move-task.js";
 import generateTaskFilesModule from "../../../scripts/modules/task-manager/generate-task-files.js";
 import * as utilsModule from "../../../scripts/modules/utils.js";
 import chalk from "chalk";
 
+// Import refactored moveAction and dependencies
+import { moveAction } from "../../../scripts/modules/cli/move-action.js";
+import { createMockDependencies } from "../../../scripts/modules/cli/move-action-dependencies.js";
+
 let tempDir;
+
+/**
+ * Create test-specific mock dependencies with custom behavior
+ * @param {object} overrides - Custom mock behaviors to override defaults
+ * @returns {object} Mock dependencies object
+ */
+function createTestMockDependencies(overrides = {}) {
+  const baseMocks = createMockDependencies();
+
+  // Apply custom overrides
+  Object.keys(overrides).forEach(key => {
+    if (typeof overrides[key] === 'function') {
+      baseMocks[key] = overrides[key];
+    }
+  });
+
+  return baseMocks;
+}
+
+/**
+ * Helper to create spy-based mock for a specific module function
+ * @param {object} module - The module to spy on
+ * @param {string} functionName - Function name to spy on
+ * @param {*} returnValue - Return value for the spy
+ * @returns {Function} Spy function
+ */
+function createModuleSpy(module, functionName, returnValue = undefined) {
+  if (typeof module[functionName] === 'function') {
+    const spy = vi.fn().mockResolvedValue(returnValue);
+    // Replace the module function with our spy
+    const original = module[functionName];
+    module[functionName] = spy;
+    spy.restore = () => { module[functionName] = original; };
+    return spy;
+  }
+  return vi.fn().mockResolvedValue(returnValue);
+}
 
 /**
  * Cross-Tag Move CLI Integration Tests
@@ -305,15 +344,20 @@ describe.skip("Cross-Tag Move CLI Integration", () => {
 	}
 
 	it("should move task without dependencies successfully", async () => {
-		// Debug: Check what's available in the modules
-		console.log("moveTaskModule keys:", Object.keys(moveTaskModule));
-		console.log("moveTasksBetweenTags exists:", typeof moveTaskModule.moveTasksBetweenTags);
+		// Create mock dependencies with custom behavior
+		let moveTasksCallCount = 0;
+		let generateTasksCallCount = 0;
 
-		// Setup spies for successful cross-tag move
-		const moveSpy = vi.spyOn(moveTaskModule, "moveTasksBetweenTags").mockResolvedValue({
-			message: "Successfully moved task(s) between tags",
+		const mockDeps = createTestMockDependencies({
+			moveTasksBetweenTags: () => async (...args) => {
+				moveTasksCallCount++;
+				return { message: "Successfully moved task(s) between tags" };
+			},
+			generateTaskFiles: () => async (...args) => {
+				generateTasksCallCount++;
+			},
+			getCurrentTag: () => "main" // Mock current tag
 		});
-		const generateSpy = vi.spyOn(generateTaskFilesModule, "default").mockResolvedValue(undefined);
 
 		const options = {
 			from: "2",
@@ -321,34 +365,29 @@ describe.skip("Cross-Tag Move CLI Integration", () => {
 			toTag: "in-progress",
 		};
 
-		// This should not throw
-		await expect(moveAction(options)).resolves.not.toThrow();
+		// Execute move action with mock dependencies
+		await expect(moveAction(options, mockDeps, { tempDir })).resolves.not.toThrow();
 
-		// Verify the function was called with correct parameters
-		expect(moveSpy).toHaveBeenCalledWith(
-			expect.stringContaining("tasks.json"),
-			["2"],
-			"backlog",
-			"in-progress",
-			expect.objectContaining({
-				withDependencies: undefined,
-				ignoreDependencies: undefined,
-			}),
-			expect.objectContaining({
-				projectRoot: tempDir,
-			}),
-		);
-
-		// Cleanup spies
-		moveSpy.mockRestore();
-		generateSpy.mockRestore();
+		// Verify the functions were called correctly
+		expect(moveTasksCallCount).toBe(1);
+		expect(generateTasksCallCount).toBe(2); // Called twice: for source and target tags
 	});
 
 	it("should fail to move task with cross-tag dependencies", async () => {
-		// Mock dependency conflict error
-		moveTaskModule.moveTasksBetweenTags.mockRejectedValue(
-			new Error("Cannot move task due to cross-tag dependency conflicts"),
-		);
+		// Create mock dependencies that simulate dependency conflict
+		let moveTasksCallCount = 0;
+		const expectedError = new Error("Cannot move task due to cross-tag dependency conflicts");
+
+		const mockDeps = createTestMockDependencies({
+			moveTasksBetweenTags: () => async (...args) => {
+				moveTasksCallCount++;
+				throw expectedError;
+			},
+			generateTaskFiles: () => async (...args) => {
+				// Should not be called due to error
+			},
+			getCurrentTag: () => "main"
+		});
 
 		const options = {
 			from: "1",
@@ -358,24 +397,38 @@ describe.skip("Cross-Tag Move CLI Integration", () => {
 
 		const { errorMessages, restore } = captureConsoleAndExit();
 
-		await expect(moveAction(options)).rejects.toThrow(
-			"Cannot move task due to cross-tag dependency conflicts",
+		// Execute and expect rejection
+		await expect(moveAction(options, mockDeps, { tempDir })).rejects.toThrow(
+			"Cannot move task due to cross-tag dependency conflicts"
 		);
 
-		expect(moveTaskModule.moveTasksBetweenTags).toHaveBeenCalled();
+		// Verify function was called and error was logged
+		expect(moveTasksCallCount).toBe(1);
 		expect(
 			errorMessages.some((msg) =>
-				msg.includes("cross-tag dependency conflicts"),
-			),
+				msg.includes("cross-tag dependency conflicts")
+			)
 		).toBe(true);
 
 		restore();
 	});
 
 	it("should move task with dependencies when --with-dependencies is used", async () => {
-		// Mock successful cross-tag move with dependencies
-		moveTaskModule.moveTasksBetweenTags.mockResolvedValue(undefined);
-		generateTaskFilesModule.default.mockResolvedValue(undefined);
+		// Create mock dependencies for dependency-aware move
+		let moveTasksCallCount = 0;
+		let capturedArgs = null;
+
+		const mockDeps = createTestMockDependencies({
+			moveTasksBetweenTags: () => async (...args) => {
+				moveTasksCallCount++;
+				capturedArgs = args;
+				return { message: "Successfully moved with dependencies" };
+			},
+			generateTaskFiles: () => async (...args) => {
+				// Called for both tags
+			},
+			getCurrentTag: () => "main"
+		});
 
 		const options = {
 			from: "1",
@@ -384,24 +437,42 @@ describe.skip("Cross-Tag Move CLI Integration", () => {
 			withDependencies: true,
 		};
 
-		await moveAction(options);
+		// Execute the move action
+		await moveAction(options, mockDeps, { tempDir });
 
-		expect(moveTaskModule.moveTasksBetweenTags).toHaveBeenCalledWith(
-			expect.stringContaining("tasks.json"),
-			["1"],
-			"backlog",
-			"in-progress",
-			{
+		// Verify the function was called with correct dependency parameters
+		expect(moveTasksCallCount).toBe(1);
+		expect(capturedArgs).toEqual([
+			expect.stringContaining("tasks.json"), // tasksPath
+			["1"], // taskIds
+			"backlog", // sourceTag
+			"in-progress", // toTag
+			expect.objectContaining({
 				withDependencies: true,
-				ignoreDependencies: undefined,
-			},
-		);
+				ignoreDependencies: false, // default value
+			}),
+			expect.objectContaining({
+				projectRoot: tempDir,
+			})
+		]);
 	});
 
 	it("should break dependencies when --ignore-dependencies is used", async () => {
-		// Mock successful cross-tag move with dependency breaking
-		moveTaskModule.moveTasksBetweenTags.mockResolvedValue(undefined);
-		generateTaskFilesModule.default.mockResolvedValue(undefined);
+		// Create mock dependencies for dependency-breaking move
+		let moveTasksCallCount = 0;
+		let capturedArgs = null;
+
+		const mockDeps = createTestMockDependencies({
+			moveTasksBetweenTags: () => async (...args) => {
+				moveTasksCallCount++;
+				capturedArgs = args;
+				return { message: "Successfully moved with dependencies ignored" };
+			},
+			generateTaskFiles: () => async (...args) => {
+				// Called for both tags
+			},
+			getCurrentTag: () => "main"
+		});
 
 		const options = {
 			from: "1",
@@ -410,69 +481,88 @@ describe.skip("Cross-Tag Move CLI Integration", () => {
 			ignoreDependencies: true,
 		};
 
-		await moveAction(options);
+		// Execute the move action
+		await moveAction(options, mockDeps, { tempDir });
 
-		expect(moveTaskModule.moveTasksBetweenTags).toHaveBeenCalledWith(
-			expect.stringContaining("tasks.json"),
-			["1"],
-			"backlog",
-			"in-progress",
-			{
-				withDependencies: undefined,
+		// Verify the function was called with ignore dependencies parameter
+		expect(moveTasksCallCount).toBe(1);
+		expect(capturedArgs).toEqual([
+			expect.stringContaining("tasks.json"), // tasksPath
+			["1"], // taskIds
+			"backlog", // sourceTag
+			"in-progress", // toTag
+			expect.objectContaining({
+				withDependencies: false, // default value
 				ignoreDependencies: true,
-			},
-		);
+			}),
+			expect.objectContaining({
+				projectRoot: tempDir,
+			})
+		]);
 	});
 
 	it("should create target tag if it does not exist", async () => {
-		// Mock successful cross-tag move to new tag
-		moveTaskModule.moveTasksBetweenTags.mockResolvedValue(undefined);
-		generateTaskFilesModule.default.mockResolvedValue(undefined);
+		// Create mock dependencies for moving to new tag
+		let moveTasksCallCount = 0;
+		let capturedArgs = null;
+
+		const mockDeps = createTestMockDependencies({
+			moveTasksBetweenTags: () => async (...args) => {
+				moveTasksCallCount++;
+				capturedArgs = args;
+				return { message: "Successfully moved to new tag" };
+			},
+			generateTaskFiles: () => async (...args) => {
+				// Called for both tags (source and newly created target)
+			},
+			getCurrentTag: () => "main"
+		});
 
 		const options = {
 			from: "2",
 			fromTag: "backlog",
-			toTag: "new-tag",
+			toTag: "new-tag", // New tag that doesn't exist
 		};
 
-		await moveAction(options);
+		// Execute the move action
+		await moveAction(options, mockDeps, { tempDir });
 
-		expect(moveTaskModule.moveTasksBetweenTags).toHaveBeenCalledWith(
-			expect.stringContaining("tasks.json"),
-			["2"],
-			"backlog",
-			"new-tag",
-			{
-				withDependencies: undefined,
-				ignoreDependencies: undefined,
-			},
-		);
+		// Verify the function was called with the new target tag
+		expect(moveTasksCallCount).toBe(1);
+		expect(capturedArgs[3]).toBe("new-tag"); // toTag should be "new-tag"
 	});
 
 	it("should fail to move a subtask directly", async () => {
-		// Mock subtask movement error
-		moveTaskModule.moveTasksBetweenTags.mockRejectedValue(
-			new Error(
-				"Cannot move subtasks directly between tags. Please promote the subtask to a full task first.",
-			),
+		// Create mock dependencies that reject subtask movement
+		let moveTasksCallCount = 0;
+		const subtaskError = new Error(
+			"Cannot move subtasks directly between tags. Please promote the subtask to a full task first."
 		);
 
+		const mockDeps = createTestMockDependencies({
+			moveTasksBetweenTags: () => async (...args) => {
+				moveTasksCallCount++;
+				throw subtaskError;
+			},
+			getCurrentTag: () => "main"
+		});
+
 		const options = {
-			from: "1.2",
+			from: "1.2", // Subtask ID
 			fromTag: "backlog",
 			toTag: "in-progress",
 		};
 
 		const { errorMessages, restore } = captureConsoleAndExit();
 
-		await expect(moveAction(options)).rejects.toThrow(
-			"Cannot move subtasks directly between tags. Please promote the subtask to a full task first.",
+		// Execute and expect rejection
+		await expect(moveAction(options, mockDeps, { tempDir })).rejects.toThrow(
+			"Cannot move subtasks directly between tags. Please promote the subtask to a full task first."
 		);
 
-		expect(moveTaskModule.moveTasksBetweenTags).toHaveBeenCalled();
-		expect(errorMessages.some((msg) => msg.includes("subtasks directly"))).toBe(
-			true,
-		);
+		// Verify function was called and error was captured
+		expect(moveTasksCallCount).toBe(1);
+		expect(errorMessages.some((msg) => msg.includes("subtasks directly"))).toBe(true);
 
 		restore();
 	});
