@@ -70,7 +70,7 @@ export async function moveAction(options, dependencies = {}, context = {}) {
   const projectRoot = context.tempDir || process.cwd();
 
   // 获取源标签 - 如果未提供则使用当前标签
-  const sourceTag = fromTag || getCurrentTag();
+  const sourceTag = fromTag || deps.getCurrentTag({ projectRoot });
 
   // 判断是否为跨标签移动
   const isCrossTagMove = sourceTag && toTag && sourceTag !== toTag;
