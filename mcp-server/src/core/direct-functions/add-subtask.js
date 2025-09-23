@@ -105,6 +105,16 @@ export async function addSubtaskDirect(args, log) {
 
 		const context = { projectRoot, tag };
 
+		// Prepare new subtask data, common for both cases
+		const newSubtaskData = {
+			title: title,
+			description: description || "",
+			details: details || "",
+			status: status || "pending",
+			dependencies: dependencies,
+			spec_files: spec_files || [],
+		};
+
 		// Case 1: Convert existing task to subtask
 		if (existingTaskId) {
 			log.info(`Converting task ${existingTaskId} to a subtask of ${parentId}`);
@@ -112,7 +122,7 @@ export async function addSubtaskDirect(args, log) {
 				tasksPath,
 				parentId,
 				existingTaskId,
-				null,
+				newSubtaskData, // 确保 newSubtaskData 被正确传递
 				generateFiles,
 				context,
 			);
@@ -132,20 +142,12 @@ export async function addSubtaskDirect(args, log) {
 
 		log.info(`Creating new subtask for parent task ${parentId}`);
 
-		const newSubtaskData = {
-			title: title,
-			description: description || "",
-			details: details || "",
-			status: status || "pending",
-			dependencies: dependencies,
-			spec_files: spec_files || [],
-		};
-
+		// The newSubtaskData is already prepared above, no need to redefine
 		const result = await addSubtask(
 			tasksPath,
 			parentId,
 			null,
-			newSubtaskData,
+			newSubtaskData, // Correctly pass the newSubtaskData
 			generateFiles,
 			context,
 		);
