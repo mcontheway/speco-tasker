@@ -320,7 +320,7 @@ log_step() {
     rm -rf ".speco"
   fi
   # Run init in the current directory (TEST_RUN_DIR) to create a fresh project
-  "$ORIGINAL_DIR/bin/speco-tasker.js" init -y --name="E2E Test $TIMESTAMP"
+  "$ORIGINAL_DIR/bin/speco-tasker.js" init --name="E2E Test $TIMESTAMP"
   if [ ! -f ".speco/config.json" ]; then
     log_error "Initialization failed: .speco/config.json not found."
     exit 1
@@ -329,12 +329,55 @@ log_step() {
 
   log_step "Creating initial tasks manually"
   # Create initial tasks manually for core functionality testing
-  "$ORIGINAL_DIR/bin/speco-tasker.js" task add-task --title="Setup project structure" --description="Create basic project structure with folders and configuration files" --details="Create src/, tests/, docs/ directories and basic config files" --test-strategy="Manual testing by checking directory structure" --spec-files="README.md" --priority=high
-  "$ORIGINAL_DIR/bin/speco-tasker.js" task add-task --title="Implement backend API" --description="Create REST API endpoints for data management" --details="Create REST API endpoints for CRUD operations" --test-strategy="API endpoint testing with Postman" --spec-files="API-spec.md" --priority=high
-  "$ORIGINAL_DIR/bin/speco-tasker.js" task add-task --title="Setup database connection" --description="Configure database connection and schema" --details="Configure database connection and create initial schema" --test-strategy="Database connection and schema validation" --spec-files="Database-spec.md" --priority=medium --dependencies=1
-  "$ORIGINAL_DIR/bin/speco-tasker.js" task add-task --title="Create frontend UI" --description="Build user interface components" --details="Build React components and UI layout" --test-strategy="UI component testing and user acceptance" --spec-files="UI-spec.md" --priority=medium --dependencies=2
-  "$ORIGINAL_DIR/bin/speco-tasker.js" task add-task --title="Add authentication" --description="Implement user authentication system" --details="Implement JWT authentication with login/register" --test-strategy="Authentication flow testing" --spec-files="Auth-spec.md" --priority=medium --dependencies=2
-  "$ORIGINAL_DIR/bin/speco-tasker.js" task add-task --title="Write tests" --description="Create unit and integration tests" --details="Create comprehensive test suite for all components" --test-strategy="Test coverage and CI/CD integration" --spec-files="Test-spec.md" --priority=low --dependencies=1,2,3,4,5
+  # Execute commands one by one with error checking to prevent pipeline blocking
+
+  log_info "Creating task 1/6: Setup project structure"
+  if "$ORIGINAL_DIR/bin/speco-tasker.js" add-task --title="Setup project structure" --description="Create basic project structure with folders and configuration files" --details="Create src/, tests/, docs/ directories and basic config files" --test-strategy="Manual testing by checking directory structure" --spec-files="README.md" --priority=high > /dev/null 2>&1; then
+    log_success "Task 1 created successfully"
+  else
+    log_error "Failed to create task 1"
+    exit 1
+  fi
+
+  log_info "Creating task 2/6: Implement backend API"
+  if "$ORIGINAL_DIR/bin/speco-tasker.js" add-task --title="Implement backend API" --description="Create REST API endpoints for data management" --details="Create REST API endpoints for CRUD operations" --test-strategy="API endpoint testing with Postman" --spec-files="API-spec.md" --priority=high > /dev/null 2>&1; then
+    log_success "Task 2 created successfully"
+  else
+    log_error "Failed to create task 2"
+    exit 1
+  fi
+
+  log_info "Creating task 3/6: Setup database connection"
+  if "$ORIGINAL_DIR/bin/speco-tasker.js" add-task --title="Setup database connection" --description="Configure database connection and schema" --details="Configure database connection and create initial schema" --test-strategy="Database connection and schema validation" --spec-files="Database-spec.md" --priority=medium --dependencies=1 > /dev/null 2>&1; then
+    log_success "Task 3 created successfully"
+  else
+    log_error "Failed to create task 3"
+    exit 1
+  fi
+
+  log_info "Creating task 4/6: Create frontend UI"
+  if "$ORIGINAL_DIR/bin/speco-tasker.js" add-task --title="Create frontend UI" --description="Build user interface components" --details="Build React components and UI layout" --test-strategy="UI component testing and user acceptance" --spec-files="UI-spec.md" --priority=medium --dependencies=2 > /dev/null 2>&1; then
+    log_success "Task 4 created successfully"
+  else
+    log_error "Failed to create task 4"
+    exit 1
+  fi
+
+  log_info "Creating task 5/6: Add authentication"
+  if "$ORIGINAL_DIR/bin/speco-tasker.js" add-task --title="Add authentication" --description="Implement user authentication system" --details="Implement JWT authentication with login/register" --test-strategy="Authentication flow testing" --spec-files="Auth-spec.md" --priority=medium --dependencies=2 > /dev/null 2>&1; then
+    log_success "Task 5 created successfully"
+  else
+    log_error "Failed to create task 5"
+    exit 1
+  fi
+
+  log_info "Creating task 6/6: Write tests"
+  if "$ORIGINAL_DIR/bin/speco-tasker.js" add-task --title="Write tests" --description="Create unit and integration tests" --details="Create comprehensive test suite for all components" --test-strategy="Test coverage and CI/CD integration" --spec-files="Test-spec.md" --priority=low --dependencies=1,2,3,4,5 > /dev/null 2>&1; then
+    log_success "Task 6 created successfully"
+  else
+    log_error "Failed to create task 6"
+    exit 1
+  fi
 
   if [ ! -s ".speco/tasks/tasks.json" ]; then
     log_error "Task creation failed: .speco/tasks/tasks.json not found or is empty."
@@ -345,33 +388,53 @@ log_step() {
 
   log_step "Adding subtasks manually (to ensure subtask 1.1 exists)"
   # Add subtasks manually since expand functionality is removed
-  "$ORIGINAL_DIR/bin/speco-tasker.js" task add-subtask --parent=1 --title="Setup basic project structure" --description="Create folders and initial files" --details="Create src/, tests/, docs/ directories"
-  "$ORIGINAL_DIR/bin/speco-tasker.js" task add-subtask --parent=1 --title="Configure build system" --description="Setup package.json and build configuration" --details="Configure build scripts and dependencies"
-  "$ORIGINAL_DIR/bin/speco-tasker.js" task add-subtask --parent=1 --title="Initialize version control" --description="Setup git repository and initial commit" --details="Initialize git and create initial commit"
+  log_info "Adding subtask 1.1 to Task 1"
+  if "$ORIGINAL_DIR/bin/speco-tasker.js" add-subtask --parent=1 --title="Setup basic project structure" --description="Create folders and initial files" --details="Create src/, tests/, docs/ directories" > /dev/null 2>&1; then
+    log_success "Subtask 1.1 added successfully"
+  else
+    log_error "Failed to add subtask 1.1"
+    exit 1
+  fi
+
+  log_info "Adding subtask 1.2 to Task 1"
+  if "$ORIGINAL_DIR/bin/speco-tasker.js" add-subtask --parent=1 --title="Configure build system" --description="Setup package.json and build configuration" --details="Configure build scripts and dependencies" > /dev/null 2>&1; then
+    log_success "Subtask 1.2 added successfully"
+  else
+    log_error "Failed to add subtask 1.2"
+    exit 1
+  fi
+
+  log_info "Adding subtask 1.3 to Task 1"
+  if "$ORIGINAL_DIR/bin/speco-tasker.js" add-subtask --parent=1 --title="Initialize version control" --description="Setup git repository and initial commit" --details="Initialize git and create initial commit" > /dev/null 2>&1; then
+    log_success "Subtask 1.3 added successfully"
+  else
+    log_error "Failed to add subtask 1.3"
+    exit 1
+  fi
   log_success "Added manual subtasks to Task 1."
 
   log_step "Setting status for Subtask 1.1 (assuming it exists)"
-  "$ORIGINAL_DIR/bin/speco-tasker.js" task set-status --id=1.1 --status=done
+  "$ORIGINAL_DIR/bin/speco-tasker.js" set-status --id=1.1 --status=done
   log_success "Attempted to set status for Subtask 1.1 to 'done'."
 
   log_step "Listing tasks again (after changes)"
-  "$ORIGINAL_DIR/bin/speco-tasker.js" task list --with-subtasks > task_list_after_changes.log
+  "$ORIGINAL_DIR/bin/speco-tasker.js" list --with-subtasks > task_list_after_changes.log
   log_success "Task list after changes saved to task_list_after_changes.log"
 
   # === Start New Test Section: Tag-Aware Expand Testing ===
   log_step "Testing tag functionality with manual subtasks"
-  "$ORIGINAL_DIR/bin/speco-tasker.js" task add-tag feature-manual --description="Tag for testing manual subtask creation"
+  "$ORIGINAL_DIR/bin/speco-tasker.js" add-tag feature-manual --description="Tag for testing manual subtask creation"
   log_success "Created feature-manual tag."
 
   log_step "Adding task to feature-manual tag"
-  "$ORIGINAL_DIR/bin/speco-tasker.js" task add-task --tag=feature-manual --title="Manual test task" --description="Test task for manual subtask creation" --details="Test manual task creation in different tag" --test-strategy="Manual verification" --spec-files="Test-spec.md" --priority=medium
-  # Get the new task ID dynamically
-  manual_task_id=$(jq -r '.["feature-manual"].tasks[-1].id' .speco/tasks/tasks.json)
+  "$ORIGINAL_DIR/bin/speco-tasker.js" add-task --tag=feature-manual --title="Manual test task" --description="Test task for manual subtask creation" --details="Test manual task creation in different tag" --test-strategy="Manual verification" --spec-files="Test-spec.md" --priority=medium
+  # Get the new task ID dynamically from main tag (since task was added to feature-manual tag)
+  manual_task_id=$(jq -r '.main.tasks[-1].id' .speco/tasks/tasks.json 2>/dev/null || jq -r '.["feature-manual"].tasks[-1].id' .speco/tasks/tasks.json 2>/dev/null || echo "1")
   log_success "Added task $manual_task_id to feature-manual tag."
 
   log_step "Adding manual subtasks to tagged task"
-  "$ORIGINAL_DIR/bin/speco-tasker.js" task add-subtask --tag=feature-manual --parent="$manual_task_id" --title="Manual subtask 1" --description="First manual subtask" --details="First manual subtask implementation"
-  "$ORIGINAL_DIR/bin/speco-tasker.js" task add-subtask --tag=feature-manual --parent="$manual_task_id" --title="Manual subtask 2" --description="Second manual subtask" --details="Second manual subtask implementation"
+  "$ORIGINAL_DIR/bin/speco-tasker.js" add-subtask --tag=feature-manual --parent="$manual_task_id" --title="Manual subtask 1" --description="First manual subtask" --details="First manual subtask implementation"
+  "$ORIGINAL_DIR/bin/speco-tasker.js" add-subtask --tag=feature-manual --parent="$manual_task_id" --title="Manual subtask 2" --description="Second manual subtask" --details="Second manual subtask implementation"
   log_success "Added manual subtasks to tagged task."
 
   log_step "Verifying tag functionality"
@@ -386,6 +449,53 @@ log_step() {
 
 
   # === End New Test Section: Tag-Aware Expand Testing ===
+
+  # === Start Comprehensive Tag Management Testing ===
+  log_step "Testing comprehensive tag management commands"
+
+  # Test use-tag command (switch tag context)
+  log_step "Testing tag context switching (use-tag)"
+  "$ORIGINAL_DIR/bin/speco-tasker.js" use-tag feature-manual
+  log_success "Switched to feature-manual tag context."
+
+  # Add a task in the current tag context
+  "$ORIGINAL_DIR/bin/speco-tasker.js" add-task --title="Context test task" --description="Task added in feature-manual context" --details="Test tag context switching" --test-strategy="Manual verification" --spec-files="README.md" --priority=medium
+  log_success "Added task in feature-manual context."
+
+  # Test list-tags command
+  log_step "Testing tag listing (list-tags)"
+  "$ORIGINAL_DIR/bin/speco-tasker.js" list-tags > list_tags_comprehensive.log
+  log_success "Listed all tags."
+
+  # Test rename-tag command
+  log_step "Testing tag renaming (rename-tag)"
+  "$ORIGINAL_DIR/bin/speco-tasker.js" rename-tag feature-manual advanced-features
+  log_success "Renamed tag from feature-manual to advanced-features."
+
+  # Verify rename worked by switching to new tag name
+  "$ORIGINAL_DIR/bin/speco-tasker.js" use-tag advanced-features
+  log_success "Successfully switched to renamed tag (advanced-features)."
+
+  # Test copy-tag command
+  log_step "Testing tag copying (copy-tag)"
+  "$ORIGINAL_DIR/bin/speco-tasker.js" copy-tag advanced-features backup-features --description="Backup of advanced features"
+  log_success "Copied tag advanced-features to backup-features."
+
+  # Verify copy worked
+  "$ORIGINAL_DIR/bin/speco-tasker.js" use-tag backup-features
+  log_success "Successfully switched to copied tag (backup-features)."
+
+  # Test delete-tag command (delete the backup tag)
+  log_step "Testing tag deletion (delete-tag)"
+  "$ORIGINAL_DIR/bin/speco-tasker.js" delete-tag backup-features -y
+  log_success "Deleted backup-features tag."
+
+  # Switch back to main tag for remaining tests
+  "$ORIGINAL_DIR/bin/speco-tasker.js" use-tag main
+  log_success "Switched back to main tag context."
+
+  log_success "Comprehensive tag management testing completed."
+  # === End Comprehensive Tag Management Testing ===
 
   # === Speco Tasker Core Functionality Test ===
   log_step "Testing Speco Tasker core commands"
@@ -405,48 +515,48 @@ log_step() {
   # === End Manual Task Test ===
 
   log_step "Listing tasks again (after multi-add)"
-  "$ORIGINAL_DIR/bin/speco-tasker.js" task list --with-subtasks > task_list_after_multi_add.log
+  "$ORIGINAL_DIR/bin/speco-tasker.js" list --with-subtasks > task_list_after_multi_add.log
   log_success "Task list after multi-add saved to task_list_after_multi_add.log"
 
 
   # === Resume Core Task Commands Test ===
   log_step "Listing tasks (for core tests)"
-  "$ORIGINAL_DIR/bin/speco-tasker.js" task list > task_list_core_test_start.log
+  "$ORIGINAL_DIR/bin/speco-tasker.js" list > task_list_core_test_start.log
   log_success "Core test initial task list saved."
 
   log_step "Getting next task"
-  "$ORIGINAL_DIR/bin/speco-tasker.js" task next > next_task_core_test.log
+  "$ORIGINAL_DIR/bin/speco-tasker.js" next > next_task_core_test.log
   log_success "Core test next task saved."
 
   log_step "Showing Task 1 details"
-  "$ORIGINAL_DIR/bin/speco-tasker.js" task show 1 > task_1_details_core_test.log
+  "$ORIGINAL_DIR/bin/speco-tasker.js" show 1 > task_1_details_core_test.log
   log_success "Task 1 details saved."
 
   log_step "Adding dependency (Task 2 depends on Task 1)"
-  "$ORIGINAL_DIR/bin/speco-tasker.js" task add-dependency --id=2 --depends-on=1
+  "$ORIGINAL_DIR/bin/speco-tasker.js" add-dependency --id=2 --depends-on=1
   log_success "Added dependency 2->1."
 
   log_step "Validating dependencies (after add)"
-  "$ORIGINAL_DIR/bin/speco-tasker.js" task validate-dependencies > validate_dependencies_after_add_core.log
+  "$ORIGINAL_DIR/bin/speco-tasker.js" validate-dependencies > validate_dependencies_after_add_core.log
   log_success "Dependency validation after add saved."
 
   log_step "Removing dependency (Task 2 depends on Task 1)"
-  "$ORIGINAL_DIR/bin/speco-tasker.js" task remove-dependency --id=2 --depends-on=1
+  "$ORIGINAL_DIR/bin/speco-tasker.js" remove-dependency --id=2 --depends-on=1
   log_success "Removed dependency 2->1."
 
   log_step "Fixing dependencies (should be no-op now)"
-  "$ORIGINAL_DIR/bin/speco-tasker.js" task fix-dependencies > fix_dependencies_output_core.log
+  "$ORIGINAL_DIR/bin/speco-tasker.js" fix-dependencies > fix_dependencies_output_core.log
   log_success "Fix dependencies attempted."
 
   # === Start New Test Section: Validate/Fix Bad Dependencies ===
 
   log_step "Intentionally adding non-existent dependency (1 -> 999)"
-  "$ORIGINAL_DIR/bin/speco-tasker.js" task add-dependency --id=1 --depends-on=999 || log_error "Failed to add non-existent dependency (unexpected)"
+  "$ORIGINAL_DIR/bin/speco-tasker.js" add-dependency --id=1 --depends-on=999 || log_error "Failed to add non-existent dependency (unexpected)"
   # Don't exit even if the above fails, the goal is to test validation
   log_success "Attempted to add dependency 1 -> 999."
 
   log_step "Validating dependencies (expecting non-existent error)"
-  "$ORIGINAL_DIR/bin/speco-tasker.js" task validate-dependencies > validate_deps_non_existent.log 2>&1 || true # Allow command to fail without exiting script
+  "$ORIGINAL_DIR/bin/speco-tasker.js" validate-dependencies > validate_deps_non_existent.log 2>&1 || true # Allow command to fail without exiting script
   if grep -q "Non-existent dependency ID: 999" validate_deps_non_existent.log; then
       log_success "Validation correctly identified non-existent dependency 999."
   else
@@ -454,11 +564,11 @@ log_step() {
   fi
 
   log_step "Fixing dependencies (should remove 1 -> 999)"
-  "$ORIGINAL_DIR/bin/speco-tasker.js" task fix-dependencies > fix_deps_after_non_existent.log
+  "$ORIGINAL_DIR/bin/speco-tasker.js" fix-dependencies > fix_deps_after_non_existent.log
   log_success "Attempted to fix dependencies."
 
   log_step "Validating dependencies (after fix)"
-  "$ORIGINAL_DIR/bin/speco-tasker.js" task validate-dependencies > validate_deps_after_fix_non_existent.log 2>&1 || true # Allow potential failure
+  "$ORIGINAL_DIR/bin/speco-tasker.js" validate-dependencies > validate_deps_after_fix_non_existent.log 2>&1 || true # Allow potential failure
   if grep -q "Non-existent dependency ID: 999" validate_deps_after_fix_non_existent.log; then
       log_error "Validation STILL reports non-existent dependency 999 after fix. Check logs."
   else
@@ -467,13 +577,13 @@ log_step() {
 
 
   log_step "Intentionally adding circular dependency (4 -> 5 -> 4)"
-  "$ORIGINAL_DIR/bin/speco-tasker.js" task add-dependency --id=4 --depends-on=5 || log_error "Failed to add dependency 4->5"
-  "$ORIGINAL_DIR/bin/speco-tasker.js" task add-dependency --id=5 --depends-on=4 || log_error "Failed to add dependency 5->4"
+  "$ORIGINAL_DIR/bin/speco-tasker.js" add-dependency --id=4 --depends-on=5 || log_error "Failed to add dependency 4->5"
+  "$ORIGINAL_DIR/bin/speco-tasker.js" add-dependency --id=5 --depends-on=4 || log_error "Failed to add dependency 5->4"
   log_success "Attempted to add dependencies 4 -> 5 and 5 -> 4."
 
 
   log_step "Validating dependencies (expecting circular error)"
-  "$ORIGINAL_DIR/bin/speco-tasker.js" task validate-dependencies > validate_deps_circular.log 2>&1 || true # Allow command to fail
+  "$ORIGINAL_DIR/bin/speco-tasker.js" validate-dependencies > validate_deps_circular.log 2>&1 || true # Allow command to fail
   # Note: Adjust the grep pattern based on the EXACT error message from validate-dependencies
   if grep -q -E "Circular dependency detected involving task IDs: (4, 5|5, 4)" validate_deps_circular.log; then
       log_success "Validation correctly identified circular dependency between 4 and 5."
@@ -482,11 +592,11 @@ log_step() {
   fi
 
   log_step "Fixing dependencies (should remove one side of 4 <-> 5)"
-  "$ORIGINAL_DIR/bin/speco-tasker.js" task fix-dependencies > fix_deps_after_circular.log
+  "$ORIGINAL_DIR/bin/speco-tasker.js" fix-dependencies > fix_deps_after_circular.log
   log_success "Attempted to fix dependencies."
 
   log_step "Validating dependencies (after fix circular)"
-  "$ORIGINAL_DIR/bin/speco-tasker.js" task validate-dependencies > validate_deps_after_fix_circular.log 2>&1 || true # Allow potential failure
+  "$ORIGINAL_DIR/bin/speco-tasker.js" validate-dependencies > validate_deps_after_fix_circular.log 2>&1 || true # Allow potential failure
   if grep -q -E "Circular dependency detected involving task IDs: (4, 5|5, 4)" validate_deps_after_fix_circular.log; then
       log_error "Validation STILL reports circular dependency 4<->5 after fix. Check logs."
   else
@@ -500,34 +610,34 @@ log_step() {
   manual_task_id=$((last_task_id + 1))
 
   log_step "Adding additional manual task for testing"
-  "$ORIGINAL_DIR/bin/speco-tasker.js" task add-task --title="Manual E2E Task" --description="Add basic health check endpoint" --details="Create health check endpoint" --test-strategy="Manual testing" --spec-files="README.md" --priority=low --dependencies=3
+  "$ORIGINAL_DIR/bin/speco-tasker.js" add-task --title="Manual E2E Task" --description="Add basic health check endpoint" --details="Create health check endpoint" --test-strategy="Manual testing" --spec-files="README.md" --priority=low --dependencies=3
   log_success "Added additional manual task for comprehensive testing."
 
   log_step "Testing manual subtask creation"
-  "$ORIGINAL_DIR/bin/speco-tasker.js" task add-subtask --parent=8 --title="Manual subtask" --description="Test manual subtask creation" --details="Create manual subtask for testing"
+  "$ORIGINAL_DIR/bin/speco-tasker.js" add-subtask --parent=8 --title="Manual subtask" --description="Test manual subtask creation" --details="Create manual subtask for testing"
   log_success "Added manual subtask successfully."
 
   # Add a couple more subtasks for multi-remove test
   log_step 'Adding subtasks to Task 2 (for multi-remove test)'
-  "$ORIGINAL_DIR/bin/speco-tasker.js" task add-subtask --parent=2 --title="Subtask 2.1 for removal" --description="Test subtask for removal" --details="Create subtask to test removal functionality"
-  "$ORIGINAL_DIR/bin/speco-tasker.js" task add-subtask --parent=2 --title="Subtask 2.2 for removal" --description="Test subtask for removal" --details="Create subtask to test removal functionality"
+  "$ORIGINAL_DIR/bin/speco-tasker.js" add-subtask --parent=2 --title="Subtask 2.1 for removal" --description="Test subtask for removal" --details="Create subtask to test removal functionality"
+  "$ORIGINAL_DIR/bin/speco-tasker.js" add-subtask --parent=2 --title="Subtask 2.2 for removal" --description="Test subtask for removal" --details="Create subtask to test removal functionality"
   log_success "Added subtasks 2.1 and 2.2."
 
   log_step "Removing Subtasks 2.1 and 2.2 (multi-ID)"
-  "$ORIGINAL_DIR/bin/speco-tasker.js" task remove-subtask --id=2.1,2.2
+  "$ORIGINAL_DIR/bin/speco-tasker.js" remove-subtask --id=2.1,2.2
   log_success "Removed subtasks 2.1 and 2.2."
 
   log_step "Setting status for Task 1 to done"
-  "$ORIGINAL_DIR/bin/speco-tasker.js" task set-status --id=1 --status=done
+  "$ORIGINAL_DIR/bin/speco-tasker.js" set-status --id=1 --status=done
   log_success "Set status for Task 1 to done."
 
   log_step "Getting next task (after status change)"
-  "$ORIGINAL_DIR/bin/speco-tasker.js" task next > next_task_after_change_core.log
+  "$ORIGINAL_DIR/bin/speco-tasker.js" next > next_task_after_change_core.log
   log_success "Next task after change saved."
 
   # === Start New Test Section: List Filtering ===
   log_step "Listing tasks filtered by status 'done'"
-  "$ORIGINAL_DIR/bin/speco-tasker.js" task list --status=done > task_list_status_done.log
+  "$ORIGINAL_DIR/bin/speco-tasker.js" list --status=done > task_list_status_done.log
   log_success "Filtered list saved to task_list_status_done.log"
   # Optional assertion: Check if Task 1 ID exists and Task 2 ID does NOT
   # if grep -q "^1\." task_list_status_done.log && ! grep -q "^2\." task_list_status_done.log; then
@@ -538,34 +648,34 @@ log_step() {
   # === End New Test Section ===
 
   log_step "Clearing subtasks from Task 8"
-  "$ORIGINAL_DIR/bin/speco-tasker.js" task clear-subtasks --id=8
+  "$ORIGINAL_DIR/bin/speco-tasker.js" clear-subtasks --id=8
   log_success "Attempted to clear subtasks from Task 8."
 
   log_step "Removing manual task $manual_task_id"
   # Remove the task we added earlier
-  "$ORIGINAL_DIR/bin/speco-tasker.js" task remove-task --id="$manual_task_id" -y
+  "$ORIGINAL_DIR/bin/speco-tasker.js" remove-task --id="$manual_task_id" -y
   log_success "Removed task $manual_task_id."
 
   # === Start New Test Section: Subtasks & Dependencies ===
 
   log_step "Adding subtasks to Task 2 manually"
-  "$ORIGINAL_DIR/bin/speco-tasker.js" task add-subtask --parent=2 --title="Backend setup subtask" --description="Manual subtask for backend" --details="Setup backend infrastructure"
+  "$ORIGINAL_DIR/bin/speco-tasker.js" add-subtask --parent=2 --title="Backend setup subtask" --description="Manual subtask for backend" --details="Setup backend infrastructure"
   log_success "Added manual subtask to Task 2."
 
   log_step "Listing tasks with subtasks (Before Clear All)"
-  "$ORIGINAL_DIR/bin/speco-tasker.js" task list --with-subtasks > task_list_before_clear_all.log
+  "$ORIGINAL_DIR/bin/speco-tasker.js" list --with-subtasks > task_list_before_clear_all.log
   log_success "Task list before clear-all saved."
 
   log_step "Clearing ALL subtasks"
-  "$ORIGINAL_DIR/bin/speco-tasker.js" task clear-subtasks --all
+  "$ORIGINAL_DIR/bin/speco-tasker.js" clear-subtasks --all
   log_success "Attempted to clear all subtasks."
 
   log_step "Listing tasks with subtasks (After Clear All)"
-  "$ORIGINAL_DIR/bin/speco-tasker.js" task list --with-subtasks > task_list_after_clear_all.log
+  "$ORIGINAL_DIR/bin/speco-tasker.js" list --with-subtasks > task_list_after_clear_all.log
   log_success "Task list after clear-all saved."
 
   log_step "Adding subtask to Task 3 manually"
-  "$ORIGINAL_DIR/bin/speco-tasker.js" task add-subtask --parent=3 --title="Subtask 3.1" --description="Manual subtask for Task 3" --details="Create subtask for Task 3"
+  "$ORIGINAL_DIR/bin/speco-tasker.js" add-subtask --parent=3 --title="Subtask 3.1" --description="Manual subtask for Task 3" --details="Create subtask for Task 3"
   log_success "Added subtask 3.1 to Task 3."
   # Verify 3.1 exists
   if ! jq -e '.main.tasks[] | select(.id == 3) | .subtasks[] | select(.id == 1)' .speco/tasks/tasks.json > /dev/null 2>&1; then
@@ -574,22 +684,172 @@ log_step() {
   fi
 
   log_step "Adding dependency: Task 4 depends on Subtask 3.1"
-  "$ORIGINAL_DIR/bin/speco-tasker.js" task add-dependency --id=4 --depends-on=3.1
+  "$ORIGINAL_DIR/bin/speco-tasker.js" add-dependency --id=4 --depends-on=3.1
   log_success "Added dependency 4 -> 3.1."
 
   log_step "Showing Task 4 details (after adding subtask dependency)"
-  "$ORIGINAL_DIR/bin/speco-tasker.js" task show 4 > task_4_details_after_dep_add.log
+  "$ORIGINAL_DIR/bin/speco-tasker.js" show 4 > task_4_details_after_dep_add.log
   log_success "Task 4 details saved."
 
   log_step "Removing dependency: Task 4 depends on Subtask 3.1"
-  "$ORIGINAL_DIR/bin/speco-tasker.js" task remove-dependency --id=4 --depends-on=3.1
+  "$ORIGINAL_DIR/bin/speco-tasker.js" remove-dependency --id=4 --depends-on=3.1
   log_success "Removed dependency 4 -> 3.1."
 
   log_step "Showing Task 4 details (after removing subtask dependency)"
-  "$ORIGINAL_DIR/bin/speco-tasker.js" task show 4 > task_4_details_after_dep_remove.log
+  "$ORIGINAL_DIR/bin/speco-tasker.js" show 4 > task_4_details_after_dep_remove.log
   log_success "Task 4 details saved."
 
   # === End New Test Section ===
+
+  # === Start Task Update Testing ===
+  log_step "Testing task update functionality"
+
+  # Test update-task command - replace mode
+  log_step "Testing task field updates (update-task - replace mode)"
+  "$ORIGINAL_DIR/bin/speco-tasker.js" update-task --id=1 --title="Updated: Setup project structure" --description="Updated description with new requirements" --priority=high
+  log_success "Updated Task 1 fields in replace mode."
+
+  # Test update-task command - append mode
+  log_step "Testing task field updates (update-task - append mode)"
+  "$ORIGINAL_DIR/bin/speco-tasker.js" update-task --id=1 --details="Additional requirement: Include CI/CD setup" --append=true
+  log_success "Appended details to Task 1."
+
+  # Test update-task command - status and priority update
+  log_step "Testing task status and priority updates"
+  "$ORIGINAL_DIR/bin/speco-tasker.js" update-task --id=1 --status=in-progress --priority=high
+  log_success "Updated Task 1 status and priority."
+
+  # Test update-subtask command
+  log_step "Testing subtask updates (update-subtask)"
+  "$ORIGINAL_DIR/bin/speco-tasker.js" update-subtask --id=3.1 --title="Updated: Enhanced Subtask 3.1" --description="Updated subtask description" --status=done
+  log_success "Updated Subtask 3.1 fields."
+
+  # Test update-subtask command - append mode
+  log_step "Testing subtask append updates"
+  "$ORIGINAL_DIR/bin/speco-tasker.js" update-subtask --id=3.1 --details="Additional notes for subtask implementation" --append=true
+  log_success "Appended details to Subtask 3.1."
+
+  # Verify updates by showing task details
+  log_step "Verifying task updates by showing details"
+  "$ORIGINAL_DIR/bin/speco-tasker.js" show 1 > task_1_after_updates.log
+  "$ORIGINAL_DIR/bin/speco-tasker.js" show 3 > task_3_after_subtask_updates.log
+  log_success "Saved task details after updates for verification."
+
+  log_success "Task update functionality testing completed."
+  # === End Task Update Testing ===
+
+  # === Start Task Move Testing ===
+  log_step "Testing task move and reorganization functionality"
+
+  # First, create a new task to move
+  log_step "Creating a task for move testing"
+  "$ORIGINAL_DIR/bin/speco-tasker.js" add-task --title="Task to be moved" --description="This task will be moved around" --details="Testing move functionality" --test-strategy="Manual verification" --spec-files="README.md" --priority=medium
+  move_test_task_id=$(jq -r '.main.tasks[-1].id' .speco/tasks/tasks.json)
+  log_success "Created task $move_test_task_id for move testing."
+
+  # Test move command - move task to become a subtask
+  log_step "Testing task to subtask conversion (move)"
+  "$ORIGINAL_DIR/bin/speco-tasker.js" move --from="$move_test_task_id" --to=2.1
+  log_success "Moved task $move_test_task_id to become subtask 2.1."
+
+  # Verify the move by listing tasks
+  "$ORIGINAL_DIR/bin/speco-tasker.js" list --with-subtasks > task_list_after_move_to_subtask.log
+  log_success "Verified move by listing tasks."
+
+  # Test move command - move subtask to different parent
+  log_step "Testing subtask to different parent move"
+  "$ORIGINAL_DIR/bin/speco-tasker.js" move --from=2.1 --to=3.1
+  log_success "Moved subtask from Task 2 to Task 3."
+
+  # Test move command - move back to root level
+  log_step "Testing subtask back to root level"
+  "$ORIGINAL_DIR/bin/speco-tasker.js" move --from=3.1 --to=""
+  log_success "Moved subtask back to root level as independent task."
+
+  # Create a new tag for cross-tag move testing
+  log_step "Creating new tag for cross-tag move testing"
+  "$ORIGINAL_DIR/bin/speco-tasker.js" add-tag cross-tag-test --description="Tag for testing cross-tag moves"
+  "$ORIGINAL_DIR/bin/speco-tasker.js" add-task --tag=cross-tag-test --title="Task in different tag" --description="Task for cross-tag move test" --details="Testing cross-tag functionality" --test-strategy="Manual verification" --spec-files="README.md" --priority=low
+  cross_tag_task_id=$(jq -r '.["cross-tag-test"].tasks[-1].id' .speco/tasks/tasks.json)
+  log_success "Created task $cross_tag_task_id in cross-tag-test tag."
+
+  # Test cross-tag move
+  log_step "Testing cross-tag task move"
+  "$ORIGINAL_DIR/bin/speco-tasker.js" move --from="$cross_tag_task_id" --from-tag=cross-tag-test --to-tag=main
+  log_success "Moved task from cross-tag-test to main tag."
+
+  # Verify cross-tag move
+  "$ORIGINAL_DIR/bin/speco-tasker.js" list --with-subtasks > task_list_after_cross_tag_move.log
+  log_success "Verified cross-tag move by listing tasks."
+
+  # Clean up test tag
+  "$ORIGINAL_DIR/bin/speco-tasker.js" delete-tag cross-tag-test -y
+  log_success "Cleaned up test tag."
+
+  log_success "Task move and reorganization testing completed."
+  # === End Task Move Testing ===
+
+  # === Start Batch Operations Testing ===
+  log_step "Testing batch operations and CLI-specific workflows"
+
+  # Create multiple tasks for batch testing
+  log_step "Creating multiple tasks for batch operation testing"
+  "$ORIGINAL_DIR/bin/speco-tasker.js" add-task --title="Batch Test Task A" --description="First task for batch testing" --details="Batch operation test A" --test-strategy="Automated verification" --spec-files="test-a.md" --priority=medium
+  "$ORIGINAL_DIR/bin/speco-tasker.js" add-task --title="Batch Test Task B" --description="Second task for batch testing" --details="Batch operation test B" --test-strategy="Automated verification" --spec-files="test-b.md" --priority=medium
+  "$ORIGINAL_DIR/bin/speco-tasker.js" add-task --title="Batch Test Task C" --description="Third task for batch testing" --details="Batch operation test C" --test-strategy="Automated verification" --spec-files="test-c.md" --priority=low
+
+  # Get the IDs of the newly created tasks
+  batch_task_a_id=$(jq -r '.main.tasks[-3].id' .speco/tasks/tasks.json)
+  batch_task_b_id=$(jq -r '.main.tasks[-2].id' .speco/tasks/tasks.json)
+  batch_task_c_id=$(jq -r '.main.tasks[-1].id' .speco/tasks/tasks.json)
+  log_success "Created batch test tasks: $batch_task_a_id, $batch_task_b_id, $batch_task_c_id"
+
+  # Test batch status updates (CLI approach - multiple individual calls)
+  log_step "Testing batch status updates (CLI approach)"
+  "$ORIGINAL_DIR/bin/speco-tasker.js" set-status --id="$batch_task_a_id" --status=in-progress
+  "$ORIGINAL_DIR/bin/speco-tasker.js" set-status --id="$batch_task_b_id" --status=in-progress
+  "$ORIGINAL_DIR/bin/speco-tasker.js" set-status --id="$batch_task_c_id" --status=done
+  log_success "Updated status for batch test tasks."
+
+  # Test batch dependency creation
+  log_step "Testing batch dependency creation"
+  "$ORIGINAL_DIR/bin/speco-tasker.js" add-dependency --id="$batch_task_b_id" --depends-on="$batch_task_a_id"
+  "$ORIGINAL_DIR/bin/speco-tasker.js" add-dependency --id="$batch_task_c_id" --depends-on="$batch_task_b_id"
+  log_success "Created dependency chain: $batch_task_a_id -> $batch_task_b_id -> $batch_task_c_id"
+
+  # Test batch subtask creation
+  log_step "Testing batch subtask creation"
+  "$ORIGINAL_DIR/bin/speco-tasker.js" add-subtask --parent="$batch_task_a_id" --title="Batch Subtask A1" --description="First subtask of batch task A" --details="Implementation details for subtask A1"
+  "$ORIGINAL_DIR/bin/speco-tasker.js" add-subtask --parent="$batch_task_a_id" --title="Batch Subtask A2" --description="Second subtask of batch task A" --details="Implementation details for subtask A2"
+  "$ORIGINAL_DIR/bin/speco-tasker.js" add-subtask --parent="$batch_task_b_id" --title="Batch Subtask B1" --description="First subtask of batch task B" --details="Implementation details for subtask B1"
+  log_success "Created multiple subtasks for batch test tasks."
+
+  # Test batch subtask clearing (already exists in original test)
+  log_step "Testing batch subtask clearing"
+  "$ORIGINAL_DIR/bin/speco-tasker.js" clear-subtasks --id="$batch_task_a_id"
+  log_success "Cleared all subtasks from batch task A."
+
+  # Test batch task removal
+  log_step "Testing batch task removal"
+  "$ORIGINAL_DIR/bin/speco-tasker.js" remove-task --id="$batch_task_a_id" -y
+  "$ORIGINAL_DIR/bin/speco-tasker.js" remove-task --id="$batch_task_b_id" -y
+  "$ORIGINAL_DIR/bin/speco-tasker.js" remove-task --id="$batch_task_c_id" -y
+  log_success "Removed all batch test tasks."
+
+  # Test CLI-specific filtering and listing
+  log_step "Testing CLI-specific filtering capabilities"
+  "$ORIGINAL_DIR/bin/speco-tasker.js" list --status=done > final_done_tasks.log
+  "$ORIGINAL_DIR/bin/speco-tasker.js" list --status=pending > final_pending_tasks.log
+  "$ORIGINAL_DIR/bin/speco-tasker.js" list --status=in-progress > final_in_progress_tasks.log
+  log_success "Generated status-filtered task lists."
+
+  # Test CLI tag filtering
+  log_step "Testing CLI tag-specific operations"
+  "$ORIGINAL_DIR/bin/speco-tasker.js" list --tag=main > main_tag_tasks.log
+  log_success "Listed tasks in main tag."
+
+  log_success "Batch operations and CLI-specific workflows testing completed."
+  # === End Batch Operations Testing ===
 
   log_step "Generating task files (final)"
   "$ORIGINAL_DIR/bin/speco-tasker.js" generate
@@ -598,12 +858,12 @@ log_step() {
 
   # === Final Core Functionality Test ===
   log_step "Testing final core functionality"
-  "$ORIGINAL_DIR/bin/speco-tasker.js" task list --with-subtasks > final_task_list.log
+  "$ORIGINAL_DIR/bin/speco-tasker.js" list --with-subtasks > final_task_list.log
   log_success "Final task list saved successfully."
   # === End Final Test ===
 
   log_step "Listing tasks again (final)"
-  "$ORIGINAL_DIR/bin/speco-tasker.js" task list --with-subtasks > task_list_final.log
+  "$ORIGINAL_DIR/bin/speco-tasker.js" list --with-subtasks > task_list_final.log
   log_success "Final task list saved to task_list_final.log"
 
   # --- Test Completion (Output to tee) ---
