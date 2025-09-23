@@ -1,8 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { vi } from "vitest";
 import mockFs from "mock-fs";
+import { vi } from "vitest";
 
 // Import the actual move task functionality
 import { moveTasksBetweenTags } from "../../scripts/modules/task-manager/move-task.js";
