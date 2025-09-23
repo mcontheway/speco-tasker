@@ -8,6 +8,42 @@ import fs from "node:fs";
 import path from "node:path";
 import chalk from "chalk";
 
+// Constants for complexity reports
+const COMPLEXITY_REPORT_FILE = "tasks-complexity-report.json";
+const LEGACY_COMPLEXITY_REPORT_FILE = "task-complexity-report.json";
+
+/**
+ * Read complexity report from file system
+ * @param {string} customPath - Optional custom path to complexity report
+ * @returns {Object|null} Complexity report data or null if not found
+ */
+export function readComplexityReport(customPath = null) {
+	try {
+		let reportPath;
+		if (customPath) {
+			reportPath = customPath;
+		} else {
+			// Try new location first, then fall back to legacy
+			const newPath = path.join(process.cwd(), COMPLEXITY_REPORT_FILE);
+			const legacyPath = path.join(
+				process.cwd(),
+				LEGACY_COMPLEXITY_REPORT_FILE,
+			);
+
+			reportPath = fs.existsSync(newPath) ? newPath : legacyPath;
+		}
+
+		if (!fs.existsSync(reportPath)) {
+			return null;
+		}
+
+		const reportData = JSON.parse(fs.readFileSync(reportPath, "utf8"));
+		return reportData;
+	} catch (error) {
+		return null;
+	}
+}
+
 // --- Environment Variable Resolution Utility ---
 /**
  * Resolves an environment variable's value.

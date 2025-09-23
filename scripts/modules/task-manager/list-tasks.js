@@ -5,19 +5,20 @@ import Table from "cli-table3";
 import {
 	addComplexityToTask,
 	log,
-	readComplexityReport,
 	readJSON,
 	truncate,
 } from "../utils.js";
+import { readComplexityReport } from "../core-utils.js";
 import findNextTask from "./find-next-task.js";
 
-import {
-	createProgressBar,
-	displayBanner,
-	formatDependenciesWithStatus,
-	getComplexityWithColor,
-	getStatusWithColor,
-} from "../ui.js";
+// Dynamic imports to break circular dependency
+// import {
+// 	createProgressBar,
+// 	displayBanner,
+// 	getComplexityWithColor,
+// 	getStatusWithColor,
+// } from "../ui.js";
+import { formatDependenciesWithStatus } from "../formatting-utils.js";
 
 /**
  * List all tasks
@@ -31,7 +32,7 @@ import {
  * @param {string} context.tag - Tag for the task
  * @returns {Object} - Task list result for json format
  */
-function listTasks(
+async function listTasks(
 	tasksPath,
 	statusFilter,
 	reportPath = null,
@@ -46,6 +47,14 @@ function listTasks(
 		if (!data || !data.tasks) {
 			throw new Error(`No valid tasks found in ${tasksPath}`);
 		}
+
+		// Dynamic imports to break circular dependency
+		const {
+			createProgressBar,
+			displayBanner,
+			getComplexityWithColor,
+			getStatusWithColor,
+		} = await import("../ui.js");
 
 		// Add complexity scores to tasks if report exists
 		// `reportPath` is already tag-aware (resolved at the CLI boundary).

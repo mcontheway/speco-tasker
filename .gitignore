@@ -112,3 +112,5 @@ tmp/
 
 # Polyfills健康报告
 polyfills-health-report.json
+
+ci-log-latest.txt

@@ -18,7 +18,8 @@ import {
 import { TASK_STATUS_OPTIONS } from "../../src/constants/task-status.js";
 import { getTaskMasterVersion } from "../../src/utils/getVersion.js";
 import { getProjectName } from "./config-manager.js";
-import { findNextTask, readComplexityReport } from "./task-manager.js";
+// Dynamic imports to break circular dependency
+// import { findNextTask, readComplexityReport } from "./task-manager.js";
 import {
 	findTaskById,
 	formatTaskId,
@@ -361,152 +362,7 @@ function getStatusWithColor(status, forTable = false) {
 	return config.color(`${config.icon} ${status}`);
 }
 
-/**
- * Format dependencies list with status indicators
- * @param {Array} dependencies - Array of dependency IDs
- * @param {Array} allTasks - Array of all tasks
- * @param {boolean} forConsole - Whether the output is for console display
- * @param {Object|null} complexityReport - Optional pre-loaded complexity report
- * @returns {string} Formatted dependencies string
- */
-function formatDependenciesWithStatus(
-	dependencies,
-	allTasks,
-	forConsole = false,
-	complexityReport = null, // Add complexityReport parameter
-) {
-	if (
-		!dependencies ||
-		!Array.isArray(dependencies) ||
-		dependencies.length === 0
-	) {
-		return forConsole ? chalk.gray("None") : "None";
-	}
-
-	const formattedDeps = dependencies.map((depId) => {
-		const depIdStr = depId.toString(); // Ensure string format for display
-
-		// Check if it's already a fully qualified subtask ID (like "22.1")
-		if (depIdStr.includes(".")) {
-			const parts = depIdStr.split(".");
-			// Validate that it's a proper subtask format (parentId.subtaskId)
-			if (parts.length !== 2 || !parts[0] || !parts[1]) {
-				// Invalid format - treat as regular dependency
-				const numericDepId =
-					typeof depId === "string" ? Number.parseInt(depId, 10) : depId;
-				const depTaskResult = findTaskById(
-					allTasks,
-					numericDepId,
-					complexityReport,
-				);
-				const depTask = depTaskResult.task;
-
-				if (!depTask) {
-					return forConsole
-						? chalk.red(`${depIdStr} (Not found)`)
-						: `${depIdStr} (Not found)`;
-				}
-
-				const status = depTask.status || "pending";
-				const isDone =
-					status.toLowerCase() === "done" ||
-					status.toLowerCase() === "completed";
-				const isInProgress = status.toLowerCase() === "in-progress";
-
-				if (forConsole) {
-					if (isDone) {
-						return chalk.green.bold(depIdStr);
-					}
-					if (isInProgress) {
-						return chalk.yellow.bold(depIdStr);
-					}
-					return chalk.red.bold(depIdStr);
-				}
-				return depIdStr;
-			}
-
-			const [parentId, subtaskId] = parts.map((id) => Number.parseInt(id, 10));
-
-			// Find the parent task
-			const parentTask = allTasks.find((t) => t.id === parentId);
-			if (!parentTask || !parentTask.subtasks) {
-				return forConsole
-					? chalk.red(`${depIdStr} (Not found)`)
-					: `${depIdStr} (Not found)`;
-			}
-
-			// Find the subtask
-			const subtask = parentTask.subtasks.find((st) => st.id === subtaskId);
-			if (!subtask) {
-				return forConsole
-					? chalk.red(`${depIdStr} (Not found)`)
-					: `${depIdStr} (Not found)`;
-			}
-
-			// Format with status
-			const status = subtask.status || "pending";
-			const isDone =
-				status.toLowerCase() === "done" || status.toLowerCase() === "completed";
-			const isInProgress = status.toLowerCase() === "in-progress";
-
-			if (forConsole) {
-				if (isDone) {
-					return chalk.green.bold(depIdStr);
-				}
-				if (isInProgress) {
-					return chalk.hex("#FFA500").bold(depIdStr);
-				}
-				return chalk.red.bold(depIdStr);
-			}
-
-			// For plain text output (task files), return just the ID without any formatting or emoji
-			return depIdStr;
-		}
-
-		// If depId is a number less than 100, it's likely a reference to a subtask ID in the current task
-		// This case is typically handled elsewhere (in task-specific code) before calling this function
-
-		// For regular task dependencies (not subtasks)
-		// Convert string depId to number if needed
-		const numericDepId =
-			typeof depId === "string" ? Number.parseInt(depId, 10) : depId;
-
-		// Look up the task using the numeric ID
-		const depTaskResult = findTaskById(
-			allTasks,
-			numericDepId,
-			complexityReport,
-		);
-		const depTask = depTaskResult.task; // Access the task object from the result
-
-		if (!depTask) {
-			return forConsole
-				? chalk.red(`${depIdStr} (Not found)`)
-				: `${depIdStr} (Not found)`;
-		}
-
-		// Format with status
-		const status = depTask.status || "pending";
-		const isDone =
-			status.toLowerCase() === "done" || status.toLowerCase() === "completed";
-		const isInProgress = status.toLowerCase() === "in-progress";
-
-		if (forConsole) {
-			if (isDone) {
-				return chalk.green.bold(depIdStr);
-			}
-			if (isInProgress) {
-				return chalk.yellow.bold(depIdStr);
-			}
-			return chalk.red.bold(depIdStr);
-		}
-
-		// For plain text output (task files), return just the ID without any formatting or emoji
-		return depIdStr;
-	});
-
-	return formattedDeps.join(", ");
-}
+// formatDependenciesWithStatus moved to formatting-utils.js to break circular dependency
 
 /**
  * Display a comprehensive help guide
@@ -889,10 +745,12 @@ async function displayNextTask(
 		process.exit(1);
 	}
 
-	// Read complexity report once
+	// Read complexity report once - import from core-utils to avoid circular dependency
+	const { readComplexityReport } = await import("./core-utils.js");
 	const complexityReport = readComplexityReport(complexityReportPath);
 
-	// Find the next task
+	// Find the next task - dynamic import to break circular dependency
+	const { findNextTask } = await import("./task-manager.js");
 	const nextTask = findNextTask(data.tasks, complexityReport);
 
 	if (!nextTask) {
@@ -1165,7 +1023,8 @@ async function displayTaskById(
 		process.exit(1);
 	}
 
-	// Read complexity report once
+	// Read complexity report once - import from core-utils to avoid circular dependency
+	const { readComplexityReport } = await import("./core-utils.js");
 	const complexityReport = readComplexityReport(complexityReportPath);
 
 	// Find the task by ID, applying the status filter if provided
@@ -1963,7 +1822,8 @@ async function displayMultipleTasksSummary(
 		process.exit(1);
 	}
 
-	// Read complexity report once
+	// Read complexity report once - import from core-utils to avoid circular dependency
+	const { readComplexityReport } = await import("./core-utils.js");
 	const complexityReport = readComplexityReport(complexityReportPath);
 
 	// Find all requested tasks
@@ -2295,7 +2155,6 @@ export {
 	stopLoadingIndicator,
 	createProgressBar,
 	getStatusWithColor,
-	formatDependenciesWithStatus,
 	displayHelp,
 	getComplexityWithColor,
 	displayNextTask,

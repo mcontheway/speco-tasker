@@ -4,7 +4,7 @@ import chalk from "chalk";
 
 import { getDebugFlag } from "../config-manager.js";
 // validateAndFixDependencies will be imported dynamically to avoid circular dependency
-import { formatDependenciesWithStatus } from "../ui.js";
+import { formatDependenciesWithStatus } from "../formatting-utils.js";
 import { log, readJSON } from "../utils.js";
 
 /**

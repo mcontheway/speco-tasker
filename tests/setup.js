@@ -83,3 +83,65 @@ if (process.env.SILENCE_CONSOLE === "true") {
 		error: () => {},
 	};
 }
+
+// ===== Jest Compatibility for Vitest =====
+// Make jest functions available globally for tests written with Jest API
+
+// Dynamic import to avoid issues during setup
+const setupJestCompatibility = async () => {
+	try {
+		const { vi } = await import('vitest');
+
+		// Make vi globally available
+		global.vi = vi;
+
+		// Create jest object with vitest equivalents only if it doesn't exist
+		if (!global.jest) {
+			global.jest = {
+				// Mock functions
+				fn: vi.fn,
+				mock: vi.mock,
+				mockImplementation: vi.mockImplementation,
+				mockImplementationOnce: vi.mockImplementationOnce,
+				mockReturnValue: vi.mockReturnValue,
+				mockReturnValueOnce: vi.mockReturnValueOnce,
+				mockResolvedValue: vi.mockResolvedValue,
+				mockResolvedValueOnce: vi.mockResolvedValueOnce,
+				mockRejectedValue: vi.mockRejectedValue,
+				mockRejectedValueOnce: vi.mockRejectedValueOnce,
+				mockClear: vi.mockClear,
+				mockReset: vi.mockReset,
+				mockRestore: vi.mockRestore,
+
+				// Spy functions
+				spyOn: vi.spyOn,
+
+				// Utility functions
+				clearAllMocks: vi.clearAllMocks,
+				resetAllMocks: vi.resetAllMocks,
+				restoreAllMocks: vi.restoreAllMocks,
+
+				// Timing functions
+				useFakeTimers: vi.useFakeTimers,
+				useRealTimers: vi.useRealTimers,
+				runAllTimers: vi.runAllTimers,
+				runOnlyPendingTimers: vi.runOnlyPendingTimers,
+				advanceTimersByTime: vi.advanceTimersByTime,
+				advanceTimersToNextTimer: vi.advanceTimersToNextTimer,
+				getTimerCount: vi.getTimerCount,
+
+				// Config
+				setTimeout: vi.setTimeout,
+				getRealSystemTime: vi.getRealSystemTime,
+				setSystemTime: vi.setSystemTime,
+			};
+		}
+
+		console.log('✅ Jest compatibility layer loaded successfully');
+	} catch (error) {
+		console.error('❌ Failed to load Jest compatibility layer:', error.message);
+	}
+};
+
+// Initialize jest compatibility
+await setupJestCompatibility();

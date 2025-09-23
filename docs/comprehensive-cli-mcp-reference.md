@@ -703,64 +703,57 @@ Speco Tasker 主要使用配置文件，通常不需要额外的环境变量配�
 
 ---
 
-## 使用提示 | Usage Tips
+## 使用提示
 
-### 标签系统最佳实践 | Tag System Best Practices
+### 标签系统最佳实践
 
-1. **默认标签**: 使用 `main` 标签处理常规任务 | **Default Tag**: Use `main` tag for regular tasks
-2. **功能分支**: 为每个功能分支创建对应标签 | **Feature Branches**: Create corresponding tags for each feature branch
-3. **上下文隔离**: 不同标签的任务完全隔离 | **Context Isolation**: Tasks in different tags are completely isolated
-4. **分支同步**: 使用 `--tag` 参数在不同上下文间切换 | **Branch Synchronization**: Use `--tag` parameter to switch between different contexts
+1. **默认标签**: 使用 `main` 标签处理常规任务
+2. **功能分支**: 为每个功能分支创建对应标签
+3. **上下文隔离**: 不同标签的任务完全隔离
+4. **分支同步**: 使用 `--tag` 参数在不同上下文间切换
 
-### 任务管理流程 | Task Management Workflow
+### 任务管理流程
 
-1. **自动初始化**: `speco-tasker init`（自动检测配置）| **Auto Initialization**: `speco-tasker init` (auto-detects configuration)
-2. **查看任务**: `speco-tasker list` | **View Tasks**: `speco-tasker list`
-3. **开始工作**: `speco-tasker next` | **Start Working**: `speco-tasker next`
-4. **查看详情**: `speco-tasker show <id>` | **View Details**: `speco-tasker show <id>`
-5. **更新状态**: `speco-tasker set-status --id=<id> --status=in-progress` | **Update Status**: `speco-tasker set-status --id=<id> --status=in-progress`
-6. **完成任务**: `speco-tasker set-status --id=<id> --status=done` | **Complete Task**: `speco-tasker set-status --id=<id> --status=done`
+1. **自动初始化**: `speco-tasker init`（自动检测配置）
+2. **查看任务**: `speco-tasker list`
+3. **开始工作**: `speco-tasker next`
+4. **查看详情**: `speco-tasker show <id>`
+5. **更新状态**: `speco-tasker set-status --id=<id> --status=in-progress`
+6. **完成任务**: `speco-tasker set-status --id=<id> --status=done`
 
-### MCP 工具使用 | MCP Tool Usage
+### MCP 工具使用
 
-- **自动初始化**: `initialize_project` 无需参数，自动检测项目配置 | **Auto Initialization**: `initialize_project` requires no parameters, auto-detects project configuration
-- **项目根目录**: 可选提供 `projectRoot`，会自动检测当前工作目录 | **Project Root**: Optionally provide `projectRoot`, automatically detects current working directory
-- **标签上下文**: 使用 `tag` 参数指定任务上下文 | **Tag Context**: Use `tag` parameter to specify task context
-- **批量操作**: 支持逗号分隔的多个 ID | **Batch Operations**: Supports comma-separated multiple IDs
-- **错误处理**: 检查返回结果的 `success` 字段 | **Error Handling**: Check the `success` field in return results
+- **自动初始化**: `initialize_project` 无需参数，自动检测项目配置
+- **项目根目录**: 可选提供 `projectRoot`，会自动检测当前工作目录
+- **标签上下文**: 使用 `tag` 参数指定任务上下文
+- **批量操作**: 支持逗号分隔的多个 ID
+- **错误处理**: 检查返回结果的 `success` 字段
 
 ---
 
-## 常见错误和解决方案 | Common Errors and Solutions
+## 常见错误和解决方案
 
-### 文件未找到错误 | File Not Found Error
+### 文件未找到错误
 ```
 错误: Failed to find tasks.json
 解决方案: 确保项目已初始化 (speco-tasker init)
 ```
-**Error: Failed to find tasks.json**  
-**Solution: Ensure project is initialized (speco-tasker init)**
 
-### 标签不存在错误 | Tag Not Found Error
+### 标签不存在错误
 ```
 错误: Tag 'feature-x' does not exist
 解决方案: 先创建标签 (speco-tasker add-tag feature-x)
 ```
-**Error: Tag 'feature-x' does not exist**  
-**Solution: Create the tag first (speco-tasker add-tag feature-x)**
 
-### 依赖关系错误 | Dependency Error
+### 依赖关系错误
 ```
 错误: Circular dependency detected
 解决方案: 使用 validate-dependencies 检查并修复
 ```
-**Error: Circular dependency detected**  
-**Solution: Use validate-dependencies to check and fix**
 
 ---
 
-- **最后更新**: 2025年09月23日 | **Last updated**: September 23, 2025
+- **最后更新**: 2025年09月23日
 
 
-*此文档提供了 Speco Tasker 所有 CLI 命令和 MCP 工具的完整参考。*  
-*This document provides a complete reference for all Speco Tasker CLI commands and MCP tools.*
+*此文档提供了 Speco Tasker 所有 CLI 命令和 MCP 工具的完整参考。*

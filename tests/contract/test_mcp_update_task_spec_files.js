@@ -84,7 +84,7 @@ describe("MCP update_task Tool spec_files Parameter Contract Test", () => {
 			});
 
 			expect(result.success).toBe(false);
-			expect(result.error.issues[0].message).toContain("Invalid enum value");
+			expect(result.error.issues[0].message).toContain("Invalid option");
 		});
 
 		it("should reject missing required fields in spec_files objects", () => {
@@ -104,11 +104,11 @@ describe("MCP update_task Tool spec_files Parameter Contract Test", () => {
 				expect.arrayContaining([
 					expect.objectContaining({
 						path: ["spec_files", 0, "title"],
-						message: expect.stringContaining("Required")
+						message: expect.stringContaining("expected string")
 					}),
 					expect.objectContaining({
 						path: ["spec_files", 0, "file"],
-						message: expect.stringContaining("Required")
+						message: expect.stringContaining("expected string")
 					})
 				])
 			);
@@ -120,7 +120,7 @@ describe("MCP update_task Tool spec_files Parameter Contract Test", () => {
 			});
 
 			expect(result.success).toBe(false);
-			expect(result.error.issues[0].message).toContain("Expected array");
+			expect(result.error.issues[0].message).toContain("expected array");
 		});
 	});
 
@@ -174,7 +174,7 @@ describe("MCP update_task Tool spec_files Parameter Contract Test", () => {
 			});
 
 			expect(result.success).toBe(false);
-			expect(result.error.issues[0].code).toBe("invalid_enum_value");
+			expect(result.error.issues[0].code).toBe("invalid_value");
 		});
 	});
 });

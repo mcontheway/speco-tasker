@@ -9,7 +9,7 @@ import clearSubtasks from "./task-manager/clear-subtasks.js";
 import findNextTask from "./task-manager/find-next-task.js";
 import generateTaskFiles from "./task-manager/generate-task-files.js";
 // isTaskDependentOn moved to task-dependency-utils.js
-import listTasks from "./task-manager/list-tasks.js";
+// Dynamic import to break circular dependency: import listTasks from "./task-manager/list-tasks.js";
 import { migrateProject } from "./task-manager/migrate.js";
 import moveTask from "./task-manager/move-task.js";
 import removeSubtask from "./task-manager/remove-subtask.js";
@@ -31,7 +31,6 @@ export {
 	generateTaskFiles,
 	setTaskStatus,
 	updateSingleTaskStatus,
-	listTasks,
 	clearSubtasks,
 	addTask,
 	addSubtask,
@@ -44,3 +43,9 @@ export {
 	readComplexityReport,
 	migrateProject,
 };
+
+// Dynamic export to break circular dependency
+export async function listTasks(...args) {
+	const { default: listTasksFn } = await import("./task-manager/list-tasks.js");
+	return listTasksFn(...args);
+}

@@ -112,11 +112,11 @@ describe("MCP add_task Tool spec_files Parameter Contract Test", () => {
 				expect.arrayContaining([
 					expect.objectContaining({
 						path: ["spec_files", 0, "title"],
-						message: expect.stringContaining("Required")
+						message: expect.stringContaining("expected string")
 					}),
 					expect.objectContaining({
 						path: ["spec_files", 0, "file"],
-						message: expect.stringContaining("Required")
+						message: expect.stringContaining("expected string")
 					})
 				])
 			);
@@ -136,7 +136,7 @@ describe("MCP add_task Tool spec_files Parameter Contract Test", () => {
 			});
 
 			expect(result.success).toBe(false);
-			expect(result.error.issues[0].message).toContain("Invalid enum value");
+			expect(result.error.issues[0].message).toContain("Invalid option");
 		});
 
 		it("should reject non-array spec_files parameter", () => {
@@ -145,7 +145,7 @@ describe("MCP add_task Tool spec_files Parameter Contract Test", () => {
 			});
 
 			expect(result.success).toBe(false);
-			expect(result.error.issues[0].message).toContain("Expected array");
+			expect(result.error.issues[0].message).toContain("expected array");
 		});
 
 		it("should reject non-object elements in spec_files array", () => {
@@ -163,11 +163,11 @@ describe("MCP add_task Tool spec_files Parameter Contract Test", () => {
 				expect.arrayContaining([
 					expect.objectContaining({
 						path: ["spec_files", 0],
-						message: expect.stringContaining("Expected object")
+						message: expect.stringContaining("expected object")
 					}),
 					expect.objectContaining({
 						path: ["spec_files", 1],
-						message: expect.stringContaining("Expected object")
+						message: expect.stringContaining("expected object")
 					})
 				])
 			);
@@ -249,7 +249,7 @@ describe("MCP add_task Tool spec_files Parameter Contract Test", () => {
 			});
 
 			expect(result.success).toBe(false);
-			expect(result.error.issues[0].code).toBe("invalid_enum_value");
+			expect(result.error.issues[0].code).toBe("invalid_value");
 		});
 
 		it("should include field index in error messages", () => {

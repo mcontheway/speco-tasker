@@ -443,13 +443,8 @@ const LOG_LEVELS = {
 	success: 1, // Treat success like info level
 };
 
-/**
- * Returns the task manager module
- * @returns {Promise<Object>} The task manager module object
- */
-async function getTaskManager() {
-	return import("./task-manager.js");
-}
+// getTaskManager function removed to break circular dependency
+// If needed in the future, import task-manager directly instead
 
 /**
  * Enable silent logging mode
@@ -1826,7 +1821,6 @@ export {
 	detectCamelCaseFlags,
 	disableSilentMode,
 	enableSilentMode,
-	getTaskManager,
 	isSilentMode,
 	addComplexityToTask,
 	resolveEnvVariable,

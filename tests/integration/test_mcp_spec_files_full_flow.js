@@ -114,7 +114,7 @@ describe("MCP spec_files Full Flow Integration Test", () => {
 			// This should fail at schema validation level
 			const schemaResult = ExpectedSpecFilesSchema.safeParse(invalidSpecFiles);
 			expect(schemaResult.success).toBe(false);
-			expect(schemaResult.error.issues[0].code).toBe("invalid_enum_value");
+    expect(schemaResult.error.issues[0].code).toBe("invalid_value");
 		});
 	});
 
