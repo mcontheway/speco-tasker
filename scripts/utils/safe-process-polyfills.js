@@ -6,6 +6,9 @@
 // 先保存原始的process.cwd实现，避免递归调用
 const originalCwd = process.cwd;
 
+// 导出空的默认导出，使其成为ES模块
+export default {};
+
 let cwdCache = null;
 let cacheExpiry = 0;
 const CACHE_DURATION = 1000; // 1秒缓存，避免过度调用
@@ -42,15 +45,15 @@ const safeCwd = () => {
 process.cwd = safeCwd;
 
 // 导出用于测试和调试
-module.exports = {
-  safeCwd,
-  getCacheInfo: () => ({
-    cached: cwdCache,
-    expiry: cacheExpiry,
-    age: Date.now() - cacheExpiry
-  }),
-  clearCache: () => {
-    cwdCache = null;
-    cacheExpiry = 0;
-  }
+export const getCacheInfo = () => ({
+  cached: cwdCache,
+  expiry: cacheExpiry,
+  age: Date.now() - cacheExpiry
+});
+
+export const clearCache = () => {
+  cwdCache = null;
+  cacheExpiry = 0;
 };
+
+export { safeCwd, originalCwd };
