@@ -22,12 +22,9 @@ vi.mock("../../../scripts/modules/task-manager/move-task.js", () => ({
 	moveTasksBetweenTags: mockMoveTasksBetweenTags,
 }));
 
-vi.mock(
-	"../../../scripts/modules/task-manager/generate-task-files.js",
-	() => ({
-		default: mockGenerateTaskFiles,
-	}),
-);
+vi.mock("../../../scripts/modules/task-manager/generate-task-files.js", () => ({
+	default: mockGenerateTaskFiles,
+}));
 
 // Mock utils module with manual mock setup
 const mockUtils = {
@@ -79,6 +76,53 @@ describe("Cross-Tag Move CLI Integration", () => {
 		// Create basic project structure
 		fs.mkdirSync(".taskmaster/tasks", { recursive: true });
 		fs.writeFileSync("package.json", JSON.stringify({ name: "test-project" }));
+
+		// Create mock task data with required tags
+		const taskData = {
+			version: "1.0.0",
+			projectName: "Test Project",
+			meta: {
+				projectName: "Test Project",
+				createdAt: new Date().toISOString(),
+				updatedAt: new Date().toISOString(),
+			},
+			tags: {
+				"backlog": {
+					tasks: [
+						{
+							id: 1,
+							title: "Task 1",
+							description: "Description 1",
+							status: "pending",
+							dependencies: [],
+							priority: "medium",
+							details: "Details 1",
+							testStrategy: "Test 1",
+						},
+						{
+							id: 2,
+							title: "Task 2",
+							description: "Description 2",
+							status: "pending",
+							dependencies: [],
+							priority: "medium",
+							details: "Details 2",
+							testStrategy: "Test 2",
+						},
+					],
+					lastUpdated: new Date().toISOString(),
+				},
+				"in-progress": {
+					tasks: [],
+					lastUpdated: new Date().toISOString(),
+				},
+				"done": {
+					tasks: [],
+					lastUpdated: new Date().toISOString(),
+				},
+			},
+		};
+		fs.writeFileSync(".taskmaster/tasks/tasks.json", JSON.stringify(taskData, null, 2));
 
 		// Import modules after setting up the test environment
 		moveTaskModule = require("../../../scripts/modules/task-manager/move-task.js");

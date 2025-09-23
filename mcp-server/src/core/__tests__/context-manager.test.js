@@ -1,12 +1,14 @@
 // Mock FastMCP and LRUCache to avoid ES module issues
-jest.mock("fastmcp", () => ({
-	FastMCP: jest.fn().mockImplementation(() => ({
-		setRequestHandler: jest.fn(),
-		start: jest.fn(),
+import { vi } from "vitest";
+
+vi.mock("fastmcp", () => ({
+	FastMCP: vi.fn().mockImplementation(() => ({
+		setRequestHandler: vi.fn(),
+		start: vi.fn(),
 	})),
 }));
 
-jest.mock("lru-cache", () => ({
+vi.mock("lru-cache", () => ({
 	__esModule: true,
 	LRUCache: class MockLRUCache {
 		constructor(options) {
@@ -58,7 +60,7 @@ jest.mock("lru-cache", () => ({
 	},
 }));
 
-import { jest } from "@jest/globals";
+// Removed @jest/globals import - using vi from vitest
 import { ContextManager } from "../context-manager.js";
 
 describe("ContextManager", () => {

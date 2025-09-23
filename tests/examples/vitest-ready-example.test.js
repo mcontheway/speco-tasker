@@ -12,7 +12,7 @@
  * - @migration-priority: high - 优先迁移
  */
 
-const { expect, describe, it } = require("@jest/globals"); // 使用 Jest，但兼容 Vitest
+import { describe, it, expect } from "vitest";
 
 describe("Vitest Ready Example - Utility Functions", () => {
 	describe("纯函数测试示例", () => {
