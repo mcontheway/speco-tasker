@@ -835,7 +835,7 @@ function registerCommands(programInstance) {
 						details: options.details,
 						testStrategy: options.testStrategy,
 						dependencies: options.dependencies
-							? options.dependencies.split(",").map((id) => id.trim())
+							? options.dependencies.split(",").map((id) => id.trim()).filter((id) => id.length > 0)
 							: undefined,
 						spec_files: options.specFiles
 							? options.specFiles.split(",").map((f) => {
@@ -1039,7 +1039,7 @@ function registerCommands(programInstance) {
 						details: options.details,
 						testStrategy: options.testStrategy,
 						dependencies: options.dependencies
-							? options.dependencies.split(",").map((id) => id.trim())
+							? options.dependencies.split(",").map((id) => id.trim()).filter((id) => id.length > 0)
 							: undefined,
 						spec_files: options.specFiles
 							? options.specFiles.split(",").map((f) => {

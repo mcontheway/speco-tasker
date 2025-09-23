@@ -58,7 +58,10 @@ async function updateTaskManually(
 						"warn",
 						`Field update rejected for '${field}': ${validation.reason}`,
 					);
-					return;
+					return {
+						success: false,
+						error: { message: `Field validation failed for '${field}': ${validation.reason}` },
+					};
 				}
 
 				let processedValue = newValue;

@@ -1,7 +1,8 @@
 {
-  "name": "test-project",
-  "version": "1.0.0",
-  "description": "Test project for dependency injection refactoring",
+  "name": "speco-tasker",
+  "version": "1.2.0",
+  "description": "Pure Task Management System optimized for built-in Agents in AI editors like Cursor and Windsurf",
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "test": "vitest run",

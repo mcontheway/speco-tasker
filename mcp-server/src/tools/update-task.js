@@ -102,8 +102,19 @@ export function registerUpdateTaskTool(server) {
 						priority: args.priority,
 						details: args.details,
 						testStrategy: args.testStrategy,
-						dependencies: args.dependencies,
-						spec_files: args.spec_files,
+						dependencies: args.dependencies
+							? args.dependencies.split(",").map((id) => id.trim()).filter((id) => id.length > 0)
+							: undefined,
+						spec_files: args.spec_files
+							? args.spec_files.split(",").map((f) => {
+									const trimmed = f.trim();
+									return {
+										type: "spec",
+										title: trimmed.split("/").pop() || "Specification Document",
+										file: trimmed,
+									};
+								})
+							: undefined,
 						logs: args.logs,
 					},
 					appendMode: args.append !== false,
