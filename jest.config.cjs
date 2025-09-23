@@ -3,9 +3,6 @@ const config = {
 	// Use Node.js environment for testing
 	testEnvironment: "node",
 
-	// CRITICAL: Set working directory explicitly to prevent graceful-fs issues
-	cwd: process.cwd(),
-
 	// Mock process.cwd globally to prevent graceful-fs issues
 	setupFiles: ["<rootDir>/tests/setup.js"],
 
@@ -43,11 +40,15 @@ const config = {
 		"node_modules/(?!(fastmcp|@modelcontextprotocol)/)",
 	],
 
+	// Transform files using Babel
+	transform: {
+		"^.+\\.(js|mjs|cjs)$": "babel-jest",
+	},
+
 	// Explicit test match patterns to include all test files
 	testMatch: [
 		"**/__tests__/**/*.?([mc])[jt]s?(x)",
 		"**/?(*.)+(spec|test).?([mc])[jt]s?(x)",
-		"**/test_*.js",
 		"**/simple-config-test.js",
 		"**/es-module-test.mjs",
 	],

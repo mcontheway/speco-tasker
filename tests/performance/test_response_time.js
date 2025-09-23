@@ -24,7 +24,7 @@ function measureCommandResponseTime(args, timeout = TIMEOUT_MS) {
 
 		const child = spawn("node", [CLI_PATH, ...args], {
 			stdio: ["pipe", "pipe", "pipe"],
-			cwd: TEST_DATA_DIR, // Use test fixtures directory
+			cwd: process.cwd(), // Use actual project root directory
 			env: {
 				...process.env,
 				NODE_ENV: "test",
@@ -117,121 +117,52 @@ async function runResponseBenchmark(args, runs = TEST_RUNS) {
 
 /**
  * Set up test data for performance testing
+ * Note: Performance tests now use the actual project configuration
+ * instead of test fixtures to ensure realistic testing conditions
  */
 function setupTestData() {
-	const testDataDir = path.resolve(__dirname, "../fixtures");
-	const taskmasterDir = path.join(testDataDir, ".taskmaster");
-	const tasksDir = path.join(taskmasterDir, "tasks");
+	// Verify the actual project has the necessary configuration
+	const projectRoot = process.cwd();
+	const taskmasterDir = path.join(projectRoot, ".speco");
 
-	// Create directories
 	if (!fs.existsSync(taskmasterDir)) {
-		fs.mkdirSync(taskmasterDir, { recursive: true });
-	}
-	if (!fs.existsSync(tasksDir)) {
-		fs.mkdirSync(tasksDir, { recursive: true });
+		throw new Error("Project .speco directory not found. Run 'npm run init' first.");
 	}
 
-	// Create config file
 	const configPath = path.join(taskmasterDir, "config.json");
-	const config = {
-		projectName: "Performance Test Project",
-		version: "1.0.0",
-		global: {
-			defaultTag: "main",
-		},
-		tags: {
-			master: {
-				description: "Main task context",
-			},
-		},
-	};
-	fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+	if (!fs.existsSync(configPath)) {
+		throw new Error("Project config.json not found. Run 'npm run init' first.");
+	}
 
-	// Create tasks file
+	const tasksDir = path.join(taskmasterDir, "tasks");
 	const tasksPath = path.join(tasksDir, "tasks.json");
-	const tasksData = {
-		meta: {
-			projectName: "Performance Test Project",
-			createdAt: new Date().toISOString(),
-			updatedAt: new Date().toISOString(),
-		},
-		tags: {
-			master: {
-				tasks: [
-					{
-						id: 1,
-						title: "Initialize Project",
-						description: "Set up the project structure and dependencies",
-						status: "done",
-						dependencies: [],
-						priority: "high",
-						details:
-							"Create directory structure, initialize package.json, and install dependencies",
-						testStrategy:
-							"Verify all directories and files are created correctly",
-					},
-					{
-						id: 2,
-						title: "Create Core Functionality",
-						description: "Implement the main features of the application",
-						status: "in-progress",
-						dependencies: [1],
-						priority: "high",
-						details:
-							"Implement user authentication, data processing, and API endpoints",
-						testStrategy: "Write unit tests for all core functions",
-						subtasks: [
-							{
-								id: 1,
-								title: "Implement Authentication",
-								description: "Create user authentication system",
-								status: "done",
-								dependencies: [],
-							},
-							{
-								id: 2,
-								title: "Set Up Database",
-								description: "Configure database connection and models",
-								status: "pending",
-								dependencies: [1],
-							},
-						],
-					},
-					{
-						id: 3,
-						title: "Implement UI Components",
-						description: "Create the user interface components",
-						status: "pending",
-						dependencies: [2],
-						priority: "medium",
-						details:
-							"Design and implement React components for the user interface",
-						testStrategy: "Test components with React Testing Library",
-					},
-				],
-				lastUpdated: new Date().toISOString(),
-			},
-		},
-	};
-	fs.writeFileSync(tasksPath, JSON.stringify(tasksData, null, 2));
 
-	return testDataDir;
+	if (!fs.existsSync(tasksPath)) {
+		throw new Error("Project tasks.json not found. Create some tasks first.");
+	}
+
+	console.log(`Using actual project configuration:`);
+	console.log(`- Project root: ${projectRoot}`);
+	console.log(`- Config: ${configPath}`);
+	console.log(`- Tasks: ${tasksPath}`);
+
+	return {
+		projectRoot,
+		configPath,
+		tasksPath,
+	};
 }
 
 /**
  * Clean up test data
+ * Note: Performance tests no longer create test fixtures, so cleanup is minimal
  */
 function cleanupTestData() {
-	const testDataDir = path.resolve(__dirname, "../fixtures");
-	const taskmasterDir = path.join(testDataDir, ".taskmaster");
-
-	if (fs.existsSync(taskmasterDir)) {
-		fs.rmSync(taskmasterDir, { recursive: true, force: true });
-	}
+	console.log("Performance tests use actual project configuration - no cleanup needed");
 }
 
 describe("Task Master Command Response Time", () => {
-	let testDataDir;
+	let testSetup;
 
 	beforeAll(() => {
 		// Ensure CLI script exists
@@ -240,7 +171,7 @@ describe("Task Master Command Response Time", () => {
 		}
 
 		// Set up test data
-		testDataDir = setupTestData();
+		testSetup = setupTestData();
 	});
 
 	afterAll(() => {
