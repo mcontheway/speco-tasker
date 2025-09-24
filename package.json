@@ -24,7 +24,7 @@
     "lint": "npx biome check .",
     "format": "npx biome format .",
     "audit": "npm audit --audit-level moderate",
-    "depcheck": "depcheck",
+    "depcheck": "depcheck --ignore-dirs=node_modules --ignores=@changesets/changelog-github",
     "madge": "madge --circular --extensions js,mjs,cjs,ts,tsx src scripts mcp-server",
     "release": "npm run changeset:release",
     "changeset": "changeset",
