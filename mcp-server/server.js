@@ -3,6 +3,16 @@
 import TaskMasterMCPServer from "./src/index.js";
 import logger from "./src/logger.js";
 
+// Suppress FastMCP client capability inference warnings
+const originalWarn = console.warn;
+console.warn = function(...args) {
+	if (args[0] && typeof args[0] === 'string' && args[0].includes('could not infer client capabilities')) {
+		// Suppress this specific warning as it doesn't affect functionality
+		return;
+	}
+	originalWarn.apply(console, args);
+};
+
 /**
  * Start the MCP server
  */

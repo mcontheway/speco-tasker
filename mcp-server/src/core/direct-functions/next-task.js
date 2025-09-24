@@ -3,7 +3,7 @@
  * Direct function implementation for finding the next task to work on
  */
 
-import { findNextTask } from "../../../../scripts/modules/task-manager.js";
+import findNextTask from "../../../../scripts/modules/task-finder.js";
 import {
 	readComplexityReport,
 	readJSON,
