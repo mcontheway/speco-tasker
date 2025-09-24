@@ -22,6 +22,8 @@ class TaskMasterMCPServer {
 		this.options = {
 			name: "Speco Tasker MCP Server",
 			version: packageJson.version,
+			// Disable client capability inference to avoid warnings
+			inferClientCapabilities: false,
 		};
 
 		this.server = new FastMCP(this.options);
@@ -74,6 +76,11 @@ class TaskMasterMCPServer {
 		const startOptions = {
 			transportType: "stdio",
 			timeout: 120000, // 2 minutes timeout (in milliseconds)
+			// Add options to handle client capability inference issues
+			capabilities: {
+				sampling: {},
+				experimental: {},
+			},
 			...options,
 		};
 
