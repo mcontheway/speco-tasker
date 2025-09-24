@@ -27,11 +27,18 @@ npm install speco-tasker
 
 ### 🔧 MCP 配置 | MCP Configuration
 
-#### 一键添加到 Cursor | Add to Cursor
+#### 添加到 Cursor | Add to Cursor
+
+由于 GitHub 会过滤非标准协议链接，请按以下步骤操作：
+
+1. **复制以下链接到浏览器地址栏：**
+   ```
+   cursor://anysphere.cursor-deeplink/mcp/install?name=speco-tasker&config=eyJjb21tYW5kIjoibnB4IiwiYXJncyI6WyJzcGVjby10YXNrZXIiXX0K
+   ```
+
+2. **在浏览器中打开链接，Cursor 会自动处理安装**
 
 <img src="https://cursor.com/deeplink/mcp-install-dark.png" alt="Add Speco Tasker to Cursor" height="32">
-
-[📦 **点击此处添加到 Cursor**](cursor://anysphere.cursor-deeplink/mcp/install?name=speco-tasker&config=eyJjb21tYW5kIjoibnB4IiwiYXJncyI6WyJzcGVjby10YXNrZXIiXX0K)
 
 #### 手动配置 | Manual Configuration
 
