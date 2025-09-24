@@ -41,6 +41,11 @@ jobs:
       - name: Check pre-release mode
         run: node ./.github/scripts/check-pre-release-mode.mjs "main"
 
+      - name: Setup npm authentication
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+          npm whoami
+
       - name: Create Release Pull Request or Publish to npm
         uses: changesets/action@v1
         with:
